@@ -7,21 +7,11 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Mana Font CSS from jsDelivr (official npm CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-
-    /* Andrew Gioia Mana Font - Graceful fallback */
-    @font-face {
-      font-family: 'Mana';
-      src: url('file:///C:/Users/Johnw/ClaudeProjects/mtg/extracted/mana-symbols/andrew-gioia/mana-master/fonts/mana.woff2') format('woff2'),
-           url('file:///C:/Users/Johnw/ClaudeProjects/mtg/extracted/mana-symbols/andrew-gioia/mana-master/fonts/mana.woff') format('woff'),
-           url('file:///C:/Users/Johnw/ClaudeProjects/mtg/extracted/mana-symbols/andrew-gioia/mana-master/fonts/mana.ttf') format('truetype'),
-           url('https://fonts.2manyrobots.com/Mana.woff2') format('woff2'),
-           url('https://fonts.2manyrobots.com/Mana.woff') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }
   </style>
 </head>
 <body>
@@ -30,7 +20,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.20 React - Code cleanup and terminology consistency
+ * v12.23 React - Monochrome mana symbols on colored node backgrounds
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -42,6 +32,20 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.23 (2026-01-14, ~16:30 UTC) - [Claude Opus 4.5] - Monochrome mana symbols on node backgrounds
+ *                                                       - Reverted to original colored circle nodes
+ *                                                       - Using monochrome mana font symbols (no built-in backgrounds)
+ *                                                       - White text on colored backgrounds; black text on white
+ *                                                       - Cleaner, less cluttered look for the wheel
+ * v12.22 (2026-01-14, ~16:15 UTC) - [Claude Opus 4.5] - Mana icons as the nodes themselves
+ *                                                       - Removed redundant background circles from color nodes
+ *                                                       - Mana font icons (with built-in colored backgrounds) are now the entire node
+ *                                                       - Increased icon size to 60px for better visibility
+ *                                                       - Gold ring highlight on hover instead of background glow
+ * v12.21 (2026-01-14, ~16:00 UTC) - [Claude Opus 4.5] - Fixed mana font for GitHub Pages
+ *                                                       - Switched to jsDelivr CDN (cdn.jsdelivr.net/npm/mana-font)
+ *                                                       - Changed from {W} text to proper CSS class syntax (ms ms-w ms-cost)
+ *                                                       - Mana symbols now display correctly on any web host
  * v12.20 (2026-01-14, ~15:30 UTC) - [Claude Opus 4.5] - Code cleanup and terminology fixes
  *                                                       - Changed "tribal" to "typal" throughout
  *                                                       - Fixed pluralization: Merfolk, Kithkin (no s), Elves (not Elfs)
@@ -132,12 +136,13 @@ const sourceLinks = {
   GU: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
 };
 
-const manaChars = {
-  W: '{W}',
-  U: '{U}',
-  B: '{B}',
-  R: '{R}',
-  G: '{G}',
+// Mana font monochrome classes (for use on colored backgrounds)
+const manaClasses = {
+  W: 'ms ms-w',
+  U: 'ms ms-u',
+  B: 'ms ms-b',
+  R: 'ms ms-r',
+  G: 'ms ms-g',
 };
 
 const colorDescriptions = {
@@ -334,29 +339,26 @@ const computeLabelPositions = () => {
 
 const labelPositions = computeLabelPositions();
 
-const ManaSymbol = ({ color, size = 24, fill = 'currentColor' }) => {
+const ManaSymbol = ({ color, size = 24 }) => {
   const fontColor = color === 'W' ? '#000000' : '#FFFFFF';
 
   return (
-    <div
+    <i
+      className={manaClasses[color]}
       style={{
-        fontFamily: 'Mana, sans-serif',
         fontSize: `${size}px`,
         color: fontColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: `${size}px`,
-        height: `${size}px`,
       }}
-    >
-      {manaChars[color]}
-    </div>
+    />
   );
 };
 
 const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) => {
   const pos = nodePositions[index];
+  const fontColor = color === 'W' ? '#000000' : '#FFFFFF';
 
   return (
     <g
@@ -365,6 +367,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
       style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
       opacity={isDimmed ? 0.3 : 1}
     >
+      {/* Outer glow circle */}
       <circle
         cx={pos.x}
         cy={pos.y}
@@ -373,6 +376,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
         opacity={isHighlighted ? 0.6 : 0.25}
         style={{ transition: 'all 0.2s ease' }}
       />
+      {/* Main colored node circle */}
       <circle
         cx={pos.x}
         cy={pos.y}
@@ -382,13 +386,21 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
         strokeWidth={isHighlighted ? 4 : 3}
         style={{ transition: 'all 0.2s ease' }}
       />
+      {/* Monochrome mana symbol */}
       <foreignObject
         x={pos.x - 20}
         y={pos.y - 20}
         width={40}
         height={40}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '40px',
+          height: '40px',
+          color: fontColor,
+        }}>
           <ManaSymbol
             color={color}
             size={30}
@@ -520,8 +532,8 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
               cursor: 'pointer',
             }}
           >
-            <div style={{ fontFamily: 'Mana, sans-serif', fontSize: '40px', marginBottom: '6px' }}>
-              {manaChars[color]}
+            <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}>
+              <i className={manaClasses[color]} />
             </div>
             <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>
               {color}: {colorData.name}
@@ -838,7 +850,7 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.20 Interactive)
+          Draft Archetypes Color Wheel (v12.23 Interactive)
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down to view complete archetype table
