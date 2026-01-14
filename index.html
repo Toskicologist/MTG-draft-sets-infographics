@@ -12,6 +12,17 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    /* On mobile, let the SVG width be the constraint, not height */
+    @media (max-width: 768px) {
+      .color-wheel-svg {
+        max-height: none !important;
+        width: 100% !important;
+      }
+      .main-container {
+        padding: 4px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -835,7 +846,7 @@ function LorwynColorWheel() {
   const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
 
   return (
-    <div style={{
+    <div className="main-container" style={{
       minHeight: '100vh',
       backgroundColor: '#FFFFFF',
       padding: '24px',
@@ -862,7 +873,8 @@ function LorwynColorWheel() {
       </div>
 
       <svg
-        viewBox="80 60 540 580"
+        className="color-wheel-svg"
+        viewBox="100 80 500 540"
         style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
       >
         {edges.map((edge, i) => {
