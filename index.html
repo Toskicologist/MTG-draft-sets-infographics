@@ -37,7 +37,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.26 React - Beta features merge and navigation links
+ * v12.27 React - Simple mode and Export Image
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -49,6 +49,11 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.27 (2026-01-14, 23:09 UTC) - [Claude Opus 4.5] - Simple mode and Export Image
+ *                                                       - Added "Simple" toggle (white nodes, black lines/icons)
+ *                                                       - Added "Export Image" button to save color wheel as PNG
+ *                                                       - Exported image includes site URL in subtitle
+ *                                                       - Works in both normal and simple modes
  * v12.26 (2026-01-14, 23:04 UTC) - [Claude Opus 4.5] - Beta features merge and navigation
  *                                                       - Added in-page navigation links (Colors, Primary, Secondary)
  *                                                       - RW archetype renamed to "-1/-1 Aggro" / "Counter removal"
@@ -375,8 +380,8 @@ const computeLabelPositions = () => {
 
 const labelPositions = computeLabelPositions();
 
-const ManaSymbol = ({ color, size = 24 }) => {
-  const fontColor = color === 'W' ? '#000000' : '#FFFFFF';
+const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
+  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
 
   return (
     <i
@@ -392,9 +397,11 @@ const ManaSymbol = ({ color, size = 24 }) => {
   );
 };
 
-const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) => {
+const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple = false }) => {
   const pos = nodePositions[index];
-  const fontColor = color === 'W' ? '#000000' : '#FFFFFF';
+  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+  const nodeColor = isSimple ? '#FFFFFF' : baseHex[color];
+  const glowColor = isSimple ? 'transparent' : baseHex[color];
 
   return (
     <g
@@ -408,7 +415,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
         cx={pos.x}
         cy={pos.y}
         r={CONFIG.nodeRadius + (isHighlighted ? 12 : 8)}
-        fill={isHighlighted ? "#FFD700" : baseHex[color]}
+        fill={isHighlighted ? "#FFD700" : glowColor}
         opacity={isHighlighted ? 0.6 : 0.25}
         style={{ transition: 'all 0.2s ease' }}
       />
@@ -417,7 +424,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
         cx={pos.x}
         cy={pos.y}
         r={CONFIG.nodeRadius}
-        fill={baseHex[color]}
+        fill={nodeColor}
         stroke={isHighlighted ? "#FFD700" : "#000000"}
         strokeWidth={isHighlighted ? 4 : 3}
         style={{ transition: 'all 0.2s ease' }}
@@ -440,6 +447,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
           <ManaSymbol
             color={color}
             size={30}
+            isSimple={isSimple}
           />
         </div>
       </foreignObject>
@@ -447,11 +455,13 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) 
   );
 };
 
-const EdgeLine = ({ edge, isHighlighted, isDimmed }) => {
+const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false }) => {
   const p1 = nodePositions[edge.uIdx];
   const p2 = nodePositions[edge.vIdx];
   const pairCode = edge.u + edge.v;
   const isPrimary = primaryArchetypes.includes(pairCode);
+  const lineColor = isSimple ? '#000000' : blend(edge.u, edge.v);
+  const lineOpacity = isDimmed ? 0.2 : 1;
 
   return (
     <line
@@ -459,15 +469,15 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed }) => {
       y1={p1.y}
       x2={p2.x}
       y2={p2.y}
-      stroke={isHighlighted ? "#FFD700" : blend(edge.u, edge.v)}
+      stroke={isHighlighted ? "#FFD700" : lineColor}
       strokeWidth={isHighlighted ? CONFIG.edgeWidth + 3 : (isPrimary ? CONFIG.edgeWidth + 2 : CONFIG.edgeWidth)}
-      opacity={isDimmed ? 0.2 : (isPrimary ? 1 : 0.6)}
+      opacity={lineOpacity}
       style={{ transition: 'all 0.2s ease' }}
     />
   );
 };
 
-const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
+const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false }) => {
   const code = group.u + group.v;
   const labelData = labels[code] || labels[group.v + group.u];
   const { bg, fg } = getLabelColors(group.u, group.v);
@@ -477,6 +487,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
   const hasMultiLineSub = subLines.length > 1;
   const boxW = isPrimary ? CONFIG.primaryBoxW : CONFIG.boxW;
   const boxH = isPrimary ? CONFIG.primaryBoxH : (hasMultiLineSub ? CONFIG.boxH + 10 : CONFIG.boxH);
+  const boxBg = isSimple ? '#FFFFFF' : bg;
+  const boxStroke = isSimple ? '#000000' : edgeColor;
+  const textColor = isSimple ? '#000000' : fg;
 
   return (
     <g
@@ -495,8 +508,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
         width={boxW}
         height={boxH}
         rx={6}
-        fill={bg}
-        stroke={isHighlighted ? "#FFD700" : edgeColor}
+        fill={boxBg}
+        stroke={isHighlighted ? "#FFD700" : boxStroke}
         strokeWidth={isHighlighted ? 4 : (isPrimary ? 3 : 2)}
         style={{ transition: 'all 0.2s ease' }}
       />
@@ -506,7 +519,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
         textAnchor="middle"
         fontSize={isPrimary ? CONFIG.fontSize + 2 : CONFIG.fontSize}
         fontWeight="bold"
-        fill={fg}
+        fill={textColor}
       >
         {code}
       </text>
@@ -516,7 +529,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
         textAnchor="middle"
         fontSize={isPrimary ? CONFIG.fontSize : CONFIG.fontSize - 1}
         fontWeight={isPrimary ? "bold" : "normal"}
-        fill={fg}
+        fill={textColor}
       >
         {labelData.text}
       </text>
@@ -525,7 +538,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
         y={group.cy + (isPrimary ? 15 : 17)}
         textAnchor="middle"
         fontSize={isPrimary ? CONFIG.fontSize - 1 : CONFIG.fontSize - 2}
-        fill={fg}
+        fill={textColor}
         opacity={0.85}
       >
         {subLines.map((line, i) => (
@@ -808,8 +821,68 @@ function LorwynColorWheel() {
   const [hoveredNode, setHoveredNode] = useState(null);
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
+  const [isSimple, setIsSimple] = useState(false);
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
+  const svgRef = useRef(null);
+
+  const handleExportImage = async () => {
+    if (!svgRef.current) return;
+
+    const svg = svgRef.current;
+    const svgData = new XMLSerializer().serializeToString(svg);
+
+    // Create canvas with extra space for title and subtitle
+    const canvas = document.createElement('canvas');
+    const scale = 2; // For higher resolution
+    const titleHeight = 80;
+    const subtitleHeight = 30;
+    canvas.width = 700 * scale;
+    canvas.height = (620 + titleHeight + subtitleHeight) * scale;
+    const ctx = canvas.getContext('2d');
+
+    // Fill white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw title
+    ctx.fillStyle = '#111827';
+    ctx.font = `bold ${28 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Lorwyn Eclipsed', canvas.width / 2, 40 * scale);
+
+    ctx.fillStyle = '#6B7280';
+    ctx.font = `${16 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.fillText('Draft Archetypes Color Wheel', canvas.width / 2, 65 * scale);
+
+    // Create image from SVG
+    const img = new Image();
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      // Draw SVG centered
+      const svgWidth = 500 * scale;
+      const svgHeight = 540 * scale;
+      const xOffset = (canvas.width - svgWidth) / 2;
+      ctx.drawImage(img, xOffset, titleHeight * scale, svgWidth, svgHeight);
+
+      // Draw subtitle with URL
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = `${12 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.fillText('toskicologist.github.io/MTG-draft-sets-infographics', canvas.width / 2, (620 + titleHeight + 15) * scale);
+
+      // Download
+      const link = document.createElement('a');
+      link.download = `lorwyn-eclipsed-color-wheel${isSimple ? '-simple' : ''}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  };
 
   const handlePairHover = (pairCode) => {
     if (pairTimeoutRef.current) {
@@ -890,10 +963,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.26 Interactive)
+          Draft Archetypes Color Wheel (v12.27 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-14 23:04 UTC
+          Last updated: 2026-01-14 23:09 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
@@ -904,7 +977,54 @@ function LorwynColorWheel() {
         </p>
       </div>
 
+      {/* Controls */}
+      <div style={{
+        display: 'flex',
+        gap: '24px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '12px',
+        flexWrap: 'wrap',
+      }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          fontSize: '0.9rem',
+          fontWeight: '500',
+          color: '#374151',
+        }}>
+          <input
+            type="checkbox"
+            checked={isSimple}
+            onChange={(e) => setIsSimple(e.target.checked)}
+            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+          />
+          Simple
+        </label>
+        <button
+          onClick={handleExportImage}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#2563EB',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#1D4ED8'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#2563EB'}
+        >
+          Export Image
+        </button>
+      </div>
+
       <svg
+        ref={svgRef}
         className="color-wheel-svg"
         viewBox="100 80 500 540"
         style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
@@ -919,6 +1039,7 @@ function LorwynColorWheel() {
               edge={edge}
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
+              isSimple={isSimple}
             />
           );
         })}
@@ -933,6 +1054,7 @@ function LorwynColorWheel() {
               index={i}
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
+              isSimple={isSimple}
               onHover={() => {
                 setHoveredNode(color);
                 handleColorHover(color);
@@ -956,6 +1078,7 @@ function LorwynColorWheel() {
               group={group}
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
+              isSimple={isSimple}
               onHover={() => handlePairHover(pairCode)}
               onLeave={handlePairLeave}
             />
