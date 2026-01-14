@@ -22,6 +22,12 @@
       .main-container {
         padding: 4px !important;
       }
+      .archetype-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .color-grid {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;
+      }
     }
   </style>
 </head>
@@ -31,7 +37,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.24 React - Mobile responsive improvements
+ * v12.25 React - Mobile grid fixes
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -43,6 +49,10 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.25 (2026-01-14, ~20:00 UTC) - [Claude Opus 4.5] - Mobile grid fixes
+ *                                                       - Archetype grids now single column on mobile (removes 280px min)
+ *                                                       - Color grid reduced to 90px minimum on mobile
+ *                                                       - Added className to grids for CSS targeting
  * v12.24 (2026-01-14, ~19:45 UTC) - [Claude Opus 4.5] - Mobile responsive improvements
  *                                                       - Added CSS media query for mobile (max-width: 768px)
  *                                                       - Removed maxHeight constraint on SVG for mobile (width controls sizing)
@@ -516,7 +526,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
 
 const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
   return (
-    <div style={{
+    <div className="color-grid" style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
       gap: '12px',
@@ -868,10 +878,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.24 Interactive)
+          Draft Archetypes Color Wheel (v12.25 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-14 19:45 UTC
+          Last updated: 2026-01-14 20:00 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down to view complete archetype table
@@ -975,7 +985,7 @@ function LorwynColorWheel() {
         }}>
           These five archetypes have gold signpost uncommons and strong typal synergies
         </p>
-        <div style={{
+        <div className="archetype-grid" style={{
           display: 'grid',
           gap: '12px',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -1155,7 +1165,7 @@ function LorwynColorWheel() {
         }}>
           These archetypes focus on mechanical synergies with hybrid mana only
         </p>
-        <div style={{
+        <div className="archetype-grid" style={{
           display: 'grid',
           gap: '12px',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
