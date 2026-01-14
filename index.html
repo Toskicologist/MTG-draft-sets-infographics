@@ -38,7 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.28 React - Mobile viewBox optimization
+ * v12.29 React - Responsive CONFIG for mobile
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -50,6 +50,12 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.29 (2026-01-14, 23:47 UTC) - [Claude Opus 4.5] - Responsive CONFIG for mobile
+ *                                                       - Wheel shrinks on mobile (radius 140 vs 180)
+ *                                                       - Smaller nodes (24 vs 30) and boxes for tighter layout
+ *                                                       - Dynamic viewBox: mobile "160 140 380 400" vs desktop "120 100 460 480"
+ *                                                       - Config recalculates on window resize
+ *                                                       - All positions computed reactively based on config state
  * v12.28 (2026-01-14, 23:41 UTC) - [Claude Opus 4.5] - Mobile viewBox optimization
  *                                                       - Tightened viewBox from "100 80 500 540" to "120 100 460 480"
  *                                                       - Added max-width: 100% override for mobile
@@ -142,22 +148,31 @@
 
 const { useState, useEffect, useRef } = React;
 
-const CONFIG = {
-  width: 700,
-  height: 700,
-  cx: 350,
-  cy: 330,
-  radius: 180,
-  nodeRadius: 30,
-  edgeWidth: 5,
-  boxW: 75,
-  boxH: 45,
-  primaryBoxW: 85,
-  primaryBoxH: 55,
-  fontSize: 12,
-  iterMax: 240,
-  pushStep: 6,
+// Detect mobile for responsive sizing
+const isMobile = () => window.innerWidth <= 768;
+
+const getConfig = () => {
+  const mobile = isMobile();
+  return {
+    width: 700,
+    height: 700,
+    cx: 350,
+    cy: 330,
+    radius: mobile ? 140 : 180,
+    nodeRadius: mobile ? 24 : 30,
+    edgeWidth: mobile ? 4 : 5,
+    boxW: mobile ? 70 : 75,
+    boxH: mobile ? 42 : 45,
+    primaryBoxW: mobile ? 80 : 85,
+    primaryBoxH: mobile ? 52 : 55,
+    fontSize: mobile ? 11 : 12,
+    iterMax: 240,
+    pushStep: 6,
+  };
 };
+
+// Initial config - will be updated reactively
+let CONFIG = getConfig();
 
 const baseHex = {
   W: "#FFFFFF",
@@ -284,16 +299,6 @@ const getLabelColors = (u, v) => {
 
 const colorOrder = ['W', 'U', 'B', 'R', 'G'];
 
-const getNodePos = (index) => {
-  const angle = (index * 72 - 90) * (Math.PI / 180);
-  return {
-    x: CONFIG.cx + CONFIG.radius * Math.cos(angle),
-    y: CONFIG.cy + CONFIG.radius * Math.sin(angle),
-  };
-};
-
-const nodePositions = colorOrder.map((_, i) => getNodePos(i));
-
 const edges = Object.keys(labels).map(pair => ({
   u: pair[0],
   v: pair[1],
@@ -301,7 +306,19 @@ const edges = Object.keys(labels).map(pair => ({
   vIdx: colorOrder.indexOf(pair[1]),
 }));
 
-const getEdgeGeometry = (uIdx, vIdx) => {
+// These functions now take config as parameter for reactivity
+const getNodePos = (index, config) => {
+  const angle = (index * 72 - 90) * (Math.PI / 180);
+  return {
+    x: config.cx + config.radius * Math.cos(angle),
+    y: config.cy + config.radius * Math.sin(angle),
+  };
+};
+
+const getNodePositions = (config) => colorOrder.map((_, i) => getNodePos(i, config));
+
+const getEdgeGeometry = (uIdx, vIdx, config) => {
+  const nodePositions = getNodePositions(config);
   const p1 = nodePositions[uIdx];
   const p2 = nodePositions[vIdx];
   const dx = p2.x - p1.x;
@@ -310,8 +327,8 @@ const getEdgeGeometry = (uIdx, vIdx) => {
   const ux = dx / L;
   const uy = dy / L;
 
-  const x = (p1.x + ux * CONFIG.nodeRadius + p2.x - ux * CONFIG.nodeRadius) / 2;
-  const y = (p1.y + uy * CONFIG.nodeRadius + p2.y - uy * CONFIG.nodeRadius) / 2;
+  const x = (p1.x + ux * config.nodeRadius + p2.x - ux * config.nodeRadius) / 2;
+  const y = (p1.y + uy * config.nodeRadius + p2.y - uy * config.nodeRadius) / 2;
 
   const tx = ux, ty = uy;
   const nx = -uy, ny = ux;
@@ -319,9 +336,9 @@ const getEdgeGeometry = (uIdx, vIdx) => {
   return { x, y, tx, ty, nx, ny };
 };
 
-const getBbox = (cx, cy, isPrimary = false) => {
-  const w = isPrimary ? CONFIG.primaryBoxW : CONFIG.boxW;
-  const h = isPrimary ? CONFIG.primaryBoxH : CONFIG.boxH;
+const getBbox = (cx, cy, isPrimary, config) => {
+  const w = isPrimary ? config.primaryBoxW : config.boxW;
+  const h = isPrimary ? config.primaryBoxH : config.boxH;
   return {
     x1: cx - w / 2,
     x2: cx + w / 2,
@@ -335,13 +352,13 @@ const isOverlap = (b1, b2, margin = 2) => {
            b1.y2 + margin < b2.y1 || b2.y2 + margin < b1.y1);
 };
 
-const computeLabelPositions = () => {
+const computeLabelPositions = (config) => {
   const groups = edges.map(edge => {
     const pairCode = edge.u + edge.v;
     const isPrimary = primaryArchetypes.includes(pairCode);
-    const { x, y, tx, ty, nx, ny } = getEdgeGeometry(edge.uIdx, edge.vIdx);
+    const { x, y, tx, ty, nx, ny } = getEdgeGeometry(edge.uIdx, edge.vIdx, config);
 
-    const sgn = (x - CONFIG.cx) * nx + (y - CONFIG.cy) * ny > 0 ? 1 : -1;
+    const sgn = (x - config.cx) * nx + (y - config.cy) * ny > 0 ? 1 : -1;
     const off = sgn * (isPrimary ? 20 : 15);
     const tshift = edge.u < edge.v ? 3 : -3;
 
@@ -353,11 +370,11 @@ const computeLabelPositions = () => {
       cx,
       cy,
       isPrimary,
-      bbox: getBbox(cx, cy, isPrimary),
+      bbox: getBbox(cx, cy, isPrimary, config),
     };
   });
 
-  for (let iter = 0; iter < CONFIG.iterMax; iter++) {
+  for (let iter = 0; iter < config.iterMax; iter++) {
     let moved = false;
     for (let i = 0; i < groups.length; i++) {
       for (let j = i + 1; j < groups.length; j++) {
@@ -366,13 +383,13 @@ const computeLabelPositions = () => {
           const dy = groups[i].cy - groups[j].cy;
           const L = Math.hypot(dx, dy) + 0.001;
 
-          groups[i].cx += (dx / L) * CONFIG.pushStep;
-          groups[i].cy += (dy / L) * CONFIG.pushStep;
-          groups[j].cx -= (dx / L) * CONFIG.pushStep;
-          groups[j].cy -= (dy / L) * CONFIG.pushStep;
+          groups[i].cx += (dx / L) * config.pushStep;
+          groups[i].cy += (dy / L) * config.pushStep;
+          groups[j].cx -= (dx / L) * config.pushStep;
+          groups[j].cy -= (dy / L) * config.pushStep;
 
-          groups[i].bbox = getBbox(groups[i].cx, groups[i].cy, groups[i].isPrimary);
-          groups[j].bbox = getBbox(groups[j].cx, groups[j].cy, groups[j].isPrimary);
+          groups[i].bbox = getBbox(groups[i].cx, groups[i].cy, groups[i].isPrimary, config);
+          groups[j].bbox = getBbox(groups[j].cx, groups[j].cy, groups[j].isPrimary, config);
           moved = true;
         }
       }
@@ -382,8 +399,6 @@ const computeLabelPositions = () => {
 
   return groups;
 };
-
-const labelPositions = computeLabelPositions();
 
 const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
   const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
@@ -402,7 +417,8 @@ const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
   );
 };
 
-const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple = false }) => {
+const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
+  const nodePositions = getNodePositions(config);
   const pos = nodePositions[index];
   const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
   const nodeColor = isSimple ? '#FFFFFF' : baseHex[color];
@@ -419,7 +435,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, is
       <circle
         cx={pos.x}
         cy={pos.y}
-        r={CONFIG.nodeRadius + (isHighlighted ? 12 : 8)}
+        r={config.nodeRadius + (isHighlighted ? 12 : 8)}
         fill={isHighlighted ? "#FFD700" : glowColor}
         opacity={isHighlighted ? 0.6 : 0.25}
         style={{ transition: 'all 0.2s ease' }}
@@ -428,7 +444,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, is
       <circle
         cx={pos.x}
         cy={pos.y}
-        r={CONFIG.nodeRadius}
+        r={config.nodeRadius}
         fill={nodeColor}
         stroke={isHighlighted ? "#FFD700" : "#000000"}
         strokeWidth={isHighlighted ? 4 : 3}
@@ -460,7 +476,8 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, is
   );
 };
 
-const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false }) => {
+const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) => {
+  const nodePositions = getNodePositions(config);
   const p1 = nodePositions[edge.uIdx];
   const p2 = nodePositions[edge.vIdx];
   const pairCode = edge.u + edge.v;
@@ -475,14 +492,14 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false }) => {
       x2={p2.x}
       y2={p2.y}
       stroke={isHighlighted ? "#FFD700" : lineColor}
-      strokeWidth={isHighlighted ? CONFIG.edgeWidth + 3 : (isPrimary ? CONFIG.edgeWidth + 2 : CONFIG.edgeWidth)}
+      strokeWidth={isHighlighted ? config.edgeWidth + 3 : (isPrimary ? config.edgeWidth + 2 : config.edgeWidth)}
       opacity={lineOpacity}
       style={{ transition: 'all 0.2s ease' }}
     />
   );
 };
 
-const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false }) => {
+const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
   const code = group.u + group.v;
   const labelData = labels[code] || labels[group.v + group.u];
   const { bg, fg } = getLabelColors(group.u, group.v);
@@ -490,8 +507,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
   const isPrimary = group.isPrimary;
   const subLines = labelData.sub.split('\n');
   const hasMultiLineSub = subLines.length > 1;
-  const boxW = isPrimary ? CONFIG.primaryBoxW : CONFIG.boxW;
-  const boxH = isPrimary ? CONFIG.primaryBoxH : (hasMultiLineSub ? CONFIG.boxH + 10 : CONFIG.boxH);
+  const boxW = isPrimary ? config.primaryBoxW : config.boxW;
+  const boxH = isPrimary ? config.primaryBoxH : (hasMultiLineSub ? config.boxH + 10 : config.boxH);
   const boxBg = isSimple ? '#FFFFFF' : bg;
   const boxStroke = isSimple ? '#000000' : edgeColor;
   const textColor = isSimple ? '#000000' : fg;
@@ -522,7 +539,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
         x={group.cx}
         y={group.cy - (isPrimary ? 16 : 12)}
         textAnchor="middle"
-        fontSize={isPrimary ? CONFIG.fontSize + 2 : CONFIG.fontSize}
+        fontSize={isPrimary ? config.fontSize + 2 : config.fontSize}
         fontWeight="bold"
         fill={textColor}
       >
@@ -532,7 +549,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
         x={group.cx}
         y={group.cy + (isPrimary ? -1 : 3)}
         textAnchor="middle"
-        fontSize={isPrimary ? CONFIG.fontSize : CONFIG.fontSize - 1}
+        fontSize={isPrimary ? config.fontSize : config.fontSize - 1}
         fontWeight={isPrimary ? "bold" : "normal"}
         fill={textColor}
       >
@@ -542,7 +559,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
         x={group.cx}
         y={group.cy + (isPrimary ? 15 : 17)}
         textAnchor="middle"
-        fontSize={isPrimary ? CONFIG.fontSize - 1 : CONFIG.fontSize - 2}
+        fontSize={isPrimary ? config.fontSize - 1 : config.fontSize - 2}
         fill={textColor}
         opacity={0.85}
       >
@@ -827,9 +844,22 @@ function LorwynColorWheel() {
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
   const [isSimple, setIsSimple] = useState(false);
+  const [config, setConfig] = useState(getConfig);
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
   const svgRef = useRef(null);
+
+  // Update config on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setConfig(getConfig());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Compute positions based on current config
+  const labelPositions = computeLabelPositions(config);
 
   const handleExportImage = async () => {
     if (!svgRef.current) return;
@@ -968,10 +998,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.28 Interactive)
+          Draft Archetypes Color Wheel (v12.29 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-14 23:41 UTC
+          Last updated: 2026-01-14 23:47 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
@@ -1031,7 +1061,7 @@ function LorwynColorWheel() {
       <svg
         ref={svgRef}
         className="color-wheel-svg"
-        viewBox="120 100 460 480"
+        viewBox={isMobile() ? "160 140 380 400" : "120 100 460 480"}
         style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
       >
         {edges.map((edge, i) => {
@@ -1045,6 +1075,7 @@ function LorwynColorWheel() {
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
               isSimple={isSimple}
+              config={config}
             />
           );
         })}
@@ -1060,6 +1091,7 @@ function LorwynColorWheel() {
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
               isSimple={isSimple}
+              config={config}
               onHover={() => {
                 setHoveredNode(color);
                 handleColorHover(color);
@@ -1084,6 +1116,7 @@ function LorwynColorWheel() {
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
               isSimple={isSimple}
+              config={config}
               onHover={() => handlePairHover(pairCode)}
               onLeave={handlePairLeave}
             />
