@@ -13,10 +13,11 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-    /* On mobile, let the SVG width be the constraint, not height */
+    /* On mobile, maximize the SVG size */
     @media (max-width: 768px) {
       .color-wheel-svg {
         max-height: none !important;
+        max-width: 100% !important;
         width: 100% !important;
       }
       .main-container {
@@ -37,7 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.27 React - Simple mode and Export Image
+ * v12.28 React - Mobile viewBox optimization
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -49,6 +50,10 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.28 (2026-01-14, 23:41 UTC) - [Claude Opus 4.5] - Mobile viewBox optimization
+ *                                                       - Tightened viewBox from "100 80 500 540" to "120 100 460 480"
+ *                                                       - Added max-width: 100% override for mobile
+ *                                                       - Reduced white space around color wheel on mobile
  * v12.27 (2026-01-14, 23:09 UTC) - [Claude Opus 4.5] - Simple mode and Export Image
  *                                                       - Added "Simple" toggle (white nodes, black lines/icons)
  *                                                       - Added "Export Image" button to save color wheel as PNG
@@ -838,7 +843,7 @@ function LorwynColorWheel() {
     const titleHeight = 80;
     const subtitleHeight = 30;
     canvas.width = 700 * scale;
-    canvas.height = (620 + titleHeight + subtitleHeight) * scale;
+    canvas.height = (480 + titleHeight + subtitleHeight) * scale;
     const ctx = canvas.getContext('2d');
 
     // Fill white background
@@ -862,15 +867,15 @@ function LorwynColorWheel() {
 
     img.onload = () => {
       // Draw SVG centered
-      const svgWidth = 500 * scale;
-      const svgHeight = 540 * scale;
+      const svgWidth = 460 * scale;
+      const svgHeight = 480 * scale;
       const xOffset = (canvas.width - svgWidth) / 2;
       ctx.drawImage(img, xOffset, titleHeight * scale, svgWidth, svgHeight);
 
       // Draw subtitle with URL
       ctx.fillStyle = '#9CA3AF';
       ctx.font = `${12 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-      ctx.fillText('toskicologist.github.io/MTG-draft-sets-infographics', canvas.width / 2, (620 + titleHeight + 15) * scale);
+      ctx.fillText('toskicologist.github.io/MTG-draft-sets-infographics', canvas.width / 2, (480 + titleHeight + 15) * scale);
 
       // Download
       const link = document.createElement('a');
@@ -963,10 +968,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.27 Interactive)
+          Draft Archetypes Color Wheel (v12.28 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-14 23:09 UTC
+          Last updated: 2026-01-14 23:41 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
@@ -1026,7 +1031,7 @@ function LorwynColorWheel() {
       <svg
         ref={svgRef}
         className="color-wheel-svg"
-        viewBox="100 80 500 540"
+        viewBox="120 100 460 480"
         style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
       >
         {edges.map((edge, i) => {
