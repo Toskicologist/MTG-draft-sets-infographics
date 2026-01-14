@@ -7,21 +7,18 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Mana Font CSS from jsDelivr (official npm CDN) -->
-  <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-    /* On mobile, let the SVG width be the constraint, not height */
-    @media (max-width: 768px) {
-      .color-wheel-svg {
-        max-height: none !important;
-        width: 100% !important;
-      }
-      .main-container {
-        padding: 4px !important;
-      }
+    /* Andrew Gioia Mana Font */
+    @font-face {
+      font-family: 'Mana';
+      src: url('file:///C:/Users/Johnw/ClaudeProjects/mtg/extracted/mana-symbols/andrew-gioia/mana-master/fonts/mana.woff2') format('woff2'),
+           url('file:///C:/Users/Johnw/ClaudeProjects/mtg/extracted/mana-symbols/andrew-gioia/mana-master/fonts/mana.woff') format('woff'),
+           url('file:///C:/Users/Johnw/ClaudeProjects/mtg/extracted/mana-symbols/andrew-gioia/mana-master/fonts/mana.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
     }
   </style>
 </head>
@@ -31,7 +28,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.23-beta.1 React - Layout improvements and visualization controls
+ * v12.13 React - Anchor links to jump from citations to archetype sections
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -43,58 +40,6 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
- * v12.23-beta.1 (2026-01-14, ~18:00 UTC) - [Claude Opus 4.5] - Layout improvements, controls, and content updates
- *                                                                 - Added size slider control (50% - 200% zoom)
- *                                                                 - Added "Simple" toggle (white nodes with black icons/lines)
- *                                                                 - All lines now fully opaque in both modes
- *                                                                 - RW archetype renamed from "Fast creatures" to "-1/-1 Aggro"
- *                                                                 - Multi-line subs for BR (Blight/sacrifice) and BG (Graveyard/value)
- *                                                                 - Typal names bold in 5 main archetypes
- *                                                                 - Added explanatory text to Primary Archetypes subtitle
- *                                                                 - Search buttons now always at bottom of archetype boxes
- * v12.23 (2026-01-14, ~16:30 UTC) - [Claude Opus 4.5] - Monochrome mana symbols on node backgrounds
- *                                                       - Reverted to original colored circle nodes
- *                                                       - Using monochrome mana font symbols (no built-in backgrounds)
- *                                                       - White text on colored backgrounds; black text on white
- *                                                       - Cleaner, less cluttered look for the wheel
- * v12.21 (2026-01-14, ~16:00 UTC) - [Claude Opus 4.5] - Fixed mana font for GitHub Pages
- *                                                       - Switched to jsDelivr CDN (cdn.jsdelivr.net/npm/mana-font)
- *                                                       - Changed from {W} text to proper CSS class syntax (ms ms-w ms-cost)
- *                                                       - Mana symbols now display correctly on any web host
- * v12.20 (2026-01-14, ~15:30 UTC) - [Claude Opus 4.5] - Code cleanup and terminology fixes
- *                                                       - Changed "tribal" to "typal" throughout
- *                                                       - Fixed pluralization: Merfolk, Kithkin (no s), Elves (not Elfs)
- *                                                       - Added "All spells castable with {pair}" button to InfoPanel and archetypes
- *                                                       - Fixed Interactive Features text to say "All [Type]" not "All [Type]s"
- *                                                       - Consolidated typeMap/typePluralMap as top-level constants
- * v12.19 (2026-01-14, ~14:25 UTC) - [Claude Haiku 4.5] - Fixed hybrid color search Scryfall queries
- *                                                       - Updated color grid hybrid search to use m>X/Y syntax for all hybrids
- *                                                       - Now searches for exact color + all 4 possible hybrid combinations
- *                                                       - Example: W+hybrids searches for {W}, {W/U}, {W/B}, {W/R}, {W/G}
- * v12.18 (2026-01-14, ~14:15 UTC) - [Claude Haiku 4.5] - Graceful fallback, pluralization, hybrid color search
- *                                                       - Added graceful font fallback: local files → CDN → letter symbols
- *                                                       - Fixed pluralization: Merfolks→Merfolk, Kithkins→Kithkin, Elfs→Elves
- *                                                       - Added "Scryfall search:" label before color grid search buttons
- *                                                       - Added hybrid color search alongside exact color search
- * v12.17 (2026-01-14, ~13:45 UTC) - [Claude Haiku 4.5] - CDN-hosted mana symbols, zero local dependencies
- *                                                       - Replaced local file:// mana font with Andrew Gioia CDN (fonts.2manyrobots.com)
- *                                                       - Restored proper Unicode mana symbol rendering {W}{U}{B}{R}{G}
- *                                                       - Fully portable with no external file dependencies
- *                                                       - Ready for immediate sharing and public hosting
- * v12.16 (2026-01-14, ~13:30 UTC) - [Claude Haiku 4.5] - Publication-ready refinements
- *                                                       - Removed spaces around union symbols (A∪B instead of A ∪ B)
- *                                                       - Consolidated external links in sources section (removed "external link" labels)
- *                                                       - Removed dependency on local mana font file for better portability
- *                                                       - Ready for sharing and public distribution
- * v12.15 (2026-01-14, ~12:45 UTC) - [Claude Haiku 4.5] - Improved guide links and search labels
- *                                                       - Removed local file:// hyperlinks, replaced with live online pages
- *                                                       - Added helpful subtitle directing users to WotC and Draftsim guides
- *                                                       - Changed search button labels to A&B, A ∪ B for clarity
- *                                                       - Added "Scryfall search:" label before search buttons
- * v12.14 (2026-01-14, ~12:30 UTC) - [Claude Haiku 4.5] - Fixed anchor link scroll behavior
- *                                                       - Added useEffect hook to handle hash changes and scroll to elements
- *                                                       - Clicking WotC/Draftsim links now properly scrolls to respective sections
- *                                                       - Smooth scroll behavior for better UX
  * v12.13 (2026-01-14, ~11:25 UTC) - [Claude Haiku 4.5] - Anchor links to jump to archetype sections
  *                                                       - WotC Prerelease Guide link jumps to Primary Archetypes section
  *                                                       - Draftsim review link jumps to Secondary Archetypes section
@@ -107,10 +52,71 @@
  * v12.11 (2026-01-14, ~11:00 UTC) - [Claude Haiku 4.5] - Cleaner header with helpful subtitle
  *                                                       - Removed outdated legend showing "Primary Typal" vs "Secondary Mechanical"
  *                                                       - Added subtitle: "Mouse over archetypes for details • Scroll down to view complete archetype table"
+ * v12.10 (2026-01-14, ~10:30 UTC) - [Claude Haiku 4.5] - Re-added RW Aggro archetype
+ *                                                       - Positioned as secondary mechanical archetype
+ *                                                       - Strategy: removes -1/-1 counters from big creatures to create threats
+ *                                                       - Source: WotC Making Magic design article
+ * v12.9 (2026-01-14, ~04:00 UTC) - [Claude Haiku 4.5] - Removed Giants archetype and Faeries/Giants footer note
+ *                                                      - Cleaned up confusing secondary mechanic reference
+ *                                                      - Now focuses on 9 core archetypes (5 primary + 4 secondary)
+ * v12.8 (2026-01-14, ~03:45 UTC) - [Claude Haiku 4.5] - Removed symbol preview panel at top
+ *                                                      - Cleaner layout with diagram immediately below header
+ *                                                      - All symbol information now only in color grid below
+ * v12.7 (2026-01-14, ~03:30 UTC) - [Claude Haiku 4.5] - Removed color node popups, added color description grid
+ *                                                      - Replaced hover popups with static 5x1 color card grid below diagram
+ *                                                      - Maintained highlighting behavior on node hover
+ *                                                      - Cleaner layout with color information always visible
+ * v12.6 (2026-01-14, ~03:00 UTC) - [Claude Haiku 4.5] - Text refinements and improved search functionality
+ *                                                      - Removed asterisks from archetype names
+ *                                                      - Changed "tribal" to "typal" in descriptions
+ *                                                      - Removed em-dashes from all text labels (replaced with colons)
+ *                                                      - Updated "Exactly" searches to use id= operator for precise color identity matching
+ *                                                      - Improved OR searches to show mono, hybrid, and 2-color cards
+ *                                                      - Fixed color panel hover behavior to match archetype panel (800ms timeout)
+ * v12.5 (2026-01-14, ~02:15 UTC) - [Claude Haiku 4.5] - Integrated Andrew Gioia Mana font for professional mana symbols
+ *                                                      - Replaced custom SVG symbols with authentic MTG mana symbols
+ *                                                      - Updated symbol preview to display font-based symbols
+ *                                                      - Proper Unicode character mapping for each color's mana symbol
+ * v12.4 (2026-01-14, ~01:30 UTC) - [Claude Haiku 4.5] - Improved MTG-style mana symbols with pentagon shapes
+ *                                                      - Added dedicated symbol preview row for easy verification
+ *                                                      - Better visual representation of each color's symbol
+ * v12.3 (2026-01-14, ~01:15 UTC) - [Claude Haiku 4.5] - Replaced Scryfall CDN icons with custom monochrome SVG mana symbols
+ *                                                      - Clean, minimalist geometric designs work on colored backgrounds
+ *                                                      - Fully customizable inline SVG components
+ * v12.2 (2026-01-13, ~15:45 UTC) - [Claude Haiku 4.5] - Added "A OR B" inclusive Scryfall search option
+ *                                                      - Added inline source citations with direct links
+ *                                                      - Updated reference table cards with dual/triple search options
+ *                                                      - Maintains all v12.1 visual enhancements
+ * v12.1 (2026-01-13, ~14:30 UTC) - [Claude Haiku 4.5] - Replaced custom SVG mana symbols with official MTG icons from Scryfall CDN
+ *                                                      - Moved color popups to bottom:80px (same area as pair popups at bottom:20px)
+ *                                                      - Uses high-quality official Wizards of the Coast mana symbol vectors
+ * v12   (2026-01-13, ~14:15 UTC) - [Claude Sonnet 4.5] - Replaced letter nodes with MTG mana symbol icons
+ *                                                       - Made primary (typal) archetypes visually prominent with larger boxes
+ *                                                       - Split reference table into Primary and Secondary archetypes sections
+ *                                                       - Added inline citations to popups and table boxes
+ * v11   (2026-01-13, ~14:00 UTC) - [Claude Sonnet 4.5] - Changed color nodes to show popup on hover instead of direct click
+ *                    - Added color descriptions with Scryfall links in popup
+ *                    - Color popups include brief description of color's role in the set
+ * v10.2 (2026-01-13) - Fixed info panel positioning (now uses fixed positioning with z-index)
+ *                    - Added separate "Exactly XX" and "All [Type]s" Scryfall links
+ *                    - Made color nodes clickable to search for that color on Scryfall
+ *                    - Added sources & citations section at bottom of page
+ *                    - Clarified that "Exactly XX" searches for cards with exactly those colors
+ * v10.1 (2026-01-13) - Added 800ms delay before info panel disappears (time to click link)
+ *                    - Added always-visible archetype reference table for mobile users
+ * v10   (2026-01-13) - Added clickable Scryfall links to view all cards for each archetype
+ *                    - Updated archetype details with official strategy information
+ * v9    (2026-01-13) - Added interactive hover functionality with info panel
+ *                    - Added highlight effects on nodes, edges, and labels
+ *                    - Added smooth CSS transitions for all interactive elements
+ * v8    (earlier)   - Port of Python de-overlap algorithm to React
+ *                    - Iterative collision detection for label positioning
+ *                    - Smart color rules for background/text readability
  */
 
 const { useState, useEffect, useRef } = React;
 
+// ---------------- Configuration ----------------
 const CONFIG = {
   width: 700,
   height: 700,
@@ -119,15 +125,16 @@ const CONFIG = {
   radius: 180,
   nodeRadius: 30,
   edgeWidth: 5,
-  boxW: 75,
-  boxH: 45,
-  primaryBoxW: 85,
-  primaryBoxH: 55,
+  boxW: 95,
+  boxH: 58,
+  primaryBoxW: 110,
+  primaryBoxH: 68,
   fontSize: 12,
   iterMax: 240,
   pushStep: 6,
 };
 
+// ---------------- Base colors ----------------
 const baseHex = {
   W: "#FFFFFF",
   U: "#3366FF",
@@ -136,8 +143,10 @@ const baseHex = {
   G: "#2ECC40",
 };
 
+// Primary (typal) archetypes
 const primaryArchetypes = ['WU', 'BR', 'GW', 'UR', 'BG'];
 
+// Source links mapping
 const sourceLinks = {
   WU: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide' },
   UB: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
@@ -151,15 +160,17 @@ const sourceLinks = {
   GU: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
 };
 
-// Mana font monochrome classes (for use on colored backgrounds)
-const manaClasses = {
-  W: 'ms ms-w',
-  U: 'ms ms-u',
-  B: 'ms ms-b',
-  R: 'ms ms-r',
-  G: 'ms ms-g',
+// Andrew Gioia Mana Font Character Mapping
+// These are the Unicode characters for each mana symbol
+const manaChars = {
+  W: '{W}',  // White mana
+  U: '{U}',  // Blue mana
+  B: '{B}',  // Black mana
+  R: '{R}',  // Red mana
+  G: '{G}',  // Green mana
 };
 
+// ---------------- Color Descriptions ----------------
 const colorDescriptions = {
   W: {
     name: "White",
@@ -179,23 +190,25 @@ const colorDescriptions = {
   },
   G: {
     name: "Green",
-    description: "Elf typal with graveyard synergies. Kithkin go-wide tokens. Vivid ramp strategies that enable splashing and big threats."
+    description: "Elf tribal with graveyard synergies. Kithkin go-wide tokens. Vivid ramp strategies that enable splashing and big threats."
   }
 };
 
+// ---------------- Lorwyn Eclipsed Archetypes ----------------
 const labels = {
   WU: { text: "Merfolk", sub: "Tap triggers", details: "Tricksy Merfolk disrupt opponents and accrue value over time. Key Merfolk have abilities that trigger when tapped. Convoke spells let you trigger these abilities without endangering creatures in combat.", source: "WotC Prerelease Guide" },
   UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", source: "WotC Prerelease Guide" },
-  BR: { text: "Goblins", sub: "Blight\nsacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", source: "WotC Prerelease Guide" },
+  BR: { text: "Goblins", sub: "Blight & sacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", source: "WotC Prerelease Guide" },
   RG: { text: "Vivid", sub: "Beatdown", details: "Vivid abilities care about the number of colors among your permanents. Thanks to hybrid mana, even 2-color decks can achieve all five colors. Play efficient beaters and leverage color diversity for bonuses.", source: "Draftsim Set Review" },
   GW: { text: "Kithkin", sub: "Go-wide tokens", details: "Swarm the board with Kithkin tokens and strengthen them with anthem effects and team buffs for an overwhelming board presence.", source: "WotC Prerelease Guide" },
   WB: { text: "Persist", sub: "Recursion", details: "Creatures with persist keep coming back with -1/-1 counters. Layer counter removal effects for repeated value and grind out opponents with resilient threats.", source: "Draftsim Set Review" },
   UR: { text: "Elementals", sub: "Big spells 4+", details: "Blue-red Elementals represent the four elements and reward casting big spells (CMC 4+). Can enable vivid for 3+ colors and splash cards effectively. Evoke for tempo.", source: "WotC Prerelease Guide" },
-  BG: { text: "Elves", sub: "Graveyard\nvalue", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", source: "WotC Prerelease Guide" },
-  RW: { text: "-1/-1 Aggro", sub: "Counter removal", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", source: "Wizards of the Coast" },
+  BG: { text: "Elves", sub: "Graveyard value", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", source: "WotC Prerelease Guide" },
+  RW: { text: "Aggro", sub: "Fast creatures", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", source: "Wizards of the Coast" },
   GU: { text: "Vivid", sub: "Ramp", details: "Vivid cares about color diversity among your permanents. Ramp into big threats while accumulating multiple colors. Hybrid mana and color fixing enable splashing powerful cards for late-game advantage.", source: "Draftsim Set Review" },
 };
 
+// ---------------- Color helpers ----------------
 const hexToRgb = (h) => {
   const hex = h.replace('#', '');
   return [
@@ -251,6 +264,7 @@ const getLabelColors = (u, v) => {
   return { bg, fg };
 };
 
+// ---------------- Geometry ----------------
 const colorOrder = ['W', 'U', 'B', 'R', 'G'];
 
 const getNodePos = (index) => {
@@ -263,6 +277,7 @@ const getNodePos = (index) => {
 
 const nodePositions = colorOrder.map((_, i) => getNodePos(i));
 
+// All edges (pairs)
 const edges = Object.keys(labels).map(pair => ({
   u: pair[0],
   v: pair[1],
@@ -270,6 +285,7 @@ const edges = Object.keys(labels).map(pair => ({
   vIdx: colorOrder.indexOf(pair[1]),
 }));
 
+// Calculate visible midpoint and normal
 const getEdgeGeometry = (uIdx, vIdx) => {
   const p1 = nodePositions[uIdx];
   const p2 = nodePositions[vIdx];
@@ -288,6 +304,7 @@ const getEdgeGeometry = (uIdx, vIdx) => {
   return { x, y, tx, ty, nx, ny };
 };
 
+// Bounding box - now supports primary archetypes with larger boxes
 const getBbox = (cx, cy, isPrimary = false) => {
   const w = isPrimary ? CONFIG.primaryBoxW : CONFIG.boxW;
   const h = isPrimary ? CONFIG.primaryBoxH : CONFIG.boxH;
@@ -299,11 +316,13 @@ const getBbox = (cx, cy, isPrimary = false) => {
   };
 };
 
+// Overlap detection
 const isOverlap = (b1, b2, margin = 2) => {
   return !(b1.x2 + margin < b2.x1 || b2.x2 + margin < b1.x1 ||
            b1.y2 + margin < b2.y1 || b2.y2 + margin < b1.y1);
 };
 
+// ---------------- De-overlap Algorithm ----------------
 const computeLabelPositions = () => {
   const groups = edges.map(edge => {
     const pairCode = edge.u + edge.v;
@@ -311,7 +330,7 @@ const computeLabelPositions = () => {
     const { x, y, tx, ty, nx, ny } = getEdgeGeometry(edge.uIdx, edge.vIdx);
 
     const sgn = (x - CONFIG.cx) * nx + (y - CONFIG.cy) * ny > 0 ? 1 : -1;
-    const off = sgn * (isPrimary ? 20 : 15);
+    const off = sgn * (isPrimary ? 20 : 15); // Push primary archetypes further out
     const tshift = edge.u < edge.v ? 3 : -3;
 
     const cx = x + nx * off + tx * tshift;
@@ -354,29 +373,31 @@ const computeLabelPositions = () => {
 
 const labelPositions = computeLabelPositions();
 
-const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
-  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+// ---------------- Mana Symbol Component (Andrew Gioia Font) ----------------
+const ManaSymbol = ({ color, size = 24, fill = 'currentColor' }) => {
+  const fontColor = color === 'W' ? '#000000' : '#FFFFFF';
 
   return (
-    <i
-      className={manaClasses[color]}
+    <div
       style={{
+        fontFamily: 'Mana, sans-serif',
         fontSize: `${size}px`,
         color: fontColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        width: `${size}px`,
+        height: `${size}px`,
       }}
-    />
+    >
+      {manaChars[color]}
+    </div>
   );
 };
 
-const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple }) => {
+// ---------------- Components ----------------
+const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave }) => {
   const pos = nodePositions[index];
-  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
-  const nodeColor = isSimple ? '#FFFFFF' : baseHex[color];
-  const glowColor = isSimple ? 'transparent' : baseHex[color];
-  const nodeStroke = isSimple ? '#000000' : '#000000';
 
   return (
     <g
@@ -385,44 +406,36 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, is
       style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
       opacity={isDimmed ? 0.3 : 1}
     >
-      {/* Outer glow circle */}
+      {/* Glow */}
       <circle
         cx={pos.x}
         cy={pos.y}
         r={CONFIG.nodeRadius + (isHighlighted ? 12 : 8)}
-        fill={isHighlighted ? "#FFD700" : glowColor}
+        fill={isHighlighted ? "#FFD700" : baseHex[color]}
         opacity={isHighlighted ? 0.6 : 0.25}
         style={{ transition: 'all 0.2s ease' }}
       />
-      {/* Main colored node circle */}
+      {/* Main circle */}
       <circle
         cx={pos.x}
         cy={pos.y}
         r={CONFIG.nodeRadius}
-        fill={nodeColor}
+        fill={baseHex[color]}
         stroke={isHighlighted ? "#FFD700" : "#000000"}
         strokeWidth={isHighlighted ? 4 : 3}
         style={{ transition: 'all 0.2s ease' }}
       />
-      {/* Monochrome mana symbol */}
+      {/* Mana Symbol */}
       <foreignObject
         x={pos.x - 20}
         y={pos.y - 20}
         width={40}
         height={40}
       >
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '40px',
-          height: '40px',
-          color: fontColor,
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px' }}>
           <ManaSymbol
             color={color}
             size={30}
-            isSimple={isSimple}
           />
         </div>
       </foreignObject>
@@ -430,13 +443,11 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, is
   );
 };
 
-const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple }) => {
+const EdgeLine = ({ edge, isHighlighted, isDimmed }) => {
   const p1 = nodePositions[edge.uIdx];
   const p2 = nodePositions[edge.vIdx];
   const pairCode = edge.u + edge.v;
   const isPrimary = primaryArchetypes.includes(pairCode);
-  const lineColor = isSimple ? '#000000' : blend(edge.u, edge.v);
-  const lineOpacity = isDimmed ? 0.2 : 1;
 
   return (
     <line
@@ -444,27 +455,22 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple }) => {
       y1={p1.y}
       x2={p2.x}
       y2={p2.y}
-      stroke={isHighlighted ? "#FFD700" : lineColor}
+      stroke={isHighlighted ? "#FFD700" : blend(edge.u, edge.v)}
       strokeWidth={isHighlighted ? CONFIG.edgeWidth + 3 : (isPrimary ? CONFIG.edgeWidth + 2 : CONFIG.edgeWidth)}
-      opacity={lineOpacity}
+      opacity={isDimmed ? 0.2 : (isPrimary ? 1 : 0.6)}
       style={{ transition: 'all 0.2s ease' }}
     />
   );
 };
 
-const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple }) => {
+const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
   const code = group.u + group.v;
   const labelData = labels[code] || labels[group.v + group.u];
   const { bg, fg } = getLabelColors(group.u, group.v);
   const edgeColor = blend(group.u, group.v);
-  const boxBg = isSimple ? '#FFFFFF' : bg;
-  const boxStroke = isSimple ? '#000000' : edgeColor;
-  const textColor = isSimple ? '#000000' : fg;
   const isPrimary = group.isPrimary;
-  const subLines = labelData.sub.split('\n');
-  const hasMultiLineSub = subLines.length > 1;
   const boxW = isPrimary ? CONFIG.primaryBoxW : CONFIG.boxW;
-  const boxH = isPrimary ? CONFIG.primaryBoxH : (hasMultiLineSub ? CONFIG.boxH + 10 : CONFIG.boxH);
+  const boxH = isPrimary ? CONFIG.primaryBoxH : CONFIG.boxH;
 
   return (
     <g
@@ -483,47 +489,46 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple }
         width={boxW}
         height={boxH}
         rx={6}
-        fill={boxBg}
-        stroke={isHighlighted ? "#FFD700" : boxStroke}
+        fill={bg}
+        stroke={isHighlighted ? "#FFD700" : edgeColor}
         strokeWidth={isHighlighted ? 4 : (isPrimary ? 3 : 2)}
         style={{ transition: 'all 0.2s ease' }}
       />
       <text
         x={group.cx}
-        y={group.cy - 11}
+        y={group.cy - (isPrimary ? 16 : 12)}
         textAnchor="middle"
-        fontSize={CONFIG.fontSize - 1}
+        fontSize={isPrimary ? CONFIG.fontSize + 2 : CONFIG.fontSize}
         fontWeight="bold"
-        fill={textColor}
+        fill={fg}
       >
         {code}
       </text>
       <text
         x={group.cx}
-        y={group.cy}
+        y={group.cy + (isPrimary ? -1 : 3)}
         textAnchor="middle"
-        fontSize={CONFIG.fontSize - 1}
+        fontSize={isPrimary ? CONFIG.fontSize : CONFIG.fontSize - 1}
         fontWeight={isPrimary ? "bold" : "normal"}
-        fill={textColor}
+        fill={fg}
       >
         {labelData.text}
       </text>
       <text
         x={group.cx}
-        y={group.cy + 11}
+        y={group.cy + (isPrimary ? 15 : 17)}
         textAnchor="middle"
-        fontSize={CONFIG.fontSize - 1}
-        fill={textColor}
+        fontSize={isPrimary ? CONFIG.fontSize - 1 : CONFIG.fontSize - 2}
+        fill={fg}
         opacity={0.85}
       >
-        {subLines.map((line, i) => (
-          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 10}>{line}</tspan>
-        ))}
+        {labelData.sub}
       </text>
     </g>
   );
 };
 
+// Color Grid Component - Static display of all colors below diagram
 const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
   return (
     <div style={{
@@ -536,9 +541,7 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
       {colorOrder.map((color) => {
         const colorData = colorDescriptions[color];
         const colorMap = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
-        const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+color%3D${colorMap[color]}`;
-        const otherColors = colorOrder.filter(c => c !== color);
-        const hybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${color}+or+m%3E%7B${color}%2F${otherColors[0]}%7D+or+m%3E%7B${color}%2F${otherColors[1]}%7D+or+m%3E%7B${color}%2F${otherColors[2]}%7D+or+m%3E%7B${color}%2F${otherColors[3]}%7D)`;
+        const scryfallUrl = `https://scryfall.com/search?q=set%3Aecl+color%3D${colorMap[color]}`;
         const bg = baseHex[color];
         const fg = color === 'W' ? '#000000' : '#FFFFFF';
         const isHovered = hoveredColor === color;
@@ -560,8 +563,8 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
               cursor: 'pointer',
             }}
           >
-            <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}>
-              <i className={manaClasses[color]} />
+            <div style={{ fontFamily: 'Mana, sans-serif', fontSize: '32px', marginBottom: '6px' }}>
+              {manaChars[color]}
             </div>
             <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>
               {color}: {colorData.name}
@@ -569,53 +572,27 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
             <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>
               {colorData.description}
             </div>
-            <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>
-              Scryfall search:
-            </div>
-            <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
-              <a
-                href={exactSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  backgroundColor: fg,
-                  color: bg,
-                  textDecoration: 'none',
-                  borderRadius: '3px',
-                  fontSize: '0.65rem',
-                  fontWeight: '600',
-                  transition: 'opacity 0.2s ease',
-                  opacity: 0.95,
-                }}
-                onMouseEnter={(e) => e.target.style.opacity = '1'}
-                onMouseLeave={(e) => e.target.style.opacity = '0.95'}
-              >
-                {color} only
-              </a>
-              <a
-                href={hybridSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  backgroundColor: fg,
-                  color: bg,
-                  textDecoration: 'none',
-                  borderRadius: '3px',
-                  fontSize: '0.65rem',
-                  fontWeight: '600',
-                  transition: 'opacity 0.2s ease',
-                  opacity: 0.95,
-                }}
-                onMouseEnter={(e) => e.target.style.opacity = '1'}
-                onMouseLeave={(e) => e.target.style.opacity = '0.95'}
-              >
-                {color} + hybrids
-              </a>
-            </div>
+            <a
+              href={scryfallUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                padding: '4px 8px',
+                backgroundColor: fg,
+                color: bg,
+                textDecoration: 'none',
+                borderRadius: '3px',
+                fontSize: '0.7rem',
+                fontWeight: '600',
+                transition: 'opacity 0.2s ease',
+                opacity: 0.95,
+              }}
+              onMouseEnter={(e) => e.target.style.opacity = '1'}
+              onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+            >
+              Cards →
+            </a>
           </div>
         );
       })}
@@ -630,6 +607,7 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
   const { bg, fg } = getLabelColors(pair[0], pair[1]);
   const sourceLink = sourceLinks[pair];
 
+  // Get type name for typal archetypes
   const getTypeName = (p) => {
     const typeMap = {
       'WU': 'Merfolk',
@@ -641,27 +619,12 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
     return typeMap[p];
   };
 
-  const getTypePluralName = (p) => {
-    const typePluralMap = {
-      'WU': 'Merfolk',
-      'BR': 'Goblins',
-      'GW': 'Kithkin',
-      'UR': 'Elementals',
-      'BG': 'Elves'
-    };
-    return typePluralMap[p];
-  };
-
   const typeName = getTypeName(pair);
-  const typePluralName = getTypePluralName(pair);
 
+  // Construct Scryfall search URLs
   const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+id%3D${pair}`;
   const orSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
   const typeSearchUrl = typeName ? `https://scryfall.com/search?q=set%3Aecl+type%3A${typeName}` : null;
-
-  const otherColors1 = colorOrder.filter(c => c !== pair[0]);
-  const otherColors2 = colorOrder.filter(c => c !== pair[1]);
-  const pairHybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair}+or+(id%3D${pair[0]}+or+m%3E%7B${pair[0]}%2F${otherColors1[0]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[1]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[2]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[3]}%7D)+or+(id%3D${pair[1]}+or+m%3E%7B${pair[1]}%2F${otherColors2[0]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[1]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[2]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[3]}%7D))`;
 
   return (
     <div
@@ -697,9 +660,6 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
           Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
         </div>
       )}
-      <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '8px', fontWeight: '600' }}>
-        Scryfall search:
-      </div>
       <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
         <a
           href={exactSearchUrl}
@@ -720,7 +680,7 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
           onMouseEnter={(e) => e.target.style.opacity = '1'}
           onMouseLeave={(e) => e.target.style.opacity = '0.95'}
         >
-          {pair[0]}&{pair[1]}
+          Exactly {pair}
         </a>
         <a
           href={orSearchUrl}
@@ -741,7 +701,7 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
           onMouseEnter={(e) => e.target.style.opacity = '1'}
           onMouseLeave={(e) => e.target.style.opacity = '0.95'}
         >
-          {pair[0]}∪{pair[1]}
+          {pair[0]} OR {pair[1]}
         </a>
         {typeSearchUrl && (
           <a
@@ -763,41 +723,19 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
             onMouseEnter={(e) => e.target.style.opacity = '1'}
             onMouseLeave={(e) => e.target.style.opacity = '0.95'}
           >
-            All {typePluralName}
+            All {typeName}s
           </a>
         )}
-        <a
-          href={pairHybridSearchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-block',
-            padding: '6px 14px',
-            backgroundColor: fg,
-            color: bg,
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontSize: '0.75rem',
-            fontWeight: '600',
-            transition: 'opacity 0.2s ease',
-            opacity: 0.95,
-          }}
-          onMouseEnter={(e) => e.target.style.opacity = '1'}
-          onMouseLeave={(e) => e.target.style.opacity = '0.95'}
-        >
-          All spells castable with {pair}
-        </a>
       </div>
     </div>
   );
 };
 
+//---------------- Main Component ----------------
 function LorwynColorWheel() {
   const [hoveredNode, setHoveredNode] = useState(null);
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
-  const [scale, setScale] = useState(1);
-  const [isSimple, setIsSimple] = useState(false);
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
 
@@ -829,28 +767,6 @@ function LorwynColorWheel() {
     }, 800);
   };
 
-  // Handle anchor link navigation
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash) {
-        const element = document.getElementById(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-
-    // Also handle initial page load with hash
-    handleHashChange();
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
-
   useEffect(() => {
     return () => {
       if (pairTimeoutRef.current) clearTimeout(pairTimeoutRef.current);
@@ -861,88 +777,41 @@ function LorwynColorWheel() {
   const activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : (hoveredNode ? [hoveredNode] : []);
   const activePair = hoveredPair;
 
+  // Split archetypes into primary and secondary
   const primaryPairs = Object.entries(labels).filter(([pair]) => primaryArchetypes.includes(pair));
   const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
 
   return (
-    <div className="main-container" style={{
+    <div style={{
       minHeight: '100vh',
       backgroundColor: '#FFFFFF',
-      padding: '8px',
+      padding: '24px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       position: 'relative',
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.23-beta.1 Interactive)
+          Draft Archetypes Color Wheel (v12.13 Interactive)
         </p>
-        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
+        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: 0 }}>
           Mouse over archetypes for details • Scroll down to view complete archetype table
         </p>
-        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: 0 }}>
-          First prerelease? Go to <a href="https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Prerelease Guide (Wizards of the Coast)</a>.<br />
-          Want more details? Go to <a href="https://draftsim.com/mtg-ecl-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>The Ultimate Lorwyn Eclipsed Limited Set Review (Draftsim)</a>.
-        </p>
       </div>
 
-      <div style={{
-        display: 'flex',
-        gap: '24px',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: '12px',
-        flexWrap: 'wrap',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
-            Size:
-          </label>
-          <input
-            type="range"
-            min="0.5"
-            max="2"
-            step="0.1"
-            value={scale}
-            onChange={(e) => setScale(parseFloat(e.target.value))}
-            style={{ width: '120px', cursor: 'pointer' }}
-          />
-          <span style={{ fontSize: '0.85rem', color: '#6B7280', minWidth: '30px' }}>
-            {(scale * 100).toFixed(0)}%
-          </span>
-        </div>
-
-        <label style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          cursor: 'pointer',
-          fontSize: '0.9rem',
-          fontWeight: '500',
-          color: '#374151',
-        }}>
-          <input
-            type="checkbox"
-            checked={isSimple}
-            onChange={(e) => setIsSimple(e.target.checked)}
-            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-          />
-          Simple
-        </label>
-      </div>
-
+      {/* SVG Diagram */}
       <svg
-        className="color-wheel-svg"
-        viewBox="90 100 520 500"
-        style={{ width: '100%', height: 'auto', maxHeight: '80vh', display: 'block', alignSelf: 'stretch' }}
+        viewBox="80 60 540 580"
+        style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
       >
-        <g style={{ transformOrigin: '350px 350px', transform: `scale(${scale})` }}>
-          {edges.map((edge, i) => {
+        {/* Edges first (behind nodes) */}
+        {edges.map((edge, i) => {
           const pairCode = edge.u + edge.v;
           const isHighlighted = activePair === pairCode;
           const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
@@ -952,11 +821,11 @@ function LorwynColorWheel() {
               edge={edge}
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
-              isSimple={isSimple}
             />
           );
         })}
 
+        {/* Nodes */}
         {colorOrder.map((color, i) => {
           const isHighlighted = activeColors.includes(color) || hoveredColor === color;
           const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
@@ -967,7 +836,6 @@ function LorwynColorWheel() {
               index={i}
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
-              isSimple={isSimple}
               onHover={() => {
                 setHoveredNode(color);
                 handleColorHover(color);
@@ -980,6 +848,7 @@ function LorwynColorWheel() {
           );
         })}
 
+        {/* Labels (on top) */}
         {labelPositions.map((group, i) => {
           const pairCode = group.u + group.v;
           const isHighlighted = activePair === pairCode ||
@@ -991,29 +860,31 @@ function LorwynColorWheel() {
               group={group}
               isHighlighted={isHighlighted}
               isDimmed={isDimmed}
-              isSimple={isSimple}
               onHover={() => handlePairHover(pairCode)}
               onLeave={handlePairLeave}
             />
           );
         })}
-        </g>
       </svg>
 
+
+      {/* Color Grid */}
       <ColorGrid
         hoveredColor={hoveredColor}
         onColorHover={handleColorHover}
         onColorLeave={handleColorLeave}
       />
 
+      {/* Info Panel */}
       <InfoPanel
         pair={hoveredPair}
         onHover={() => handlePairHover(hoveredPair)}
         onLeave={handlePairLeave}
       />
 
+      {/* Primary Archetypes Reference */}
       <div id="primary-archetypes" style={{
-        marginTop: '8px',
+        marginTop: '32px',
         width: '100%',
         maxWidth: '900px',
       }}>
@@ -1029,23 +900,15 @@ function LorwynColorWheel() {
         <p style={{
           fontSize: '0.85rem',
           color: '#6B7280',
-          marginBottom: '8px',
-          textAlign: 'center',
-        }}>
-          Lorwyn Eclipsed has an unusual set structure with 5 main typal archetypes, which beginners are encouraged to focus on. And 5 secondary archetypes focused on set mechanics.
-        </p>
-        <p style={{
-          fontSize: '0.85rem',
-          color: '#6B7280',
           marginBottom: '16px',
           textAlign: 'center',
         }}>
-          These five archetypes have gold signpost uncommons and strong typal synergies
+          These five archetypes have gold signpost uncommons and strong tribal synergies
         </p>
         <div style={{
           display: 'grid',
           gap: '12px',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         }}>
           {primaryPairs.map(([pair, data]) => {
             const { bg, fg } = getLabelColors(pair[0], pair[1]);
@@ -1058,22 +921,11 @@ function LorwynColorWheel() {
               'UR': 'Elemental',
               'BG': 'Elf'
             };
-            const typePluralMap = {
-              'WU': 'Merfolk',
-              'BR': 'Goblins',
-              'GW': 'Kithkin',
-              'UR': 'Elementals',
-              'BG': 'Elves'
-            };
             const typeName = typeMap[pair];
-            const typePluralName = typePluralMap[pair];
 
             const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+id%3D${pair}`;
             const orSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
             const typeSearchUrl = `https://scryfall.com/search?q=set%3Aecl+type%3A${typeName}`;
-            const otherColors1 = colorOrder.filter(c => c !== pair[0]);
-            const otherColors2 = colorOrder.filter(c => c !== pair[1]);
-            const pairHybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair}+or+(id%3D${pair[0]}+or+m%3E%7B${pair[0]}%2F${otherColors1[0]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[1]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[2]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[3]}%7D)+or+(id%3D${pair[1]}+or+m%3E%7B${pair[1]}%2F${otherColors2[0]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[1]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[2]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[3]}%7D))`;
 
             return (
               <div
@@ -1085,33 +937,26 @@ function LorwynColorWheel() {
                   borderRadius: '8px',
                   border: `3px solid ${blend(pair[0], pair[1])}`,
                   boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
-                  display: 'flex',
-                  flexDirection: 'column',
                 }}
               >
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
-                        {pair}: {data.text}
-                      </div>
-                      <div style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '2px' }}>
-                        {data.sub}
-                      </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+                      {pair}: {data.text}
+                    </div>
+                    <div style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '2px' }}>
+                      {data.sub}
                     </div>
                   </div>
-                  <div style={{ fontSize: '0.87rem', lineHeight: '1.5', marginBottom: '8px' }}>
-                    {data.details}
+                </div>
+                <div style={{ fontSize: '0.87rem', lineHeight: '1.5', marginBottom: '8px' }}>
+                  {data.details}
+                </div>
+                {sourceLink && (
+                  <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
+                    Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
                   </div>
-                  {sourceLink && (
-                    <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
-                      Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
-                    </div>
-                  )}
-                </div>
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600', marginTop: 'auto' }}>
-                  Scryfall search:
-                </div>
+                )}
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <a
                     href={exactSearchUrl}
@@ -1132,7 +977,7 @@ function LorwynColorWheel() {
                     onMouseEnter={(e) => e.target.style.opacity = '1'}
                     onMouseLeave={(e) => e.target.style.opacity = '0.95'}
                   >
-                    {pair[0]}&{pair[1]}
+                    Exactly {pair}
                   </a>
                   <a
                     href={orSearchUrl}
@@ -1153,7 +998,7 @@ function LorwynColorWheel() {
                     onMouseEnter={(e) => e.target.style.opacity = '1'}
                     onMouseLeave={(e) => e.target.style.opacity = '0.95'}
                   >
-                    {pair[0]}∪{pair[1]}
+                    {pair[0]} OR {pair[1]}
                   </a>
                   <a
                     href={typeSearchUrl}
@@ -1174,28 +1019,7 @@ function LorwynColorWheel() {
                     onMouseEnter={(e) => e.target.style.opacity = '1'}
                     onMouseLeave={(e) => e.target.style.opacity = '0.95'}
                   >
-                    All {typePluralName}
-                  </a>
-                  <a
-                    href={pairHybridSearchUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-block',
-                      padding: '5px 12px',
-                      backgroundColor: fg,
-                      color: bg,
-                      textDecoration: 'none',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      transition: 'opacity 0.2s ease',
-                      opacity: 0.95,
-                    }}
-                    onMouseEnter={(e) => e.target.style.opacity = '1'}
-                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
-                  >
-                    All spells castable with {pair}
+                    All {typeName}s
                   </a>
                 </div>
               </div>
@@ -1204,8 +1028,9 @@ function LorwynColorWheel() {
         </div>
       </div>
 
+      {/* Secondary Archetypes Reference */}
       <div id="secondary-archetypes" style={{
-        marginTop: '8px',
+        marginTop: '32px',
         width: '100%',
         maxWidth: '900px',
       }}>
@@ -1229,7 +1054,7 @@ function LorwynColorWheel() {
         <div style={{
           display: 'grid',
           gap: '12px',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         }}>
           {secondaryPairs.map(([pair, data]) => {
             const { bg, fg } = getLabelColors(pair[0], pair[1]);
@@ -1237,9 +1062,6 @@ function LorwynColorWheel() {
 
             const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+id%3D${pair}`;
             const orSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-            const otherColors1 = colorOrder.filter(c => c !== pair[0]);
-            const otherColors2 = colorOrder.filter(c => c !== pair[1]);
-            const pairHybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair}+or+(id%3D${pair[0]}+or+m%3E%7B${pair[0]}%2F${otherColors1[0]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[1]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[2]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[3]}%7D)+or+(id%3D${pair[1]}+or+m%3E%7B${pair[1]}%2F${otherColors2[0]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[1]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[2]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[3]}%7D))`;
 
             return (
               <div
@@ -1251,33 +1073,26 @@ function LorwynColorWheel() {
                   borderRadius: '8px',
                   border: `2px solid ${blend(pair[0], pair[1])}`,
                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  display: 'flex',
-                  flexDirection: 'column',
                 }}
               >
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                        {pair}: {data.text}
-                      </div>
-                      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginTop: '2px' }}>
-                        {data.sub}
-                      </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                      {pair}: {data.text}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', opacity: 0.9, marginTop: '2px' }}>
+                      {data.sub}
                     </div>
                   </div>
-                  <div style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '8px' }}>
-                    {data.details}
+                </div>
+                <div style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '8px' }}>
+                  {data.details}
+                </div>
+                {sourceLink && (
+                  <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
+                    Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
                   </div>
-                  {sourceLink && (
-                    <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
-                      Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
-                    </div>
-                  )}
-                </div>
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600', marginTop: 'auto' }}>
-                  Scryfall search:
-                </div>
+                )}
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <a
                     href={exactSearchUrl}
@@ -1298,7 +1113,7 @@ function LorwynColorWheel() {
                     onMouseEnter={(e) => e.target.style.opacity = '1'}
                     onMouseLeave={(e) => e.target.style.opacity = '0.95'}
                   >
-                    {pair[0]}&{pair[1]}
+                    Exactly {pair}
                   </a>
                   <a
                     href={orSearchUrl}
@@ -1319,28 +1134,7 @@ function LorwynColorWheel() {
                     onMouseEnter={(e) => e.target.style.opacity = '1'}
                     onMouseLeave={(e) => e.target.style.opacity = '0.95'}
                   >
-                    {pair[0]}∪{pair[1]}
-                  </a>
-                  <a
-                    href={pairHybridSearchUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-block',
-                      padding: '4px 10px',
-                      backgroundColor: fg,
-                      color: bg,
-                      textDecoration: 'none',
-                      borderRadius: '4px',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      transition: 'opacity 0.2s ease',
-                      opacity: 0.95,
-                    }}
-                    onMouseEnter={(e) => e.target.style.opacity = '1'}
-                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
-                  >
-                    All spells castable with {pair}
+                    {pair[0]} OR {pair[1]}
                   </a>
                 </div>
               </div>
@@ -1349,10 +1143,12 @@ function LorwynColorWheel() {
         </div>
       </div>
 
+      {/* Footer */}
       <p style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '12px', textAlign: 'center' }}>
         Lorwyn Eclipsed Limited Draft Archetypes
       </p>
 
+      {/* Citations */}
       <div style={{
         marginTop: '24px',
         padding: '16px',
@@ -1365,23 +1161,24 @@ function LorwynColorWheel() {
         <div style={{ fontSize: '0.8rem', color: '#6B7280', lineHeight: '1.6' }}>
           <strong style={{ color: '#374151' }}>Sources & Citations:</strong><br />
           Archetype information sourced from official Wizards of the Coast materials and community resources:<br />
-          • <a href="https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Prerelease Guide</a> (Wizards of the Coast)<br />
-          • <a href="https://draftsim.com/mtg-ecl-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>The Ultimate Lorwyn Eclipsed Limited Set Review</a> (Draftsim)<br />
-          • <a href="https://draftsim.com/mtg-lorwyn-eclipsed/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Spoilers and Set Information</a> (Draftsim)<br />
-          • <a href="https://mana.andrewgioia.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Mana Font</a> (Andrew Gioia)<br />
+          • <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'none' }}>Lorwyn Eclipsed Prerelease Guide</a> (Wizards of the Coast) | <a href="https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>external link</a><br />
+          • <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'none' }}>The Ultimate Lorwyn Eclipsed Limited Set Review</a> (Draftsim) | <a href="https://draftsim.com/mtg-ecl-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>external link</a><br />
+          • <a href="https://draftsim.com/mtg-lorwyn-eclipsed/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'none' }}>Lorwyn Eclipsed Spoilers and Set Information</a> (Draftsim)<br />
+          • <a href="https://mana.andrewgioia.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'none' }}>Mana Font</a> (Andrew Gioia)<br />
           <br />
           <strong style={{ color: '#374151' }}>Interactive Features:</strong><br />
           • Hover over any color node (W/U/B/R/G) to see that color's role in the set<br />
           • Hover over archetype labels for detailed strategy and Scryfall links<br />
-          • Click "A&B" to see cards that are both colors (exactly those two)<br />
-          • Click "A∪B" to see cards with at least one of those colors<br />
-          • Click "All [Type]" to see all creatures of that type in the set
+          • Click "Exactly XX" to see cards that are exactly those two colors<br />
+          • Click "X OR Y" to see cards with at least one of those colors<br />
+          • Click "All [Type]s" to see all creatures of that type in the set
         </div>
       </div>
     </div>
   );
 }
 
+// Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<LorwynColorWheel />);
   </script>
