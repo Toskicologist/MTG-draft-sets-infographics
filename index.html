@@ -37,7 +37,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.25 React - Mobile grid fixes
+ * v12.26 React - Beta features merge and navigation links
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -49,6 +49,14 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.26 (2026-01-14, 23:04 UTC) - [Claude Opus 4.5] - Beta features merge and navigation
+ *                                                       - Added in-page navigation links (Colors, Primary, Secondary)
+ *                                                       - RW archetype renamed to "-1/-1 Aggro" / "Counter removal"
+ *                                                       - BR and BG sub-text now multi-line format
+ *                                                       - Extended Primary Archetypes description text
+ *                                                       - Search buttons pinned to bottom with flexbox
+ *                                                       - Reduced box sizes (95->75, 110->85) for better mobile
+ *                                                       - Timestamps now fetched from system clock
  * v12.25 (2026-01-14, ~20:00 UTC) - [Claude Opus 4.5] - Mobile grid fixes
  *                                                       - Archetype grids now single column on mobile (removes 280px min)
  *                                                       - Color grid reduced to 90px minimum on mobile
@@ -132,10 +140,10 @@ const CONFIG = {
   radius: 180,
   nodeRadius: 30,
   edgeWidth: 5,
-  boxW: 95,
-  boxH: 58,
-  primaryBoxW: 110,
-  primaryBoxH: 68,
+  boxW: 75,
+  boxH: 45,
+  primaryBoxW: 85,
+  primaryBoxH: 55,
   fontSize: 12,
   iterMax: 240,
   pushStep: 6,
@@ -199,13 +207,13 @@ const colorDescriptions = {
 const labels = {
   WU: { text: "Merfolk", sub: "Tap triggers", details: "Tricksy Merfolk disrupt opponents and accrue value over time. Key Merfolk have abilities that trigger when tapped. Convoke spells let you trigger these abilities without endangering creatures in combat.", source: "WotC Prerelease Guide" },
   UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", source: "WotC Prerelease Guide" },
-  BR: { text: "Goblins", sub: "Blight & sacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", source: "WotC Prerelease Guide" },
+  BR: { text: "Goblins", sub: "Blight\nsacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", source: "WotC Prerelease Guide" },
   RG: { text: "Vivid", sub: "Beatdown", details: "Vivid abilities care about the number of colors among your permanents. Thanks to hybrid mana, even 2-color decks can achieve all five colors. Play efficient beaters and leverage color diversity for bonuses.", source: "Draftsim Set Review" },
   GW: { text: "Kithkin", sub: "Go-wide tokens", details: "Swarm the board with Kithkin tokens and strengthen them with anthem effects and team buffs for an overwhelming board presence.", source: "WotC Prerelease Guide" },
   WB: { text: "Persist", sub: "Recursion", details: "Creatures with persist keep coming back with -1/-1 counters. Layer counter removal effects for repeated value and grind out opponents with resilient threats.", source: "Draftsim Set Review" },
   UR: { text: "Elementals", sub: "Big spells 4+", details: "Blue-red Elementals represent the four elements and reward casting big spells (CMC 4+). Can enable vivid for 3+ colors and splash cards effectively. Evoke for tempo.", source: "WotC Prerelease Guide" },
-  BG: { text: "Elves", sub: "Graveyard value", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", source: "WotC Prerelease Guide" },
-  RW: { text: "Aggro", sub: "Fast creatures", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", source: "Wizards of the Coast" },
+  BG: { text: "Elves", sub: "Graveyard\nvalue", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", source: "WotC Prerelease Guide" },
+  RW: { text: "-1/-1 Aggro", sub: "Counter removal", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", source: "Wizards of the Coast" },
   GU: { text: "Vivid", sub: "Ramp", details: "Vivid cares about color diversity among your permanents. Ramp into big threats while accumulating multiple colors. Hybrid mana and color fixing enable splashing powerful cards for late-game advantage.", source: "Draftsim Set Review" },
 };
 
@@ -465,8 +473,10 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
   const { bg, fg } = getLabelColors(group.u, group.v);
   const edgeColor = blend(group.u, group.v);
   const isPrimary = group.isPrimary;
+  const subLines = labelData.sub.split('\n');
+  const hasMultiLineSub = subLines.length > 1;
   const boxW = isPrimary ? CONFIG.primaryBoxW : CONFIG.boxW;
-  const boxH = isPrimary ? CONFIG.primaryBoxH : CONFIG.boxH;
+  const boxH = isPrimary ? CONFIG.primaryBoxH : (hasMultiLineSub ? CONFIG.boxH + 10 : CONFIG.boxH);
 
   return (
     <g
@@ -518,7 +528,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
         fill={fg}
         opacity={0.85}
       >
-        {labelData.sub}
+        {subLines.map((line, i) => (
+          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 10}>{line}</tspan>
+        ))}
       </text>
     </g>
   );
@@ -526,7 +538,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave }) => {
 
 const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
   return (
-    <div className="color-grid" style={{
+    <div id="colors" className="color-grid" style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
       gap: '12px',
@@ -878,13 +890,13 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.25 Interactive)
+          Draft Archetypes Color Wheel (v12.26 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-14 20:00 UTC
+          Last updated: 2026-01-14 23:04 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
-          Mouse over archetypes for details • Scroll down to view complete archetype table
+          Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
         </p>
         <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: 0 }}>
           First prerelease? Go to <a href="https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Prerelease Guide (Wizards of the Coast)</a>.<br />
@@ -980,6 +992,14 @@ function LorwynColorWheel() {
         <p style={{
           fontSize: '0.85rem',
           color: '#6B7280',
+          marginBottom: '8px',
+          textAlign: 'center',
+        }}>
+          Lorwyn Eclipsed has an unusual set structure with 5 main typal archetypes, which beginners are encouraged to focus on. And 5 secondary archetypes focused on set mechanics.
+        </p>
+        <p style={{
+          fontSize: '0.85rem',
+          color: '#6B7280',
           marginBottom: '16px',
           textAlign: 'center',
         }}>
@@ -1028,27 +1048,31 @@ function LorwynColorWheel() {
                   borderRadius: '8px',
                   border: `3px solid ${blend(pair[0], pair[1])}`,
                   boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
-                      {pair}: {data.text}
-                    </div>
-                    <div style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '2px' }}>
-                      {data.sub}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+                        {pair}: {data.text}
+                      </div>
+                      <div style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '2px' }}>
+                        {data.sub}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div style={{ fontSize: '0.87rem', lineHeight: '1.5', marginBottom: '8px' }}>
-                  {data.details}
-                </div>
-                {sourceLink && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
-                    Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+                  <div style={{ fontSize: '0.87rem', lineHeight: '1.5', marginBottom: '8px' }}>
+                    {data.details}
                   </div>
-                )}
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>
+                  {sourceLink && (
+                    <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
+                      Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600', marginTop: 'auto' }}>
                   Scryfall search:
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -1190,27 +1214,31 @@ function LorwynColorWheel() {
                   borderRadius: '8px',
                   border: `2px solid ${blend(pair[0], pair[1])}`,
                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                      {pair}: {data.text}
-                    </div>
-                    <div style={{ fontSize: '0.9rem', opacity: 0.9, marginTop: '2px' }}>
-                      {data.sub}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        {pair}: {data.text}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginTop: '2px' }}>
+                        {data.sub}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '8px' }}>
-                  {data.details}
-                </div>
-                {sourceLink && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
-                    Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+                  <div style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '8px' }}>
+                    {data.details}
                   </div>
-                )}
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>
+                  {sourceLink && (
+                    <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
+                      Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600', marginTop: 'auto' }}>
                   Scryfall search:
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
