@@ -38,6 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
+ * v13.1-labelbox-v2 React - Fixed export: draw mana letters on canvas (preserves web font display)
  * v13.0-labelbox-v2 React - LabelBox rewrite from first principles
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
@@ -50,6 +51,7 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v13.1-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters on canvas after SVG render
  * v13.0-labelbox-v2 (2026-01-15, 00:14 UTC) - [Claude Opus 4.5] - BRANCH: label-box-v2
  *                                                       - Complete LabelBox rewrite from first principles
  *                                                       - Single <text> element with <tspan> children for all lines
@@ -940,9 +942,31 @@ function LorwynColorWheel() {
       const xOffset = (canvas.width - svgWidth) / 2;
       ctx.drawImage(img, xOffset, titleHeight * scale, svgWidth, svgHeight);
 
+      // Draw mana symbols on color nodes (foreignObject doesn't export properly)
+      // ViewBox is "120 100 460 480", so we need to map SVG coords to canvas coords
+      const viewBoxX = 120, viewBoxY = 100, viewBoxW = 460, viewBoxH = 480;
+      const nodePositions = getNodePositions(config);
+      const colorOrder = ['W', 'U', 'B', 'R', 'G'];
+
+      colorOrder.forEach((color, i) => {
+        const pos = nodePositions[i];
+        // Convert SVG coordinates to canvas coordinates
+        const canvasX = ((pos.x - viewBoxX) / viewBoxW) * svgWidth + xOffset;
+        const canvasY = ((pos.y - viewBoxY) / viewBoxH) * svgHeight + (titleHeight * scale);
+
+        // Draw mana symbol letter
+        const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+        ctx.fillStyle = fontColor;
+        ctx.font = `bold ${24 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(color, canvasX, canvasY);
+      });
+
       // Draw subtitle with URL
       ctx.fillStyle = '#9CA3AF';
       ctx.font = `${12 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.textBaseline = 'alphabetic';
       ctx.fillText('toskicologist.github.io/MTG-draft-sets-infographics', canvas.width / 2, (480 + titleHeight + 15) * scale);
 
       // Download
@@ -1036,7 +1060,7 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.0-labelbox-v2)
+          Draft Archetypes Color Wheel (v13.1-labelbox-v2)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
           Last updated: 2026-01-15 00:14 UTC • Branch: label-box-v2
