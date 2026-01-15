@@ -38,7 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.31 React - Auto-sized label boxes
+ * v12.32 React - Centered text in label boxes
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -50,6 +50,12 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.32 (2026-01-15, 00:12 UTC) - [Claude Opus 4.5] - Centered text in label boxes
+ *                                                       - Text now properly vertically centered in boxes
+ *                                                       - Calculates total text height including multi-line subs
+ *                                                       - Reduced line spacing (subLineSpacing: 7px)
+ *                                                       - Box height calculated from actual text height
+ *                                                       - Fixed BR/BG excessive top space issue
  * v12.31 (2026-01-15, 00:08 UTC) - [Claude Opus 4.5] - Auto-sized label boxes
  *                                                       - Boxes now auto-size to fit text using getBBox()
  *                                                       - Measures actual rendered text width/height
@@ -524,27 +530,46 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
   const boxStroke = isSimple ? '#000000' : edgeColor;
   const textColor = isSimple ? '#000000' : fg;
 
+  // Font sizes
+  const fontSize1 = isPrimary ? config.fontSize + 1 : config.fontSize;
+  const fontSize2 = isPrimary ? config.fontSize : config.fontSize - 1;
+  const fontSize3 = isPrimary ? config.fontSize - 1 : config.fontSize - 2;
+
+  // Line heights (roughly 1.2x font size)
+  const lh1 = fontSize1 * 1.1;
+  const lh2 = fontSize2 * 1.1;
+  const lh3 = fontSize3 * 1.1;
+  const subLineSpacing = 7;
+
+  // Total text height
+  const numSubLines = subLines.length;
+  const totalTextHeight = lh1 + lh2 + lh3 + (numSubLines - 1) * subLineSpacing;
+
+  // Calculate y positions to center all text
+  const startY = group.cy - totalTextHeight / 2;
+  const y1 = startY + lh1 * 0.8;
+  const y2 = y1 + lh2;
+  const y3 = y2 + lh3 * 0.9;
+
   // Measure text and auto-size box after render
   useEffect(() => {
     if (groupRef.current) {
       const texts = groupRef.current.querySelectorAll('text');
       let maxWidth = 0;
-      let totalHeight = 0;
       texts.forEach((text) => {
         try {
           const bbox = text.getBBox();
           maxWidth = Math.max(maxWidth, bbox.width);
-          totalHeight += bbox.height;
         } catch (e) {}
       });
-      const padding = 5;
-      const lineGap = 4;
+      const padding = 4;
+      const heightPadding = 3;
       setBoxSize({
         width: Math.max(maxWidth + padding * 2, 35),
-        height: Math.max(totalHeight + lineGap + padding * 2, 28)
+        height: totalTextHeight + heightPadding * 2
       });
     }
-  }, [code, labelData.text, labelData.sub, config.fontSize]);
+  }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
 
   return (
     <g
@@ -571,9 +596,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       />
       <text
         x={group.cx}
-        y={group.cy - (isPrimary ? 9 : 7)}
+        y={y1}
         textAnchor="middle"
-        fontSize={isPrimary ? config.fontSize + 1 : config.fontSize}
+        fontSize={fontSize1}
         fontWeight="bold"
         fill={textColor}
       >
@@ -581,9 +606,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       </text>
       <text
         x={group.cx}
-        y={group.cy + (isPrimary ? 2 : 3)}
+        y={y2}
         textAnchor="middle"
-        fontSize={isPrimary ? config.fontSize : config.fontSize - 1}
+        fontSize={fontSize2}
         fontWeight={isPrimary ? "bold" : "normal"}
         fill={textColor}
       >
@@ -591,14 +616,14 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       </text>
       <text
         x={group.cx}
-        y={group.cy + (isPrimary ? 12 : 12)}
+        y={y3}
         textAnchor="middle"
-        fontSize={isPrimary ? config.fontSize - 1 : config.fontSize - 2}
+        fontSize={fontSize3}
         fill={textColor}
         opacity={0.85}
       >
         {subLines.map((line, i) => (
-          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : config.lineSpacing}>{line}</tspan>
+          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : subLineSpacing}>{line}</tspan>
         ))}
       </text>
     </g>
@@ -1032,10 +1057,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.31 Interactive)
+          Draft Archetypes Color Wheel (v12.32 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-15 00:08 UTC
+          Last updated: 2026-01-15 00:12 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
