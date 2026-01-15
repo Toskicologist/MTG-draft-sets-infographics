@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lorwyn Eclipsed - Color Wheel (LabelBox v2 Experimental)</title>
+  <title>Lorwyn Eclipsed - Color Wheel Preview</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -38,9 +38,10 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v13.2-labelbox-v2 React - Added text size slider with auto-resizing labels
- * v13.1-labelbox-v2 React - Fixed export: draw mana letters on canvas (preserves web font display)
- * v13.0-labelbox-v2 React - LabelBox rewrite from first principles
+ * v13.0 React - Stable release: text size slider, B&W mode, export fix
+ * v12.34 React - Added text size slider + disabled export (beta features)
+ * v12.33 React - Fixed export: draw mana letters on canvas (preserves web font display)
+ * v12.32 React - Centered text in label boxes
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -52,21 +53,15 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
- * v13.0-RELEASE (2026-01-15) - [Claude Haiku 4.5] - Main branch v13.0 stable snapshot archived as v13.html
- *                                                   - Text size slider (50%-200%), B&W mode, export fix
- *                                                   - Beta labelbox-v2 continues development as v13.2-labelbox-v2
- * v13.2-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (50%-200%)
- *                                                    - Labels auto-resize via getBBox() measurement
- *                                                    - getConfig() now accepts textSizeMultiplier parameter
- * v13.1-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters on canvas after SVG render
- * v13.0-labelbox-v2 (2026-01-15, 00:14 UTC) - [Claude Opus 4.5] - BRANCH: label-box-v2
- *                                                       - Complete LabelBox rewrite from first principles
- *                                                       - Single <text> element with <tspan> children for all lines
- *                                                       - Uniform lineHeight = fontSize + 1 (tight, consistent)
- *                                                       - Box height = (totalLines * lineHeight) + padding
- *                                                       - Width auto-measured via getBBox()
- *                                                       - Cleaner math, no hardcoded offsets
- *                                                       - All text uses dy={lineHeight} for consistent spacing
+ * v13.0 (2026-01-15) - [Claude Haiku 4.5] - RELEASE: Stable version with integrated text size slider
+ *                                           - Text size slider (50%-200%) with auto-resizing labels
+ *                                           - B&W toggle (renamed from "Simple" mode)
+ *                                           - Fixed export: canvas-based mana symbol rendering (W/U/B/R/G)
+ *                                           - Export button disabled on main; available on labelbox-v2 beta
+ * v12.34 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (50%-200%), disabled export button
+ * v12.33 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters (W/U/B/R/G) on canvas after SVG render
+ *                                         - Preserves web font mana icons on live page display
+ *                                         - foreignObject doesn't serialize properly, so letters are drawn as overlay
  * v12.32 (2026-01-15, 00:12 UTC) - [Claude Opus 4.5] - Centered text in label boxes
  *                                                       - Text now properly vertically centered in boxes
  *                                                       - Calculates total text height including multi-line subs
@@ -535,22 +530,9 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) =
   );
 };
 
-/**
- * LabelBox v2 - Redesigned from first principles
- *
- * Design goals:
- * 1. Text perfectly centered vertically and horizontally
- * 2. Box auto-sizes to fit content with minimal padding
- * 3. Clean, predictable layout math
- *
- * Approach:
- * - Use a single <text> element with <tspan> children for all lines
- * - Position text block center at group.cy using dominant-baseline
- * - Measure rendered width with getBBox() for box sizing
- */
 const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
-  const textRef = useRef(null);
-  const [boxWidth, setBoxWidth] = useState(50);
+  const groupRef = useRef(null);
+  const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
 
   const code = group.u + group.v;
   const labelData = labels[code] || labels[group.v + group.u];
@@ -562,58 +544,100 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
   const boxStroke = isSimple ? '#000000' : edgeColor;
   const textColor = isSimple ? '#000000' : fg;
 
-  // Simple, consistent spacing
-  const lineHeight = config.fontSize + 1;  // tight line height
-  const padding = 4;
+  // Font sizes
+  const fontSize1 = isPrimary ? config.fontSize + 1 : config.fontSize;
+  const fontSize2 = isPrimary ? config.fontSize : config.fontSize - 1;
+  const fontSize3 = isPrimary ? config.fontSize - 1 : config.fontSize - 2;
 
-  // Count total lines: code + archetype + sub lines
-  const totalLines = 2 + subLines.length;
-  const boxHeight = (totalLines * lineHeight) + (padding * 2);
+  // Line heights (roughly 1.2x font size)
+  const lh1 = fontSize1 * 1.1;
+  const lh2 = fontSize2 * 1.1;
+  const lh3 = fontSize3 * 1.1;
+  const subLineSpacing = 7;
 
-  // Calculate Y positions - evenly distributed from top
-  const topY = group.cy - boxHeight / 2 + padding + lineHeight * 0.8;
+  // Total text height
+  const numSubLines = subLines.length;
+  const totalTextHeight = lh1 + lh2 + lh3 + (numSubLines - 1) * subLineSpacing;
 
-  // Measure max text width after render
+  // Calculate y positions to center all text
+  const startY = group.cy - totalTextHeight / 2;
+  const y1 = startY + lh1 * 0.8;
+  const y2 = y1 + lh2;
+  const y3 = y2 + lh3 * 0.9;
+
+  // Measure text and auto-size box after render
   useEffect(() => {
-    if (textRef.current) {
-      try {
-        const bbox = textRef.current.getBBox();
-        setBoxWidth(Math.max(bbox.width + padding * 2, 40));
-      } catch (e) {}
+    if (groupRef.current) {
+      const texts = groupRef.current.querySelectorAll('text');
+      let maxWidth = 0;
+      texts.forEach((text) => {
+        try {
+          const bbox = text.getBBox();
+          maxWidth = Math.max(maxWidth, bbox.width);
+        } catch (e) {}
+      });
+      const padding = 4;
+      const heightPadding = 3;
+      setBoxSize({
+        width: Math.max(maxWidth + padding * 2, 35),
+        height: totalTextHeight + heightPadding * 2
+      });
     }
-  }, [code, labelData.text, labelData.sub, config.fontSize]);
+  }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
 
   return (
     <g
+      ref={groupRef}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      style={{ cursor: 'pointer' }}
+      style={{
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
       opacity={isDimmed ? 0.3 : 1}
       transform={isHighlighted ? `translate(${group.cx}, ${group.cy}) scale(1.08) translate(${-group.cx}, ${-group.cy})` : undefined}
     >
       <rect
-        x={group.cx - boxWidth / 2}
-        y={group.cy - boxHeight / 2}
-        width={boxWidth}
-        height={boxHeight}
-        rx={3}
+        x={group.cx - boxSize.width / 2}
+        y={group.cy - boxSize.height / 2}
+        width={boxSize.width}
+        height={boxSize.height}
+        rx={4}
         fill={boxBg}
         stroke={isHighlighted ? "#FFD700" : boxStroke}
-        strokeWidth={isPrimary ? 2 : 1.5}
+        strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
+        style={{ transition: 'all 0.2s ease' }}
       />
       <text
-        ref={textRef}
         x={group.cx}
-        y={topY}
+        y={y1}
         textAnchor="middle"
-        fontSize={config.fontSize}
+        fontSize={fontSize1}
+        fontWeight="bold"
         fill={textColor}
-        fontFamily="sans-serif"
       >
-        <tspan x={group.cx} fontWeight="bold" fontSize={config.fontSize + (isPrimary ? 1 : 0)}>{code}</tspan>
-        <tspan x={group.cx} dy={lineHeight} fontWeight={isPrimary ? "bold" : "normal"}>{labelData.text}</tspan>
+        {code}
+      </text>
+      <text
+        x={group.cx}
+        y={y2}
+        textAnchor="middle"
+        fontSize={fontSize2}
+        fontWeight={isPrimary ? "bold" : "normal"}
+        fill={textColor}
+      >
+        {labelData.text}
+      </text>
+      <text
+        x={group.cx}
+        y={y3}
+        textAnchor="middle"
+        fontSize={fontSize3}
+        fill={textColor}
+        opacity={0.85}
+      >
         {subLines.map((line, i) => (
-          <tspan key={i} x={group.cx} dy={lineHeight} opacity={0.85} fontSize={config.fontSize - 1}>{line}</tspan>
+          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : subLineSpacing}>{line}</tspan>
         ))}
       </text>
     </g>
@@ -893,7 +917,7 @@ function LorwynColorWheel() {
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
   const [isSimple, setIsSimple] = useState(false);
-  const [textSize, setTextSize] = useState(1.0); // Text size multiplier (0.7 to 1.5)
+  const [textSize, setTextSize] = useState(1.0); // Text size multiplier (0.5 to 2.0)
   const [config, setConfig] = useState(() => getConfig(1.0));
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
@@ -1075,10 +1099,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.2-labelbox-v2)
+          Draft Archetypes Color Wheel (v12.34 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-15 00:14 UTC • Branch: label-box-v2
+          Last updated: 2026-01-15 00:12 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
@@ -1140,6 +1164,7 @@ function LorwynColorWheel() {
         <button
           onClick={handleExportImage}
           style={{
+            display: 'none',
             padding: '8px 16px',
             backgroundColor: '#2563EB',
             color: '#FFFFFF',
