@@ -41,7 +41,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * 13.0.0-beta.6 React - BETA EXPERIMENTAL VERSION
+ * 13.0.0-beta.7 React - BETA EXPERIMENTAL VERSION
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -53,6 +53,7 @@
  * 5. Beta versions track the current stable release: if main is 13.0.0, beta is 13.0.0-beta.N
  *
  * CHANGELOG:
+ * 13.0.0-beta.7 (2026-01-15, 21:42 UTC) - [Claude Haiku 4.5] - Experimental: Remove maxWidth constraint on archetypes, reduce minmax to 140px for smoother column transitions
  * 13.0.0-beta.6 (2026-01-15, 21:38 UTC) - [Claude Haiku 4.5] - Experimental: Made all diagram text uniform size
  * 13.0.0-beta.5 (2026-01-15, 21:36 UTC) - [Claude Haiku 4.5] - Experimental: Made subtitle and subtext the same size in diagram labels
  * 13.0.0-beta.4 (2026-01-15, 21:33 UTC) - [Claude Haiku 4.5] - Experimental: Dynamic columns with proportional min width (160px, 1.333x color box size)
@@ -991,10 +992,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (13.0.0-beta.6)
+          Draft Archetypes Color Wheel (13.0.0-beta.7)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          BETA EXPERIMENTAL • Last updated: 2026-01-15 21:38 UTC
+          BETA EXPERIMENTAL • Last updated: 2026-01-15 21:42 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
@@ -1154,7 +1155,6 @@ function LorwynColorWheel() {
       <div id="primary-archetypes" style={{
         marginTop: '32px',
         width: '100%',
-        maxWidth: '900px',
       }}>
         <h2 style={{
           fontSize: '1.4rem',
@@ -1184,7 +1184,8 @@ function LorwynColorWheel() {
         <div className="archetype-grid" style={{
           display: 'grid',
           gap: '12px',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          width: '100%',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         }}>
           {primaryPairs.map(([pair, data]) => {
             const { bg, fg } = getLabelColors(pair[0], pair[1]);
@@ -1346,7 +1347,6 @@ function LorwynColorWheel() {
       <div id="secondary-archetypes" style={{
         marginTop: '32px',
         width: '100%',
-        maxWidth: '900px',
       }}>
         <h2 style={{
           fontSize: '1.3rem',
@@ -1368,7 +1368,8 @@ function LorwynColorWheel() {
         <div className="archetype-grid" style={{
           display: 'grid',
           gap: '12px',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          width: '100%',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         }}>
           {secondaryPairs.map(([pair, data]) => {
             const { bg, fg } = getLabelColors(pair[0], pair[1]);
