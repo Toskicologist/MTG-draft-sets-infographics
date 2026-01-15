@@ -38,7 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.30 React - Tighter label boxes
+ * v12.31 React - Auto-sized label boxes
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -50,6 +50,11 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.31 (2026-01-15, 00:08 UTC) - [Claude Opus 4.5] - Auto-sized label boxes
+ *                                                       - Boxes now auto-size to fit text using getBBox()
+ *                                                       - Measures actual rendered text width/height
+ *                                                       - Minimal padding (5px) around text content
+ *                                                       - No more fixed box sizes - each box fits its content
  * v12.30 (2026-01-15, 00:02 UTC) - [Claude Opus 4.5] - Tighter label boxes
  *                                                       - Reduced box sizes: 62x36 (was 75x45), primary 72x44 (was 85x55)
  *                                                       - Reduced line spacing between text rows
@@ -506,21 +511,44 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) =
 };
 
 const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
+  const groupRef = useRef(null);
+  const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
+
   const code = group.u + group.v;
   const labelData = labels[code] || labels[group.v + group.u];
   const { bg, fg } = getLabelColors(group.u, group.v);
   const edgeColor = blend(group.u, group.v);
   const isPrimary = group.isPrimary;
   const subLines = labelData.sub.split('\n');
-  const hasMultiLineSub = subLines.length > 1;
-  const boxW = isPrimary ? config.primaryBoxW : config.boxW;
-  const boxH = isPrimary ? config.primaryBoxH : (hasMultiLineSub ? config.boxH + 10 : config.boxH);
   const boxBg = isSimple ? '#FFFFFF' : bg;
   const boxStroke = isSimple ? '#000000' : edgeColor;
   const textColor = isSimple ? '#000000' : fg;
 
+  // Measure text and auto-size box after render
+  useEffect(() => {
+    if (groupRef.current) {
+      const texts = groupRef.current.querySelectorAll('text');
+      let maxWidth = 0;
+      let totalHeight = 0;
+      texts.forEach((text) => {
+        try {
+          const bbox = text.getBBox();
+          maxWidth = Math.max(maxWidth, bbox.width);
+          totalHeight += bbox.height;
+        } catch (e) {}
+      });
+      const padding = 5;
+      const lineGap = 4;
+      setBoxSize({
+        width: Math.max(maxWidth + padding * 2, 35),
+        height: Math.max(totalHeight + lineGap + padding * 2, 28)
+      });
+    }
+  }, [code, labelData.text, labelData.sub, config.fontSize]);
+
   return (
     <g
+      ref={groupRef}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
       style={{
@@ -531,19 +559,19 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       transform={isHighlighted ? `translate(${group.cx}, ${group.cy}) scale(1.08) translate(${-group.cx}, ${-group.cy})` : undefined}
     >
       <rect
-        x={group.bbox.x1}
-        y={group.bbox.y1}
-        width={boxW}
-        height={boxH}
-        rx={6}
+        x={group.cx - boxSize.width / 2}
+        y={group.cy - boxSize.height / 2}
+        width={boxSize.width}
+        height={boxSize.height}
+        rx={4}
         fill={boxBg}
         stroke={isHighlighted ? "#FFD700" : boxStroke}
-        strokeWidth={isHighlighted ? 4 : (isPrimary ? 3 : 2)}
+        strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
         style={{ transition: 'all 0.2s ease' }}
       />
       <text
         x={group.cx}
-        y={group.cy - (isPrimary ? 12 : 9)}
+        y={group.cy - (isPrimary ? 9 : 7)}
         textAnchor="middle"
         fontSize={isPrimary ? config.fontSize + 1 : config.fontSize}
         fontWeight="bold"
@@ -553,7 +581,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       </text>
       <text
         x={group.cx}
-        y={group.cy + (isPrimary ? -1 : 1)}
+        y={group.cy + (isPrimary ? 2 : 3)}
         textAnchor="middle"
         fontSize={isPrimary ? config.fontSize : config.fontSize - 1}
         fontWeight={isPrimary ? "bold" : "normal"}
@@ -563,7 +591,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       </text>
       <text
         x={group.cx}
-        y={group.cy + (isPrimary ? 10 : 10)}
+        y={group.cy + (isPrimary ? 12 : 12)}
         textAnchor="middle"
         fontSize={isPrimary ? config.fontSize - 1 : config.fontSize - 2}
         fill={textColor}
@@ -1004,10 +1032,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.30 Interactive)
+          Draft Archetypes Color Wheel (v12.31 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-15 00:02 UTC
+          Last updated: 2026-01-15 00:08 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
