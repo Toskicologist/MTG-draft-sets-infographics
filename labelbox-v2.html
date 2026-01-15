@@ -41,39 +41,24 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v13.3-labelbox-v2 React - BETA: New version based on live v13.0
- * v13.2-labelbox-v2 React - Added text size slider with auto-resizing labels
- * v13.1-labelbox-v2 React - Fixed export: draw mana letters on canvas (preserves web font display)
- * v13.0-labelbox-v2 React - LabelBox rewrite from first principles
+ * 13.0.0-beta.1 React - BETA: Based on stable 13.0.0 release
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
- * 1. Save as a NEW file with incremented version (v12 -> v12.1 -> v12.2, or v13, etc.)
- * 2. Update the version in the page subtitle in the new file
+ * 1. Update version with SemVer (MAJOR.MINOR.PATCH-beta.N)
+ * 2. Update the version in the page subtitle
  * 3. Add changelog entry at TOP of changelog with format:
- *    vX.X (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
+ *    X.Y.Z-beta.N (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
  * 4. Include timestamp (UTC), model used, and detailed description
- * 5. Never overwrite previous versions - keep all iterations
+ * 5. Beta versions track the current stable release: if main is 13.0.0, beta is 13.0.0-beta.N
  *
  * CHANGELOG:
- * v13.3-labelbox-v2 (2026-01-15, 20:58 UTC) - [Claude Haiku 4.5] - BETA: Reset to live v13.0 as base, added BETA banner
- *                                                                    - User requested beta always be reset to match live version
- *                                                                    - Added prominent red BETA indicator at top
- * v13.0-RELEASE (2026-01-15) - [Claude Haiku 4.5] - Main branch v13.0 stable snapshot archived as v13.html
- *                                                   - Text size slider (50%-200%), B&W mode, export fix
- *                                                   - Beta labelbox-v2 continues development as v13.2-labelbox-v2
- * v13.2-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (50%-200%)
- *                                                    - Labels auto-resize via getBBox() measurement
- *                                                    - getConfig() now accepts textSizeMultiplier parameter
- * v13.1-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters on canvas after SVG render
- * v13.0-labelbox-v2 (2026-01-15, 00:14 UTC) - [Claude Opus 4.5] - BRANCH: label-box-v2
- *                                                       - Complete LabelBox rewrite from first principles
- *                                                       - Single <text> element with <tspan> children for all lines
- *                                                       - Uniform lineHeight = fontSize + 1 (tight, consistent)
- *                                                       - Box height = (totalLines * lineHeight) + padding
- *                                                       - Width auto-measured via getBBox()
- *                                                       - Cleaner math, no hardcoded offsets
- *                                                       - All text uses dy={lineHeight} for consistent spacing
+ * 13.0.0-beta.1 (2026-01-15, 20:58 UTC) - [Claude Haiku 4.5] - BETA: Synchronized with stable 13.0.0 release
+ *                                                               - Text size slider (50%-200%) with auto-resizing
+ *                                                               - B&W toggle renamed from "Simple" mode
+ *                                                               - Mana symbol export fix (canvas-based rendering)
+ *                                                               - Prominent red BETA banner at top
+ *                                                               - Export image button enabled on beta
  */
 
 const { useState, useEffect, useRef } = React;
@@ -1001,7 +986,7 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.3-labelbox-v2 BETA)
+          Draft Archetypes Color Wheel (13.0.0-beta.1 BETA)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
           Last updated: 2026-01-15 20:58 UTC

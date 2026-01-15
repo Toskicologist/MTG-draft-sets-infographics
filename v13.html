@@ -38,24 +38,18 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v13.0 React - Stable release: text size slider, B&W mode, export fix
- * v12.34 React - Added text size slider + disabled export (beta features)
- * v12.33 React - Fixed export: draw mana letters on canvas (preserves web font display)
- * v12.32 React - Centered text in label boxes
+ * 13.0.0 React (ARCHIVE) - Stable release snapshot
+ *
+ * NOTE: This is an archived release snapshot. Current development continues in index.html
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
- * When making changes, please:
- * 1. Save as a NEW file with incremented version (v12 -> v12.1 -> v12.2, or v13, etc.)
- * 2. Update the version in the page subtitle in the new file
- * 3. Add changelog entry at TOP of changelog with format:
- *    vX.X (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
- * 4. Include timestamp (UTC), model used, and detailed description
- * 5. Never overwrite previous versions - keep all iterations
+ * Archive files should not be modified. They represent historical snapshots of releases.
+ * For current development, work on index.html (main) or labelbox-v2.html (beta).
  *
  * CHANGELOG:
- * v13.0 (2026-01-15) - [Claude Haiku 4.5] - RELEASE: Stable version with integrated text size slider
- *                                           - Text size slider (50%-200%) with auto-resizing labels
- *                                           - B&W toggle (renamed from "Simple" mode)
+ * 13.0.0 (2026-01-15, 20:58 UTC) - [Claude Haiku 4.5] - ARCHIVE SNAPSHOT - Stable release
+ *                                                        - Text size slider (50%-200%) with auto-resizing labels
+ *                                                        - B&W toggle (renamed from "Simple" mode)
  *                                           - Fixed export: canvas-based mana symbol rendering (W/U/B/R/G)
  *                                           - Export button disabled on main; available on labelbox-v2 beta
  * v12.34 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (50%-200%), disabled export button
@@ -1099,10 +1093,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.0 Interactive)
+          Draft Archetypes Color Wheel (13.0.0 Interactive) - ARCHIVE
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-15 20:53 UTC
+          Last updated: 2026-01-15 20:58 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
