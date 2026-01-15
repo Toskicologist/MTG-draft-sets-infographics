@@ -38,7 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.29 React - Responsive CONFIG for mobile
+ * v12.30 React - Tighter label boxes
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -50,6 +50,11 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v12.30 (2026-01-15, 00:02 UTC) - [Claude Opus 4.5] - Tighter label boxes
+ *                                                       - Reduced box sizes: 62x36 (was 75x45), primary 72x44 (was 85x55)
+ *                                                       - Reduced line spacing between text rows
+ *                                                       - Smaller font sizes (11px base, was 12px)
+ *                                                       - Added lineSpacing config parameter
  * v12.29 (2026-01-14, 23:47 UTC) - [Claude Opus 4.5] - Responsive CONFIG for mobile
  *                                                       - Wheel shrinks on mobile (radius 140 vs 180)
  *                                                       - Smaller nodes (24 vs 30) and boxes for tighter layout
@@ -161,11 +166,12 @@ const getConfig = () => {
     radius: mobile ? 140 : 180,
     nodeRadius: mobile ? 24 : 30,
     edgeWidth: mobile ? 4 : 5,
-    boxW: mobile ? 70 : 75,
-    boxH: mobile ? 42 : 45,
-    primaryBoxW: mobile ? 80 : 85,
-    primaryBoxH: mobile ? 52 : 55,
-    fontSize: mobile ? 11 : 12,
+    boxW: mobile ? 58 : 62,
+    boxH: mobile ? 32 : 36,
+    primaryBoxW: mobile ? 68 : 72,
+    primaryBoxH: mobile ? 40 : 44,
+    fontSize: mobile ? 10 : 11,
+    lineSpacing: mobile ? 9 : 10,
     iterMax: 240,
     pushStep: 6,
   };
@@ -537,9 +543,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       />
       <text
         x={group.cx}
-        y={group.cy - (isPrimary ? 16 : 12)}
+        y={group.cy - (isPrimary ? 12 : 9)}
         textAnchor="middle"
-        fontSize={isPrimary ? config.fontSize + 2 : config.fontSize}
+        fontSize={isPrimary ? config.fontSize + 1 : config.fontSize}
         fontWeight="bold"
         fill={textColor}
       >
@@ -547,7 +553,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       </text>
       <text
         x={group.cx}
-        y={group.cy + (isPrimary ? -1 : 3)}
+        y={group.cy + (isPrimary ? -1 : 1)}
         textAnchor="middle"
         fontSize={isPrimary ? config.fontSize : config.fontSize - 1}
         fontWeight={isPrimary ? "bold" : "normal"}
@@ -557,14 +563,14 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       </text>
       <text
         x={group.cx}
-        y={group.cy + (isPrimary ? 15 : 17)}
+        y={group.cy + (isPrimary ? 10 : 10)}
         textAnchor="middle"
         fontSize={isPrimary ? config.fontSize - 1 : config.fontSize - 2}
         fill={textColor}
         opacity={0.85}
       >
         {subLines.map((line, i) => (
-          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 10}>{line}</tspan>
+          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : config.lineSpacing}>{line}</tspan>
         ))}
       </text>
     </g>
@@ -998,10 +1004,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v12.29 Interactive)
+          Draft Archetypes Color Wheel (v12.30 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-14 23:47 UTC
+          Last updated: 2026-01-15 00:02 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
