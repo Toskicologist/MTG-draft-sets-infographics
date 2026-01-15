@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lorwyn Eclipsed - Color Wheel (LabelBox v2 Experimental)</title>
+  <title>Lorwyn Eclipsed - Color Wheel (BETA)</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -29,6 +29,9 @@
       .color-grid {
         grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;
       }
+      .beta-banner {
+        font-size: 1.5rem !important;
+      }
     }
   </style>
 </head>
@@ -38,6 +41,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
+ * v13.3-labelbox-v2 React - BETA: New version based on live v13.0
  * v13.2-labelbox-v2 React - Added text size slider with auto-resizing labels
  * v13.1-labelbox-v2 React - Fixed export: draw mana letters on canvas (preserves web font display)
  * v13.0-labelbox-v2 React - LabelBox rewrite from first principles
@@ -52,6 +56,9 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v13.3-labelbox-v2 (2026-01-15, 20:58 UTC) - [Claude Haiku 4.5] - BETA: Reset to live v13.0 as base, added BETA banner
+ *                                                                    - User requested beta always be reset to match live version
+ *                                                                    - Added prominent red BETA indicator at top
  * v13.0-RELEASE (2026-01-15) - [Claude Haiku 4.5] - Main branch v13.0 stable snapshot archived as v13.html
  *                                                   - Text size slider (50%-200%), B&W mode, export fix
  *                                                   - Beta labelbox-v2 continues development as v13.2-labelbox-v2
@@ -67,116 +74,6 @@
  *                                                       - Width auto-measured via getBBox()
  *                                                       - Cleaner math, no hardcoded offsets
  *                                                       - All text uses dy={lineHeight} for consistent spacing
- * v12.32 (2026-01-15, 00:12 UTC) - [Claude Opus 4.5] - Centered text in label boxes
- *                                                       - Text now properly vertically centered in boxes
- *                                                       - Calculates total text height including multi-line subs
- *                                                       - Reduced line spacing (subLineSpacing: 7px)
- *                                                       - Box height calculated from actual text height
- *                                                       - Fixed BR/BG excessive top space issue
- * v12.31 (2026-01-15, 00:08 UTC) - [Claude Opus 4.5] - Auto-sized label boxes
- *                                                       - Boxes now auto-size to fit text using getBBox()
- *                                                       - Measures actual rendered text width/height
- *                                                       - Minimal padding (5px) around text content
- *                                                       - No more fixed box sizes - each box fits its content
- * v12.30 (2026-01-15, 00:02 UTC) - [Claude Opus 4.5] - Tighter label boxes
- *                                                       - Reduced box sizes: 62x36 (was 75x45), primary 72x44 (was 85x55)
- *                                                       - Reduced line spacing between text rows
- *                                                       - Smaller font sizes (11px base, was 12px)
- *                                                       - Added lineSpacing config parameter
- * v12.29 (2026-01-14, 23:47 UTC) - [Claude Opus 4.5] - Responsive CONFIG for mobile
- *                                                       - Wheel shrinks on mobile (radius 140 vs 180)
- *                                                       - Smaller nodes (24 vs 30) and boxes for tighter layout
- *                                                       - Dynamic viewBox: mobile "160 140 380 400" vs desktop "120 100 460 480"
- *                                                       - Config recalculates on window resize
- *                                                       - All positions computed reactively based on config state
- * v12.28 (2026-01-14, 23:41 UTC) - [Claude Opus 4.5] - Mobile viewBox optimization
- *                                                       - Tightened viewBox from "100 80 500 540" to "120 100 460 480"
- *                                                       - Added max-width: 100% override for mobile
- *                                                       - Reduced white space around color wheel on mobile
- * v12.27 (2026-01-14, 23:09 UTC) - [Claude Opus 4.5] - Simple mode and Export Image
- *                                                       - Added "Simple" toggle (white nodes, black lines/icons)
- *                                                       - Added "Export Image" button to save color wheel as PNG
- *                                                       - Exported image includes site URL in subtitle
- *                                                       - Works in both normal and simple modes
- * v12.26 (2026-01-14, 23:04 UTC) - [Claude Opus 4.5] - Beta features merge and navigation
- *                                                       - Added in-page navigation links (Colors, Primary, Secondary)
- *                                                       - RW archetype renamed to "-1/-1 Aggro" / "Counter removal"
- *                                                       - BR and BG sub-text now multi-line format
- *                                                       - Extended Primary Archetypes description text
- *                                                       - Search buttons pinned to bottom with flexbox
- *                                                       - Reduced box sizes (95->75, 110->85) for better mobile
- *                                                       - Timestamps now fetched from system clock
- * v12.25 (2026-01-14, ~20:00 UTC) - [Claude Opus 4.5] - Mobile grid fixes
- *                                                       - Archetype grids now single column on mobile (removes 280px min)
- *                                                       - Color grid reduced to 90px minimum on mobile
- *                                                       - Added className to grids for CSS targeting
- * v12.24 (2026-01-14, ~19:45 UTC) - [Claude Opus 4.5] - Mobile responsive improvements
- *                                                       - Added CSS media query for mobile (max-width: 768px)
- *                                                       - Removed maxHeight constraint on SVG for mobile (width controls sizing)
- *                                                       - Reduced container padding from 24px to 4px on mobile
- *                                                       - Tightened viewBox from 80,60,540,580 to 100,80,500,540
- *                                                       - Added className attributes to SVG and container for CSS targeting
- *                                                       - Added last updated timestamp to page header
- * v12.23 (2026-01-14, ~16:30 UTC) - [Claude Opus 4.5] - Monochrome mana symbols on node backgrounds
- *                                                       - Reverted to original colored circle nodes
- *                                                       - Using monochrome mana font symbols (no built-in backgrounds)
- *                                                       - White text on colored backgrounds; black text on white
- *                                                       - Cleaner, less cluttered look for the wheel
- * v12.22 (2026-01-14, ~16:15 UTC) - [Claude Opus 4.5] - Mana icons as the nodes themselves
- *                                                       - Removed redundant background circles from color nodes
- *                                                       - Mana font icons (with built-in colored backgrounds) are now the entire node
- *                                                       - Increased icon size to 60px for better visibility
- *                                                       - Gold ring highlight on hover instead of background glow
- * v12.21 (2026-01-14, ~16:00 UTC) - [Claude Opus 4.5] - Fixed mana font for GitHub Pages
- *                                                       - Switched to jsDelivr CDN (cdn.jsdelivr.net/npm/mana-font)
- *                                                       - Changed from {W} text to proper CSS class syntax (ms ms-w ms-cost)
- *                                                       - Mana symbols now display correctly on any web host
- * v12.20 (2026-01-14, ~15:30 UTC) - [Claude Opus 4.5] - Code cleanup and terminology fixes
- *                                                       - Changed "tribal" to "typal" throughout
- *                                                       - Fixed pluralization: Merfolk, Kithkin (no s), Elves (not Elfs)
- *                                                       - Added "All spells castable with {pair}" button to InfoPanel and archetypes
- *                                                       - Fixed Interactive Features text to say "All [Type]" not "All [Type]s"
- *                                                       - Consolidated typeMap/typePluralMap as top-level constants
- * v12.19 (2026-01-14, ~14:25 UTC) - [Claude Haiku 4.5] - Fixed hybrid color search Scryfall queries
- *                                                       - Updated color grid hybrid search to use m>X/Y syntax for all hybrids
- *                                                       - Now searches for exact color + all 4 possible hybrid combinations
- *                                                       - Example: W+hybrids searches for {W}, {W/U}, {W/B}, {W/R}, {W/G}
- * v12.18 (2026-01-14, ~14:15 UTC) - [Claude Haiku 4.5] - Graceful fallback, pluralization, hybrid color search
- *                                                       - Added graceful font fallback: local files → CDN → letter symbols
- *                                                       - Fixed pluralization: Merfolks→Merfolk, Kithkins→Kithkin, Elfs→Elves
- *                                                       - Added "Scryfall search:" label before color grid search buttons
- *                                                       - Added hybrid color search alongside exact color search
- * v12.17 (2026-01-14, ~13:45 UTC) - [Claude Haiku 4.5] - CDN-hosted mana symbols, zero local dependencies
- *                                                       - Replaced local file:// mana font with Andrew Gioia CDN (fonts.2manyrobots.com)
- *                                                       - Restored proper Unicode mana symbol rendering {W}{U}{B}{R}{G}
- *                                                       - Fully portable with no external file dependencies
- *                                                       - Ready for immediate sharing and public hosting
- * v12.16 (2026-01-14, ~13:30 UTC) - [Claude Haiku 4.5] - Publication-ready refinements
- *                                                       - Removed spaces around union symbols (A∪B instead of A ∪ B)
- *                                                       - Consolidated external links in sources section (removed "external link" labels)
- *                                                       - Removed dependency on local mana font file for better portability
- *                                                       - Ready for sharing and public distribution
- * v12.15 (2026-01-14, ~12:45 UTC) - [Claude Haiku 4.5] - Improved guide links and search labels
- *                                                       - Removed local file:// hyperlinks, replaced with live online pages
- *                                                       - Added helpful subtitle directing users to WotC and Draftsim guides
- *                                                       - Changed search button labels to A&B, A ∪ B for clarity
- *                                                       - Added "Scryfall search:" label before search buttons
- * v12.14 (2026-01-14, ~12:30 UTC) - [Claude Haiku 4.5] - Fixed anchor link scroll behavior
- *                                                       - Added useEffect hook to handle hash changes and scroll to elements
- *                                                       - Clicking WotC/Draftsim links now properly scrolls to respective sections
- *                                                       - Smooth scroll behavior for better UX
- * v12.13 (2026-01-14, ~11:25 UTC) - [Claude Haiku 4.5] - Anchor links to jump to archetype sections
- *                                                       - WotC Prerelease Guide link jumps to Primary Archetypes section
- *                                                       - Draftsim review link jumps to Secondary Archetypes section
- *                                                       - External links remain accessible via secondary "external link" buttons
- *                                                       - Both anchors and external links clearly labeled
- * v12.12 (2026-01-14, ~11:15 UTC) - [Claude Haiku 4.5] - Fully responsive grid layouts
- *                                                       - Color grid now uses auto-fit with 120px minimum, expands to full width
- *                                                       - Archetype tables now show up to 3 items per row with 280px minimum
- *                                                       - Both grids adapt to window size and become multi-line on smaller screens
- * v12.11 (2026-01-14, ~11:00 UTC) - [Claude Haiku 4.5] - Cleaner header with helpful subtitle
- *                                                       - Removed outdated legend showing "Primary Typal" vs "Secondary Mechanical"
- *                                                       - Added subtitle: "Mouse over archetypes for details • Scroll down to view complete archetype table"
  */
 
 const { useState, useEffect, useRef } = React;
@@ -535,22 +432,9 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) =
   );
 };
 
-/**
- * LabelBox v2 - Redesigned from first principles
- *
- * Design goals:
- * 1. Text perfectly centered vertically and horizontally
- * 2. Box auto-sizes to fit content with minimal padding
- * 3. Clean, predictable layout math
- *
- * Approach:
- * - Use a single <text> element with <tspan> children for all lines
- * - Position text block center at group.cy using dominant-baseline
- * - Measure rendered width with getBBox() for box sizing
- */
 const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
-  const textRef = useRef(null);
-  const [boxWidth, setBoxWidth] = useState(50);
+  const groupRef = useRef(null);
+  const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
 
   const code = group.u + group.v;
   const labelData = labels[code] || labels[group.v + group.u];
@@ -562,58 +446,100 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
   const boxStroke = isSimple ? '#000000' : edgeColor;
   const textColor = isSimple ? '#000000' : fg;
 
-  // Simple, consistent spacing
-  const lineHeight = config.fontSize + 1;  // tight line height
-  const padding = 4;
+  // Font sizes
+  const fontSize1 = isPrimary ? config.fontSize + 1 : config.fontSize;
+  const fontSize2 = isPrimary ? config.fontSize : config.fontSize - 1;
+  const fontSize3 = isPrimary ? config.fontSize - 1 : config.fontSize - 2;
 
-  // Count total lines: code + archetype + sub lines
-  const totalLines = 2 + subLines.length;
-  const boxHeight = (totalLines * lineHeight) + (padding * 2);
+  // Line heights (roughly 1.2x font size)
+  const lh1 = fontSize1 * 1.1;
+  const lh2 = fontSize2 * 1.1;
+  const lh3 = fontSize3 * 1.1;
+  const subLineSpacing = 7;
 
-  // Calculate Y positions - evenly distributed from top
-  const topY = group.cy - boxHeight / 2 + padding + lineHeight * 0.8;
+  // Total text height
+  const numSubLines = subLines.length;
+  const totalTextHeight = lh1 + lh2 + lh3 + (numSubLines - 1) * subLineSpacing;
 
-  // Measure max text width after render
+  // Calculate y positions to center all text
+  const startY = group.cy - totalTextHeight / 2;
+  const y1 = startY + lh1 * 0.8;
+  const y2 = y1 + lh2;
+  const y3 = y2 + lh3 * 0.9;
+
+  // Measure text and auto-size box after render
   useEffect(() => {
-    if (textRef.current) {
-      try {
-        const bbox = textRef.current.getBBox();
-        setBoxWidth(Math.max(bbox.width + padding * 2, 40));
-      } catch (e) {}
+    if (groupRef.current) {
+      const texts = groupRef.current.querySelectorAll('text');
+      let maxWidth = 0;
+      texts.forEach((text) => {
+        try {
+          const bbox = text.getBBox();
+          maxWidth = Math.max(maxWidth, bbox.width);
+        } catch (e) {}
+      });
+      const padding = 4;
+      const heightPadding = 3;
+      setBoxSize({
+        width: Math.max(maxWidth + padding * 2, 35),
+        height: totalTextHeight + heightPadding * 2
+      });
     }
-  }, [code, labelData.text, labelData.sub, config.fontSize]);
+  }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
 
   return (
     <g
+      ref={groupRef}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      style={{ cursor: 'pointer' }}
+      style={{
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
       opacity={isDimmed ? 0.3 : 1}
       transform={isHighlighted ? `translate(${group.cx}, ${group.cy}) scale(1.08) translate(${-group.cx}, ${-group.cy})` : undefined}
     >
       <rect
-        x={group.cx - boxWidth / 2}
-        y={group.cy - boxHeight / 2}
-        width={boxWidth}
-        height={boxHeight}
-        rx={3}
+        x={group.cx - boxSize.width / 2}
+        y={group.cy - boxSize.height / 2}
+        width={boxSize.width}
+        height={boxSize.height}
+        rx={4}
         fill={boxBg}
         stroke={isHighlighted ? "#FFD700" : boxStroke}
-        strokeWidth={isPrimary ? 2 : 1.5}
+        strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
+        style={{ transition: 'all 0.2s ease' }}
       />
       <text
-        ref={textRef}
         x={group.cx}
-        y={topY}
+        y={y1}
         textAnchor="middle"
-        fontSize={config.fontSize}
+        fontSize={fontSize1}
+        fontWeight="bold"
         fill={textColor}
-        fontFamily="sans-serif"
       >
-        <tspan x={group.cx} fontWeight="bold" fontSize={config.fontSize + (isPrimary ? 1 : 0)}>{code}</tspan>
-        <tspan x={group.cx} dy={lineHeight} fontWeight={isPrimary ? "bold" : "normal"}>{labelData.text}</tspan>
+        {code}
+      </text>
+      <text
+        x={group.cx}
+        y={y2}
+        textAnchor="middle"
+        fontSize={fontSize2}
+        fontWeight={isPrimary ? "bold" : "normal"}
+        fill={textColor}
+      >
+        {labelData.text}
+      </text>
+      <text
+        x={group.cx}
+        y={y3}
+        textAnchor="middle"
+        fontSize={fontSize3}
+        fill={textColor}
+        opacity={0.85}
+      >
         {subLines.map((line, i) => (
-          <tspan key={i} x={group.cx} dy={lineHeight} opacity={0.85} fontSize={config.fontSize - 1}>{line}</tspan>
+          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : subLineSpacing}>{line}</tspan>
         ))}
       </text>
     </g>
@@ -893,13 +819,12 @@ function LorwynColorWheel() {
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
   const [isSimple, setIsSimple] = useState(false);
-  const [textSize, setTextSize] = useState(1.0); // Text size multiplier (0.7 to 1.5)
+  const [textSize, setTextSize] = useState(1.0);
   const [config, setConfig] = useState(() => getConfig(1.0));
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
   const svgRef = useRef(null);
 
-  // Update config on window resize or textSize change
   useEffect(() => {
     const handleResize = () => {
       setConfig(getConfig(textSize));
@@ -908,12 +833,10 @@ function LorwynColorWheel() {
     return () => window.removeEventListener('resize', handleResize);
   }, [textSize]);
 
-  // Update config when textSize changes
   useEffect(() => {
     setConfig(getConfig(textSize));
   }, [textSize]);
 
-  // Compute positions based on current config
   const labelPositions = computeLabelPositions(config);
 
   const handleExportImage = async () => {
@@ -922,20 +845,17 @@ function LorwynColorWheel() {
     const svg = svgRef.current;
     const svgData = new XMLSerializer().serializeToString(svg);
 
-    // Create canvas with extra space for title and subtitle
     const canvas = document.createElement('canvas');
-    const scale = 2; // For higher resolution
+    const scale = 2;
     const titleHeight = 80;
     const subtitleHeight = 30;
     canvas.width = 700 * scale;
     canvas.height = (480 + titleHeight + subtitleHeight) * scale;
     const ctx = canvas.getContext('2d');
 
-    // Fill white background
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw title
     ctx.fillStyle = '#111827';
     ctx.font = `bold ${28 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
     ctx.textAlign = 'center';
@@ -945,31 +865,25 @@ function LorwynColorWheel() {
     ctx.font = `${16 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
     ctx.fillText('Draft Archetypes Color Wheel', canvas.width / 2, 65 * scale);
 
-    // Create image from SVG
     const img = new Image();
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
 
     img.onload = () => {
-      // Draw SVG centered
       const svgWidth = 460 * scale;
       const svgHeight = 480 * scale;
       const xOffset = (canvas.width - svgWidth) / 2;
       ctx.drawImage(img, xOffset, titleHeight * scale, svgWidth, svgHeight);
 
-      // Draw mana symbols on color nodes (foreignObject doesn't export properly)
-      // ViewBox is "120 100 460 480", so we need to map SVG coords to canvas coords
       const viewBoxX = 120, viewBoxY = 100, viewBoxW = 460, viewBoxH = 480;
       const nodePositions = getNodePositions(config);
       const colorOrder = ['W', 'U', 'B', 'R', 'G'];
 
       colorOrder.forEach((color, i) => {
         const pos = nodePositions[i];
-        // Convert SVG coordinates to canvas coordinates
         const canvasX = ((pos.x - viewBoxX) / viewBoxW) * svgWidth + xOffset;
         const canvasY = ((pos.y - viewBoxY) / viewBoxH) * svgHeight + (titleHeight * scale);
 
-        // Draw mana symbol letter
         const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
         ctx.fillStyle = fontColor;
         ctx.font = `bold ${24 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
@@ -978,13 +892,11 @@ function LorwynColorWheel() {
         ctx.fillText(color, canvasX, canvasY);
       });
 
-      // Draw subtitle with URL
       ctx.fillStyle = '#9CA3AF';
       ctx.font = `${12 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
       ctx.textBaseline = 'alphabetic';
       ctx.fillText('toskicologist.github.io/MTG-draft-sets-infographics', canvas.width / 2, (480 + titleHeight + 15) * scale);
 
-      // Download
       const link = document.createElement('a');
       link.download = `lorwyn-eclipsed-color-wheel${isSimple ? '-simple' : ''}.png`;
       link.href = canvas.toDataURL('image/png');
@@ -1024,7 +936,6 @@ function LorwynColorWheel() {
     }, 800);
   };
 
-  // Handle anchor link navigation
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
@@ -1037,8 +948,6 @@ function LorwynColorWheel() {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-
-    // Also handle initial page load with hash
     handleHashChange();
 
     return () => {
@@ -1070,15 +979,32 @@ function LorwynColorWheel() {
       alignItems: 'center',
       position: 'relative',
     }}>
+      {/* BETA Banner */}
+      <div className="beta-banner" style={{
+        backgroundColor: '#FF0000',
+        color: '#FFFFFF',
+        padding: '12px 24px',
+        borderRadius: '6px',
+        marginBottom: '16px',
+        fontSize: '2rem',
+        fontWeight: '900',
+        letterSpacing: '3px',
+        textAlign: 'center',
+        boxShadow: '0 4px 12px rgba(255, 0, 0, 0.3)',
+        border: '3px solid #CC0000',
+      }}>
+        BETA
+      </div>
+
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.2-labelbox-v2)
+          Draft Archetypes Color Wheel (v13.3-labelbox-v2 BETA)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-15 20:53 UTC • Branch: label-box-v2
+          Last updated: 2026-01-15 20:58 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
