@@ -52,7 +52,7 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
- * v13.2-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (70%-150%)
+ * v13.2-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (50%-200%)
  *                                                    - Labels auto-resize via getBBox() measurement
  *                                                    - getConfig() now accepts textSizeMultiplier parameter
  * v13.1-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters on canvas after SVG render
@@ -1123,8 +1123,8 @@ function LorwynColorWheel() {
           Text Size:
           <input
             type="range"
-            min="0.7"
-            max="1.5"
+            min="0.5"
+            max="2.0"
             step="0.1"
             value={textSize}
             onChange={(e) => setTextSize(parseFloat(e.target.value))}
