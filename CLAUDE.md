@@ -1,5 +1,18 @@
 # Project Notes for LLM Assistants
 
+## Privacy & Personal Information
+
+**CRITICAL:** This is a public GitHub repository. NEVER include:
+- Personal names, usernames, or identifying information
+- Local file paths (e.g., `C:\Users\...` or `/home/username/...`)
+- Email addresses (except the generic noreply@anthropic.com for co-authoring)
+- Any other personally identifiable information
+
+When referencing local development:
+- Use generic placeholders like "the repository directory" instead of full paths
+- Use relative paths instead of absolute paths when possible
+- Keep commit messages generic and professional
+
 ## GitHub Pages Deployment
 
 **IMPORTANT:** The file served by GitHub Pages is `index.html`, NOT the versioned files.
