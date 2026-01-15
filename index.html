@@ -38,21 +38,23 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * v12.34 React - Added text size slider + disabled export (beta features)
- * v12.33 React - Fixed export: draw mana letters on canvas (preserves web font display)
- * v12.32 React - Centered text in label boxes
+ * 13.0.0 React (STABLE) - Text size slider, B&W mode, export fix
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
- * 1. Save as a NEW file with incremented version (v12 -> v12.1 -> v12.2, or v13, etc.)
- * 2. Update the version in the page subtitle in the new file
+ * 1. Update version with SemVer (MAJOR.MINOR.PATCH)
+ * 2. Update the version in the page subtitle
  * 3. Add changelog entry at TOP of changelog with format:
- *    vX.X (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
+ *    X.Y.Z (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
  * 4. Include timestamp (UTC), model used, and detailed description
- * 5. Never overwrite previous versions - keep all iterations
+ * 5. Archive major releases: when releasing X.Y.0, create vX.html snapshot
  *
  * CHANGELOG:
- * v13.0 (2026-01-15) - [Claude Haiku 4.5] - RELEASE SNAPSHOT: Archived as v13.html - text size slider, B&W mode, export fix
+ * 13.0.0 (2026-01-15, 20:58 UTC) - [Claude Haiku 4.5] - STABLE RELEASE - Snapshot archived as v13.html
+ *                                                        - Text size slider (50%-200%), auto-resizing labels
+ *                                                        - B&W toggle mode (renamed from "Simple")
+ *                                                        - Mana symbol export fix (canvas-based rendering)
+ *                                                        - Export button disabled on main (enabled on beta)
  * v12.34 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (50%-200%), disabled export button
  * v12.33 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters (W/U/B/R/G) on canvas after SVG render
  *                                         - Preserves web font mana icons on live page display
@@ -1094,7 +1096,7 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.0 Interactive)
+          Draft Archetypes Color Wheel (13.0.0 Interactive)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
           Last updated: 2026-01-15 20:53 UTC
