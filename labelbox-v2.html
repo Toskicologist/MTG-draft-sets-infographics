@@ -38,6 +38,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
+ * v13.2-labelbox-v2 React - Added text size slider with auto-resizing labels
  * v13.1-labelbox-v2 React - Fixed export: draw mana letters on canvas (preserves web font display)
  * v13.0-labelbox-v2 React - LabelBox rewrite from first principles
  *
@@ -51,6 +52,9 @@
  * 5. Never overwrite previous versions - keep all iterations
  *
  * CHANGELOG:
+ * v13.2-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Added text size slider (70%-150%)
+ *                                                    - Labels auto-resize via getBBox() measurement
+ *                                                    - getConfig() now accepts textSizeMultiplier parameter
  * v13.1-labelbox-v2 (2026-01-15) - [Claude Opus 4.5] - Fixed export: draw mana symbol letters on canvas after SVG render
  * v13.0-labelbox-v2 (2026-01-15, 00:14 UTC) - [Claude Opus 4.5] - BRANCH: label-box-v2
  *                                                       - Complete LabelBox rewrite from first principles
@@ -177,8 +181,10 @@ const { useState, useEffect, useRef } = React;
 // Detect mobile for responsive sizing
 const isMobile = () => window.innerWidth <= 768;
 
-const getConfig = () => {
+const getConfig = (textSizeMultiplier = 1.0) => {
   const mobile = isMobile();
+  const baseFontSize = mobile ? 10 : 11;
+  const scaledFontSize = Math.round(baseFontSize * textSizeMultiplier);
   return {
     width: 700,
     height: 700,
@@ -191,7 +197,7 @@ const getConfig = () => {
     boxH: mobile ? 32 : 36,
     primaryBoxW: mobile ? 68 : 72,
     primaryBoxH: mobile ? 40 : 44,
-    fontSize: mobile ? 10 : 11,
+    fontSize: scaledFontSize,
     lineSpacing: mobile ? 9 : 10,
     iterMax: 240,
     pushStep: 6,
@@ -884,19 +890,25 @@ function LorwynColorWheel() {
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
   const [isSimple, setIsSimple] = useState(false);
-  const [config, setConfig] = useState(getConfig);
+  const [textSize, setTextSize] = useState(1.0); // Text size multiplier (0.7 to 1.5)
+  const [config, setConfig] = useState(() => getConfig(1.0));
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
   const svgRef = useRef(null);
 
-  // Update config on window resize
+  // Update config on window resize or textSize change
   useEffect(() => {
     const handleResize = () => {
-      setConfig(getConfig());
+      setConfig(getConfig(textSize));
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [textSize]);
+
+  // Update config when textSize changes
+  useEffect(() => {
+    setConfig(getConfig(textSize));
+  }, [textSize]);
 
   // Compute positions based on current config
   const labelPositions = computeLabelPositions(config);
@@ -1060,7 +1072,7 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (v13.1-labelbox-v2)
+          Draft Archetypes Color Wheel (v13.2-labelbox-v2)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
           Last updated: 2026-01-15 00:14 UTC • Branch: label-box-v2
@@ -1099,6 +1111,28 @@ function LorwynColorWheel() {
             style={{ width: '16px', height: '16px', cursor: 'pointer' }}
           />
           Simple
+        </label>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '0.9rem',
+          fontWeight: '500',
+          color: '#374151',
+        }}>
+          Text Size:
+          <input
+            type="range"
+            min="0.7"
+            max="1.5"
+            step="0.1"
+            value={textSize}
+            onChange={(e) => setTextSize(parseFloat(e.target.value))}
+            style={{ width: '80px', cursor: 'pointer' }}
+          />
+          <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>
+            {Math.round(textSize * 100)}%
+          </span>
         </label>
         <button
           onClick={handleExportImage}
