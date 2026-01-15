@@ -13,7 +13,7 @@ When the user asks to update the live/deployed site:
 
 The git repo root is this folder (`extracted/`). To push changes:
 ```bash
-cd "c:\Users\Johnw\ClaudeProjects\mtg\extracted"
+# Navigate to the repository directory
 git add index.html
 git commit -m "Your message"
 git push
