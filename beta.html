@@ -41,7 +41,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * 13.0.0-beta.4 React - BETA EXPERIMENTAL VERSION
+ * 13.0.0-beta.5 React - BETA EXPERIMENTAL VERSION
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -53,6 +53,7 @@
  * 5. Beta versions track the current stable release: if main is 13.0.0, beta is 13.0.0-beta.N
  *
  * CHANGELOG:
+ * 13.0.0-beta.5 (2026-01-15, 21:36 UTC) - [Claude Haiku 4.5] - Experimental: Made subtitle and subtext the same size in diagram labels
  * 13.0.0-beta.4 (2026-01-15, 21:33 UTC) - [Claude Haiku 4.5] - Experimental: Dynamic columns with proportional min width (160px, 1.333x color box size)
  * 13.0.0-beta.3 (2026-01-15, 21:27 UTC) - [Claude Haiku 4.5] - Experimental: Changed archetype grid to fixed 5 columns for smoother scaling
  * 13.0.0-beta.2 (2026-01-15, 21:24 UTC) - [Claude Haiku 4.5] - Experimental: Reduced archetype box minimum width to 120px (matches color boxes)
@@ -436,8 +437,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
 
   // Font sizes
   const fontSize1 = isPrimary ? config.fontSize + 1 : config.fontSize;
-  const fontSize2 = isPrimary ? config.fontSize : config.fontSize - 1;
-  const fontSize3 = isPrimary ? config.fontSize - 1 : config.fontSize - 2;
+  const fontSize2 = config.fontSize - 1;
+  const fontSize3 = config.fontSize - 1;
 
   // Line heights (roughly 1.2x font size)
   const lh1 = fontSize1 * 1.1;
@@ -989,10 +990,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (13.0.0-beta.4)
+          Draft Archetypes Color Wheel (13.0.0-beta.5)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          BETA EXPERIMENTAL • Last updated: 2026-01-15 21:33 UTC
+          BETA EXPERIMENTAL • Last updated: 2026-01-15 21:36 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
