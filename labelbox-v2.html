@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lorwyn Eclipsed - Color Wheel (BETA)</title>
+  <title>Lorwyn Eclipsed - Color Wheel (Beta Experimental)</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -41,19 +41,19 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * 13.0.0-beta.1 React - BETA: Based on stable 13.0.0 release
+ * 13.0.0-beta.1 React - BETA EXPERIMENTAL VERSION
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
  * 1. Update version with SemVer (MAJOR.MINOR.PATCH-beta.N)
  * 2. Update the version in the page subtitle
- * 3. Add changelog entry at TOP of changelog with format:
+ * 3. Update timestamp: run `date -u "+%Y-%m-%d %H:%M UTC"` and paste result
+ * 4. Add changelog entry at TOP of changelog with format:
  *    X.Y.Z-beta.N (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
- * 4. Include timestamp (UTC), model used, and detailed description
  * 5. Beta versions track the current stable release: if main is 13.0.0, beta is 13.0.0-beta.N
  *
  * CHANGELOG:
- * 13.0.0-beta.1 (2026-01-15, 20:58 UTC) - [Claude Haiku 4.5] - BETA: Synchronized with stable 13.0.0 release
+ * 13.0.0-beta.1 (2026-01-15, 21:17 UTC) - [Claude Haiku 4.5] - BETA: Experimental version synchronized with stable 13.0.0
  *                                                               - Text size slider (50%-200%) with auto-resizing
  *                                                               - B&W toggle renamed from "Simple" mode
  *                                                               - Mana symbol export fix (canvas-based rendering)
@@ -986,10 +986,10 @@ function LorwynColorWheel() {
           Lorwyn Eclipsed
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (13.0.0-beta.1 BETA)
+          Draft Archetypes Color Wheel (13.0.0-beta.1)
         </p>
         <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Last updated: 2026-01-15 20:58 UTC
+          BETA EXPERIMENTAL • Last updated: 2026-01-15 21:17 UTC
         </p>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
           Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
