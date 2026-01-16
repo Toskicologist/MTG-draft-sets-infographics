@@ -41,7 +41,7 @@
   <script type="text/babel">
 /**
  * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
- * 13.0.0-beta.10 React - BETA EXPERIMENTAL VERSION
+ * 13.0.0-beta.11 React - BETA EXPERIMENTAL VERSION
  *
  * INSTRUCTIONS FOR FUTURE EDITORS:
  * When making changes, please:
@@ -53,6 +53,7 @@
  * 5. Beta versions track the current stable release: if main is 13.0.0, beta is 13.0.0-beta.N
  *
  * CHANGELOG:
+ * 13.0.0-beta.11 (2026-01-16, 04:22 UTC) - [Claude Haiku 4.5] - FIX: Use min(100%, 150px) in minmax to allow smooth 1-2-3-4-5 column transitions, avoiding gaps in column counts
  * 13.0.0-beta.10 (2026-01-15, 21:54 UTC) - [Claude Sonnet 4.5] - FIX: Add alignSelf: stretch to override parent flex container centering
  * 13.0.0-beta.9 (2026-01-15, 21:49 UTC) - [Claude Haiku 4.5] - Experimental: Revert maxWidth/padding, increase minmax to 180px for 1-3-5 column layout
  * 13.0.0-beta.8 (2026-01-15, 21:45 UTC) - [Claude Haiku 4.5] - Experimental: Reduce minmax to 120px (match colors), add explicit maxWidth: none + padding: 0
@@ -1189,7 +1190,7 @@ function LorwynColorWheel() {
           display: 'grid',
           gap: '12px',
           width: '100%',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
         }}>
           {primaryPairs.map(([pair, data]) => {
             const { bg, fg } = getLabelColors(pair[0], pair[1]);
@@ -1374,7 +1375,7 @@ function LorwynColorWheel() {
           display: 'grid',
           gap: '12px',
           width: '100%',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
         }}>
           {secondaryPairs.map(([pair, data]) => {
             const { bg, fg } = getLabelColors(pair[0], pair[1]);
