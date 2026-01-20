@@ -722,6 +722,9 @@
         const sortKeyMap = {
             name: 'name',
             rarity: 'rarityRank',
+            color_identity: 'colorIdentity',
+            type: 'type',
+            mana_cost: 'manaCost',
             avg_norm: 'avgNorm',
             avg_raw: 'avgRaw',
             controversy: 'controversy',
@@ -2178,6 +2181,9 @@
             const row = document.createElement('tr');
             row.dataset.name = card.name;
             row.dataset.rarity = card.rarity || '';
+            row.dataset.colorIdentity = card.color_identity.join('') || 'C';
+            row.dataset.type = card.type || '';
+            row.dataset.manaCost = card.mana_cost || '';
             const datasetNumbers = {
                 rarityRank: getRarityRank(card.rarity),
                 avgNorm: card.avg_norm,
@@ -2267,6 +2273,17 @@
                     return 0;
                 }
 
+                // Handle string-based sorting for color_identity, type, and mana_cost
+                if (sortKey === 'color_identity' || sortKey === 'type' || sortKey === 'mana_cost') {
+                    const datasetKey = sortKeyMap[sortKey];
+                    const aVal = (a.dataset[datasetKey] || '').toLowerCase();
+                    const bVal = (b.dataset[datasetKey] || '').toLowerCase();
+                    if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                // Handle numeric sorting for ratings and other numeric fields
                 const datasetKey = sortKeyMap[sortKey];
                 const aRaw = parseFloat(a.dataset[datasetKey]);
                 const bRaw = parseFloat(b.dataset[datasetKey]);
@@ -6706,6 +6723,10 @@
                     if (colorStr) {
                         card.color_identity = colorStr.split('').filter(c => 'WUBRG'.includes(c));
                     }
+
+                    // Extract Type and Mana_Cost from the CSV
+                    card.type = getField(row, baseHeaderIndex, 'Type');
+                    card.mana_cost = getField(row, baseHeaderIndex, 'Mana_Cost');
 
                     card.cgb_raw = parseNumber(getField(row, baseHeaderIndex, 'Card Game Base_Raw'));
                     card.ds_raw = parseNumber(getField(row, baseHeaderIndex, 'Draftsim_Raw'));
