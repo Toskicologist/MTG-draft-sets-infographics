@@ -14,6 +14,8 @@
     <meta name="twitter:image" content="https://raw.githubusercontent.com/toskicologist/MTG-draft-sets-infographics/main/ChatGPT%20Image%20Jan%2018%2C%202026%2C%2010_33_59%20PM.png">
     <!--
     Changelog (expanded):
+    - v0.1.0-expanded.21 (2026-01-20 12:30) Fix colors display: show plain text letters (WUBRG) instead of emoji, simplify implementation.
+    - v0.1.0-expanded.20 (2026-01-20 12:15) Add Colors column with emoji display and color filtering (archived as -emoji-colors variant).
     - v0.1.0-expanded.19 (2026-01-18 23:55) Add link to color wheel in info banner for cross-promotion.
     - v0.1.0-expanded.18 (2026-01-18 23:45) LIVE VERSION - Remove "Expanded" badge, update tab title, increase header transparency, add z-score image as OG preview image.
     - v0.1.0-expanded.17 (2026-01-18 23:35) Add z-score bell curve image background to header with gradient overlay for readability.
@@ -2181,12 +2183,9 @@
             let html = `<td><a href="${card.scryfall_url}" target="_blank" title="View on Scryfall">${card.name}</a></td>`;
             html += `<td class="col-rarity">${formatRarity(card.rarity)}</td>`;
 
-            // Add colors column with color pips
-            const colorPips = card.color_identity.map(color => {
-                const colorMap = { W: '⚪', U: '🔵', B: '⚫', R: '🔴', G: '🟢' };
-                return colorMap[color] || color;
-            }).join('');
-            html += `<td class="col-colors" data-colors="${card.color_identity.join('')}">${colorPips || '-'}</td>`;
+            // Add colors column with plain text (WUBRG letters)
+            const colorText = card.color_identity.join('') || '-';
+            html += `<td class="col-colors" data-colors="${card.color_identity.join('')}">${colorText}</td>`;
 
             const avgNormClass = getScoreClass(card.avg_norm);
             const contClass = getControversyClass(card.controversy);
