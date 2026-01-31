@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GIH WR Distribution with SD-Based Grade Boundaries</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <style>
+    body {
+      font-family: system-ui;
+      background: #0a0e27;
+      color: #e0e0e0;
+      padding: 40px;
+      margin: 0;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { text-align: center; color: #fff; margin-bottom: 5px; }
+    .stats { text-align: center; color: #aaa; font-size: 13px; margin-bottom: 10px; }
+    .chart-box {
+      background: #1a1f3a;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      margin-bottom: 30px;
+      height: 600px;
+      position: relative;
+    }
+    .grade-legend {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .grade-badge {
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #000;
+    }
+    .grade-a-plus { background: #0033FF; color: #fff; }
+    .grade-a { background: #0055FF; color: #fff; }
+    .grade-a-minus { background: #0077FF; color: #fff; }
+    .grade-b-plus { background: #0088FF; color: #fff; }
+    .grade-b { background: #0099FF; color: #fff; }
+    .grade-b-minus { background: #00AAFF; color: #fff; }
+    .grade-c-plus { background: #FF9900; color: #fff; }
+    .grade-c { background: #FF7700; color: #fff; }
+    .grade-c-minus { background: #FF5500; color: #fff; }
+    .grade-d-plus { background: #FF3333; color: #fff; }
+    .grade-d { background: #FF0000; color: #fff; }
+    .grade-d-minus { background: #DD0000; color: #fff; }
+    .grade-f { background: #CC0000; color: #fff; }
+    .note {
+      background: #1a1f3a;
+      padding: 15px;
+      border-left: 4px solid #6496FF;
+      border-radius: 4px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .note strong { color: #fff; }
+    .grades-explanation {
+      background: #1a1f3a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+    .grades-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .grade-info {
+      padding: 8px;
+      background: #0f1420;
+      border-radius: 4px;
+      border-left: 3px solid #999;
+    }
+    .grade-info strong { color: #fff; }
+    .sd-scale {
+      background: #0f1420;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    .sd-range {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #333;
+    }
+    .sd-item {
+      text-align: center;
+    }
+    .sd-label { color: #aaa; font-size: 10px; }
+    .sd-value { color: #fff; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GIH WR Distribution with SD-Based Grade Boundaries (263 ECL Cards)</h1>
+    <div class="stats">Range: 45.3% - 66.9% | Mean: 55.60% | StdDev: 3.82% | Each grade step = 0.33 SD</div>
+
+    <div class="grade-legend">
+      <div class="grade-badge grade-a-plus">A+<br>≥63.2%</div>
+      <div class="grade-badge grade-a">A<br>62.0-63.2%</div>
+      <div class="grade-badge grade-a-minus">A-<br>60.7-62.0%</div>
+      <div class="grade-badge grade-b-plus">B+<br>59.4-60.7%</div>
+      <div class="grade-badge grade-b">B<br>58.2-59.4%</div>
+      <div class="grade-badge grade-b-minus">B-<br>56.9-58.2%</div>
+      <div class="grade-badge grade-c-plus">C+<br>55.6-56.9%</div>
+      <div class="grade-badge grade-c">C<br>54.3-55.6%</div>
+      <div class="grade-badge grade-c-minus">C-<br>53.0-54.3%</div>
+      <div class="grade-badge grade-d-plus">D+<br>51.8-53.0%</div>
+      <div class="grade-badge grade-d">D<br>50.5-51.8%</div>
+      <div class="grade-badge grade-d-minus">D-<br>49.2-50.5%</div>
+      <div class="grade-badge grade-f">F<br>&lt;48.0%</div>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <div class="note">
+      <strong>Grade System (17 Lands Methodology):</strong> Grades are centered at C+ (mean = 55.60%), with each grade step representing 0.33 standard deviations (1.26%). This creates a distribution that assumes most cards cluster near C+, with progressively fewer cards toward the extremes. Vertical lines show exact grade boundaries.
+    </div>
+
+    <div class="grades-explanation">
+      <strong>Grade Boundaries (SD-Based System):</strong>
+      <div class="sd-scale">
+        <div class="sd-range">
+          <div class="sd-item">
+            <div class="sd-label">A+</div>
+            <div class="sd-value">+2.0 SD</div>
+            <div class="sd-label">≥63.86%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">A</div>
+            <div class="sd-value">+1.67 SD</div>
+            <div class="sd-label">62.56-63.85%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">B+</div>
+            <div class="sd-value">+1.34 SD</div>
+            <div class="sd-label">61.26-62.55%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">B</div>
+            <div class="sd-value">+1.0 SD</div>
+            <div class="sd-label">59.92-61.25%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">C+</div>
+            <div class="sd-value">+0.67 SD</div>
+            <div class="sd-label">58.62-59.91%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">C+</div>
+            <div class="sd-value">0 SD</div>
+            <div class="sd-label">55.60%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">D+</div>
+            <div class="sd-value">-0.67 SD</div>
+            <div class="sd-label">53.34-55.97%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">D</div>
+            <div class="sd-value">-1.0 SD</div>
+            <div class="sd-label">52.04-53.33%</div>
+          </div>
+          <div class="sd-item">
+            <div class="sd-label">F</div>
+            <div class="sd-value">-1.67 SD</div>
+            <div class="sd-label">&lt;49.4%</div>
+          </div>
+        </div>
+      </div>
+      <div class="grades-grid" style="margin-top: 15px;">
+        <div class="grade-info"><strong>A+ (63.2%+)</strong><br>Top tier - most consistent performers</div>
+        <div class="grade-info"><strong>A (62.0-63.2%)</strong><br>Excellent cards, well above mean</div>
+        <div class="grade-info"><strong>B+ (59.4-60.7%)</strong><br>Very strong playable cards</div>
+        <div class="grade-info"><strong>B (58.2-59.4%)</strong><br>Above average, solid picks</div>
+        <div class="grade-info"><strong>C+ (55.6-56.9%)</strong><br>At the mean (center)</div>
+        <div class="grade-info"><strong>C (54.3-55.6%)</strong><br>Slightly below mean</div>
+        <div class="grade-info"><strong>D+ (51.8-53.0%)</strong><br>Below average</div>
+        <div class="grade-info"><strong>D (50.5-51.8%)</strong><br>Below average, niche picks</div>
+        <div class="grade-info"><strong>F (&lt;48.0%)</strong><br>Weak, rarely played cards</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const mean = 55.60;
+    const stdDev = 3.82;
+
+    // SD-based grade boundaries (17 Lands uses 13 grades with 0.33 SD steps)
+    const boundaries = {
+      aPlus: mean + stdDev * 2.0,    // +2.0 SD
+      a: mean + stdDev * 1.67,       // +1.67 SD
+      aMinus: mean + stdDev * 1.33,  // +1.33 SD
+      bPlus: mean + stdDev * 1.0,    // +1.0 SD
+      b: mean + stdDev * 0.67,       // +0.67 SD
+      bMinus: mean + stdDev * 0.33,  // +0.33 SD
+      cPlus: mean,                   // 0 SD (mean/center)
+      c: mean - stdDev * 0.33,       // -0.33 SD
+      cMinus: mean - stdDev * 0.67,  // -0.67 SD
+      dPlus: mean - stdDev * 1.0,    // -1.0 SD
+      d: mean - stdDev * 1.33,       // -1.33 SD
+      dMinus: mean - stdDev * 1.67,  // -1.67 SD
+      f: mean - stdDev * 2.0         // -2.0 SD and below
+    };
+
+    const gradeColors = [
+      { label: 'A+', min: boundaries.aPlus, color: '#0033FF' },
+      { label: 'A', min: boundaries.a, color: '#0055FF' },
+      { label: 'A-', min: boundaries.aMinus, color: '#0077FF' },
+      { label: 'B+', min: boundaries.bPlus, color: '#0088FF' },
+      { label: 'B', min: boundaries.b, color: '#0099FF' },
+      { label: 'B-', min: boundaries.bMinus, color: '#00AAFF' },
+      { label: 'C+', min: boundaries.cPlus, color: '#FF9900' },
+      { label: 'C', min: boundaries.c, color: '#FF7700' },
+      { label: 'C-', min: boundaries.cMinus, color: '#FF5500' },
+      { label: 'D+', min: boundaries.dPlus, color: '#FF3333' },
+      { label: 'D', min: boundaries.d, color: '#FF0000' },
+      { label: 'D-', min: boundaries.dMinus, color: '#DD0000' },
+      { label: 'F', min: 0, color: '#CC0000' }
+    ];
+
+    // Distribute card counts to 0.5% buckets (finer granularity)
+    // Original 1% buckets: [1, 3, 3, 6, 7, 23, 16, 25, 28, 28, 23, 21, 20, 11, 14, 8, 9, 9, 3, 2, 1]
+    // Split each to approximate 0.5% distribution
+    const data05pct = [
+      0.5, 0.5,  // 46-47
+      1.5, 1.5,  // 47-48
+      1.5, 1.5,  // 48-49
+      3, 3,      // 49-50
+      3.5, 3.5,  // 50-51
+      11.5, 11.5, // 51-52
+      8, 8,      // 52-53
+      12.5, 12.5, // 53-54
+      14, 14,    // 54-55
+      14, 14,    // 55-56
+      11.5, 11.5, // 56-57
+      10.5, 10.5, // 57-58
+      10, 10,    // 58-59
+      5.5, 5.5,  // 59-60
+      7, 7,      // 60-61
+      4, 4,      // 61-62
+      4.5, 4.5,  // 62-63
+      4.5, 4.5,  // 63-64
+      1.5, 1.5,  // 64-65
+      1, 1,      // 65-65.5, 65.5-66
+      0.5, 1.5   // 66-66.5, 66.5-67
+    ];
+
+    const labels05pct = Array.from({length: 42}, (_, i) => {
+      const start = 46 + (i * 0.5);
+      const end = start + 0.5;
+      return `${start.toFixed(1)}-${end.toFixed(1)}%`;
+    });
+
+    function getGradeColor(percentage) {
+      for (let g of gradeColors) {
+        if (percentage >= g.min) return g.color;
+      }
+      return '#FF3232';
+    }
+
+    const barColors = Array.from({length: 42}, (_, i) => {
+      const percentage = 46 + (i * 0.5) + 0.25;
+      return getGradeColor(percentage);
+    });
+
+    // Create plugins for grade backgrounds and labels
+    const plugin = {
+      id: 'gradeRegions',
+      beforeDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+
+        const gradeRegions = [
+          { label: 'F', min: 46, max: boundaries.dMinus, color: '#CC0000', bgColor: 'rgba(204, 0, 0, 0.12)' },
+          { label: 'D-', min: boundaries.dMinus, max: boundaries.d, color: '#DD0000', bgColor: 'rgba(221, 0, 0, 0.12)' },
+          { label: 'D', min: boundaries.d, max: boundaries.dPlus, color: '#FF0000', bgColor: 'rgba(255, 0, 0, 0.12)' },
+          { label: 'D+', min: boundaries.dPlus, max: boundaries.cMinus, color: '#FF3333', bgColor: 'rgba(255, 51, 51, 0.12)' },
+          { label: 'C-', min: boundaries.cMinus, max: boundaries.c, color: '#FF5500', bgColor: 'rgba(255, 85, 0, 0.12)' },
+          { label: 'C', min: boundaries.c, max: boundaries.cPlus, color: '#FF7700', bgColor: 'rgba(255, 119, 0, 0.12)' },
+          { label: 'C+', min: boundaries.cPlus, max: boundaries.bMinus, color: '#FF9900', bgColor: 'rgba(255, 153, 0, 0.12)' },
+          { label: 'B-', min: boundaries.bMinus, max: boundaries.b, color: '#00AAFF', bgColor: 'rgba(0, 170, 255, 0.12)' },
+          { label: 'B', min: boundaries.b, max: boundaries.bPlus, color: '#0099FF', bgColor: 'rgba(0, 153, 255, 0.12)' },
+          { label: 'B+', min: boundaries.bPlus, max: boundaries.aMinus, color: '#0088FF', bgColor: 'rgba(0, 136, 255, 0.12)' },
+          { label: 'A-', min: boundaries.aMinus, max: boundaries.a, color: '#0077FF', bgColor: 'rgba(0, 119, 255, 0.12)' },
+          { label: 'A', min: boundaries.a, max: boundaries.aPlus, color: '#0055FF', bgColor: 'rgba(0, 85, 255, 0.12)' },
+          { label: 'A+', min: boundaries.aPlus, max: 68, color: '#0033FF', bgColor: 'rgba(0, 51, 255, 0.12)' }
+        ];
+
+        // Draw background rectangles for each grade region with labels
+        gradeRegions.forEach(region => {
+          const minIdx = (region.min - 46) * 2;
+          const maxIdx = (region.max - 46) * 2;
+
+          if (minIdx < labels05pct.length && maxIdx > 0) {
+            const x1 = xScale.getPixelForValue(Math.max(0, minIdx));
+            const x2 = xScale.getPixelForValue(Math.min(labels05pct.length - 1, maxIdx));
+
+            // Draw background rectangle
+            ctx.fillStyle = region.bgColor;
+            ctx.fillRect(x1, yScale.getPixelForValue(yScale.max), x2 - x1, yScale.getPixelForValue(0) - yScale.getPixelForValue(yScale.max));
+
+            // Draw grade label in the middle of the region
+            const midX = (x1 + x2) / 2;
+            ctx.fillStyle = region.color;
+            ctx.font = 'bold 14px system-ui';
+            ctx.textAlign = 'center';
+            ctx.globalAlpha = 0.7;
+            ctx.fillText(region.label, midX, yScale.getPixelForValue(yScale.max / 2));
+            ctx.globalAlpha = 1.0;
+          }
+        });
+      },
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+
+        const boundaryList = [
+          { value: boundaries.aPlus, label: 'A+', sd: '+2.0 SD' },
+          { value: boundaries.a, label: 'A', sd: '+1.67 SD' },
+          { value: boundaries.aMinus, label: 'A-', sd: '+1.33 SD' },
+          { value: boundaries.bPlus, label: 'B+', sd: '+1.0 SD' },
+          { value: boundaries.b, label: 'B', sd: '+0.67 SD' },
+          { value: boundaries.bMinus, label: 'B-', sd: '+0.33 SD' },
+          { value: boundaries.cPlus, label: 'C+', sd: '0 SD' },
+          { value: boundaries.c, label: 'C', sd: '-0.33 SD' },
+          { value: boundaries.cMinus, label: 'C-', sd: '-0.67 SD' },
+          { value: boundaries.dPlus, label: 'D+', sd: '-1.0 SD' },
+          { value: boundaries.d, label: 'D', sd: '-1.33 SD' },
+          { value: boundaries.dMinus, label: 'D-', sd: '-1.67 SD' }
+        ];
+
+        boundaryList.forEach((boundary, idx) => {
+          const bucketIndex = (boundary.value - 46) * 2;
+          if (bucketIndex >= 0 && bucketIndex < labels05pct.length) {
+            const x = xScale.getPixelForValue(bucketIndex);
+
+            // Draw vertical line
+            ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, yScale.getPixelForValue(0));
+            ctx.lineTo(x, yScale.getPixelForValue(yScale.max));
+            ctx.stroke();
+
+            // Draw label at top
+            ctx.fillStyle = '#aaa';
+            ctx.font = 'bold 11px system-ui';
+            ctx.textAlign = 'center';
+            ctx.fillText(boundary.label, x, yScale.getPixelForValue(yScale.max) - 25);
+            ctx.font = '9px system-ui';
+            ctx.fillText(boundary.sd, x, yScale.getPixelForValue(yScale.max) - 12);
+          }
+        });
+      }
+    };
+
+    // Create a single dataset with color-coded segments based on grade
+    const borderColors = data05pct.map((_, idx) => {
+      const percentage = 46 + (idx * 0.5) + 0.25;
+      return getGradeColor(percentage);
+    });
+
+    // Create segment configurations for gradient colors
+    const segments = [];
+    for (let i = 0; i < borderColors.length - 1; i++) {
+      segments.push({
+        borderColor: borderColors[i],
+        backgroundColor: 'rgba(100, 150, 255, 0.15)'
+      });
+    }
+
+    const datasets = [{
+      label: 'Card Distribution',
+      data: data05pct,
+      borderColor: '#6496FF',
+      backgroundColor: 'rgba(100, 150, 255, 0.15)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 0.5,
+      pointBackgroundColor: '#6496FF',
+      pointBorderColor: '#6496FF',
+      pointHoverRadius: 4,
+      spanGaps: true,
+      segment: {
+        borderColor: ctx => {
+          const index = ctx.dataIndex;
+          return borderColors[index] || '#6496FF';
+        }
+      }
+    }];
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels05pct,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#aaa', font: { size: 12 } },
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 16,
+            ticks: { color: '#666' },
+            grid: { color: '#333', drawBorder: false }
+          },
+          x: {
+            ticks: { color: '#666', font: { size: 9 }, maxRotation: 45, minRotation: 45 },
+            grid: { display: false, drawBorder: false }
+          }
+        }
+      },
+      plugins: [plugin]
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECL Draft Card Evaluation Quiz</title>
+
+  <!-- Open Graph / Social Media Preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">
+  <meta property="og:title" content="ECL Draft Card Evaluation Quiz">
+  <meta property="og:description" content="Test your knowledge of Magic: The Gathering ECL card win rates. Click the card you think has the higher Games in Hand Win Rate (GIH WR).">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/ecl-quiz-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">
+  <meta name="twitter:title" content="ECL Draft Card Evaluation Quiz">
+  <meta name="twitter:description" content="Test your knowledge of Magic: The Gathering ECL card win rates.">
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/ecl-quiz-preview.png">
+
+  <!-- Bluesky / Alternative Social -->
+  <meta name="description" content="Interactive quiz comparing Magic: The Gathering ECL cards by Games in Hand Win Rate (GIH WR). Data from 17 Lands.">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0a0e27;
+      color: #fff;
+      padding: 5px;
+      min-height: 100vh;
+    }
+
+    .container {
+      margin: 0 auto;
+    }
+
+    .banner {
+      position: relative;
+      background-image: url('../mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 0 5px;
+      text-align: center;
+      overflow: hidden;
+      margin: -5px -5px 0 -5px;
+      width: calc(100% + 10px);
+      margin-left: -5px;
+      min-height: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%);
+      z-index: 1;
+    }
+
+    .banner-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      margin-bottom: 8px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .subtitle {
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 0;
+    }
+
+    .score-display {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .score-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #4a9eff;
+    }
+
+    .score-label {
+      color: #aaa;
+      font-size: 12px;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-section {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-label {
+      display: none;
+    }
+
+    select {
+      padding: 10px 12px;
+      background: rgba(74, 158, 255, 0.25);
+      border: 1px solid rgba(74, 158, 255, 0.5);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 140px;
+    }
+
+    select:hover {
+      border-color: #4a9eff;
+      background: rgba(74, 158, 255, 0.35);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #4a9eff;
+      box-shadow: 0 0 8px rgba(74, 158, 255, 0.3);
+    }
+
+    select option {
+      background: #0a0e27;
+      color: #fff;
+    }
+
+    .quiz-section {
+      padding: 30px;
+      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .quiz-prompt {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 30px;
+      color: #ddd;
+      max-width: 65ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .card-area {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .card-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      flex: 1 1 45%;
+      min-width: 250px;
+      max-width: 500px;
+    }
+
+    @media (max-width: 1100px) {
+      .card-panel {
+        flex: 1 1 40%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .card-panel {
+        flex: 1 1 35%;
+      }
+
+      .card-image-container {
+        height: 350px;
+      }
+
+      .card-area {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .quiz-section {
+        padding: 0;
+        margin-bottom: 20px;
+      }
+
+      .card-panel {
+        flex: 1 1 100%;
+        min-width: auto;
+      }
+
+      .card-image-container {
+        height: 300px;
+      }
+
+      .card-area {
+        gap: 0;
+        margin-bottom: 20px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .card-image-container {
+        height: 250px;
+      }
+    }
+
+    .card-image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 400px;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .card-image-container:hover:not(.disabled) {
+      background: rgba(0, 0, 0, 0.5);
+      border-color: rgba(74, 158, 255, 0.5);
+      transform: scale(1.02);
+    }
+
+    .card-image-container.disabled {
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    .card-image {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .gih-percentage {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: #4a9eff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 56px;
+      font-weight: 700;
+      display: none;
+      border: 2px solid #4a9eff;
+      width: 90%;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .gih-value {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .gih-percentage.show {
+      display: flex;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .card-image-container.winner {
+      border-color: rgba(76, 175, 80, 0.8);
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+    }
+
+    .card-image-container.loser {
+      opacity: 0.6;
+    }
+
+    .card-loading {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .card-error {
+      color: #ff6b6b;
+      font-size: 13px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .card-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4a9eff;
+      text-align: center;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .card-name:hover {
+      color: #6badff;
+      text-decoration: underline;
+    }
+
+    .result-panel {
+      background: rgba(74, 158, 255, 0.1);
+      border: 2px solid rgba(74, 158, 255, 0.3);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+      animation: slideDown 0.3s ease-out;
+      order: -1;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-correct {
+      background: rgba(76, 175, 80, 0.15);
+      border-color: rgba(76, 175, 80, 0.5);
+    }
+
+    .result-incorrect {
+      background: rgba(255, 107, 107, 0.15);
+      border-color: rgba(255, 107, 107, 0.5);
+    }
+
+    .result-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .result-correct .result-title {
+      color: #4caf50;
+      animation: pulse 1.5s ease-in-out;
+    }
+
+    .result-incorrect .result-title {
+      color: #ff6b6b;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.08);
+      }
+    }
+
+    .result-content {
+      font-size: 15px;
+      color: #ddd;
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .result-card-name {
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .result-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #4a9eff;
+      margin-left: 16px;
+    }
+
+    .next-button {
+      padding: 12px 24px;
+      background: rgba(74, 158, 255, 0.2);
+      border: 2px solid rgba(74, 158, 255, 0.4);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .next-button:hover {
+      background: rgba(74, 158, 255, 0.3);
+      border-color: #4a9eff;
+      transform: translateY(-2px);
+    }
+
+    .error-message {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #ff9999;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .info-text {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+
+    .metadata-section {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .metadata-section a {
+      color: #4a9eff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .metadata-section a:hover {
+      color: #7b68ee;
+      text-decoration: underline;
+    }
+
+    .metadata-line {
+      margin: 2px 0;
+    }
+
+    .beta-badge {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+      z-index: 1000;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 2px solid #ff6666;
+    }
+
+    .beta-badge.local {
+      top: 70px;
+    }
+
+    @media (max-width: 768px) {
+      .beta-badge {
+        top: 10px;
+        right: 10px;
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+
+      .beta-badge.local {
+        top: 55px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+
+    /* History section styles */
+    .history-section {
+      margin-top: 40px;
+      padding: 30px;
+      background: rgba(74, 158, 255, 0.05);
+      border: 1px solid rgba(74, 158, 255, 0.2);
+      border-radius: 12px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .history-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #4a9eff;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-button {
+      padding: 12px 20px;
+      min-height: 44px;
+      min-width: 44px;
+      background: rgba(74, 158, 255, 0.2);
+      border: 2px solid rgba(74, 158, 255, 0.4);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-button:hover {
+      background: rgba(74, 158, 255, 0.3);
+      border-color: #4a9eff;
+      transform: translateY(-2px);
+    }
+
+    .action-button.danger {
+      background: rgba(255, 107, 107, 0.2);
+      border-color: rgba(255, 107, 107, 0.4);
+    }
+
+    .action-button.danger:hover {
+      background: rgba(255, 107, 107, 0.3);
+      border-color: #ff6b6b;
+    }
+
+    .history-table-container {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .history-table th {
+      background: rgba(74, 158, 255, 0.15);
+      padding: 12px 16px;
+      text-align: left;
+      color: #4a9eff;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(74, 158, 255, 0.3);
+      white-space: nowrap;
+    }
+
+    .history-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+      color: #ddd;
+    }
+
+    .history-table tr:hover {
+      background: rgba(74, 158, 255, 0.05);
+    }
+
+    .history-result-icon {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .history-result-correct {
+      color: #4caf50;
+    }
+
+    .history-result-incorrect {
+      color: #ff6b6b;
+    }
+
+    .history-result-partial {
+      color: #ffc107;
+    }
+
+    .history-card-name {
+      color: #4a9eff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .history-card-name:hover {
+      color: #6badff;
+      text-decoration: underline;
+    }
+
+    .history-empty {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .grade-badge {
+      display: inline-block;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-left: 8px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .gih-percentage .grade-badge {
+      font-size: 32px;
+      padding: 12px 20px;
+    }
+
+    .grade-a-plus {
+      background: rgba(255, 215, 0, 0.3);
+      color: #ffd700;
+      border: 1px solid rgba(255, 215, 0, 0.5);
+    }
+
+    .grade-a {
+      background: rgba(144, 238, 144, 0.3);
+      color: #90ee90;
+      border: 1px solid rgba(144, 238, 144, 0.5);
+    }
+
+    .grade-a-minus {
+      background: rgba(152, 224, 152, 0.3);
+      color: #98e098;
+      border: 1px solid rgba(152, 224, 152, 0.5);
+    }
+
+    .grade-b-plus {
+      background: rgba(173, 216, 230, 0.3);
+      color: #add8e6;
+      border: 1px solid rgba(173, 216, 230, 0.5);
+    }
+
+    .grade-b {
+      background: rgba(100, 149, 237, 0.3);
+      color: #6495ed;
+      border: 1px solid rgba(100, 149, 237, 0.5);
+    }
+
+    .grade-b-minus {
+      background: rgba(135, 170, 227, 0.3);
+      color: #87aae3;
+      border: 1px solid rgba(135, 170, 227, 0.5);
+    }
+
+    .grade-c-plus {
+      background: rgba(176, 196, 222, 0.3);
+      color: #b0c4de;
+      border: 1px solid rgba(176, 196, 222, 0.5);
+    }
+
+    .grade-c {
+      background: rgba(211, 211, 211, 0.3);
+      color: #d3d3d3;
+      border: 1px solid rgba(211, 211, 211, 0.5);
+    }
+
+    .grade-c-minus {
+      background: rgba(225, 200, 180, 0.3);
+      color: #e1c8b4;
+      border: 1px solid rgba(225, 200, 180, 0.5);
+    }
+
+    .grade-d-plus {
+      background: rgba(255, 165, 0, 0.3);
+      color: #ffa500;
+      border: 1px solid rgba(255, 165, 0, 0.5);
+    }
+
+    .grade-d {
+      background: rgba(255, 99, 71, 0.3);
+      color: #ff6347;
+      border: 1px solid rgba(255, 99, 71, 0.5);
+    }
+
+    .grade-d-minus {
+      background: rgba(240, 60, 65, 0.3);
+      color: #f03c41;
+      border: 1px solid rgba(240, 60, 65, 0.5);
+    }
+
+    .grade-f {
+      background: rgba(220, 20, 60, 0.3);
+      color: #dc143c;
+      border: 1px solid rgba(220, 20, 60, 0.5);
+    }
+
+    .gih-with-grade {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(76, 175, 80, 0.95);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 2000;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .history-section {
+        padding: 20px 16px;
+      }
+
+      .history-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .history-title {
+        font-size: 20px;
+      }
+
+      .history-actions {
+        width: 100%;
+      }
+
+      .action-button {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .history-table {
+        font-size: 12px;
+      }
+
+      .history-table th,
+      .history-table td {
+        padding: 8px 12px;
+      }
+    }
+
+    /* ============== GRADING MODE STYLES ============== */
+
+    /* Mode toggle buttons */
+    .mode-toggle {
+      display: flex;
+      gap: 0;
+      background: rgba(74, 158, 255, 0.15);
+      border: 1px solid rgba(74, 158, 255, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+      width: fit-content;
+    }
+
+    .mode-option {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      color: #aaa;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 44px;
+      min-width: 120px;
+    }
+
+    .mode-option:hover {
+      background: rgba(74, 158, 255, 0.2);
+      color: #fff;
+    }
+
+    .mode-option.active {
+      background: rgba(74, 158, 255, 0.4);
+      color: #fff;
+      border: 2px solid #4a9eff;
+    }
+
+    /* Grade selector buttons */
+    .grade-selector {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding: 0 20px;
+    }
+
+    .grade-button {
+      min-width: 60px;
+      min-height: 44px;
+      padding: 10px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .grade-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .grade-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .grade-button.selected {
+      border-color: #4a9eff;
+      box-shadow: 0 0 12px rgba(74, 158, 255, 0.5);
+    }
+
+    .grade-button-label {
+      font-size: 18px;
+    }
+
+    .grade-button-range {
+      font-size: 9px;
+      opacity: 0.7;
+      white-space: nowrap;
+    }
+
+    /* Apply grade colors to buttons */
+    .grade-button.grade-a-plus {
+      background: rgba(255, 215, 0, 0.3);
+      color: #ffd700;
+      border-color: rgba(255, 215, 0, 0.5);
+    }
+
+    .grade-button.grade-a {
+      background: rgba(144, 238, 144, 0.3);
+      color: #90ee90;
+      border-color: rgba(144, 238, 144, 0.5);
+    }
+
+    .grade-button.grade-a-minus {
+      background: rgba(152, 224, 152, 0.3);
+      color: #98e098;
+      border-color: rgba(152, 224, 152, 0.5);
+    }
+
+    .grade-button.grade-b-plus {
+      background: rgba(173, 216, 230, 0.3);
+      color: #add8e6;
+      border-color: rgba(173, 216, 230, 0.5);
+    }
+
+    .grade-button.grade-b {
+      background: rgba(100, 149, 237, 0.3);
+      color: #6495ed;
+      border-color: rgba(100, 149, 237, 0.5);
+    }
+
+    .grade-button.grade-b-minus {
+      background: rgba(135, 170, 227, 0.3);
+      color: #87aae3;
+      border-color: rgba(135, 170, 227, 0.5);
+    }
+
+    .grade-button.grade-c-plus {
+      background: rgba(176, 196, 222, 0.3);
+      color: #b0c4de;
+      border-color: rgba(176, 196, 222, 0.5);
+    }
+
+    .grade-button.grade-c {
+      background: rgba(211, 211, 211, 0.3);
+      color: #d3d3d3;
+      border-color: rgba(211, 211, 211, 0.5);
+    }
+
+    .grade-button.grade-c-minus {
+      background: rgba(225, 200, 180, 0.3);
+      color: #e1c8b4;
+      border-color: rgba(225, 200, 180, 0.5);
+    }
+
+    .grade-button.grade-d-plus {
+      background: rgba(255, 165, 0, 0.3);
+      color: #ffa500;
+      border-color: rgba(255, 165, 0, 0.5);
+    }
+
+    .grade-button.grade-d {
+      background: rgba(255, 99, 71, 0.3);
+      color: #ff6347;
+      border-color: rgba(255, 99, 71, 0.5);
+    }
+
+    .grade-button.grade-d-minus {
+      background: rgba(240, 60, 65, 0.3);
+      color: #f03c41;
+      border-color: rgba(240, 60, 65, 0.5);
+    }
+
+    .grade-button.grade-f {
+      background: rgba(220, 20, 60, 0.3);
+      color: #dc143c;
+      border-color: rgba(220, 20, 60, 0.5);
+    }
+
+    /* Partial credit result styling */
+    .result-partial {
+      background: rgba(255, 193, 7, 0.15);
+      border-color: rgba(255, 193, 7, 0.5);
+    }
+
+    .result-partial .result-title {
+      color: #ffc107;
+    }
+
+    .history-result-partial {
+      color: #ffc107;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .mode-option {
+        padding: 8px 16px;
+        font-size: 12px;
+        min-width: 100px;
+      }
+
+      .grade-selector {
+        gap: 6px;
+        padding: 0 10px;
+      }
+
+      .grade-button {
+        min-width: 50px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .grade-button-range {
+        font-size: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+/*
+  17 LANDS GIH WR QUIZ v1.0 - LOCAL STANDALONE VERSION
+
+  Interactive quiz comparing two cards by Games In Hand (GIH) Win Rate.
+  Data sourced from 17 Lands (https://www.17lands.com).
+  Card images from Scryfall API.
+
+  CHANGELOG:
+  v3.0.0 (2026-01-31 22:44 UTC - Claude Sonnet 4.5):
+  - MAJOR PUBLIC RELEASE: Deployed to GitHub Pages with all v2.x features
+  - Grading Mode: Guess letter grades (A+ through F) with partial credit scoring
+  - ALSA Metric: Toggle between GIH WR and pick order (Average Last Seen At)
+  - Smart Selection: Filter pairs by grade distance and standard deviation for better learning
+  - Latest 17 Lands ECL Premier Draft data (263 cards from 2026-01-31)
+  - Dual quiz modes with persistent score tracking
+  - Comprehensive history table with metric-aware columns
+  - Share feature for social media (Discord, Twitter, Bluesky)
+
+  v2.2.0 (2026-01-31 Claude Sonnet 4.5):
+  - Update card data with latest 17 Lands ECL Premier Draft stats (2026-01-31)
+  - Add 9 new cards with valid GIH WR data (263 total cards, up from 254)
+  - New cards: Ashling Rekindled, Brigid Clachan's Heart, Eirdu Carrier of Dawn, Goatnap, Grub Storied Matriarch, Lavaleaper, Oko Lorwyn Liege, Sygg Wanderwine Wisdom, Trystan Callous Cultivator
+  - Update all GIH WR and ALSA values with latest stats from 263-card dataset
+  - Fix: Add missing 'metric' dependency to generateQuestion callback (fixes ALSA smart selection)
+  - Simplify ALSA smart selection: use direct numerical difference (>=1.0 and <3.0) instead of tier rounding
+  - UI: Remove spaces around "/" in score displays (12 / 20 → 12/20)
+  - UI: Show letter grade inline with GIH WR percentage in history table
+
+  v2.1.0 (2026-01-29 Claude Haiku 4.5):
+  - Add Smart Selection toggle mode: filters pairs by grade & SD distance (now default)
+  - Redesign pair selection UI: toggle above cards matching mode selector style
+  - Add sparkle (✨) and dice (🎲) emojis for mode clarity
+  - Track Smart Selection status in question history with ✨ marker
+  - Set Smart Selection as default mode for better question quality
+  - Add explanations in bullet points for both pairing modes
+  - Smart Selection preference persists across sessions
+
+  v2.0.1 (2026-01-29 Claude Haiku 4.5):
+  - Add Smart Selection filter for Comparison Mode
+  - Filters pairs to cards with different grades within 1 standard deviation
+  - Eliminates trivial (same grade) and random (>1 SD apart) comparisons
+  - Smart Selection preference persists to localStorage
+  - Checkbox only appears in Comparison Mode
+
+  v2.0.0 (2026-01-28 Claude Sonnet 4.5):
+  - Add Grading Mode: guess single card's letter grade with partial credit
+  - Mode toggle between Comparison and Grading modes
+  - Separate score/history tracking per mode
+  - Grade distance scoring: exact=1.0, ±1=0.5, ±2=0.25, ±3+=0
+  - Horizontal grade selector with color-coded buttons (A+ through F)
+  - Fractional scoring system (e.g., "12.5 / 20 points")
+  - Unified history table with mode-specific columns
+  - localStorage migration for backward compatibility
+  - Display grade percentage ranges on selector buttons
+  - Add Wikipedia links for normal distribution and standard deviations
+
+  v1.8 (2026-01-27 Claude Sonnet 4.5):
+  - Add localStorage for persistent score and history tracking
+  - Implement card deduplication: won't repeat pairs until all shown in current filter
+  - Add history table at bottom showing all questions, percentages, and results
+  - Add "Clear History" and "Export Score" buttons
+  - Add Wordle-style score export (copyable text format)
+  - Apply web design best practices: 44px touch targets, improved spacing
+  - WCAG AA contrast compliance for accessibility
+
+  v1.7 (2026-01-26 Claude Haiku 4.5):
+  - Fix banner image sizing (use cropped version, background-size: cover)
+  - Improved responsive card layout: cards stay side-by-side longer
+  - Progressive breakpoints for smooth scaling (1100px, 900px, 700px, 500px)
+  - Full-width cards on mobile (700px and below)
+  - Better vertical centering of banner content
+
+  v1.6 (2026-01-26 Claude Haiku 4.5):
+  - Remove decorative box around quiz section (cleaner look)
+  - Make banner full-width with centered content
+  - Remove container max-width constraint
+  - Reduce title font size on mobile (40px -> 24px)
+  - Updated data to 261 cards with corrected rarity distribution
+
+  v1.5 (2026-01-26 Claude Haiku 4.5):
+  - Update 17 Lands ECL Premier Draft data (255 -> 261 cards)
+  - Fix rarity import to use CSV data directly (C: 81, U: 99, R: 60, M: 21)
+  - Updated GIH WR values (46.1% - 67.5%, avg 56.0%)
+  - Reduce body padding to 5px on all devices
+
+  v1.3 (2026-01-24 Claude Haiku 4.5):
+  - Update quiz layout and improve typography
+  - Add bell curve banner image
+
+  v1.2 (2026-01-24 Claude Haiku 4.5):
+  - Fix filter error handling: show notification when filters yield <2 cards
+  - Skip card pairs with tied GIH WR values (retry up to 20 times)
+  - Fix filter change detection to always regenerate questions
+  - Add double-tap protection to prevent score race conditions
+  - Update offline support documentation (images require internet)
+  - Improve error messaging and footer text
+
+  v1.1 (2026-01-24 Claude Haiku 4.5):
+  - Preserve score when changing filters
+  - Auto-update displayed cards when filter changes
+  - Improve dropdown text contrast
+  - Allow clicking cards to select answer
+  - Move result panel to top with bigger display
+  - Add GIH percentages on cards during result
+  - Add metadata section with data source and version info
+
+  v1.0 (2026-01-23 Claude Haiku 4.5):
+  - Initial stable release
+  - 255 cards with embedded GIH WR data
+  - Color and rarity filtering
+  - Scryfall API integration for card images
+  - Real-time score tracking
+  - Completely self-contained (no server needed)
+  - Works via file:// protocol
+
+  FEATURES:
+  - Completely self-contained with embedded card data (no CSV file needed)
+  - Open via file:// protocol - just open HTML in browser!
+  - Compare two randomly selected cards and guess which has higher GIH WR
+  - Filter by card color and rarity
+  - Real-time score tracking
+  - Card images loaded from Scryfall API (requires internet for images)
+  - Responsive design for mobile and desktop
+  - Handles filter edge cases gracefully (error messages for insufficient cards)
+  - Avoids tied card pairs when possible
+
+  NOTE ON OFFLINE SUPPORT:
+  - Core quiz logic works without internet (embedded card data)
+  - Card images require Scryfall API access (online only)
+  - If offline, quiz still works but shows placeholder for images
+  - Google Fonts and React/Babel loaded from CDN (requires internet for first load)
+*/
+
+// Embedded card data - extracted from 17 lands ECL premier draft card-ratings-2026-01-31.csv
+// Downloaded from 17 Lands on 2026-01-31
+// Expansion: ECL - Premier Draft
+// Total cards: 263 (includes 9 new cards with valid GIH WR data)
+const CARD_DATA = [
+  {name: "Abigale, Eloquent First-Year", color: "WB", type: "Legendary Creature — Bird Bard", rarity: "R", gihWr: 58.8, alsa: 1.66},
+  {name: "Adept Watershaper", color: "W", type: "Creature — Merfolk Cleric", rarity: "R", gihWr: 58.0, alsa: 2.11},
+  {name: "Ajani, Outland Chaperone", color: "W", type: "Legendary Planeswalker — Ajani", rarity: "M", gihWr: 60.3, alsa: 1.47},
+  {name: "Appeal to Eirdu", color: "W", type: "Instant", rarity: "C", gihWr: 49.9, alsa: 7.62},
+  {name: "Aquitect's Defenses", color: "U", type: "Enchantment — Aura", rarity: "C", gihWr: 52.5, alsa: 7.10},
+  {name: "Ashling's Command", color: "UR", type: "Kindred Instant — Elemental", rarity: "R", gihWr: 66.9, alsa: 2.56},
+  {name: "Ashling, Rekindled", color: "R", type: "Legendary Creature — Elemental Sorcerer // Legendary Creature — Elemental Wizard", rarity: "R", gihWr: 60.4, alsa: 2.88},
+  {name: "Assert Perfection", color: "G", type: "Sorcery", rarity: "C", gihWr: 58.3, alsa: 4.07},
+  {name: "Auntie's Sentence", color: "B", type: "Sorcery", rarity: "C", gihWr: 53.1, alsa: 5.75},
+  {name: "Aurora Awakener", color: "G", type: "Creature — Giant Druid", rarity: "M", gihWr: 61.4, alsa: 1.73},
+  {name: "Barbed Bloodletter", color: "B", type: "Artifact — Equipment", rarity: "C", gihWr: 53.1, alsa: 7.24},
+  {name: "Bark of Doran", color: "W", type: "Artifact — Equipment", rarity: "U", gihWr: 49.5, alsa: 7.22},
+  {name: "Bile-Vial Boggart", color: "B", type: "Creature — Goblin Assassin", rarity: "C", gihWr: 51.6, alsa: 6.34},
+  {name: "Bitterbloom Bearer", color: "B", type: "Creature — Faerie Rogue", rarity: "M", gihWr: 58.2, alsa: 1.76},
+  {name: "Blight Rot", color: "B", type: "Instant", rarity: "C", gihWr: 55.4, alsa: 3.71},
+  {name: "Blighted Blackthorn", color: "B", type: "Creature — Treefolk Warlock", rarity: "C", gihWr: 50.9, alsa: 6.67},
+  {name: "Blood Crypt", color: "", type: "Land — Swamp Mountain", rarity: "R", gihWr: 52.3, alsa: 4.05},
+  {name: "Bloodline Bidding", color: "B", type: "Sorcery", rarity: "R", gihWr: 58.7, alsa: 3.14},
+  {name: "Bloom Tender", color: "G", type: "Creature — Elf Druid", rarity: "M", gihWr: 54.3, alsa: 2.09},
+  {name: "Blossombind", color: "U", type: "Enchantment — Aura", rarity: "C", gihWr: 54.9, alsa: 4.61},
+  {name: "Blossoming Defense", color: "G", type: "Instant", rarity: "U", gihWr: 56.0, alsa: 4.64},
+  {name: "Boggart Cursecrafter", color: "BR", type: "Creature — Goblin Warlock", rarity: "U", gihWr: 56.7, alsa: 4.39},
+  {name: "Boggart Mischief", color: "B", type: "Kindred Enchantment — Goblin", rarity: "U", gihWr: 56.8, alsa: 4.19},
+  {name: "Boggart Prankster", color: "B", type: "Creature — Goblin Warrior", rarity: "C", gihWr: 52.4, alsa: 6.82},
+  {name: "Bogslither's Embrace", color: "B", type: "Sorcery", rarity: "C", gihWr: 55.8, alsa: 3.80},
+  {name: "Boldwyr Aggressor", color: "R", type: "Creature — Giant Warrior", rarity: "U", gihWr: 50.7, alsa: 6.19},
+  {name: "Boneclub Berserker", color: "R", type: "Creature — Goblin Berserker", rarity: "C", gihWr: 50.7, alsa: 7.31},
+  {name: "Boulder Dash", color: "R", type: "Sorcery", rarity: "U", gihWr: 55.7, alsa: 4.04},
+  {name: "Brambleback Brute", color: "R", type: "Creature — Giant Warrior", rarity: "C", gihWr: 52.0, alsa: 6.91},
+  {name: "Bre of Clan Stoutarm", color: "WR", type: "Legendary Creature — Giant Warrior", rarity: "R", gihWr: 56.6, alsa: 2.67},
+  {name: "Brigid's Command", color: "WG", type: "Kindred Sorcery — Kithkin", rarity: "R", gihWr: 60.5, alsa: 2.83},
+  {name: "Brigid, Clachan's Heart", color: "W", type: "Legendary Creature — Kithkin Warrior // Legendary Creature — Kithkin Soldier", rarity: "R", gihWr: 61.4, alsa: 2.18},
+  {name: "Bristlebane Battler", color: "G", type: "Creature — Kithkin Soldier", rarity: "R", gihWr: 60.7, alsa: 1.95},
+  {name: "Bristlebane Outrider", color: "G", type: "Creature — Kithkin Knight", rarity: "U", gihWr: 56.7, alsa: 4.44},
+  {name: "Burdened Stoneback", color: "W", type: "Creature — Giant Warrior", rarity: "U", gihWr: 53.2, alsa: 4.31},
+  {name: "Burning Curiosity", color: "R", type: "Sorcery", rarity: "C", gihWr: 51.7, alsa: 7.33},
+  {name: "Catharsis", color: "WR", type: "Creature — Elemental Incarnation", rarity: "M", gihWr: 54.0, alsa: 1.97},
+  {name: "Celestial Reunion", color: "G", type: "Sorcery", rarity: "M", gihWr: 54.3, alsa: 3.67},
+  {name: "Champion of the Clachan", color: "W", type: "Creature — Kithkin Knight", rarity: "R", gihWr: 56.4, alsa: 2.80},
+  {name: "Champion of the Path", color: "R", type: "Creature — Elemental Sorcerer", rarity: "R", gihWr: 55.4, alsa: 3.20},
+  {name: "Champion of the Weird", color: "B", type: "Creature — Goblin Berserker", rarity: "R", gihWr: 59.1, alsa: 2.90},
+  {name: "Champions of the Perfect", color: "G", type: "Creature — Elf Warrior", rarity: "R", gihWr: 62.2, alsa: 2.07},
+  {name: "Champions of the Shoal", color: "U", type: "Creature — Merfolk Soldier", rarity: "R", gihWr: 61.2, alsa: 2.64},
+  {name: "Changeling Wayfinder", color: "", type: "Creature — Shapeshifter", rarity: "C", gihWr: 53.9, alsa: 4.60},
+  {name: "Chaos Spewer", color: "BR", type: "Creature — Goblin Warlock", rarity: "C", gihWr: 50.7, alsa: 6.36},
+  {name: "Chitinous Graspling", color: "UG", type: "Creature — Shapeshifter", rarity: "C", gihWr: 51.4, alsa: 5.87},
+  {name: "Chomping Changeling", color: "G", type: "Creature — Shapeshifter", rarity: "U", gihWr: 49.6, alsa: 4.70},
+  {name: "Chronicle of Victory", color: "", type: "Legendary Artifact", rarity: "M", gihWr: 62.8, alsa: 1.23},
+  {name: "Cinder Strike", color: "R", type: "Sorcery", rarity: "C", gihWr: 55.4, alsa: 4.17},
+  {name: "Clachan Festival", color: "W", type: "Kindred Enchantment — Kithkin", rarity: "U", gihWr: 56.7, alsa: 3.85},
+  {name: "Collective Inferno", color: "R", type: "Enchantment", rarity: "R", gihWr: 49.1, alsa: 4.35},
+  {name: "Creakwood Safewright", color: "B", type: "Creature — Elf Warrior", rarity: "U", gihWr: 58.1, alsa: 3.78},
+  {name: "Crib Swap", color: "W", type: "Kindred Instant — Shapeshifter", rarity: "U", gihWr: 49.7, alsa: 5.29},
+  {name: "Crossroads Watcher", color: "G", type: "Creature — Kithkin Ranger", rarity: "C", gihWr: 55.4, alsa: 5.94},
+  {name: "Curious Colossus", color: "W", type: "Creature — Giant Warrior", rarity: "M", gihWr: 63.3, alsa: 1.81},
+  {name: "Darkness Descends", color: "B", type: "Sorcery", rarity: "U", gihWr: 48.9, alsa: 6.08},
+  {name: "Dawn's Light Archer", color: "G", type: "Creature — Elf Archer", rarity: "C", gihWr: 55.9, alsa: 6.14},
+  {name: "Dawn-Blessed Pennant", color: "", type: "Artifact", rarity: "U", gihWr: 54.3, alsa: 5.49},
+  {name: "Dawnhand Dissident", color: "B", type: "Creature — Elf Warlock", rarity: "R", gihWr: 59.1, alsa: 2.38},
+  {name: "Dawnhand Eulogist", color: "B", type: "Creature — Elf Warlock", rarity: "C", gihWr: 58.5, alsa: 5.85},
+  {name: "Deceit", color: "UB", type: "Creature — Elemental Incarnation", rarity: "M", gihWr: 59.6, alsa: 1.69},
+  {name: "Deepchannel Duelist", color: "WU", type: "Creature — Merfolk Soldier", rarity: "U", gihWr: 63.5, alsa: 3.84},
+  {name: "Deepway Navigator", color: "WU", type: "Creature — Merfolk Wizard", rarity: "R", gihWr: 55.9, alsa: 3.36},
+  {name: "Disruptor of Currents", color: "U", type: "Creature — Merfolk Wizard", rarity: "R", gihWr: 61.0, alsa: 2.31},
+  {name: "Doran, Besieged by Time", color: "WBG", type: "Legendary Creature — Treefolk Druid", rarity: "R", gihWr: 58.1, alsa: 3.34},
+  {name: "Dose of Dawnglow", color: "B", type: "Instant", rarity: "U", gihWr: 51.4, alsa: 5.66},
+  {name: "Dream Harvest", color: "UB", type: "Sorcery", rarity: "R", gihWr: 51.0, alsa: 3.88},
+  {name: "Dream Seizer", color: "B", type: "Creature — Faerie Rogue", rarity: "C", gihWr: 51.1, alsa: 6.57},
+  {name: "Dundoolin Weaver", color: "G", type: "Creature — Kithkin Druid", rarity: "U", gihWr: 56.7, alsa: 3.63},
+  {name: "Eclipsed Boggart", color: "BR", type: "Creature — Goblin Scout", rarity: "U", gihWr: 59.0, alsa: 4.61},
+  {name: "Eclipsed Elf", color: "BG", type: "Creature — Elf Scout", rarity: "U", gihWr: 63.5, alsa: 3.54},
+  {name: "Eclipsed Flamekin", color: "UR", type: "Creature — Elemental Scout", rarity: "U", gihWr: 60.5, alsa: 4.21},
+  {name: "Eclipsed Kithkin", color: "WG", type: "Creature — Kithkin Scout", rarity: "U", gihWr: 62.2, alsa: 3.60},
+  {name: "Eclipsed Merrow", color: "WU", type: "Creature — Merfolk Scout", rarity: "U", gihWr: 61.9, alsa: 4.04},
+  {name: "Eclipsed Realms", color: "", type: "Land", rarity: "U", gihWr: 53.6, alsa: 5.22},
+  {name: "Eirdu, Carrier of Dawn", color: "W", type: "Legendary Creature — Elemental God", rarity: "M", gihWr: 61.5, alsa: 1.45},
+  {name: "Elder Auntie", color: "R", type: "Creature — Goblin Warlock", rarity: "C", gihWr: 51.7, alsa: 6.46},
+  {name: "Emptiness", color: "WB", type: "Creature — Elemental Incarnation", rarity: "M", gihWr: 56.6, alsa: 1.58},
+  {name: "Encumbered Reejerey", color: "W", type: "Creature — Merfolk Soldier", rarity: "U", gihWr: 56.1, alsa: 3.56},
+  {name: "End-Blaze Epiphany", color: "R", type: "Instant", rarity: "R", gihWr: 60.5, alsa: 2.62},
+  {name: "Enraged Flamecaster", color: "R", type: "Creature — Elemental Sorcerer", rarity: "C", gihWr: 52.8, alsa: 6.74},
+  {name: "Evershrike's Gift", color: "W", type: "Enchantment — Aura", rarity: "U", gihWr: 53.1, alsa: 5.69},
+  {name: "Evolving Wilds", color: "", type: "Land", rarity: "C", gihWr: 54.4, alsa: 4.60},
+  {name: "Explosive Prodigy", color: "R", type: "Creature — Elemental Sorcerer", rarity: "U", gihWr: 58.2, alsa: 3.76},
+  {name: "Feed the Flames", color: "R", type: "Instant", rarity: "C", gihWr: 54.6, alsa: 4.94},
+  {name: "Feisty Spikeling", color: "WR", type: "Creature — Shapeshifter", rarity: "C", gihWr: 50.8, alsa: 5.42},
+  {name: "Figure of Fable", color: "WG", type: "Creature — Kithkin", rarity: "R", gihWr: 63.9, alsa: 1.61},
+  {name: "Firdoch Core", color: "", type: "Kindred Artifact — Shapeshifter", rarity: "C", gihWr: 50.2, alsa: 6.48},
+  {name: "Flame-Chain Mauler", color: "R", type: "Creature — Elemental Warrior", rarity: "C", gihWr: 53.2, alsa: 6.70},
+  {name: "Flamebraider", color: "R", type: "Creature — Elemental Bard", rarity: "U", gihWr: 59.3, alsa: 4.27},
+  {name: "Flamekin Gildweaver", color: "R", type: "Creature — Elemental Sorcerer", rarity: "C", gihWr: 57.0, alsa: 6.31},
+  {name: "Flaring Cinder", color: "UR", type: "Creature — Elemental Sorcerer", rarity: "C", gihWr: 55.2, alsa: 6.33},
+  {name: "Flitterwing Nuisance", color: "U", type: "Creature — Faerie Rogue", rarity: "R", gihWr: 59.8, alsa: 2.35},
+  {name: "Flock Impostor", color: "W", type: "Creature — Shapeshifter", rarity: "U", gihWr: 54.7, alsa: 3.81},
+  {name: "Foraging Wickermaw", color: "", type: "Artifact Creature — Scarecrow", rarity: "C", gihWr: 53.8, alsa: 6.24},
+  {name: "Formidable Speaker", color: "G", type: "Creature — Elf Druid", rarity: "R", gihWr: 57.6, alsa: 2.00},
+  {name: "Gallant Fowlknight", color: "W", type: "Creature — Kithkin Knight", rarity: "C", gihWr: 54.6, alsa: 6.51},
+  {name: "Gangly Stompling", color: "RG", type: "Creature — Shapeshifter", rarity: "C", gihWr: 53.9, alsa: 5.54},
+  {name: "Gathering Stone", color: "", type: "Artifact", rarity: "U", gihWr: 59.0, alsa: 4.35},
+  {name: "Giantfall", color: "R", type: "Instant", rarity: "U", gihWr: 53.3, alsa: 4.76},
+  {name: "Gilt-Leaf's Embrace", color: "G", type: "Enchantment — Aura", rarity: "C", gihWr: 55.2, alsa: 6.89},
+  {name: "Glamer Gifter", color: "U", type: "Creature — Faerie Wizard", rarity: "U", gihWr: 56.5, alsa: 3.97},
+  {name: "Glamermite", color: "U", type: "Creature — Faerie Rogue", rarity: "C", gihWr: 53.1, alsa: 6.41},
+  {name: "Glen Elendra Guardian", color: "U", type: "Creature — Faerie Wizard", rarity: "R", gihWr: 56.5, alsa: 2.33},
+  {name: "Glen Elendra's Answer", color: "U", type: "Instant", rarity: "M", gihWr: 57.6, alsa: 3.88},
+  {name: "Glister Bairn", color: "UG", type: "Creature — Ouphe", rarity: "U", gihWr: 51.6, alsa: 5.10},
+  {name: "Gloom Ripper", color: "B", type: "Creature — Elf Assassin", rarity: "R", gihWr: 66.5, alsa: 2.44},
+  {name: "Gnarlbark Elm", color: "B", type: "Creature — Treefolk Warlock", rarity: "U", gihWr: 53.9, alsa: 3.89},
+  {name: "Goatnap", color: "R", type: "Sorcery", rarity: "U", gihWr: 49.0, alsa: 7.34},
+  {name: "Goldmeadow Nomad", color: "W", type: "Creature — Kithkin Scout", rarity: "C", gihWr: 53.1, alsa: 6.46},
+  {name: "Goliath Daydreamer", color: "R", type: "Creature — Giant Wizard", rarity: "R", gihWr: 55.5, alsa: 2.67},
+  {name: "Gravelgill Scoundrel", color: "U", type: "Creature — Merfolk Rogue", rarity: "C", gihWr: 55.6, alsa: 6.52},
+  {name: "Graveshifter", color: "B", type: "Creature — Shapeshifter", rarity: "U", gihWr: 54.2, alsa: 3.42},
+  {name: "Great Forest Druid", color: "G", type: "Creature — Treefolk Druid", rarity: "C", gihWr: 54.0, alsa: 4.74},
+  {name: "Gristle Glutton", color: "R", type: "Creature — Goblin Scout", rarity: "C", gihWr: 53.3, alsa: 6.62},
+  {name: "Grub's Command", color: "BR", type: "Kindred Sorcery — Goblin", rarity: "R", gihWr: 63.5, alsa: 3.12},
+  {name: "Grub, Storied Matriarch", color: "B", type: "Legendary Creature — Goblin Warlock // Legendary Creature — Goblin Warrior", rarity: "R", gihWr: 56.9, alsa: 3.08},
+  {name: "Gutsplitter Gang", color: "B", type: "Creature — Goblin Berserker", rarity: "U", gihWr: 51.9, alsa: 5.24},
+  {name: "Hallowed Fountain", color: "", type: "Land — Plains Island", rarity: "R", gihWr: 52.6, alsa: 3.84},
+  {name: "Harmonized Crescendo", color: "U", type: "Instant", rarity: "R", gihWr: 53.2, alsa: 3.77},
+  {name: "Heirloom Auntie", color: "B", type: "Creature — Goblin Warlock", rarity: "C", gihWr: 48.6, alsa: 6.61},
+  {name: "Hexing Squelcher", color: "R", type: "Creature — Goblin Sorcerer", rarity: "R", gihWr: 50.9, alsa: 3.01},
+  {name: "High Perfect Morcant", color: "BG", type: "Legendary Creature — Elf Noble", rarity: "R", gihWr: 62.7, alsa: 2.34},
+  {name: "Hovel Hurler", color: "WR", type: "Creature — Giant Warrior", rarity: "U", gihWr: 54.0, alsa: 3.84},
+  {name: "Illusion Spinners", color: "U", type: "Creature — Faerie Wizard", rarity: "U", gihWr: 51.8, alsa: 5.77},
+  {name: "Impolite Entrance", color: "R", type: "Sorcery", rarity: "U", gihWr: 45.3, alsa: 7.05},
+  {name: "Iron-Shield Elf", color: "B", type: "Creature — Elf Warrior", rarity: "U", gihWr: 57.5, alsa: 4.10},
+  {name: "Keep Out", color: "W", type: "Instant", rarity: "C", gihWr: 52.6, alsa: 5.21},
+  {name: "Kinbinding", color: "W", type: "Enchantment", rarity: "R", gihWr: 64.6, alsa: 1.88},
+  {name: "Kindle the Inner Flame", color: "R", type: "Kindred Sorcery — Elemental", rarity: "U", gihWr: 54.6, alsa: 6.70},
+  {name: "Kinsbaile Aspirant", color: "W", type: "Creature — Kithkin Citizen", rarity: "U", gihWr: 57.9, alsa: 4.43},
+  {name: "Kinscaer Sentry", color: "W", type: "Creature — Kithkin Soldier", rarity: "R", gihWr: 58.5, alsa: 2.14},
+  {name: "Kirol, Attentive First-Year", color: "WR", type: "Legendary Creature — Vampire Cleric", rarity: "R", gihWr: 52.6, alsa: 2.97},
+  {name: "Kithkeeper", color: "W", type: "Creature — Elemental", rarity: "U", gihWr: 54.1, alsa: 5.38},
+  {name: "Kulrath Mystic", color: "U", type: "Creature — Elemental Wizard", rarity: "C", gihWr: 53.9, alsa: 7.16},
+  {name: "Kulrath Zealot", color: "R", type: "Creature — Elemental Warrior", rarity: "C", gihWr: 57.3, alsa: 5.77},
+  {name: "Lasting Tarfire", color: "R", type: "Enchantment", rarity: "U", gihWr: 46.7, alsa: 6.54},
+  {name: "Lavaleaper", color: "R", type: "Creature — Elemental", rarity: "R", gihWr: 48.6, alsa: 5.20},
+  {name: "Liminal Hold", color: "W", type: "Enchantment", rarity: "C", gihWr: 55.6, alsa: 3.81},
+  {name: "Lluwen, Imperfect Naturalist", color: "BG", type: "Legendary Creature — Elf Druid", rarity: "R", gihWr: 59.4, alsa: 2.33},
+  {name: "Loch Mare", color: "U", type: "Creature — Horse Serpent", rarity: "M", gihWr: 61.6, alsa: 1.71},
+  {name: "Lofty Dreams", color: "U", type: "Enchantment — Aura", rarity: "U", gihWr: 55.5, alsa: 5.16},
+  {name: "Luminollusk", color: "G", type: "Creature — Elemental", rarity: "U", gihWr: 52.0, alsa: 5.53},
+  {name: "Lys Alana Dignitary", color: "G", type: "Creature — Elf Advisor", rarity: "U", gihWr: 57.8, alsa: 4.18},
+  {name: "Lys Alana Informant", color: "G", type: "Creature — Elf Scout", rarity: "C", gihWr: 57.1, alsa: 5.07},
+  {name: "Maralen, Fae Ascendant", color: "UBG", type: "Legendary Creature — Elf Faerie Noble", rarity: "R", gihWr: 59.9, alsa: 2.51},
+  {name: "Meanders Guide", color: "W", type: "Creature — Merfolk Scout", rarity: "U", gihWr: 54.0, alsa: 4.49},
+  {name: "Merrow Skyswimmer", color: "WU", type: "Creature — Merfolk Soldier", rarity: "C", gihWr: 57.1, alsa: 4.78},
+  {name: "Midnight Tilling", color: "G", type: "Instant", rarity: "C", gihWr: 57.0, alsa: 6.82},
+  {name: "Mirrorform", color: "U", type: "Instant", rarity: "M", gihWr: 55.0, alsa: 3.22},
+  {name: "Mischievous Sneakling", color: "UB", type: "Creature — Shapeshifter", rarity: "C", gihWr: 52.5, alsa: 4.82},
+  {name: "Mistmeadow Council", color: "G", type: "Creature — Kithkin Advisor", rarity: "C", gihWr: 57.1, alsa: 5.31},
+  {name: "Moon-Vigil Adherents", color: "G", type: "Creature — Elf Druid", rarity: "U", gihWr: 59.4, alsa: 3.41},
+  {name: "Moonglove Extractor", color: "B", type: "Creature — Elf Warlock", rarity: "C", gihWr: 52.2, alsa: 6.28},
+  {name: "Moonlit Lamenter", color: "W", type: "Creature — Treefolk Cleric", rarity: "U", gihWr: 54.9, alsa: 3.79},
+  {name: "Moonshadow", color: "B", type: "Creature — Elemental", rarity: "M", gihWr: 56.7, alsa: 1.97},
+  {name: "Morcant's Eyes", color: "G", type: "Kindred Enchantment — Elf", rarity: "U", gihWr: 61.1, alsa: 4.40},
+  {name: "Morcant's Loyalist", color: "BG", type: "Creature — Elf Warrior", rarity: "U", gihWr: 62.2, alsa: 3.30},
+  {name: "Morningtide's Light", color: "W", type: "Sorcery", rarity: "M", gihWr: 53.7, alsa: 3.33},
+  {name: "Mudbutton Cursetosser", color: "B", type: "Creature — Goblin Warlock", rarity: "U", gihWr: 57.2, alsa: 4.81},
+  {name: "Mutable Explorer", color: "G", type: "Creature — Shapeshifter", rarity: "R", gihWr: 54.8, alsa: 2.39},
+  {name: "Nameless Inversion", color: "B", type: "Kindred Instant — Shapeshifter", rarity: "U", gihWr: 55.5, alsa: 3.05},
+  {name: "Nightmare Sower", color: "B", type: "Creature — Faerie Assassin", rarity: "U", gihWr: 50.8, alsa: 4.84},
+  {name: "Noggle Robber", color: "RG", type: "Creature — Noggle Rogue", rarity: "U", gihWr: 57.6, alsa: 4.03},
+  {name: "Noggle the Mind", color: "U", type: "Enchantment — Aura", rarity: "U", gihWr: 54.7, alsa: 4.51},
+  {name: "Oko, Lorwyn Liege", color: "U", type: "Legendary Planeswalker — Oko // Legendary Planeswalker — Oko", rarity: "M", gihWr: 57.2, alsa: 1.73},
+  {name: "Omni-Changeling", color: "U", type: "Creature — Shapeshifter", rarity: "U", gihWr: 56.5, alsa: 3.81},
+  {name: "Overgrown Tomb", color: "", type: "Land — Swamp Forest", rarity: "R", gihWr: 54.3, alsa: 3.62},
+  {name: "Perfect Intimidation", color: "B", type: "Sorcery", rarity: "U", gihWr: 47.5, alsa: 6.49},
+  {name: "Personify", color: "W", type: "Instant", rarity: "U", gihWr: 54.7, alsa: 4.82},
+  {name: "Pestered Wellguard", color: "U", type: "Creature — Merfolk Soldier", rarity: "U", gihWr: 54.5, alsa: 4.03},
+  {name: "Pitiless Fists", color: "G", type: "Enchantment — Aura", rarity: "U", gihWr: 58.8, alsa: 3.79},
+  {name: "Prideful Feastling", color: "WB", type: "Creature — Shapeshifter", rarity: "C", gihWr: 53.3, alsa: 4.77},
+  {name: "Prismabasher", color: "G", type: "Creature — Elemental", rarity: "U", gihWr: 57.0, alsa: 4.06},
+  {name: "Prismatic Undercurrents", color: "G", type: "Enchantment", rarity: "U", gihWr: 48.3, alsa: 6.16},
+  {name: "Protective Response", color: "W", type: "Instant", rarity: "U", gihWr: 57.5, alsa: 3.36},
+  {name: "Puca's Eye", color: "", type: "Artifact", rarity: "U", gihWr: 54.7, alsa: 6.90},
+  {name: "Pummeler for Hire", color: "G", type: "Creature — Giant Mercenary", rarity: "U", gihWr: 56.3, alsa: 4.12},
+  {name: "Pyrrhic Strike", color: "W", type: "Instant", rarity: "U", gihWr: 58.6, alsa: 3.37},
+  {name: "Reaping Willow", color: "WB", type: "Creature — Treefolk Cleric", rarity: "U", gihWr: 56.9, alsa: 3.30},
+  {name: "Reckless Ransacking", color: "R", type: "Instant", rarity: "C", gihWr: 50.7, alsa: 7.72},
+  {name: "Reluctant Dounguard", color: "W", type: "Creature — Kithkin Soldier", rarity: "C", gihWr: 52.0, alsa: 6.10},
+  {name: "Requiting Hex", color: "B", type: "Instant", rarity: "U", gihWr: 52.6, alsa: 4.52},
+  {name: "Retched Wretch", color: "B", type: "Creature — Goblin", rarity: "U", gihWr: 52.8, alsa: 5.29},
+  {name: "Rhys, the Evermore", color: "W", type: "Legendary Creature — Elf Warrior", rarity: "R", gihWr: 52.3, alsa: 2.34},
+  {name: "Rime Chill", color: "U", type: "Instant", rarity: "U", gihWr: 52.3, alsa: 5.76},
+  {name: "Rimekin Recluse", color: "U", type: "Creature — Elemental Wizard", rarity: "U", gihWr: 60.2, alsa: 3.16},
+  {name: "Riverguard's Reflexes", color: "W", type: "Instant", rarity: "C", gihWr: 52.5, alsa: 7.21},
+  {name: "Rooftop Percher", color: "", type: "Creature — Shapeshifter", rarity: "C", gihWr: 55.3, alsa: 6.82},
+  {name: "Run Away Together", color: "U", type: "Instant", rarity: "C", gihWr: 50.8, alsa: 7.15},
+  {name: "Safewright Cavalry", color: "G", type: "Creature — Elf Warrior", rarity: "C", gihWr: 56.6, alsa: 5.55},
+  {name: "Sanar, Innovative First-Year", color: "UR", type: "Legendary Creature — Goblin Sorcerer", rarity: "R", gihWr: 60.8, alsa: 2.11},
+  {name: "Sapling Nursery", color: "G", type: "Enchantment", rarity: "R", gihWr: 57.4, alsa: 2.73},
+  {name: "Scarblade Scout", color: "B", type: "Creature — Elf Scout", rarity: "C", gihWr: 57.8, alsa: 5.33},
+  {name: "Scarblade's Malice", color: "B", type: "Instant", rarity: "C", gihWr: 54.1, alsa: 6.40},
+  {name: "Scuzzback Scrounger", color: "R", type: "Creature — Goblin Warrior", rarity: "R", gihWr: 54.4, alsa: 2.97},
+  {name: "Sear", color: "R", type: "Instant", rarity: "U", gihWr: 56.9, alsa: 2.95},
+  {name: "Selfless Safewright", color: "G", type: "Creature — Elf Warrior", rarity: "R", gihWr: 57.2, alsa: 2.25},
+  {name: "Shadow Urchin", color: "BR", type: "Creature — Ouphe", rarity: "R", gihWr: 53.3, alsa: 2.69},
+  {name: "Shimmercreep", color: "B", type: "Creature — Elemental", rarity: "U", gihWr: 54.3, alsa: 5.15},
+  {name: "Shimmerwilds Growth", color: "G", type: "Enchantment — Aura", rarity: "U", gihWr: 50.5, alsa: 5.06},
+  {name: "Shinestriker", color: "U", type: "Creature — Elemental", rarity: "U", gihWr: 58.9, alsa: 4.11},
+  {name: "Shore Lurker", color: "W", type: "Creature — Merfolk Scout", rarity: "C", gihWr: 53.3, alsa: 6.47},
+  {name: "Silvergill Mentor", color: "U", type: "Creature — Merfolk Wizard", rarity: "U", gihWr: 59.7, alsa: 4.28},
+  {name: "Silvergill Peddler", color: "U", type: "Creature — Merfolk Citizen", rarity: "C", gihWr: 55.2, alsa: 6.63},
+  {name: "Sizzling Changeling", color: "R", type: "Creature — Shapeshifter", rarity: "U", gihWr: 54.2, alsa: 4.31},
+  {name: "Slumbering Walker", color: "W", type: "Creature — Giant Warrior", rarity: "R", gihWr: 60.0, alsa: 2.03},
+  {name: "Soul Immolation", color: "R", type: "Sorcery", rarity: "M", gihWr: 63.0, alsa: 2.30},
+  {name: "Soulbright Seeker", color: "R", type: "Creature — Elemental Sorcerer", rarity: "U", gihWr: 55.1, alsa: 5.50},
+  {name: "Sourbread Auntie", color: "R", type: "Creature — Goblin Warrior", rarity: "U", gihWr: 55.2, alsa: 4.77},
+  {name: "Spell Snare", color: "U", type: "Instant", rarity: "U", gihWr: 47.7, alsa: 6.71},
+  {name: "Spinerock Tyrant", color: "R", type: "Creature — Dragon", rarity: "M", gihWr: 62.0, alsa: 1.74},
+  {name: "Spiral into Solitude", color: "W", type: "Enchantment — Aura", rarity: "C", gihWr: 54.4, alsa: 4.14},
+  {name: "Springleaf Drum", color: "", type: "Artifact", rarity: "U", gihWr: 49.4, alsa: 6.10},
+  {name: "Spry and Mighty", color: "G", type: "Sorcery", rarity: "R", gihWr: 54.1, alsa: 2.93},
+  {name: "Squawkroaster", color: "R", type: "Creature — Elemental", rarity: "U", gihWr: 52.1, alsa: 5.41},
+  {name: "Stalactite Dagger", color: "", type: "Artifact — Equipment", rarity: "C", gihWr: 51.6, alsa: 6.79},
+  {name: "Steam Vents", color: "", type: "Land — Island Mountain", rarity: "R", gihWr: 53.2, alsa: 3.95},
+  {name: "Sting-Slinger", color: "R", type: "Creature — Goblin Warrior", rarity: "U", gihWr: 52.1, alsa: 5.50},
+  {name: "Stoic Grove-Guide", color: "BG", type: "Creature — Elf Druid", rarity: "C", gihWr: 53.4, alsa: 5.68},
+  {name: "Stratosoarer", color: "U", type: "Creature — Elemental", rarity: "C", gihWr: 54.4, alsa: 6.19},
+  {name: "Summit Sentinel", color: "U", type: "Creature — Elemental Soldier", rarity: "C", gihWr: 53.7, alsa: 6.40},
+  {name: "Sun-Dappled Celebrant", color: "W", type: "Creature — Treefolk Cleric", rarity: "C", gihWr: 52.8, alsa: 5.85},
+  {name: "Sunderflock", color: "U", type: "Creature — Elemental", rarity: "R", gihWr: 63.4, alsa: 2.56},
+  {name: "Surly Farrier", color: "G", type: "Creature — Kithkin Citizen", rarity: "C", gihWr: 53.7, alsa: 6.17},
+  {name: "Swat Away", color: "U", type: "Instant", rarity: "U", gihWr: 54.2, alsa: 4.64},
+  {name: "Sygg's Command", color: "WU", type: "Kindred Sorcery — Merfolk", rarity: "R", gihWr: 58.1, alsa: 3.08},
+  {name: "Sygg, Wanderwine Wisdom", color: "U", type: "Legendary Creature — Merfolk Wizard // Legendary Creature — Merfolk Rogue", rarity: "R", gihWr: 60.3, alsa: 2.24},
+  {name: "Tam, Mindful First-Year", color: "UG", type: "Legendary Creature — Gorgon Wizard", rarity: "R", gihWr: 54.2, alsa: 2.04},
+  {name: "Tanufel Rimespeaker", color: "U", type: "Creature — Elemental Wizard", rarity: "U", gihWr: 56.6, alsa: 4.24},
+  {name: "Taster of Wares", color: "B", type: "Creature — Goblin Warlock", rarity: "R", gihWr: 61.3, alsa: 2.72},
+  {name: "Temple Garden", color: "", type: "Land — Forest Plains", rarity: "R", gihWr: 52.9, alsa: 3.71},
+  {name: "Temporal Cleansing", color: "U", type: "Sorcery", rarity: "C", gihWr: 55.6, alsa: 5.96},
+  {name: "Tend the Sprigs", color: "G", type: "Sorcery", rarity: "C", gihWr: 49.8, alsa: 6.68},
+  {name: "Thirst for Identity", color: "U", type: "Instant", rarity: "U", gihWr: 52.9, alsa: 5.47},
+  {name: "Thoughtweft Charge", color: "G", type: "Instant", rarity: "U", gihWr: 54.5, alsa: 5.10},
+  {name: "Thoughtweft Imbuer", color: "W", type: "Creature — Kithkin Advisor", rarity: "U", gihWr: 58.8, alsa: 4.38},
+  {name: "Thoughtweft Lieutenant", color: "WG", type: "Creature — Kithkin Soldier", rarity: "U", gihWr: 58.7, alsa: 4.05},
+  {name: "Timid Shieldbearer", color: "W", type: "Creature — Kithkin Soldier", rarity: "C", gihWr: 55.2, alsa: 5.71},
+  {name: "Tributary Vaulter", color: "W", type: "Creature — Merfolk Warrior", rarity: "C", gihWr: 55.0, alsa: 6.47},
+  {name: "Trystan's Command", color: "BG", type: "Kindred Sorcery — Elf", rarity: "R", gihWr: 63.6, alsa: 2.29},
+  {name: "Trystan, Callous Cultivator", color: "G", type: "Legendary Creature — Elf Druid // Legendary Creature — Elf Warlock", rarity: "R", gihWr: 60.6, alsa: 2.52},
+  {name: "Tweeze", color: "R", type: "Instant", rarity: "C", gihWr: 54.5, alsa: 4.57},
+  {name: "Twilight Diviner", color: "B", type: "Creature — Elf Cleric", rarity: "R", gihWr: 55.6, alsa: 3.00},
+  {name: "Twinflame Travelers", color: "UR", type: "Creature — Elemental Sorcerer", rarity: "U", gihWr: 58.0, alsa: 4.35},
+  {name: "Unbury", color: "B", type: "Instant", rarity: "U", gihWr: 55.4, alsa: 4.10},
+  {name: "Unexpected Assistance", color: "U", type: "Instant", rarity: "C", gihWr: 55.7, alsa: 5.55},
+  {name: "Unforgiving Aim", color: "G", type: "Instant", rarity: "C", gihWr: 51.2, alsa: 6.97},
+  {name: "Unwelcome Sprite", color: "U", type: "Creature — Faerie Rogue", rarity: "U", gihWr: 56.0, alsa: 4.46},
+  {name: "Vibrance", color: "RG", type: "Creature — Elemental Incarnation", rarity: "M", gihWr: 60.9, alsa: 1.64},
+  {name: "Vinebred Brawler", color: "G", type: "Creature — Elf Berserker", rarity: "U", gihWr: 56.5, alsa: 4.76},
+  {name: "Virulent Emissary", color: "G", type: "Creature — Elf Assassin", rarity: "U", gihWr: 58.7, alsa: 3.42},
+  {name: "Voracious Tome-Skimmer", color: "UB", type: "Creature — Faerie Rogue", rarity: "U", gihWr: 52.6, alsa: 5.31},
+  {name: "Wanderbrine Preacher", color: "W", type: "Creature — Merfolk Cleric", rarity: "C", gihWr: 55.3, alsa: 5.60},
+  {name: "Wanderbrine Trapper", color: "W", type: "Creature — Merfolk Scout", rarity: "U", gihWr: 59.2, alsa: 3.89},
+  {name: "Wanderwine Distracter", color: "U", type: "Creature — Merfolk Wizard", rarity: "C", gihWr: 51.6, alsa: 7.46},
+  {name: "Wanderwine Farewell", color: "U", type: "Kindred Sorcery — Merfolk", rarity: "U", gihWr: 56.4, alsa: 4.91},
+  {name: "Warren Torchmaster", color: "R", type: "Creature — Goblin Warrior", rarity: "U", gihWr: 51.1, alsa: 5.74},
+  {name: "Wary Farmer", color: "WG", type: "Creature — Kithkin Citizen", rarity: "C", gihWr: 55.3, alsa: 5.45},
+  {name: "Wild Unraveling", color: "U", type: "Instant", rarity: "C", gihWr: 53.2, alsa: 7.05},
+  {name: "Wildvine Pummeler", color: "G", type: "Creature — Giant Berserker", rarity: "C", gihWr: 52.7, alsa: 5.86},
+  {name: "Winnowing", color: "W", type: "Sorcery", rarity: "R", gihWr: 53.2, alsa: 3.79},
+  {name: "Wistfulness", color: "UG", type: "Creature — Elemental Incarnation", rarity: "M", gihWr: 60.5, alsa: 1.60}
+];
+
+// Version and metadata
+const QUIZ_VERSION = '3.0.0';
+const LAST_UPDATE = '2026-01-31 22:44 UTC';
+const DATA_SOURCE_DATE = '2026-01-31';
+const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
+const RATINGS_LINK = 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20';
+
+// Detect environment
+const IS_LOCAL = window.location.protocol === 'file:';
+const IS_BETA = window.location.pathname.includes('index-beta');
+
+const scryfallImageCache = {};
+
+// In-memory storage fallback for when localStorage is unavailable (e.g., file:// protocol)
+const memoryStorage = {};
+let useMemoryStorage = false;
+
+// Test if localStorage is available
+try {
+  const test = '__test__';
+  localStorage.setItem(test, test);
+  localStorage.removeItem(test);
+} catch (e) {
+  console.warn('localStorage unavailable, using in-memory storage:', e.message);
+  useMemoryStorage = true;
+}
+
+// Storage abstraction
+const safeStorage = {
+  getItem: (key) => {
+    if (useMemoryStorage) {
+      return memoryStorage[key] || null;
+    }
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.error('Error getting from localStorage:', e);
+      return null;
+    }
+  },
+  setItem: (key, value) => {
+    if (useMemoryStorage) {
+      memoryStorage[key] = value;
+      return;
+    }
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.error('Error setting in localStorage:', e);
+    }
+  },
+  removeItem: (key) => {
+    if (useMemoryStorage) {
+      delete memoryStorage[key];
+      return;
+    }
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.error('Error removing from localStorage:', e);
+    }
+  }
+};
+
+// localStorage keys
+const STORAGE_KEYS = {
+  // Comparison mode keys
+  HISTORY_COMPARISON: 'gih_quiz_history_comparison',
+  SHOWN_COMPARISON: 'gih_quiz_shown_cards_comparison',
+  SCORE_COMPARISON: 'gih_quiz_score_comparison',
+  // Grading mode keys
+  HISTORY_GRADING: 'gih_quiz_history_grading',
+  SHOWN_GRADING: 'gih_quiz_shown_cards_grading',
+  SCORE_GRADING: 'gih_quiz_score_grading',
+  // Migration and preferences
+  MODE: 'gih_quiz_mode',
+  V2_MIGRATED: 'gih_quiz_v2_migrated',
+  SMART_SELECTION: 'gih_quiz_smart_selection',
+  METRIC: 'gih_quiz_metric',
+  // Legacy keys (for migration)
+  HISTORY: 'gih_quiz_history',
+  SHOWN_PAIRS: 'gih_quiz_shown_pairs',
+  SCORE: 'gih_quiz_score'
+};
+
+// ============================================
+// MIGRATION: v1.9 → v2.0.0-beta.1
+// ============================================
+// Migrate old single-key storage to mode-specific keys
+const migrateStorageToV2 = () => {
+  const migrated = safeStorage.getItem(STORAGE_KEYS.V2_MIGRATED);
+  if (migrated) return; // Already migrated
+
+  // Move old data to comparison-specific keys (preserves v1 data)
+  const oldHistory = safeStorage.getItem(STORAGE_KEYS.HISTORY);
+  const oldShown = safeStorage.getItem(STORAGE_KEYS.SHOWN_PAIRS);
+  const oldScore = safeStorage.getItem(STORAGE_KEYS.SCORE);
+
+  if (oldHistory) {
+    safeStorage.setItem(STORAGE_KEYS.HISTORY_COMPARISON, oldHistory);
+    console.log('✅ Migrated history to comparison mode');
+  }
+  if (oldShown) {
+    safeStorage.setItem(STORAGE_KEYS.SHOWN_COMPARISON, oldShown);
+    console.log('✅ Migrated shown pairs to comparison mode');
+  }
+  if (oldScore) {
+    const score = JSON.parse(oldScore);
+    // Convert {correct, total} to {points, questions}
+    safeStorage.setItem(STORAGE_KEYS.SCORE_COMPARISON,
+      JSON.stringify({points: score.correct, questions: score.total}));
+    console.log('✅ Migrated score to comparison mode');
+  }
+
+  safeStorage.setItem(STORAGE_KEYS.V2_MIGRATED, 'true');
+  console.log('✅ v2.0.0-beta.1 migration complete');
+};
+
+// ============================================
+// localStorage utilities (MODE-AWARE)
+// ============================================
+
+const loadHistory = (mode = 'comparison') => {
+  try {
+    const key = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+    const data = safeStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error('Error loading history:', e);
+    return [];
+  }
+};
+
+const saveHistory = (mode = 'comparison', history) => {
+  try {
+    const key = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+    safeStorage.setItem(key, JSON.stringify(history));
+  } catch (e) {
+    console.error('Error saving history:', e);
+  }
+};
+
+const addHistoryEntry = (mode = 'comparison', entry) => {
+  const history = loadHistory(mode);
+  history.push({...entry, mode}); // Ensure mode is recorded
+  saveHistory(mode, history);
+};
+
+const clearHistory = (mode = 'comparison') => {
+  try {
+    if (mode === 'all') {
+      // Clear both modes
+      safeStorage.removeItem(STORAGE_KEYS.HISTORY_COMPARISON);
+      safeStorage.removeItem(STORAGE_KEYS.HISTORY_GRADING);
+      safeStorage.removeItem(STORAGE_KEYS.SHOWN_COMPARISON);
+      safeStorage.removeItem(STORAGE_KEYS.SHOWN_GRADING);
+      safeStorage.removeItem(STORAGE_KEYS.SCORE_COMPARISON);
+      safeStorage.removeItem(STORAGE_KEYS.SCORE_GRADING);
+    } else {
+      // Clear specific mode
+      const histKey = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+      const shownKey = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+      const scoreKey = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
+      safeStorage.removeItem(histKey);
+      safeStorage.removeItem(shownKey);
+      safeStorage.removeItem(scoreKey);
+    }
+  } catch (e) {
+    console.error('Error clearing history:', e);
+  }
+};
+
+const loadShownCards = (mode = 'comparison', filterKey) => {
+  try {
+    const key = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+    const data = safeStorage.getItem(key);
+    const allShown = data ? JSON.parse(data) : {};
+    return allShown[filterKey] || [];
+  } catch (e) {
+    console.error('Error loading shown cards:', e);
+    return [];
+  }
+};
+
+const saveShownCards = (mode = 'comparison', filterKey, shownCards) => {
+  try {
+    const key = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+    const data = safeStorage.getItem(key);
+    const allShown = data ? JSON.parse(data) : {};
+    allShown[filterKey] = shownCards;
+    safeStorage.setItem(key, JSON.stringify(allShown));
+  } catch (e) {
+    console.error('Error saving shown cards:', e);
+  }
+};
+
+const loadScore = (mode = 'comparison') => {
+  try {
+    const key = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
+    const data = safeStorage.getItem(key);
+    return data ? JSON.parse(data) : { points: 0, questions: 0 };
+  } catch (e) {
+    console.error('Error loading score:', e);
+    return { points: 0, questions: 0 };
+  }
+};
+
+const saveScore = (mode = 'comparison', points, questions) => {
+  try {
+    const key = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
+    safeStorage.setItem(key, JSON.stringify({ points, questions }));
+  } catch (e) {
+    console.error('Error saving score:', e);
+  }
+};
+
+// Helper function for comparison mode: add a card pair to shown pairs
+const addShownCards = (mode = 'comparison', filterKey, ...cardNames) => {
+  const shownCards = loadShownCards(mode, filterKey);
+  const cardKey = cardNames.sort().join('|');
+  if (!shownCards.includes(cardKey)) {
+    shownCards.push(cardKey);
+    saveShownCards(mode, filterKey, shownCards);
+  }
+};
+
+// Calculate mean and standard deviation of GIH WR
+const calculateGradeThresholds = () => {
+  const gihWrs = CARD_DATA.map(c => c.gihWr);
+  const mean = gihWrs.reduce((a, b) => a + b) / gihWrs.length;
+  const variance = gihWrs.reduce((a, b) => a + Math.pow(b - mean, 2)) / gihWrs.length;
+  const stdDev = Math.sqrt(variance);
+
+  // Grade boundaries based on 17 Lands methodology:
+  // 17 Lands uses 13 grades with 0.33 SD steps (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
+  // Center is at C+ (mean), NOT C
+  return {
+    mean,
+    stdDev,
+    // Grades from highest to lowest
+    aPlus: mean + stdDev * 2.0,   // +2.0 SD
+    a: mean + stdDev * 1.67,      // +1.67 SD
+    aMinus: mean + stdDev * 1.33, // +1.33 SD
+    bPlus: mean + stdDev * 1.0,   // +1.0 SD
+    b: mean + stdDev * 0.67,      // +0.67 SD
+    bMinus: mean + stdDev * 0.33, // +0.33 SD
+    cPlus: mean,                  // 0 SD (mean/center)
+    c: mean - stdDev * 0.33,      // -0.33 SD
+    cMinus: mean - stdDev * 0.67, // -0.67 SD
+    dPlus: mean - stdDev * 1.0,   // -1.0 SD
+    d: mean - stdDev * 1.33,      // -1.33 SD
+    dMinus: mean - stdDev * 1.67, // -1.67 SD
+    f: mean - stdDev * 2.0        // -2.0 SD and below
+  };
+};
+
+const gradeThresholds = calculateGradeThresholds();
+
+// Get grade for a specific GIH WR value
+const getGrade = (gihWr) => {
+  if (gihWr >= gradeThresholds.aPlus) return 'A+';
+  if (gihWr >= gradeThresholds.a) return 'A';
+  if (gihWr >= gradeThresholds.aMinus) return 'A-';
+  if (gihWr >= gradeThresholds.bPlus) return 'B+';
+  if (gihWr >= gradeThresholds.b) return 'B';
+  if (gihWr >= gradeThresholds.bMinus) return 'B-';
+  if (gihWr >= gradeThresholds.cPlus) return 'C+';
+  if (gihWr >= gradeThresholds.c) return 'C';
+  if (gihWr >= gradeThresholds.cMinus) return 'C-';
+  if (gihWr >= gradeThresholds.dPlus) return 'D+';
+  if (gihWr >= gradeThresholds.d) return 'D';
+  if (gihWr >= gradeThresholds.dMinus) return 'D-';
+  return 'F';
+};
+
+// Get CSS class for grade
+const getGradeClass = (grade) => {
+  // Convert grade to CSS class name (e.g., 'A+' → 'grade-a-plus', 'A-' → 'grade-a-minus', 'C' → 'grade-c')
+  let className = grade.toLowerCase();
+  if (className.endsWith('+')) {
+    className = className.replace('+', '-plus');
+  } else if (className.endsWith('-')) {
+    className = className.replace('-', '-minus');
+  }
+  return `grade-${className}`;
+};
+
+// ============================================
+// GRADING MODE: Grade constants and utilities
+// ============================================
+
+// Ordered array for distance calculation (A+ to F)
+// 17 Lands uses 13 grades with minus grades
+const GRADE_ORDER = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F'];
+
+const getGradeIndex = (grade) => GRADE_ORDER.indexOf(grade);
+
+const calculateGradeDistance = (userGrade, actualGrade) =>
+  Math.abs(getGradeIndex(userGrade) - getGradeIndex(actualGrade));
+
+const getPointsFromDistance = (distance) => {
+  if (distance === 0) return 1.0;   // Perfect
+  if (distance === 1) return 0.5;   // Close
+  if (distance === 2) return 0.25;  // So-so
+  return 0.0;                       // Wrong (3+ grades off)
+};
+
+const getGradeRange = (grade) => {
+  const ranges = {
+    'A+': `${gradeThresholds.aPlus.toFixed(1)}%+`,
+    'A': `${gradeThresholds.a.toFixed(1)}-${gradeThresholds.aPlus.toFixed(1)}%`,
+    'A-': `${gradeThresholds.aMinus.toFixed(1)}-${gradeThresholds.a.toFixed(1)}%`,
+    'B+': `${gradeThresholds.bPlus.toFixed(1)}-${gradeThresholds.aMinus.toFixed(1)}%`,
+    'B': `${gradeThresholds.b.toFixed(1)}-${gradeThresholds.bPlus.toFixed(1)}%`,
+    'B-': `${gradeThresholds.bMinus.toFixed(1)}-${gradeThresholds.b.toFixed(1)}%`,
+    'C+': `${gradeThresholds.cPlus.toFixed(1)}-${gradeThresholds.bMinus.toFixed(1)}%`,
+    'C': `${gradeThresholds.c.toFixed(1)}-${gradeThresholds.cPlus.toFixed(1)}%`,
+    'C-': `${gradeThresholds.cMinus.toFixed(1)}-${gradeThresholds.c.toFixed(1)}%`,
+    'D+': `${gradeThresholds.dPlus.toFixed(1)}-${gradeThresholds.cMinus.toFixed(1)}%`,
+    'D': `${gradeThresholds.d.toFixed(1)}-${gradeThresholds.dPlus.toFixed(1)}%`,
+    'D-': `${gradeThresholds.dMinus.toFixed(1)}-${gradeThresholds.d.toFixed(1)}%`,
+    'F': `<${gradeThresholds.dMinus.toFixed(1)}%`
+  };
+  return ranges[grade];
+};
+
+const fetchCardImage = async (cardName) => {
+  if (scryfallImageCache[cardName]) {
+    return scryfallImageCache[cardName];
+  }
+
+  try {
+    const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+    if (!response.ok) throw new Error('Card not found');
+
+    const data = await response.json();
+    let imageUrl = null;
+
+    // Handle double-faced cards
+    if (data.card_faces && data.card_faces[0]?.image_uris?.normal) {
+      imageUrl = data.card_faces[0].image_uris.normal;
+    } else if (data.image_uris?.normal) {
+      imageUrl = data.image_uris.normal;
+    }
+
+    if (imageUrl) {
+      scryfallImageCache[cardName] = imageUrl;
+      return imageUrl;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching image for ${cardName}:`, error);
+    return null;
+  }
+};
+
+const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr' }) => {
+  const [imageUrl, setImageUrl] = React.useState(null);
+  const [imageLoading, setImageLoading] = React.useState(true);
+  const [imageError, setImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    const loadImage = async () => {
+      setImageLoading(true);
+      setImageError(false);
+      const url = await fetchCardImage(card.name);
+      if (url) {
+        setImageUrl(url);
+      } else {
+        setImageError(true);
+      }
+      setImageLoading(false);
+    };
+    loadImage();
+  }, [card.name]);
+
+  const containerClass = [
+    'card-image-container',
+    disabled ? 'disabled' : '',
+    showResult && isWinner ? 'winner' : '',
+    showResult && !isWinner ? 'loser' : ''
+  ].filter(Boolean).join(' ');
+
+  // Link to Scryfall card search (searches by exact name)
+  const cardUrl = `https://scryfall.com/search?q="${encodeURIComponent(card.name)}"&unique=cards`;
+
+  return (
+    <div className="card-panel">
+      <div
+        className={containerClass}
+        onClick={() => !disabled && onSelect(cardNumber)}
+      >
+        {imageLoading && <div className="card-loading">Loading image...</div>}
+        {imageError && <div className="card-error">Unable to load card image</div>}
+        {imageUrl && <img src={imageUrl} alt={card.name} className="card-image" />}
+        {showResult && (
+          <div className="gih-percentage show">
+            <div className="gih-value">
+              <div>{metric === 'gihWr' ? card.gihWr.toFixed(1) + '%' : (card.alsa || 0).toFixed(2)}</div>
+              {metric === 'gihWr' && (
+                <div className={`grade-badge ${getGradeClass(getGrade(card.gihWr))}`}>
+                  {getGrade(card.gihWr)}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      <a href={cardUrl} target="_blank" rel="noopener noreferrer" className="card-name">
+        {card.name}
+      </a>
+    </div>
+  );
+};
+
+// Grade selector component for grading mode
+const GradeSelector = ({ onSelect, disabled, selectedGrade }) => {
+  return (
+    <div className="grade-selector">
+      {GRADE_ORDER.map(grade => (
+        <button
+          key={grade}
+          className={`grade-button ${getGradeClass(grade)} ${selectedGrade === grade ? 'selected' : ''}`}
+          onClick={() => onSelect(grade)}
+          disabled={disabled}
+          title={getGradeRange(grade)}
+        >
+          <div className="grade-button-label">{grade}</div>
+          <div className="grade-button-range">{getGradeRange(grade)}</div>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const GIHQuiz = () => {
+  // Run migration on first load
+  React.useEffect(() => {
+    migrateStorageToV2();
+  }, []);
+
+  // Load saved mode preference
+  const savedMode = safeStorage.getItem(STORAGE_KEYS.MODE) || 'comparison';
+  const [quizMode, setQuizMode] = React.useState(savedMode);
+
+  const [colorFilter, setColorFilter] = React.useState('all');
+  const [rarityFilter, setRarityFilter] = React.useState('all');
+  const [typeFilter, setTypeFilter] = React.useState('all');
+  const [smartSelectionEnabled, setSmartSelectionEnabled] = React.useState(true);
+  const [metric, setMetric] = React.useState(() => safeStorage.getItem(STORAGE_KEYS.METRIC) || 'gihWr');
+  const [expandMetricHelp, setExpandMetricHelp] = React.useState(false);
+  const [expandSmartSelectionHelp, setExpandSmartSelectionHelp] = React.useState(false);
+
+  // Comparison mode state
+  const [currentPair, setCurrentPair] = React.useState(null);
+
+  // Grading mode state
+  const [currentCard, setCurrentCard] = React.useState(null);
+  const [selectedGrade, setSelectedGrade] = React.useState(null);
+
+  // Shared state
+  const [showResult, setShowResult] = React.useState(false);
+  const [selectedCardNum, setSelectedCardNum] = React.useState(null);
+  const [isAnswering, setIsAnswering] = React.useState(false);
+
+  // Load score from localStorage (mode-specific)
+  const savedScore = loadScore(quizMode);
+  const [points, setPoints] = React.useState(savedScore.points);
+  const [questions, setQuestions] = React.useState(savedScore.questions);
+
+  const [filterError, setFilterError] = React.useState('');
+  const [history, setHistory] = React.useState(loadHistory(quizMode));
+  const [showToast, setShowToast] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState('');
+
+  // Update score and history when mode changes
+  React.useEffect(() => {
+    const score = loadScore(quizMode);
+    setPoints(score.points);
+    setQuestions(score.questions);
+    setHistory(loadHistory(quizMode));
+    safeStorage.setItem(STORAGE_KEYS.MODE, quizMode);
+    setShowResult(false);
+    setSelectedGrade(null);
+    setCurrentPair(null);
+    setCurrentCard(null);
+    // Smart selection only applies to comparison mode
+    if (quizMode !== 'comparison') {
+      setSmartSelectionEnabled(false);
+    }
+  }, [quizMode]);
+
+  // Load smart selection preference on mount
+  React.useEffect(() => {
+    const saved = safeStorage.getItem(STORAGE_KEYS.SMART_SELECTION);
+    if (saved !== null) {
+      setSmartSelectionEnabled(saved === 'true');
+    }
+  }, []);
+
+  // Save smart selection preference when it changes
+  React.useEffect(() => {
+    safeStorage.setItem(STORAGE_KEYS.SMART_SELECTION, smartSelectionEnabled.toString());
+  }, [smartSelectionEnabled]);
+
+  React.useEffect(() => {
+    safeStorage.setItem(STORAGE_KEYS.METRIC, metric);
+  }, [metric]);
+
+  // Close share menu when clicking outside
+  React.useEffect(() => {
+    if (!shareMenuOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.history-actions')) {
+        setShareMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [shareMenuOpen]);
+
+  // Generate new question when filters or mode change
+  React.useEffect(() => {
+    generateQuestion();
+  }, [quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, metric, generateQuestion]);
+
+  // Generate new question
+  const generateQuestion = React.useCallback(() => {
+    // Filter cards by color and rarity
+    let filtered = CARD_DATA;
+
+    if (colorFilter !== 'all') {
+      if (colorFilter === 'colorless') {
+        filtered = filtered.filter(c => !c.color || c.color === '');
+      } else if (colorFilter === 'multicolor') {
+        filtered = filtered.filter(c => c.color && c.color.length > 1);
+      } else {
+        // Single color filter
+        filtered = filtered.filter(c => c.color === colorFilter);
+      }
+    }
+
+    if (rarityFilter !== 'all') {
+      filtered = filtered.filter(c => c.rarity === rarityFilter);
+    }
+
+    if (typeFilter !== 'all') {
+      // Check if typeFilter matches main type (e.g., "Creature", "Sorcery") or subtype (e.g., "Elf", "Wizard")
+      filtered = filtered.filter(c => {
+        if (!c.type) return false;
+        // Main type match (e.g., "Creature — Elf" starts with "Creature")
+        if (c.type.startsWith(typeFilter)) return true;
+        // Subtype match (e.g., "Elf" appears after "—" in "Creature — Elf")
+        if (c.type.includes(`— ${typeFilter}`) || c.type.endsWith(` ${typeFilter}`)) return true;
+        // Partial subtype match for multi-word types (e.g., "Creature — Elf Cleric" contains "Cleric")
+        if (c.type.includes(` ${typeFilter} `) || c.type.includes(` ${typeFilter}`)) return true;
+        return false;
+      });
+    }
+
+    const minCards = quizMode === 'grading' ? 1 : 2;
+    if (filtered.length < minCards) {
+      setFilterError(`Not enough cards match these filters. Try adjusting your selection.`);
+      setCurrentPair(null);
+      setCurrentCard(null);
+      return;
+    }
+
+    const filterKey = `${colorFilter}|${rarityFilter}|${typeFilter}`;
+    const shownCards = loadShownCards(quizMode, filterKey);
+
+    if (quizMode === 'grading') {
+      // GRADING MODE: Pick single card not shown yet
+      if (shownCards.length >= filtered.length) {
+        // Reset shown cards for this filter
+        saveShownCards(quizMode, filterKey, []);
+        setToastMessage('All cards reviewed! Resetting for this filter.');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+        shownCards.length = 0;
+      }
+
+      // Find a card not in shownCards array
+      let card = null;
+      let attempts = 0;
+      const maxAttempts = 100;
+
+      while (!card && attempts < maxAttempts) {
+        const idx = Math.floor(Math.random() * filtered.length);
+        const candidate = filtered[idx];
+        if (!shownCards.includes(candidate.name)) {
+          card = candidate;
+        }
+        attempts++;
+      }
+
+      if (card) {
+        setFilterError('');
+        setCurrentCard(card);
+        setSelectedGrade(null);
+        setShowResult(false);
+      } else {
+        setFilterError('Unable to find a new card. Try adjusting your filters.');
+        setCurrentCard(null);
+      }
+    } else {
+      // COMPARISON MODE: Pick pair not shown yet (existing logic)
+      // Calculate total possible pairs for this filter
+      const totalPossiblePairs = (filtered.length * (filtered.length - 1)) / 2;
+
+      // If we've shown all pairs, reset the shown cards for this filter
+      if (shownCards.length >= totalPossiblePairs) {
+        saveShownCards(quizMode, filterKey, []);
+        setToastMessage('All card pairs shown! Resetting for this filter.');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+        shownCards.length = 0;
+      }
+
+      // Try to find a pair with different GIH WR (avoid ties) and not shown yet
+      let pair = null;
+      let attempts = 0;
+      const maxAttempts = 100;
+
+      while (!pair && attempts < maxAttempts) {
+        const idx1 = Math.floor(Math.random() * filtered.length);
+        let idx2 = Math.floor(Math.random() * filtered.length);
+        while (idx2 === idx1) {
+          idx2 = Math.floor(Math.random() * filtered.length);
+        }
+
+        const card1 = filtered[idx1];
+        const card2 = filtered[idx2];
+
+        // Create pair key for checking if shown
+        const pairKey = [card1.name, card2.name].sort().join('|');
+
+        // Check pair conditions
+        const isDifferentMetric = metric === 'gihWr' ? card1.gihWr !== card2.gihWr : card1.alsa !== card2.alsa;
+        const notShown = !shownCards.includes(pairKey);
+
+        // Apply smart selection filter if enabled (only for GIH WR for now)
+        let meetsSmartSelection = true;
+        if (smartSelectionEnabled && metric === 'gihWr') {
+          const grade1 = getGrade(card1.gihWr);
+          const grade2 = getGrade(card2.gihWr);
+          const sdDistance = Math.abs(card1.gihWr - card2.gihWr) / gradeThresholds.stdDev;
+
+          // Must be different grades AND within 1 SD
+          meetsSmartSelection = grade1 !== grade2 && sdDistance <= 1.0;
+        } else if (smartSelectionEnabled && metric === 'alsa') {
+          // For ALSA, ensure meaningful difference (>1.0) but not too wide (<3.0)
+          const alsaDifference = Math.abs(card1.alsa - card2.alsa);
+          meetsSmartSelection = alsaDifference >= 1.0 && alsaDifference < 3.0;
+        }
+
+        // Only use this pair if all conditions met
+        if (isDifferentMetric && notShown && meetsSmartSelection) {
+          pair = [card1, card2];
+        }
+
+        attempts++;
+      }
+
+      if (pair) {
+        setFilterError('');
+        setCurrentPair(pair);
+        setShowResult(false);
+        setSelectedCardNum(null);
+      } else {
+        setFilterError('Unable to find new cards with different ratings. Try adjusting your filters.');
+        setCurrentPair(null);
+      }
+    }
+  }, [colorFilter, rarityFilter, typeFilter, quizMode, smartSelectionEnabled, metric, gradeThresholds, getGrade, setToastMessage, setShowToast]);
+
+  const handleSelectCard = React.useCallback((cardNum) => {
+    if (!currentPair || isAnswering) return;
+
+    setIsAnswering(true);
+    setSelectedCardNum(cardNum);
+    setShowResult(true);
+
+    // Collapse help boxes
+    setExpandMetricHelp(false);
+    setExpandSmartSelectionHelp(false);
+
+    const selectedCard = currentPair[cardNum];
+    const otherCard = currentPair[1 - cardNum];
+    const isCorrect = metric === 'gihWr' ? selectedCard.gihWr > otherCard.gihWr : selectedCard.alsa < otherCard.alsa;
+    const pointsEarned = isCorrect ? 1.0 : 0.0;
+
+    const newQuestions = questions + 1;
+    const newPoints = points + pointsEarned;
+
+    setQuestions(newQuestions);
+    setPoints(newPoints);
+    saveScore(quizMode, newPoints, newQuestions);
+
+    // Mark this pair as shown
+    const filterKey = `${colorFilter}|${rarityFilter}|${typeFilter}`;
+    addShownCards(quizMode, filterKey, currentPair[0].name, currentPair[1].name);
+
+    // Add to history
+    const historyEntry = {
+      timestamp: new Date().toISOString(),
+      card1: currentPair[0].name,
+      card1GihWr: currentPair[0].gihWr,
+      card1Alsa: currentPair[0].alsa,
+      card1Grade: getGrade(currentPair[0].gihWr),
+      card2: currentPair[1].name,
+      card2GihWr: currentPair[1].gihWr,
+      card2Alsa: currentPair[1].alsa,
+      card2Grade: getGrade(currentPair[1].gihWr),
+      selectedCard: selectedCard.name,
+      isCorrect,
+      pointsEarned,
+      metric: metric,
+      filterColor: colorFilter,
+      filterRarity: rarityFilter,
+      filterType: typeFilter,
+      smartSelection: smartSelectionEnabled
+    };
+    addHistoryEntry(quizMode, historyEntry);
+    setHistory(loadHistory(quizMode));
+
+    setTimeout(() => {
+      const resultPanel = document.querySelector('.result-panel');
+      if (resultPanel) {
+        resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled]);
+
+  const handleGradeSelect = React.useCallback((grade) => {
+    if (!currentCard || isAnswering) return;
+
+    setIsAnswering(true);
+    setSelectedGrade(grade);
+    setShowResult(true);
+
+    const actualGrade = getGrade(currentCard.gihWr);
+    const distance = calculateGradeDistance(grade, actualGrade);
+    const pointsEarned = getPointsFromDistance(distance);
+
+    const newQuestions = questions + 1;
+    const newPoints = points + pointsEarned;
+
+    setQuestions(newQuestions);
+    setPoints(newPoints);
+    saveScore(quizMode, newPoints, newQuestions);
+
+    // Mark card as shown
+    const filterKey = `${colorFilter}|${rarityFilter}|${typeFilter}`;
+    const shownCards = loadShownCards(quizMode, filterKey);
+    shownCards.push(currentCard.name);
+    saveShownCards(quizMode, filterKey, shownCards);
+
+    // Add to history
+    const historyEntry = {
+      timestamp: new Date().toISOString(),
+      card: currentCard.name,
+      cardGihWr: currentCard.gihWr,
+      actualGrade,
+      userGrade: grade,
+      gradeDistance: distance,
+      pointsEarned,
+      filterColor: colorFilter,
+      filterRarity: rarityFilter,
+      filterType: typeFilter
+    };
+    addHistoryEntry(quizMode, historyEntry);
+    setHistory(loadHistory(quizMode));
+
+    setTimeout(() => {
+      const resultPanel = document.querySelector('.result-panel');
+      if (resultPanel) {
+        resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilter]);
+
+  const handleNextQuestion = React.useCallback(() => {
+    setIsAnswering(false);
+    generateQuestion();
+  }, [generateQuestion]);
+
+  const handleColorChange = (e) => {
+    setColorFilter(e.target.value);
+    setShowResult(false);
+    setSelectedCardNum(null);
+    setIsAnswering(false);
+  };
+
+  const handleRarityChange = (e) => {
+    setRarityFilter(e.target.value);
+    setShowResult(false);
+    setSelectedCardNum(null);
+    setIsAnswering(false);
+  };
+
+  const handleTypeChange = (e) => {
+    setTypeFilter(e.target.value);
+    setShowResult(false);
+    setSelectedCardNum(null);
+    setIsAnswering(false);
+  };
+
+  const showToastMessage = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleClearHistory = () => {
+    const modeText = quizMode === 'comparison' ? 'Comparison Mode' : 'Grading Mode';
+    if (confirm(`Clear history and score for ${modeText}? (Other mode's data will be preserved)`)) {
+      clearHistory(quizMode);
+      setHistory([]);
+      setPoints(0);
+      setQuestions(0);
+      saveScore(quizMode, 0, 0);
+      showToastMessage('History cleared successfully!');
+    }
+  };
+
+  const [shareMenuOpen, setShareMenuOpen] = React.useState(false);
+
+  const generateScoreText = () => {
+    if (history.length === 0) return null;
+
+    const accuracy = questions > 0 ? Math.round((points / questions) * 100) : 0;
+    const recentHistory = history.slice(-10); // Last 10 questions
+    const resultsGrid = recentHistory.map(h => {
+      if (quizMode === 'grading') {
+        // Grading mode: map points earned to emoji
+        return h.pointsEarned === 1.0 ? '🟩' : h.pointsEarned > 0 ? '🟨' : '🟥';
+      } else {
+        // Comparison mode: map correctness to emoji
+        return h.isCorrect ? '🟩' : '🟥';
+      }
+    }).join('');
+
+    const modeEmoji = quizMode === 'comparison' ? '⚖️' : '📝';
+    const modeText = quizMode === 'comparison' ? 'Comparison' : 'Grading';
+    const baseUrl = window.location.href.split('?')[0];
+
+    return {
+      text: `ECL Quiz ${modeEmoji} ${modeText} Mode
+${points.toFixed(1)}/${questions} points (${accuracy}%)
+
+Recent 10: ${resultsGrid}
+
+Play at: ${baseUrl}`,
+      baseUrl,
+      accuracy,
+      points,
+      questions,
+      modeText
+    };
+  };
+
+  const handleExportScore = () => {
+    const scoreData = generateScoreText();
+    if (!scoreData) {
+      showToastMessage('No history to export yet!');
+      return;
+    }
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(scoreData.text).then(() => {
+      showToastMessage('Score copied to clipboard!');
+      setShareMenuOpen(false);
+    }).catch(() => {
+      // Fallback if clipboard API fails
+      showToastMessage('Export text: ' + scoreData.text);
+      setShareMenuOpen(false);
+    });
+  };
+
+  const handleShareTwitter = () => {
+    const scoreData = generateScoreText();
+    if (!scoreData) {
+      showToastMessage('No history to share yet!');
+      return;
+    }
+
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(scoreData.text)}`;
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+    setShareMenuOpen(false);
+  };
+
+  const handleShareBluesky = () => {
+    const scoreData = generateScoreText();
+    if (!scoreData) {
+      showToastMessage('No history to share yet!');
+      return;
+    }
+
+    const blueskyUrl = `https://bsky.app/intent/compose?text=${encodeURIComponent(scoreData.text)}`;
+    window.open(blueskyUrl, '_blank', 'width=550,height=420');
+    setShareMenuOpen(false);
+  };
+
+  const handleShareDiscord = () => {
+    const scoreData = generateScoreText();
+    if (!scoreData) {
+      showToastMessage('No history to share yet!');
+      return;
+    }
+
+    // Copy full text to clipboard
+    navigator.clipboard.writeText(scoreData.text).then(() => {
+      showToastMessage('Score copied! Paste in Discord.');
+      setShareMenuOpen(false);
+    }).catch(() => {
+      showToastMessage('Share text: ' + scoreData.text);
+      setShareMenuOpen(false);
+    });
+
+    // Open Discord web app
+    setTimeout(() => {
+      window.open('https://discord.com/app', '_blank');
+    }, 300);
+  };
+
+  const handleModeChange = React.useCallback((newMode) => {
+    setQuizMode(newMode);
+    setShowResult(false);
+    setSelectedGrade(null);
+    setIsAnswering(false);
+  }, []);
+
+  const accuracy = questions > 0 ? Math.round((points / questions) * 100) : 0;
+
+  return (
+    <div className="container">
+      {(IS_BETA || IS_LOCAL) && (
+        <>
+          {IS_BETA && <div className="beta-badge">🧪 BETA</div>}
+          {IS_LOCAL && <div className="beta-badge local">📍 LOCAL</div>}
+        </>
+      )}
+      <div className="banner">
+        <div className="banner-content">
+          <h1>ECL Draft Card Evaluation Quiz</h1>
+        
+          <p style={{fontSize: '11px', color: '#e0e0e0', marginTop: '12px', lineHeight: '1.5', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
+            Lovingly vibe coded with Claude Code • <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>View source on GitHub</a> • Version {QUIZ_VERSION} • Last updated {LAST_UPDATE}
+            <br />
+            Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Interactive Color Wheel of ECL draft archetypes</a> or <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>normalized review comparison</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Reddit</a>.
+          </p>
+        </div>
+      </div>
+
+      {(currentPair || currentCard || filterError) && (
+        <div className="quiz-section">
+          <div className="mode-toggle">
+            <button
+              className={`mode-option ${quizMode === 'comparison' ? 'active' : ''}`}
+              onClick={() => handleModeChange('comparison')}
+            >
+              ⚖️ Comparison Mode
+            </button>
+            <button
+              className={`mode-option ${quizMode === 'grading' ? 'active' : ''}`}
+              onClick={() => handleModeChange('grading')}
+            >
+              📝 Grading Mode
+            </button>
+          </div>
+
+          <div className="quiz-prompt">
+            {quizMode === 'comparison' ? (
+              <>
+                Click the better card!
+                <div style={{fontSize: '13px', marginTop: '16px', textAlign: 'left', display: 'inline-block', color: '#bbb'}}>
+                  <ul style={{marginLeft: '20px', lineHeight: '1.6'}}>
+                    <li>Use the <strong>?</strong> buttons below to learn more about metrics and selection modes.</li>
+                    <li>Scores and data are from <a href={RATINGS_LINK} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands ECL Premier Draft</a>. <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
+                    <li>Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <>
+                Select the letter grade for this card. Grades use the 17lands grading system, based on GIH WR.
+                <br />
+                Partial credit scoring: exact match = 1.0 point, ±1 grade = 0.5 points, ±2 grades = 0.25 points, ±3+ grades = 0 points.
+                <div style={{fontSize: '14px', marginTop: '20px', textAlign: 'left', display: 'inline-block', color: '#bbb'}}>
+                  <ul style={{marginLeft: '20px', lineHeight: '1.6'}}>
+                    <li>Grades and percentages are from <a href={RATINGS_LINK} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands ECL Premier Draft data</a>. <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
+                    <li>Grades assume a <a href="https://en.wikipedia.org/wiki/Normal_distribution" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>normal distribution</a> centered at C and each letter gradation (e.g. C vs. C+) represents a band of 0.33 <a href="https://en.wikipedia.org/wiki/Standard_deviation" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>standard deviations</a> from the center.</li>
+                    <li>Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
+                  </ul>
+                </div>
+              </>
+            )}
+          </div>
+
+          {filterError && (
+            <div className="error-message">{filterError}</div>
+          )}
+
+          <div className="filter-section">
+            <div className="filter-group">
+              <label className="filter-label">Color</label>
+              <select value={colorFilter} onChange={handleColorChange}>
+                <option value="all">All Colors</option>
+                <option value="W">White (W)</option>
+                <option value="U">Blue (U)</option>
+                <option value="B">Black (B)</option>
+                <option value="R">Red (R)</option>
+                <option value="G">Green (G)</option>
+                <option value="multicolor">Multicolor</option>
+                <option value="colorless">Colorless</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Rarity</label>
+              <select value={rarityFilter} onChange={handleRarityChange}>
+                <option value="all">All Rarities</option>
+                <option value="M">Mythic (M)</option>
+                <option value="R">Rare (R)</option>
+                <option value="U">Uncommon (U)</option>
+                <option value="C">Common (C)</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Type</label>
+              <select value={typeFilter} onChange={handleTypeChange}>
+                <option value="all">All Types</option>
+                <optgroup label="Main Types">
+                  <option value="Creature">Creature</option>
+                  <option value="Sorcery">Sorcery</option>
+                  <option value="Instant">Instant</option>
+                  <option value="Enchantment">Enchantment</option>
+                  <option value="Artifact">Artifact</option>
+                  <option value="Land">Land</option>
+                  <option value="Planeswalker">Planeswalker</option>
+                </optgroup>
+                <optgroup label="Top Subtypes">
+                  <option value="Elemental">Elemental (31)</option>
+                  <option value="Elf">Elf (28)</option>
+                  <option value="Warrior">Warrior (22)</option>
+                  <option value="Goblin">Goblin (22)</option>
+                  <option value="Merfolk">Merfolk (20)</option>
+                  <option value="Kithkin">Kithkin (20)</option>
+                  <option value="Shapeshifter">Shapeshifter (16)</option>
+                  <option value="Wizard">Wizard (12)</option>
+                  <option value="Scout">Scout (12)</option>
+                  <option value="Warlock">Warlock (11)</option>
+                </optgroup>
+              </select>
+            </div>
+
+          </div>
+
+          {showResult && quizMode === 'grading' && currentCard && (
+            <div style={{marginTop: '16px'}}>
+              <div className={`result-panel ${
+                selectedGrade === getGrade(currentCard.gihWr) ? 'result-correct' :
+                calculateGradeDistance(selectedGrade, getGrade(currentCard.gihWr)) <= 1 ? 'result-partial' :
+                'result-incorrect'
+              }`}>
+                <div className="result-title">
+                  {selectedGrade === getGrade(currentCard.gihWr) ? '✓ PERFECT!' :
+                   calculateGradeDistance(selectedGrade, getGrade(currentCard.gihWr)) === 1 ? '~ CLOSE! (+0.5 pts)' :
+                   calculateGradeDistance(selectedGrade, getGrade(currentCard.gihWr)) === 2 ? '± SO-SO (+0.25 pts)' :
+                   '✗ INCORRECT (0 pts)'}
+                </div>
+                <div style={{textAlign: 'center', marginTop: '12px', fontSize: '14px', color: '#bbb'}}>
+                  Your: <span className={`grade-badge ${getGradeClass(selectedGrade)}`}>{selectedGrade}</span>
+                  {' → '}
+                  Actual: <span className={`grade-badge ${getGradeClass(getGrade(currentCard.gihWr))}`}>
+                    {getGrade(currentCard.gihWr)}
+                  </span> ({currentCard.gihWr.toFixed(1)}%)
+                </div>
+                <div style={{textAlign: 'center', marginTop: '16px'}}>
+                  <button className="next-button" onClick={handleNextQuestion}>Next Question</button>
+                </div>
+                <div className="score-display" style={{marginTop: '20px'}}>
+                  <div className="score-item">
+                    <div className="score-value">{Number.isInteger(points) ? points : points.toFixed(1)}/{questions}</div>
+                    <div className="score-label">Points</div>
+                  </div>
+                  <div className="score-item">
+                    <div className="score-value">{accuracy}%</div>
+                    <div className="score-label">Accuracy</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {quizMode === 'comparison' && currentPair && (
+            <>
+              <div style={{marginBottom: '24px', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
+                {/* Smart Selection & Random Pairing buttons */}
+                <div className="mode-toggle" style={{marginBottom: '12px'}}>
+                  <button
+                    className={`mode-option ${smartSelectionEnabled ? 'active' : ''}`}
+                    onClick={() => {
+                      setSmartSelectionEnabled(true);
+                      setShowResult(false);
+                      setSelectedCardNum(null);
+                      setIsAnswering(false);
+                    }}
+                  >
+                    ✨ Smart Selection
+                  </button>
+                  <button
+                    className={`mode-option ${!smartSelectionEnabled ? 'active' : ''}`}
+                    onClick={() => {
+                      setSmartSelectionEnabled(false);
+                      setShowResult(false);
+                      setSelectedCardNum(null);
+                      setIsAnswering(false);
+                    }}
+                  >
+                    🎲 Random Pairing
+                  </button>
+                  <button
+                    onClick={() => setExpandSmartSelectionHelp(!expandSmartSelectionHelp)}
+                    style={{
+                      marginLeft: '8px',
+                      padding: '6px 10px',
+                      background: 'none',
+                      border: '1px solid #666',
+                      color: '#aaa',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      borderRadius: '4px',
+                      minWidth: '32px'
+                    }}
+                    title="Help"
+                  >
+                    ?
+                  </button>
+                </div>
+
+                {/* Smart Selection & Random Pairing explanations - 2 separate boxes */}
+                {expandSmartSelectionHelp && (
+                  <div style={{display: 'flex', gap: '24px', marginBottom: '24px', flexWrap: 'wrap'}}>
+                    <div style={{flex: '1', minWidth: '200px', fontSize: '13px', padding: '12px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px', color: '#bbb', lineHeight: '1.5'}}>
+                      <strong>✨ Smart Selection</strong>:<br />Ensures cards aren't so far apart it's trivial or so close it's random.<br />• GIH WR: different letter grades (0.33 standard deviation of score), but within 1 standard deviation score (up to 2 grades above/below)<br />• ALSA: at least 1, but no more than 2, average pick difference. 
+                    </div>
+                    <div style={{flex: '1', minWidth: '200px', fontSize: '13px', padding: '12px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px', color: '#bbb', lineHeight: '1.5'}}>
+                      <strong>🎲 Random Pairing</strong>:<br />Compares any 2 cards in the set (within filters set for rarity, color, or type).<br />Gives more variety, but can include trivially easy (e.g. 66.9% vs 45.2%, GIH WR) or near impossible (e.g. 53.9% vs 54%) questions. Does still block identical scores. 
+                    </div>
+                  </div>
+                )}
+
+                {/* GIH WR & ALSA buttons */}
+                <div className="mode-toggle" style={{marginBottom: '12px'}}>
+                  <button
+                    className={`mode-option ${metric === 'gihWr' ? 'active' : ''}`}
+                    onClick={() => {
+                      setMetric('gihWr');
+                      setShowResult(false);
+                      setSelectedCardNum(null);
+                      setIsAnswering(false);
+                    }}
+                  >
+                    🏆 GIH WR
+                  </button>
+                  <button
+                    className={`mode-option ${metric === 'alsa' ? 'active' : ''}`}
+                    onClick={() => {
+                      setMetric('alsa');
+                      setShowResult(false);
+                      setSelectedCardNum(null);
+                      setIsAnswering(false);
+                    }}
+                  >
+                    👀 ALSA
+                  </button>
+                  <button
+                    onClick={() => setExpandMetricHelp(!expandMetricHelp)}
+                    style={{
+                      marginLeft: '8px',
+                      padding: '6px 10px',
+                      background: 'none',
+                      border: '1px solid #666',
+                      color: '#aaa',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      borderRadius: '4px',
+                      minWidth: '32px'
+                    }}
+                    title="Help"
+                  >
+                    ?
+                  </button>
+                </div>
+
+                {/* GIH WR & ALSA explanations - 2 separate boxes */}
+                {expandMetricHelp && (
+                  <div style={{display: 'flex', gap: '24px', marginBottom: '12px', flexWrap: 'wrap'}}>
+                    <div style={{flex: '1', minWidth: '200px', fontSize: '13px', padding: '12px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px', color: '#bbb', lineHeight: '1.5'}}>
+                      <strong>📊 GIH WR (Games in Hand Win Rate)</strong>: The % win rate of <a href="https://www.17lands.com/metrics_definitions#gih_wr" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline'}}>games where an instance of this card was drawn into hand</a>, either in the opening hand or later. Letter grades use 17Lands system of a normal distribution centered at C, with each grade representing 0.33 standard deviations.<br /><br />Is influenced by how good the decks a card appears in are (e.g. if a particular color pair is dominant in that format, every card in that pair will be rated higher) and can overrate archetype specific/"build around" cards (e.g. if a card is terrible in nearly every deck it won't be played in many, but might be amazing in the decks it is played in, so it'll be rated higher.)
+                    </div>
+                    <div style={{flex: '1', minWidth: '200px', fontSize: '13px', padding: '12px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px', color: '#bbb', lineHeight: '1.5'}}>
+                      <strong>🎯 ALSA (Average Last Seen At)</strong>: The <a href="https://www.17lands.com/metrics_definitions#alsa" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline'}}>average pick number where this card was last seen in packs</a>. Scale: 1-7 (1 = early/high demand, 7 = late/low demand). Doesn't directly measure card power, but how much demand there is for a card from drafters, so indirectly the consenus on how good it is.<br /><br />Cards that are good in lots of decks get taken sooner and archetype specific cards later, on average, as they'll be seen by players who are locked into different archtypes. So can overrate flexibility over raw power.<br /><br />For more on the pros and cons of different metrics, see these excellent blog posts: <a href="https://www.17lands.com/articles/using_win_rate_data" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline'}}>17Lands "Using Win Rate Data"</a> and <a href="https://www.mtgdatasci.com/estimating-adjusted-win-rate/" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline'}}>MTG Data Science "Estimating Adjusted Win Rate"</a>.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {showResult && quizMode === 'comparison' && (
+                <div style={{marginTop: '16px', marginBottom: '24px'}}>
+                  {(() => {
+                    const isWinningCard = metric === 'gihWr'
+                      ? currentPair[selectedCardNum].gihWr > currentPair[1 - selectedCardNum].gihWr
+                      : currentPair[selectedCardNum].alsa < currentPair[1 - selectedCardNum].alsa;
+                    return (
+                      <div className={`result-panel ${isWinningCard ? 'result-correct' : 'result-incorrect'}`}>
+                        <div className="result-title">
+                          {isWinningCard ? '✓ CORRECT!' : '✗ INCORRECT'} {metric === 'gihWr' ? '🏆' : '👀'}
+                        </div>
+                        <div style={{textAlign: 'center', marginTop: '16px'}}>
+                          <button className="next-button" onClick={handleNextQuestion}>Next Question</button>
+                        </div>
+                        <div className="score-display" style={{marginTop: '20px'}}>
+                          <div className="score-item">
+                            <div className="score-value">{Number.isInteger(points) ? points : points.toFixed(1)}/{questions}</div>
+                            <div className="score-label">Points</div>
+                          </div>
+                          <div className="score-item">
+                            <div className="score-value">{accuracy}%</div>
+                            <div className="score-label">Accuracy</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              <div className="card-area">
+              <CardDisplay
+                card={currentPair[0]}
+                cardNumber={0}
+                onSelect={handleSelectCard}
+                disabled={showResult}
+                showResult={showResult}
+                isCorrect={showResult && (metric === 'gihWr' ? currentPair[0].gihWr > currentPair[1].gihWr : currentPair[0].alsa < currentPair[1].alsa)}
+                isWinner={showResult && (metric === 'gihWr' ? currentPair[0].gihWr > currentPair[1].gihWr : currentPair[0].alsa < currentPair[1].alsa)}
+                metric={metric}
+              />
+              <CardDisplay
+                card={currentPair[1]}
+                cardNumber={1}
+                onSelect={handleSelectCard}
+                disabled={showResult}
+                showResult={showResult}
+                isCorrect={showResult && (metric === 'gihWr' ? currentPair[1].gihWr > currentPair[0].gihWr : currentPair[1].alsa < currentPair[0].alsa)}
+                isWinner={showResult && (metric === 'gihWr' ? currentPair[1].gihWr > currentPair[0].gihWr : currentPair[1].alsa < currentPair[0].alsa)}
+                metric={metric}
+              />
+            </div>
+            </>
+          )}
+
+          {quizMode === 'grading' && currentCard && (
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px'}}>
+              <div className="card-panel" style={{maxWidth: '500px', width: '100%'}}>
+                <CardDisplay
+                  card={currentCard}
+                  cardNumber={0}
+                  onSelect={() => {}}
+                  disabled={showResult}
+                  showResult={showResult}
+                  isCorrect={true}
+                  isWinner={true}
+                  metric={metric}
+                />
+              </div>
+              <GradeSelector
+                onSelect={handleGradeSelect}
+                disabled={showResult}
+                selectedGrade={selectedGrade}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* History Section */}
+      <div className="history-section">
+        <div className="history-header">
+          <div className="history-title">📜 Question History</div>
+          <div className="history-actions">
+            <div style={{position: 'relative'}}>
+              <button className="action-button" onClick={() => {
+                const scoreData = generateScoreText();
+                if (scoreData) {
+                  navigator.clipboard.writeText(scoreData.text).then(() => {
+                    showToastMessage('✓ Score copied to clipboard!');
+                  }).catch(() => {
+                    showToastMessage('Share text: ' + scoreData.text);
+                  });
+                } else {
+                  showToastMessage('No history to share yet!');
+                }
+                setShareMenuOpen(!shareMenuOpen);
+              }} title="Copy score to clipboard & open share options">
+                🔗 Share
+              </button>
+              {shareMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '4px',
+                  background: '#222',
+                  border: '1px solid #444',
+                  borderRadius: '4px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  zIndex: 1000,
+                  minWidth: '160px'
+                }}>
+                  <button onClick={handleShareTwitter} style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '10px 12px',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    color: '#bbb',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    borderBottom: '1px solid #333'
+                  }} onMouseEnter={(e) => e.target.style.background = '#2a2a2a'} onMouseLeave={(e) => e.target.style.background = 'none'}>
+                    𝕏 Twitter/X
+                  </button>
+                  <button onClick={handleShareBluesky} style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '10px 12px',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    color: '#bbb',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    borderBottom: '1px solid #333'
+                  }} onMouseEnter={(e) => e.target.style.background = '#2a2a2a'} onMouseLeave={(e) => e.target.style.background = 'none'}>
+                    🦋 Bluesky
+                  </button>
+                  <button onClick={handleShareDiscord} style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '10px 12px',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    color: '#bbb',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    borderBottom: '1px solid #333'
+                  }} onMouseEnter={(e) => e.target.style.background = '#2a2a2a'} onMouseLeave={(e) => e.target.style.background = 'none'}>
+                    💬 Discord
+                  </button>
+                  <button onClick={handleExportScore} style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '10px 12px',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    color: '#bbb',
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }} onMouseEnter={(e) => e.target.style.background = '#2a2a2a'} onMouseLeave={(e) => e.target.style.background = 'none'}>
+                    📋 Copy Text
+                  </button>
+                </div>
+              )}
+            </div>
+            <button className="action-button danger" onClick={handleClearHistory} title="Clear all history">
+              🗑️ Clear History
+            </button>
+          </div>
+        </div>
+
+        {history.length === 0 ? (
+          <div className="history-empty">
+            No questions answered yet. Start playing to see your history!
+          </div>
+        ) : (
+          <div className="history-table-container">
+            <table className="history-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Mode</th>
+                  <th>Result</th>
+                  {history.some(h => h.mode === 'comparison') && (
+                    <>
+                      <th>Card 1</th>
+                      <th>Metrics</th>
+                      <th>Card 2</th>
+                      <th>Metrics</th>
+                      <th>Your Choice</th>
+                    </>
+                  )}
+                  {history.some(h => h.mode === 'grading') && (
+                    <>
+                      <th>Card</th>
+                      <th>Your Grade</th>
+                      <th>Actual Grade</th>
+                      <th>GIH WR</th>
+                      <th>Points</th>
+                    </>
+                  )}
+                  <th>Filter</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.slice().reverse().map((entry, idx) => {
+                  const actualIdx = history.length - idx;
+                  const filterText = `${entry.filterColor === 'all' ? 'All' : entry.filterColor.toUpperCase()} / ${entry.filterRarity === 'all' ? 'All' : entry.filterRarity}${entry.filterType && entry.filterType !== 'all' ? ` / ${entry.filterType}` : ''}`;
+                  const smartMarker = entry.smartSelection ? ' ✨' : '';
+                  const metricMarker = entry.metric === 'alsa' ? ' 🎯' : '';
+
+                  if (entry.mode === 'grading') {
+                    const cardUrl = `https://scryfall.com/search?q="${encodeURIComponent(entry.card)}"&unique=cards`;
+                    const resultColor = entry.pointsEarned === 1.0 ? '#4caf50' : entry.pointsEarned > 0 ? '#ffc107' : '#ff6b6b';
+                    const resultIcon = entry.pointsEarned === 1.0 ? '✓' : entry.pointsEarned > 0 ? '~' : '✗';
+                    const resultClass = entry.pointsEarned === 1.0 ? 'history-result-correct' : entry.pointsEarned > 0 ? 'history-result-partial' : 'history-result-incorrect';
+
+                    return (
+                      <tr key={idx}>
+                        <td>{actualIdx}</td>
+                        <td style={{fontSize: '12px', color: '#999'}}>📝</td>
+                        <td>
+                          <span className={`history-result-icon ${resultClass}`}>
+                            {resultIcon}
+                          </span>
+                        </td>
+                        <td>
+                          <a href={cardUrl} target="_blank" rel="noopener noreferrer" className="history-card-name">
+                            {entry.card}
+                          </a>
+                        </td>
+                        <td>
+                          <span className={`grade-badge ${getGradeClass(entry.userGrade)}`}>
+                            {entry.userGrade}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`grade-badge ${getGradeClass(entry.actualGrade)}`}>
+                            {entry.actualGrade}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="gih-with-grade">
+                            <span>{entry.cardGihWr.toFixed(1)}%</span>
+                          </div>
+                        </td>
+                        <td style={{fontWeight: 600, color: resultColor}}>
+                          {entry.pointsEarned.toFixed(2)}/1
+                        </td>
+                        <td style={{fontSize: '12px', color: '#999'}}>{filterText}{metricMarker}</td>
+                      </tr>
+                    );
+                  } else {
+                    // Comparison mode
+                    const card1Url = `https://scryfall.com/search?q="${encodeURIComponent(entry.card1)}"&unique=cards`;
+                    const card2Url = `https://scryfall.com/search?q="${encodeURIComponent(entry.card2)}"&unique=cards`;
+
+                    // Use metric-aware display
+                    const useAlsa = entry.metric === 'alsa';
+                    const card1Value = useAlsa ? (entry.card1Alsa || 0).toFixed(2) : entry.card1GihWr.toFixed(1);
+                    const card2Value = useAlsa ? (entry.card2Alsa || 0).toFixed(2) : entry.card2GihWr.toFixed(1);
+                    const card1ValueSuffix = useAlsa ? '' : '%';
+                    const card2ValueSuffix = useAlsa ? '' : '%';
+                    const card1Grade = entry.card1GihWr ? getGrade(entry.card1GihWr) : null;
+                    const card2Grade = entry.card2GihWr ? getGrade(entry.card2GihWr) : null;
+
+                    return (
+                      <tr key={idx}>
+                        <td>{actualIdx}</td>
+                        <td style={{fontSize: '12px', color: '#999'}}>⚖️ {useAlsa ? '👀' : '🏆'}</td>
+                        <td>
+                          <span className={`history-result-icon ${entry.isCorrect ? 'history-result-correct' : 'history-result-incorrect'}`}>
+                            {entry.isCorrect ? '✓' : '✗'}
+                          </span>
+                        </td>
+                        <td>
+                          <a href={card1Url} target="_blank" rel="noopener noreferrer" className="history-card-name">
+                            {entry.card1}
+                          </a>
+                        </td>
+                        <td>
+                          <div className="gih-with-grade" style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                            <span>🏆 {entry.card1GihWr.toFixed(1)}% <span className={`grade-badge ${getGradeClass(card1Grade)}`}>{card1Grade}</span></span>
+                            <span>👀 {(entry.card1Alsa || 0).toFixed(2)}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <a href={card2Url} target="_blank" rel="noopener noreferrer" className="history-card-name">
+                            {entry.card2}
+                          </a>
+                        </td>
+                        <td>
+                          <div className="gih-with-grade" style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                            <span>🏆 {entry.card2GihWr.toFixed(1)}% <span className={`grade-badge ${getGradeClass(card2Grade)}`}>{card2Grade}</span></span>
+                            <span>👀 {(entry.card2Alsa || 0).toFixed(2)}</span>
+                          </div>
+                        </td>
+                        <td style={{fontWeight: entry.isCorrect ? 600 : 400, color: entry.isCorrect ? '#4caf50' : '#ff6b6b'}}>
+                          {entry.selectedCard}
+                        </td>
+                        <td style={{fontSize: '12px', color: '#999'}}>{filterText}{smartMarker}</td>
+                      </tr>
+                    );
+                  }
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Toast notification */}
+      {showToast && (
+        <div className="toast">{toastMessage}</div>
+      )}
+
+      <p className="info-text">Card data from 17 Lands • Card images from Scryfall • Just open in your browser and play!</p>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<GIHQuiz />);
+</script>
+</body>
+</html>

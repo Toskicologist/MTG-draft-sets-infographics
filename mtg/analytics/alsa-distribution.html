@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ALSA Distribution Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    body {
+      font-family: system-ui;
+      background: #0a0e27;
+      color: #e0e0e0;
+      padding: 40px;
+      margin: 0;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; color: #fff; margin-bottom: 5px; }
+    .stats { text-align: center; color: #aaa; font-size: 13px; margin-bottom: 25px; }
+    .chart-box {
+      background: #1a1f3a;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      margin-bottom: 30px;
+      height: 500px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ALSA Distribution (263 ECL Cards)</h1>
+    <div class="stats">Range: 1.23 - 7.72 | Mean: 4.44 | StdDev: 1.64</div>
+    <div class="chart-box">
+      <canvas id="myChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('myChart').getContext('2d');
+    
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['1.0-1.5', '1.5-2.0', '2.0-2.5', '2.5-3.0', '3.0-3.5', '3.5-4.0', '4.0-4.5', '4.5-5.0', '5.0-5.5', '5.5-6.0', '6.0-6.5', '6.5-7.0', '7.0-7.5', '7.5+'],
+        datasets: [{
+          label: 'Cards per Bucket',
+          data: [3, 16, 22, 19, 20, 28, 32, 22, 21, 22, 23, 21, 12, 2],
+          backgroundColor: [
+            '#6496FF', '#6496FF', '#6496FF', '#6496FF', '#6496FF',
+            '#9696FF', '#C896FF', '#FF9696', '#FF7878', '#FF6464',
+            '#FF6B6B', '#FF5050', '#FF3C3C', '#FF3232'
+          ],
+          borderColor: '#444',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#aaa', font: { size: 12 } }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 32,
+            ticks: { color: '#666' },
+            grid: { color: '#333' }
+          },
+          x: {
+            ticks: { color: '#666', font: { size: 11 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
