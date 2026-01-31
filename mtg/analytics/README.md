@@ -26,7 +26,8 @@ mtg/analytics/underrated-overrated.html
 
 Test locally:
 ```bash
-file:///C:/Users/User/ClaudeProjects/mtg/analytics/yourfile.html
+# Open in browser by navigating to your local HTML file
+# Example path: file:///path/to/your/mtg/analytics/yourfile.html
 ```
 
 Deploy to GitHub Pages:

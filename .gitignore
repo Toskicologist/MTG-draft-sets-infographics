@@ -7,3 +7,8 @@ desktop.ini
 *.tmp
 *.bak
 ~$*
+
+# Local automation scripts (DO NOT COMMIT)
+deploy-to-github.bat
+*.local.bat
+*.local.ps1
