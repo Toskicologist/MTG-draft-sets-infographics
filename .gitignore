@@ -12,3 +12,4 @@ desktop.ini
 deploy-to-github.bat
 *.local.bat
 *.local.ps1
+*-report.txt
