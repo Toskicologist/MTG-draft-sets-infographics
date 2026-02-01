@@ -617,7 +617,7 @@
 
     .history-table th {
       background: rgba(74, 158, 255, 0.15);
-      padding: 12px 16px;
+      padding: 10px 8px;
       text-align: left;
       color: #4a9eff;
       font-weight: 600;
@@ -626,9 +626,10 @@
     }
 
     .history-table td {
-      padding: 12px 16px;
+      padding: 10px 8px;
       border-bottom: 1px solid rgba(74, 158, 255, 0.1);
       color: #ddd;
+      white-space: nowrap;
     }
 
     .history-table tr:hover {
@@ -673,10 +674,10 @@
     .grade-badge {
       display: inline-block;
       font-weight: 700;
-      font-size: 14px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      margin-left: 8px;
+      font-size: 12px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
       font-family: 'Courier New', monospace;
     }
 
@@ -826,7 +827,7 @@
 
       .history-table th,
       .history-table td {
-        padding: 8px 12px;
+        padding: 6px 4px;
       }
     }
 
@@ -1054,6 +1055,11 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v3.0.1 (2026-02-01 18:08 UTC - Claude Opus 4.5):
+  - UI: Reduce history table cell padding to prevent metrics text wrapping
+  - UI: Add nowrap to history table cells for cleaner display
+  - UI: Compact grade badges (smaller font, padding, margin) for better fit
+
   v3.0.0 (2026-01-31 22:44 UTC - Claude Sonnet 4.5):
   - MAJOR PUBLIC RELEASE: Deployed to GitHub Pages with all v2.x features
   - Grading Mode: Guess letter grades (A+ through F) with partial credit scoring
@@ -1450,8 +1456,8 @@ const CARD_DATA = [
 ];
 
 // Version and metadata
-const QUIZ_VERSION = '3.0.0';
-const LAST_UPDATE = '2026-01-31 22:44 UTC';
+const QUIZ_VERSION = '3.0.1';
+const LAST_UPDATE = '2026-02-01 18:08 UTC';
 const DATA_SOURCE_DATE = '2026-01-31';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 const RATINGS_LINK = 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20';
