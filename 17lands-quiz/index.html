@@ -1727,6 +1727,8 @@ GRADE_LABELS.forEach((label, idx) => {
   const z = idx / 3 - GRADE_OFFSET;
   gradeThresholds[label] = GRADE_MEAN + z * GRADE_SD;
 });
+// Add SD to thresholds object for smart selection
+gradeThresholds.stdDev = GRADE_SD;
 
 // Get grade for a specific GIH WR value (exact 17lands algorithm)
 const getGrade = (gihWr) => {
