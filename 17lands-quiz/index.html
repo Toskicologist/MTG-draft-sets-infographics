@@ -1787,24 +1787,55 @@ const fetchCardImage = async (cardName) => {
     return scryfallImageCache[cardName];
   }
 
-  try {
-    const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
-    if (!response.ok) throw new Error('Card not found');
-
-    const data = await response.json();
-    let imageUrl = null;
-
+  const getImageUrl = (data) => {
+    if (!data) return null;
     // Handle double-faced cards
     if (data.card_faces && data.card_faces[0]?.image_uris?.normal) {
-      imageUrl = data.card_faces[0].image_uris.normal;
+      return data.card_faces[0].image_uris.normal;
     } else if (data.image_uris?.normal) {
-      imageUrl = data.image_uris.normal;
+      return data.image_uris.normal;
+    }
+    return null;
+  };
+
+  try {
+    // Priority 1: Try ECL set (/cards/search for set-specific)
+    let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:ecl`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.data && data.data.length > 0) {
+        const imageUrl = getImageUrl(data.data[0]);
+        if (imageUrl) {
+          scryfallImageCache[cardName] = imageUrl;
+          return imageUrl;
+        }
+      }
     }
 
-    if (imageUrl) {
-      scryfallImageCache[cardName] = imageUrl;
-      return imageUrl;
+    // Priority 2: Try SPG (Special Guest) set for non-ECL cards
+    response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:spg`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.data && data.data.length > 0) {
+        const imageUrl = getImageUrl(data.data[0]);
+        if (imageUrl) {
+          scryfallImageCache[cardName] = imageUrl;
+          return imageUrl;
+        }
+      }
     }
+
+    // Priority 3: Fallback to fuzzy search (any version)
+    response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+    if (response.ok) {
+      const data = await response.json();
+      const imageUrl = getImageUrl(data);
+      if (imageUrl) {
+        scryfallImageCache[cardName] = imageUrl;
+        return imageUrl;
+      }
+    }
+
     return null;
   } catch (error) {
     console.error(`Error fetching image for ${cardName}:`, error);
