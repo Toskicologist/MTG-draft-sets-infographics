@@ -1077,6 +1077,13 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v3.3.1 (2026-02-14 16:30 UTC - Claude Opus 4.6):
+  - UX: Add oracle text fallback when card images fail to load
+  - UX: Clear old image immediately when new card appears (no ghost image)
+  - UX: Maintain stable 400px container during image load transitions
+  - A11y: Include oracle text in image alt attribute for better accessibility
+  - Improved offline experience with readable card text fallback
+
   v3.2.0 (2026-02-13 LOCAL - Claude Opus 4.6):
   - GRADE ALGORITHM: Replace fixed thresholds with exact 17lands algorithm
   - Extracted actual formula from 17lands JavaScript bundle:
@@ -1503,8 +1510,8 @@ const CARD_DATA = [
 ];
 
 // Version and metadata
-const QUIZ_VERSION = '3.3.0';
-const LAST_UPDATE = '2026-02-13 12:15 UTC';
+const QUIZ_VERSION = '3.3.1';
+const LAST_UPDATE = '2026-02-14 16:30 UTC';
 const DATA_SOURCE_DATE = '2026-02-13';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 const RATINGS_LINK = 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20';
