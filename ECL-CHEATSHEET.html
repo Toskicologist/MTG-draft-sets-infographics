@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECL Draft Cheatsheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        .avg-wr {
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #0f3460;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .btn:hover {
+            background: #00d4ff;
+            color: #1a1a2e;
+            transform: translateY(-2px);
+        }
+
+        .btn.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+
+        .toggle-images {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0f3460;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #00d4ff;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #00d4ff;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+        }
+
+        .section {
+            background: rgba(15, 52, 96, 0.3);
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .section h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #00d4ff;
+            font-size: 1.5em;
+        }
+
+        .section.skip h2 {
+            color: #ff6b6b;
+        }
+
+        .section.take h2 {
+            color: #51cf66;
+        }
+
+        .card-count {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .subsection {
+            margin-bottom: 20px;
+        }
+
+        .subsection h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 5px;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #0f3460;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .card-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #00d4ff;
+        }
+
+        .card-item.with-image {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-name {
+            flex-grow: 1;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .wr {
+            color: #ffd700;
+            font-weight: bold;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .diff {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .diff.below {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .diff.above {
+            background: rgba(81, 207, 102, 0.3);
+            color: #51cf66;
+        }
+
+        .card-image {
+            width: 100%;
+            margin-top: 10px;
+            max-width: 150px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        .image-loading {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #999;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .image-error {
+            font-size: 0.8em;
+            color: #ff6b6b;
+            margin-top: 5px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .sections {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .card-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .card-stats {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🃏 ECL Draft Cheatsheet</h1>
+            <p class="avg-wr">Average GIH WR: <strong>55.42%</strong></p>
+        </header>
+
+        <div class="controls">
+            <div class="toggle-images">
+                <label for="imageToggle">Show Card Images:</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="imageToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button class="btn" id="filterBtn" onclick="toggleFilter()">Show All</button>
+        </div>
+
+        <div class="sections" id="sections">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const AVERAGE_GIH_WR = 55.42;
+
+        // Card data embedded
+        const cardData = {
+            rares: [
+                { name: "Mirrormind Crown", wr: 38.9 },
+                { name: "Rimefire Torque", wr: 39.5 },
+                { name: "Lavaleaper", wr: 47.7 },
+                { name: "Collective Inferno", wr: 48.4 },
+                { name: "Dream Harvest", wr: 50.3 },
+                { name: "Hexing Squelcher", wr: 51.0 },
+                { name: "Rhys, the Evermore", wr: 52.5 },
+                { name: "Hallowed Fountain", wr: 52.6 },
+                { name: "Blood Crypt", wr: 52.7 },
+                { name: "Kirol, Attentive First-Year", wr: 52.8 },
+                { name: "Steam Vents", wr: 52.8 },
+                { name: "Winnowing", wr: 53.1 },
+                { name: "Temple Garden", wr: 53.2 },
+                { name: "Harmonized Crescendo", wr: 53.3 },
+                { name: "Shadow Urchin", wr: 53.4 },
+                { name: "Door of Destinies", wr: 53.5 },
+                { name: "Spry and Mighty", wr: 53.6 },
+                { name: "Tam, Mindful First-Year", wr: 53.7 },
+                { name: "Champion of the Path", wr: 54.3 },
+                { name: "Overgrown Tomb", wr: 54.3 },
+                { name: "Mutable Explorer", wr: 54.4 },
+                { name: "Goliath Daydreamer", wr: 54.9 },
+                { name: "Scuzzback Scrounger", wr: 54.9 }
+            ],
+            mythics: [
+                { name: "Catharsis", wr: 53.1 },
+                { name: "Morningtide's Light", wr: 53.5 },
+                { name: "Celestial Reunion", wr: 53.5 },
+                { name: "Bloom Tender", wr: 54.7 }
+            ],
+            uncommons: [
+                { name: "Eclipsed Elf", wr: 63.1 },
+                { name: "Deepchannel Duelist", wr: 63.0 },
+                { name: "Eclipsed Kithkin", wr: 62.4 },
+                { name: "Eclipsed Merrow", wr: 61.7 },
+                { name: "Risen Reef", wr: 61.5 },
+                { name: "Morcant's Loyalist", wr: 61.4 },
+                { name: "Morcant's Eyes", wr: 60.5 },
+                { name: "Rimekin Recluse", wr: 60.2 },
+                { name: "Silvergill Mentor", wr: 60.0 },
+                { name: "Eclipsed Flamekin", wr: 60.0 },
+                { name: "Wanderbrine Trapper", wr: 59.4 },
+                { name: "Moon-Vigil Adherents", wr: 58.9 },
+                { name: "Eclipsed Boggart", wr: 58.9 },
+                { name: "Flamebraider", wr: 58.7 },
+                { name: "Thoughtweft Lieutenant", wr: 58.7 },
+                { name: "Pitiless Fists", wr: 58.6 },
+                { name: "Gathering Stone", wr: 58.6 },
+                { name: "Pyrrhic Strike", wr: 58.5 },
+                { name: "Thoughtweft Imbuer", wr: 58.5 },
+                { name: "Shinestriker", wr: 58.5 },
+                { name: "Virulent Emissary", wr: 58.2 },
+                { name: "Kinsbaile Aspirant", wr: 58.0 },
+                { name: "Explosive Prodigy", wr: 58.0 },
+                { name: "Iron-Shield Elf", wr: 57.8 },
+                { name: "Mudbutton Cursetosser", wr: 57.6 },
+                { name: "Creakwood Safewright", wr: 57.5 },
+                { name: "Lys Alana Dignitary", wr: 57.5 },
+                { name: "Noggle Robber", wr: 57.4 },
+                { name: "Twinflame Travelers", wr: 57.4 },
+                { name: "Boggart Mischief", wr: 57.2 },
+                { name: "Protective Response", wr: 57.1 },
+                { name: "Boggart Cursecrafter", wr: 56.9 },
+                { name: "Reaping Willow", wr: 56.8 },
+                { name: "Clachan Festival", wr: 56.7 },
+                { name: "Glamer Gifter", wr: 56.6 },
+                { name: "Sear", wr: 56.6 },
+                { name: "Prismabasher", wr: 56.6 },
+                { name: "Encumbered Reejerey", wr: 56.4 },
+                { name: "Tanufel Rimespeaker", wr: 56.4 },
+                { name: "Wanderwine Farewell", wr: 56.4 },
+                { name: "Unwelcome Sprite", wr: 56.3 },
+                { name: "Bristlebane Outrider", wr: 56.3 },
+                { name: "Dundoolin Weaver", wr: 56.2 },
+                { name: "Omni-Changeling", wr: 56.0 },
+                { name: "Nameless Inversion", wr: 56.0 },
+                { name: "Vinebred Brawler", wr: 56.0 },
+                { name: "Boulder Dash", wr: 55.7 },
+                { name: "Pummeler for Hire", wr: 55.6 },
+                { name: "Lofty Dreams", wr: 55.5 },
+                { name: "Blossoming Defense", wr: 55.5 }
+            ],
+            commons: [
+                { name: "Dawnhand Eulogist", wr: 58.0 },
+                { name: "Assert Perfection", wr: 57.9 },
+                { name: "Scarblade Scout", wr: 57.6 },
+                { name: "Lys Alana Informant", wr: 57.0 },
+                { name: "Merrow Skyswimmer", wr: 57.0 },
+                { name: "Kulrath Zealot", wr: 56.9 },
+                { name: "Mistmeadow Council", wr: 56.8 },
+                { name: "Flamekin Gildweaver", wr: 56.4 },
+                { name: "Midnight Tilling", wr: 56.4 },
+                { name: "Safewright Cavalry", wr: 56.3 },
+                { name: "Bogslither's Embrace", wr: 56.0 },
+                { name: "Liminal Hold", wr: 55.8 },
+                { name: "Temporal Cleansing", wr: 55.8 },
+                { name: "Gravelgill Scoundrel", wr: 55.7 },
+                { name: "Unexpected Assistance", wr: 55.6 },
+                { name: "Wanderbrine Preacher", wr: 55.5 }
+            ]
+        };
+
+        let showImages = false;
+        let filterMode = false;
+
+        // Scryfall API for card images
+        async function fetchCardImage(cardName) {
+            try {
+                const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.image_uris?.normal || null;
+                }
+            } catch (error) {
+                console.error(`Error fetching image for ${cardName}:`, error);
+            }
+            return null;
+        }
+
+        function createCardElement(card, type) {
+            const diff = (card.wr - AVERAGE_GIH_WR).toFixed(1);
+            const isBelow = card.wr < AVERAGE_GIH_WR;
+
+            const div = document.createElement('div');
+            div.className = 'card-item' + (showImages ? ' with-image' : '');
+            div.dataset.cardName = card.name;
+            div.dataset.cardWr = card.wr;
+
+            const statsDiv = document.createElement('div');
+            statsDiv.className = 'card-stats';
+
+            const nameSpan = document.createElement('div');
+            nameSpan.className = 'card-name';
+            nameSpan.textContent = card.name;
+
+            const wrSpan = document.createElement('div');
+            wrSpan.className = 'wr';
+            wrSpan.textContent = card.wr.toFixed(1) + '%';
+
+            const diffSpan = document.createElement('div');
+            diffSpan.className = 'diff ' + (isBelow ? 'below' : 'above');
+            diffSpan.textContent = (isBelow ? '' : '+') + diff + ' pp';
+
+            statsDiv.appendChild(nameSpan);
+            statsDiv.appendChild(wrSpan);
+            statsDiv.appendChild(diffSpan);
+
+            div.appendChild(statsDiv);
+
+            if (showImages) {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'image-loading';
+                imageDiv.innerHTML = '<span class="loading-spinner"></span> Loading image...';
+                div.appendChild(imageDiv);
+
+                fetchCardImage(card.name).then(imageUrl => {
+                    if (imageUrl) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.className = 'card-image';
+                        img.alt = card.name;
+                        imageDiv.replaceWith(img);
+                    } else {
+                        imageDiv.className = 'image-error';
+                        imageDiv.textContent = 'Image not found';
+                    }
+                });
+            }
+
+            return div;
+        }
+
+        function renderSections() {
+            const container = document.getElementById('sections');
+            container.innerHTML = '';
+
+            // Skip section
+            const skipSection = document.createElement('div');
+            skipSection.className = 'section skip';
+            skipSection.innerHTML = '<h2>🚫 Skip These Rares & Mythics <span class="card-count">' + (cardData.rares.length + cardData.mythics.length) + ' cards</span></h2>';
+
+            const skipSubRares = document.createElement('div');
+            skipSubRares.className = 'subsection';
+            skipSubRares.innerHTML = '<h3>Rares (' + cardData.rares.length + ')</h3>';
+            const skipRaresList = document.createElement('div');
+            skipRaresList.className = 'card-list';
+            cardData.rares.forEach(card => skipRaresList.appendChild(createCardElement(card, 'rare')));
+            skipSubRares.appendChild(skipRaresList);
+            skipSection.appendChild(skipSubRares);
+
+            const skipSubMythics = document.createElement('div');
+            skipSubMythics.className = 'subsection';
+            skipSubMythics.innerHTML = '<h3>Mythics (' + cardData.mythics.length + ')</h3>';
+            const skipMythicsList = document.createElement('div');
+            skipMythicsList.className = 'card-list';
+            cardData.mythics.forEach(card => skipMythicsList.appendChild(createCardElement(card, 'mythic')));
+            skipSubMythics.appendChild(skipMythicsList);
+            skipSection.appendChild(skipSubMythics);
+
+            // Take section
+            const takeSection = document.createElement('div');
+            takeSection.className = 'section take';
+            takeSection.innerHTML = '<h2>✅ Prioritize These <span class="card-count">' + (cardData.uncommons.length + cardData.commons.length) + ' cards</span></h2>';
+
+            const takeSubUncommons = document.createElement('div');
+            takeSubUncommons.className = 'subsection';
+            takeSubUncommons.innerHTML = '<h3>Uncommons (' + cardData.uncommons.length + ')</h3>';
+            const takeUncommonsList = document.createElement('div');
+            takeUncommonsList.className = 'card-list';
+            cardData.uncommons.forEach(card => takeUncommonsList.appendChild(createCardElement(card, 'uncommon')));
+            takeSubUncommons.appendChild(takeUncommonsList);
+            takeSection.appendChild(takeSubUncommons);
+
+            const takeSubCommons = document.createElement('div');
+            takeSubCommons.className = 'subsection';
+            takeSubCommons.innerHTML = '<h3>Commons (' + cardData.commons.length + ')</h3>';
+            const takeCommonsList = document.createElement('div');
+            takeCommonsList.className = 'card-list';
+            cardData.commons.forEach(card => takeCommonsList.appendChild(createCardElement(card, 'common')));
+            takeSubCommons.appendChild(takeCommonsList);
+            takeSection.appendChild(takeSubCommons);
+
+            container.appendChild(skipSection);
+            container.appendChild(takeSection);
+        }
+
+        function toggleFilter() {
+            filterMode = !filterMode;
+            const btn = document.getElementById('filterBtn');
+            const cards = document.querySelectorAll('.card-item');
+
+            if (filterMode) {
+                btn.textContent = 'Show Below Average Only';
+                btn.classList.add('active');
+                cards.forEach(card => {
+                    const wr = parseFloat(card.dataset.cardWr);
+                    card.style.display = wr < AVERAGE_GIH_WR ? 'flex' : 'none';
+                });
+            } else {
+                btn.textContent = 'Show All';
+                btn.classList.remove('active');
+                cards.forEach(card => card.style.display = 'flex');
+            }
+        }
+
+        // Image toggle
+        document.getElementById('imageToggle').addEventListener('change', function() {
+            showImages = this.checked;
+            renderSections();
+        });
+
+        // Initial render
+        renderSections();
+    </script>
+</body>
+</html>
