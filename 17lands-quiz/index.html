@@ -350,6 +350,28 @@
       padding: 20px;
     }
 
+    .card-oracle-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .oracle-text {
+      color: #ccc;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+      font-family: Courier New, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-width: 100%;
+    }
+
     .card-name {
       font-size: 16px;
       font-weight: 700;
@@ -1782,20 +1804,24 @@ const getGradeRange = (grade) => {
   return `${lower.toFixed(1)}-${upper.toFixed(1)}%`;
 };
 
-const fetchCardImage = async (cardName) => {
+const fetchCardData = async (cardName) => {
   if (scryfallImageCache[cardName]) {
     return scryfallImageCache[cardName];
   }
 
-  const getImageUrl = (data) => {
+  const getCardData = (data) => {
     if (!data) return null;
+    let imageUrl = null;
     // Handle double-faced cards
     if (data.card_faces && data.card_faces[0]?.image_uris?.normal) {
-      return data.card_faces[0].image_uris.normal;
+      imageUrl = data.card_faces[0].image_uris.normal;
     } else if (data.image_uris?.normal) {
-      return data.image_uris.normal;
+      imageUrl = data.image_uris.normal;
     }
-    return null;
+
+    const oracleText = data.oracle_text || data.card_faces?.[0]?.oracle_text || '';
+
+    return imageUrl ? { imageUrl, oracleText } : null;
   };
 
   try {
@@ -1804,10 +1830,10 @@ const fetchCardImage = async (cardName) => {
     if (response.ok) {
       const data = await response.json();
       if (data.data && data.data.length > 0) {
-        const imageUrl = getImageUrl(data.data[0]);
-        if (imageUrl) {
-          scryfallImageCache[cardName] = imageUrl;
-          return imageUrl;
+        const cardData = getCardData(data.data[0]);
+        if (cardData) {
+          scryfallImageCache[cardName] = cardData;
+          return cardData;
         }
       }
     }
@@ -1817,10 +1843,10 @@ const fetchCardImage = async (cardName) => {
     if (response.ok) {
       const data = await response.json();
       if (data.data && data.data.length > 0) {
-        const imageUrl = getImageUrl(data.data[0]);
-        if (imageUrl) {
-          scryfallImageCache[cardName] = imageUrl;
-          return imageUrl;
+        const cardData = getCardData(data.data[0]);
+        if (cardData) {
+          scryfallImageCache[cardName] = cardData;
+          return cardData;
         }
       }
     }
@@ -1829,38 +1855,43 @@ const fetchCardImage = async (cardName) => {
     response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
     if (response.ok) {
       const data = await response.json();
-      const imageUrl = getImageUrl(data);
-      if (imageUrl) {
-        scryfallImageCache[cardName] = imageUrl;
-        return imageUrl;
+      const cardData = getCardData(data);
+      if (cardData) {
+        scryfallImageCache[cardName] = cardData;
+        return cardData;
       }
     }
 
     return null;
   } catch (error) {
-    console.error(`Error fetching image for ${cardName}:`, error);
+    console.error(`Error fetching card data for ${cardName}:`, error);
     return null;
   }
 };
 
 const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr' }) => {
   const [imageUrl, setImageUrl] = React.useState(null);
+  const [oracleText, setOracleText] = React.useState('');
   const [imageLoading, setImageLoading] = React.useState(true);
   const [imageError, setImageError] = React.useState(false);
 
   React.useEffect(() => {
-    const loadImage = async () => {
-      setImageLoading(true);
-      setImageError(false);
-      const url = await fetchCardImage(card.name);
-      if (url) {
-        setImageUrl(url);
+    // Clear image immediately on card change (before new image loads)
+    setImageUrl(null);
+    setImageLoading(true);
+    setImageError(false);
+
+    const loadCardData = async () => {
+      const cardData = await fetchCardData(card.name);
+      if (cardData) {
+        setOracleText(cardData.oracleText);
+        setImageUrl(cardData.imageUrl);
       } else {
         setImageError(true);
       }
       setImageLoading(false);
     };
-    loadImage();
+    loadCardData();
   }, [card.name]);
 
   const containerClass = [
@@ -1880,8 +1911,20 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         onClick={() => !disabled && onSelect(cardNumber)}
       >
         {imageLoading && <div className="card-loading">Loading image...</div>}
-        {imageError && <div className="card-error">Unable to load card image</div>}
-        {imageUrl && <img src={imageUrl} alt={card.name} className="card-image" />}
+        {(imageError || !imageUrl) && oracleText && (
+          <div className="card-oracle-fallback" title={`${card.name}: ${oracleText}`}>
+            <div className="oracle-text">{oracleText}</div>
+          </div>
+        )}
+        {imageError && !oracleText && <div className="card-error">Unable to load card image or text</div>}
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt={`${card.name}. Oracle text: ${oracleText}`}
+            className="card-image"
+            onError={() => setImageError(true)}
+          />
+        )}
         {showResult && (
           <div className="gih-percentage show">
             <div className="gih-value">
