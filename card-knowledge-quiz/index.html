@@ -808,6 +808,13 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin: 0 auto;
+    }
+
+    @media (max-width: 599px) {
+      .full-card-reveal {
+        max-width: 100%;
+      }
     }
 
     @media (min-width: 600px) {
@@ -1005,10 +1012,22 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.11.0
-     * Last Updated: 2026-02-18 22:10 UTC
+     * Version: 2.11.1
+     * Last Updated: 2026-02-18 23:05 UTC
      *
      * CHANGELOG:
+     * v2.11.1 (2026-02-18) - Bug fixes from testing
+     *   - FIX: Stale question no longer shown when switching card source or loading new pool
+     *   - FIX: Cards with blank oracle text filtered out when asking about text box
+     *   - FIX: Card name redaction now handles split/double-faced cards
+     *   - FIX: Custom list parsing now strips quantity prefixes (4x), set codes (FDN), collector numbers
+     *   - FIX: Small pools now generate synthetic wrong answers for mana value, P/T, colors
+     *   - FIX: Falls back to dynamic API when pool can't produce enough wrong answers
+     *   - Removed basic lands from Pauper list, added Experimental Synthesizer, Chromatic Star, etc.
+     *   - History rows color-coded green/red, card names link to Scryfall
+     *   - Full card reveal now truly full-width on mobile
+     *   - Not-found card separator changed to semicolons for readability
+     *
      * v2.11.0 (2026-02-18) - UI hierarchy redesign, history tracker, responsive images
      *   - NEW: Card source selector — choose between Scryfall Search, Card Lists, or Custom List
      *   - Scryfall Search shows format presets (Standard/Pioneer/Modern) + search field + filters
@@ -1319,16 +1338,17 @@
       pauper: {
         label: 'Pauper Top Cards',
         cards: [
-          'Mountain', 'Swamp', 'Pyroblast', 'Blue Elemental Blast', 'Relic of Progenitus',
-          'Hydroblast', 'Red Elemental Blast', 'Island', 'Lightning Bolt', 'Nihil Spellbomb',
-          'Counterspell', 'Lorien Revealed', 'Forest', 'Cast Down', 'Voldaren Epicure',
+          'Pyroblast', 'Blue Elemental Blast', 'Relic of Progenitus',
+          'Hydroblast', 'Red Elemental Blast', 'Lightning Bolt', 'Nihil Spellbomb',
+          'Counterspell', 'Lorien Revealed', 'Cast Down', 'Voldaren Epicure',
           'Cast into the Fire', 'Bojuka Bog', 'Brainstorm', 'Fanatical Offering', 'Annul',
           'Weather the Storm', 'Dispel', 'Breath Weapon', 'Ichor Wellspring', 'Faerie Macabre',
           'Sneaky Snacker', 'Duress', 'Avenging Hunter', 'End the Festivities', 'Lembas',
           'Eviscerator\'s Insight', 'Generous Ent', 'Galvanic Blast', 'Vault of Whispers', 'Faithless Looting',
           'Grab the Prize', 'Fiery Temper', 'Nyxborn Hydra', 'Highway Robbery', 'Great Furnace',
           'Fireblast', 'Searing Blaze', 'Extract a Confession', 'Refurbished Familiar', 'Snuff Out',
-          'Lead the Stampede', 'Murmuring Mystic', 'Winding Way', 'Masked Vandal', 'Drossforge Bridge'
+          'Lead the Stampede', 'Murmuring Mystic', 'Winding Way', 'Masked Vandal', 'Drossforge Bridge',
+          'Experimental Synthesizer', 'Chromatic Star', 'Makeshift Munitions', 'Krark-Clan Shaman'
         ]
       }
     };
@@ -1412,8 +1432,17 @@
      */
     function redactCardName(text, cardName) {
       if (!text || !cardName) return text;
+      // Redact full card name
       const pattern = new RegExp(cardName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-      return text.replace(pattern, '[REDACTED]');
+      let result = text.replace(pattern, '[REDACTED]');
+      // For split/double-faced cards, also redact each face name
+      if (cardName.includes(' // ')) {
+        cardName.split(' // ').forEach(face => {
+          const facePattern = new RegExp(face.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+          result = result.replace(facePattern, '[REDACTED]');
+        });
+      }
+      return result;
     }
 
     // ===================================================================
@@ -1657,9 +1686,16 @@
 
       if (!fieldDef) return cardPool;
 
+      let pool = cardPool;
+
+      // Filter out cards with blank oracle text when asking about oracle text
+      if (askField === 'oracleText') {
+        pool = pool.filter(c => c.oracleText && c.oracleText.trim().length > 0);
+      }
+
       // If field requires applicability check, filter pool
       if (fieldDef.requiresApplicability && fieldDef.checkApplicability) {
-        return cardPool.filter(c => {
+        pool = pool.filter(c => {
           if (askField === 'powerToughness') {
             return c.isCreature && c.power && c.toughness;
           }
@@ -1667,7 +1703,7 @@
         });
       }
 
-      return cardPool;
+      return pool;
     }
 
     function validateQuizConfig(config, cardPool) {
@@ -1899,7 +1935,52 @@
     }
 
     /**
+     * Generate synthetic wrong answers for fields where we can compute plausible alternatives
+     */
+    function generateSyntheticWrong(askField, correctCard, correctDisplay, count) {
+      const answers = new Set();
+
+      if (askField === 'manaValue') {
+        const mv = Math.floor(correctCard.manaValue);
+        // Add nearby mana values
+        for (const offset of [1, -1, 2, -2, 3]) {
+          if (answers.size >= count) break;
+          const val = mv + offset;
+          if (val >= 0) {
+            const display = String(val);
+            if (display !== correctDisplay) answers.add(display);
+          }
+        }
+      } else if (askField === 'powerToughness') {
+        const [p, t] = correctDisplay.split('/');
+        const pNum = parseInt(p) || 0;
+        const tNum = parseInt(t) || 0;
+        // Vary power and toughness by small amounts
+        const variations = [
+          [pNum + 1, tNum], [pNum - 1, tNum], [pNum, tNum + 1], [pNum, tNum - 1],
+          [pNum + 1, tNum + 1], [pNum - 1, tNum - 1], [pNum + 2, tNum],
+        ];
+        for (const [vp, vt] of variations) {
+          if (answers.size >= count) break;
+          if (vp >= 0 && vt >= 0) {
+            const display = `${vp}/${vt}`;
+            if (display !== correctDisplay) answers.add(display);
+          }
+        }
+      } else if (askField === 'colors') {
+        const allColorCombos = ['W', 'U', 'B', 'R', 'G', 'WU', 'WB', 'WR', 'WG', 'UB', 'UR', 'UG', 'BR', 'BG', 'RG', 'Colorless'];
+        for (const combo of shuffle(allColorCombos)) {
+          if (answers.size >= count) break;
+          if (combo !== correctDisplay) answers.add(combo);
+        }
+      }
+
+      return [...answers].slice(0, count);
+    }
+
+    /**
      * Main MC question generator - routes to appropriate strategy
+     * Falls back to synthetic wrong answers if pool-based strategies fail
      */
     async function generateMultipleChoiceQuestion(correctCard, pool, config, fieldDef, correctDisplay, scryfallClient) {
       const strategy = config.wrongAnswerStrategy || 'pool';
@@ -1913,9 +1994,27 @@
         wrongAnswers = generateMCBySimilarity(correctCard, pool, config, fieldDef, correctDisplay);
       }
 
+      // If pool-based strategies didn't produce enough, try synthetic fallback
+      if (!wrongAnswers || wrongAnswers.length < 2) {
+        const needed = wrongAnswers ? 2 - wrongAnswers.length : 3;
+        const existing = wrongAnswers || [];
+        const synthetic = generateSyntheticWrong(config.askField, correctCard, correctDisplay, needed + 2);
+        const combined = [...existing, ...synthetic.filter(s => !existing.includes(s))];
+        wrongAnswers = combined.length >= 2 ? combined.slice(0, 3) : null;
+      }
+
+      // Last resort: try dynamic API if we haven't already
+      if ((!wrongAnswers || wrongAnswers.length < 2) && strategy !== 'dynamic') {
+        try {
+          wrongAnswers = await generateMCByDynamicAPI(correctCard, scryfallClient, config, fieldDef, correctDisplay);
+        } catch (e) {
+          console.warn('Dynamic API fallback failed:', e);
+        }
+      }
+
       if (!wrongAnswers || wrongAnswers.length < 2) return null;
 
-      const choices = shuffle([correctDisplay, ...wrongAnswers]);
+      const choices = shuffle([correctDisplay, ...wrongAnswers.slice(0, 3)]);
 
       return {
         type: 'custom',
@@ -2046,7 +2145,7 @@
                 Not found ({notFound.length}):
               </div>
               <div style={{ color: '#f87171' }}>
-                {notFound.join(', ')}
+                {notFound.join('; ')}
               </div>
             </div>
           )}
@@ -2530,12 +2629,21 @@
               </thead>
               <tbody>
                 {history.slice().reverse().map((entry, idx) => (
-                  <tr key={idx}>
+                  <tr key={idx} style={{ background: entry.correct ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)' }}>
                     <td>{history.length - idx}</td>
                     <td className={entry.correct ? 'history-correct' : 'history-wrong'}>
                       {entry.correct ? '✓' : '✗'}
                     </td>
-                    <td>{entry.cardName}</td>
+                    <td>
+                      <a
+                        href={`https://scryfall.com/search?q=%21%22${encodeURIComponent(entry.cardName)}%22`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#6c8aff', textDecoration: 'none' }}
+                      >
+                        {entry.cardName}
+                      </a>
+                    </td>
                     <td>{entry.askField || entry.type}</td>
                     <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.userAnswer}</td>
                     <td>{entry.correct ? '—' : entry.correctAnswer}</td>
@@ -2697,6 +2805,9 @@
       const loadPreset = async (presetKey) => {
         setLoading(presetKey);
         setError(null);
+        setCurrentQuestion(null);
+        setShowFeedback(false);
+        setNextQuestionCache(null);
 
         try {
           const cards = await scryfall.current.fetchPresetPool(presetKey);
@@ -2715,9 +2826,23 @@
         const names = customListText
           .split('\n')
           .map(l => l.trim())
+          .filter(l => l.length > 0)
+          .map(l => {
+            // Strip sideboard markers: "SB: 2 Card Name" → "2 Card Name"
+            l = l.replace(/^SB:\s*/i, '');
+            // Strip quantity prefix: "4 Lightning Bolt" or "4x Lightning Bolt" → "Lightning Bolt"
+            l = l.replace(/^\d+x?\s+/i, '');
+            // Strip set code and collector number: "Card Name (SET) 123" → "Card Name"
+            l = l.replace(/\s*\([A-Z0-9]{2,5}\)\s*\d*\s*$/, '');
+            return l.trim();
+          })
           .filter(l => l.length > 0);
 
         if (names.length === 0) return;
+
+        setCurrentQuestion(null);
+        setShowFeedback(false);
+        setNextQuestionCache(null);
 
         // Dedupe (case-insensitive)
         const seen = new Set();
@@ -2759,6 +2884,9 @@
         setLoading(listKey);
         setError(null);
         setCustomListNotFound([]);
+        setCurrentQuestion(null);
+        setShowFeedback(false);
+        setNextQuestionCache(null);
 
         try {
           const { found, notFound } = await scryfall.current.fetchByNames(list.cards);
@@ -2907,7 +3035,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.11.0 (2026-02-18)</div>
+            <div className="subtitle">Custom Mode Only — v2.11.1 (2026-02-18)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
