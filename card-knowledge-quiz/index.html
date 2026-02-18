@@ -802,10 +802,16 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.9.1
-     * Last Updated: 2026-02-18 17:54 UTC
+     * Version: 2.10.0
+     * Last Updated: 2026-02-18 18:03 UTC
      *
      * CHANGELOG:
+     * v2.10.0 (2026-02-18) - Prepopulated card lists
+     *   - NEW: "Pauper" button loads a curated list of top Pauper format cards
+     *   - Prepopulated lists show count and "Load Prepopulated List" button
+     *   - Reusable system: add new lists by adding to PREPOPULATED_LISTS constant
+     *   - List can be edited in textarea if needed
+     *
      * v2.9.1 (2026-02-18) - Responsive card feedback layout
      *   - Card preview and feedback text now display side-by-side on wide screens (≥1000px)
      *   - Stacked vertically on mobile/narrow screens for better UX
@@ -1076,6 +1082,25 @@
         ttl: 30 * 24 * 60 * 60 * 1000,
         preCache: true,
       },
+    };
+
+    // Top Pauper cards for prepopulated lists
+    const PREPOPULATED_LISTS = {
+      pauper: {
+        label: 'Pauper Top Cards',
+        cards: [
+          'Counterspell', 'Lightning Bolt', 'Murasa Rootgrazer', 'Spymaster\'s Snare', 'Thermopod',
+          'Gorger Wurm', 'Kor Hookmaster', 'Stonehorn Dignitary', 'Akron Legionnaire', 'Pulse of Murasa',
+          'Expedition Envoy', 'Silverblade Clerics', 'Priest of the Blessed Graph', 'Circle of Flame', 'Ash Barrens',
+          'Disciple of Grace', 'Sunbaked Canyon', 'Obsidian Charmaw', 'Monastery Swiftspear', 'Tethered Griffin',
+          'Patchwork Gnomes', 'Daze', 'Thought Scour', 'Ichor Wellspring', 'Archaeomancer',
+          'Moment\'s Peace', 'Fissure', 'Deadly Dispute', 'Goblin Sharpshooter', 'Ephemerate',
+          'Electryte', 'Frostghost', 'Slingerling', 'Cavern-Harpy', 'Anax, Hardened in the Forge',
+          'Drunau Vampire', 'Void Snare', 'Dusky Crypt', 'Fanatic of Ruin', 'Night\'s Whisper',
+          'Chainer\'s Torment', 'Dauthi Horror', 'Wrench Mind', 'Cast Down', 'Fanatic of Hazoret',
+          'Goblin Gang Leader', 'Flame of Keld', 'Sedgemoor Witch', 'Seal of the Guildpact', 'Mystic Reflection'
+        ]
+      }
     };
 
     // ===================================================================
@@ -1744,6 +1769,14 @@
               {loading === 'customList' && <span className="spinner-mini" />}
               My List
             </button>
+            <button
+              className={`preset-btn ${activePreset === 'pauper' ? 'active' : ''}`}
+              onClick={() => onSelect('pauper')}
+              disabled={loading === 'pauper'}
+            >
+              {loading === 'pauper' && <span className="spinner-mini" />}
+              Pauper
+            </button>
           </div>
         </div>
       );
@@ -1769,28 +1802,48 @@
       );
     }
 
-    function CustomListInput({ value, onChange, onLoad, loading, notFound }) {
+    function CustomListInput({ value, onChange, onLoad, onLoadPrepopulated, loading, notFound, activePreset }) {
+      const isPrepopulated = activePreset !== 'customList';
+
       return (
         <div className="custom-list-container">
-          <textarea
-            className="custom-list-textarea"
-            placeholder={"Enter card names, one per line:\nLightning Bolt\nCounterspell\nSwords to Plowshares"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            rows={8}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
-            <button
-              className="search-btn"
-              onClick={onLoad}
-              disabled={loading || !value.trim()}
-            >
-              {loading ? 'Loading...' : 'Load Cards'}
-            </button>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              {value.trim() ? `${value.trim().split('\n').filter(l => l.trim()).length} names entered` : ''}
-            </span>
-          </div>
+          {!isPrepopulated && (
+            <>
+              <textarea
+                className="custom-list-textarea"
+                placeholder={"Enter card names, one per line:\nLightning Bolt\nCounterspell\nSwords to Plowshares"}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                rows={8}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+                <button
+                  className="search-btn"
+                  onClick={onLoad}
+                  disabled={loading || !value.trim()}
+                >
+                  {loading ? 'Loading...' : 'Load Cards'}
+                </button>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {value.trim() ? `${value.trim().split('\n').filter(l => l.trim()).length} names entered` : ''}
+                </span>
+              </div>
+            </>
+          )}
+          {isPrepopulated && (
+            <div style={{ padding: '12px', background: 'var(--surface)', borderRadius: '8px', marginBottom: '8px' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                {Object.values(PREPOPULATED_LISTS).find(l => l.label.toLowerCase().includes(activePreset))?.cards.length || 0} cards selected
+              </div>
+              <button
+                className="search-btn"
+                onClick={() => onLoadPrepopulated(activePreset)}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Load Prepopulated List'}
+              </button>
+            </div>
+          )}
           {notFound && notFound.length > 0 && (
             <div style={{
               marginTop: '8px',
@@ -2373,7 +2426,7 @@
 
       // Unhighlight preset when search manually modified
       useEffect(() => {
-        if (activePreset === 'customList') return;
+        if (activePreset === 'customList' || Object.keys(PREPOPULATED_LISTS).includes(activePreset)) return;
         const matchingPreset = Object.keys(PRESET_DEFINITIONS).find(
           key => PRESET_DEFINITIONS[key].query === searchQuery
         );
@@ -2385,7 +2438,7 @@
       // Auto-search when searchQuery changes (debounced)
       useEffect(() => {
         if (!cardPool) return;
-        if (activePreset === 'customList') return;
+        if (activePreset === 'customList' || Object.keys(PREPOPULATED_LISTS).includes(activePreset)) return;
 
         const timer = setTimeout(() => {
           handleSearch(searchQuery);
@@ -2466,10 +2519,44 @@
         }
       };
 
+      const loadPrepopulatedList = async (listKey) => {
+        const list = PREPOPULATED_LISTS[listKey];
+        if (!list) return;
+
+        setLoading(listKey);
+        setError(null);
+        setCustomListNotFound([]);
+
+        try {
+          const { found, notFound } = await scryfall.current.fetchByNames(list.cards);
+          setCustomListNotFound(notFound);
+
+          if (found.length === 0) {
+            setError(`No cards found from ${list.label}`);
+            return;
+          }
+
+          setCardPool(found);
+          setActivePreset(listKey);
+          // Populate textarea with the list
+          setCustomListText(list.cards.join('\n'));
+        } catch (err) {
+          console.error(err);
+          setError(`Failed to load ${list.label}: ${err.message}`);
+        } finally {
+          setLoading(null);
+        }
+      };
+
       const handlePresetSelect = (key) => {
         if (key === 'customList') {
           setActivePreset('customList');
           // Don't auto-load — user needs to click "Load Cards"
+          return;
+        }
+        if (Object.keys(PREPOPULATED_LISTS).includes(key)) {
+          setActivePreset(key);
+          // Don't auto-load — user needs to click "Load Prepopulated List"
           return;
         }
         loadPreset(key);
@@ -2593,7 +2680,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.9.1 (2026-02-18)</div>
+            <div className="subtitle">Custom Mode Only — v2.10.0 (2026-02-18)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -2622,13 +2709,15 @@
             loading={loading}
           />
 
-          {activePreset === 'customList' ? (
+          {activePreset === 'customList' || Object.keys(PREPOPULATED_LISTS).includes(activePreset) ? (
             <CustomListInput
               value={customListText}
               onChange={setCustomListText}
               onLoad={loadCustomList}
-              loading={loading === 'customList'}
+              onLoadPrepopulated={loadPrepopulatedList}
+              loading={loading === activePreset}
               notFound={customListNotFound}
+              activePreset={activePreset}
             />
           ) : (
             <>
