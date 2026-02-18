@@ -802,10 +802,15 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.9.0
-     * Last Updated: 2026-02-18 17:04 UTC
+     * Version: 2.9.1
+     * Last Updated: 2026-02-18 17:54 UTC
      *
      * CHANGELOG:
+     * v2.9.1 (2026-02-18) - Responsive card feedback layout
+     *   - Card preview and feedback text now display side-by-side on wide screens (≥1000px)
+     *   - Stacked vertically on mobile/narrow screens for better UX
+     *   - Media query adjusts flex layout based on viewport width
+     *
      * v2.9.0 (2026-02-18) - Custom card list feature ("My List")
      *   - NEW: "My List" button in preset bar lets you quiz on specific cards
      *   - Paste card names (one per line) into textarea, click "Load Cards"
@@ -2588,7 +2593,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.9.0 (2026-02-18)</div>
+            <div className="subtitle">Custom Mode Only — v2.9.1 (2026-02-18)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
