@@ -148,7 +148,114 @@
     }
     .filter-select:hover { border-color: var(--accent); }
 
-    /* ===== Preset Toggle Bar ===== */
+    /* ===== Card Source Selector ===== */
+    .card-source-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .source-tab {
+      flex: 1;
+      padding: 12px 8px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .source-tab:hover:not(.active) {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+
+    .source-tab.active {
+      background: rgba(108, 99, 255, 0.15);
+      border-color: var(--accent);
+    }
+
+    .source-tab-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .source-tab.active .source-tab-label {
+      color: var(--accent);
+    }
+
+    .source-tab-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    @media (max-width: 480px) {
+      .card-source-selector {
+        flex-direction: column;
+      }
+    }
+
+    /* ===== Source Sub-sections ===== */
+    .source-presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .source-lists {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .list-btn {
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .list-btn:hover:not(.active):not(:disabled) {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+
+    .list-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .list-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .list-btn-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .list-btn.active .list-btn-count {
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* ===== Preset Toggle Bar (kept for preset buttons) ===== */
     .preset-toggle-bar {
       display: flex;
       gap: 8px;
@@ -463,9 +570,23 @@
     }
 
     .scryfall-art {
-      width: 50%;
+      width: 100%;
       border-radius: 8px;
       margin-bottom: 12px;
+    }
+
+    @media (min-width: 600px) {
+      .scryfall-art {
+        float: left;
+        width: 250px;
+        margin-right: 16px;
+        margin-bottom: 8px;
+      }
+      .scryfall-card-display::after {
+        content: '';
+        display: table;
+        clear: both;
+      }
     }
 
     .scryfall-type {
@@ -682,11 +803,17 @@
     }
 
     .full-card-reveal {
-      max-width: 200px;
-      width: 50%;
+      width: 100%;
+      max-width: 300px;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    @media (min-width: 600px) {
+      .full-card-reveal {
+        max-width: 250px;
+      }
     }
 
     .full-card-reveal img {
@@ -718,6 +845,82 @@
 
     .next-btn-large:active {
       transform: translateY(0);
+    }
+
+    /* ===== History Section ===== */
+    .history-section {
+      margin-top: 40px;
+      padding: 24px;
+      background: rgba(108, 99, 255, 0.05);
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      border-radius: 12px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .history-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .history-clear-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .history-clear-btn:hover {
+      border-color: var(--wrong);
+      color: var(--wrong);
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .history-table th {
+      background: rgba(108, 99, 255, 0.1);
+      padding: 8px 10px;
+      text-align: left;
+      color: var(--accent);
+      font-weight: 600;
+      border-bottom: 2px solid rgba(108, 99, 255, 0.2);
+      white-space: nowrap;
+    }
+
+    .history-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .history-correct {
+      color: var(--correct);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .history-wrong {
+      color: var(--wrong);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .history-table-wrapper {
+      overflow-x: auto;
     }
 
     /* ===== Streak Popup ===== */
@@ -802,10 +1005,22 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.10.2
-     * Last Updated: 2026-02-18 18:07 UTC
+     * Version: 2.11.0
+     * Last Updated: 2026-02-18 22:10 UTC
      *
      * CHANGELOG:
+     * v2.11.0 (2026-02-18) - UI hierarchy redesign, history tracker, responsive images
+     *   - NEW: Card source selector — choose between Scryfall Search, Card Lists, or Custom List
+     *   - Scryfall Search shows format presets (Standard/Pioneer/Modern) + search field + filters
+     *   - Card Lists shows curated lists (Pauper) with card counts and one-click loading
+     *   - Custom List is now its own dedicated tab with simplified textarea interface
+     *   - NEW: Question History table at bottom shows all answered questions
+     *   - History displays: question number, correct/incorrect, card name, what was asked, answers
+     *   - Clear History button resets both history and score
+     *   - Card art in question preview: full-width on mobile, floated left with text wrap on desktop
+     *   - Full card reveal: full-width on mobile, constrained to 250px on desktop
+     *   - Removed old flat PresetSelector bar in favor of source tab UI
+     *
      * v2.10.2 (2026-02-18) - Update Pauper list from actual tournament data
      *   - Replaced hardcoded guesses with actual top 50 Pauper cards from mtgtop8 2026-01-01 to 2026-02-14
      *   - Now loads directly from C:\Users\Johnw\ClaudeProjects\mtg\shared-data\deck-scrape\pauper-2026-01-01_to-2026-02-14-first-page-all-tournaments\cards.csv
@@ -1753,46 +1968,25 @@
     // REACT COMPONENTS
     // ===================================================================
 
-    function PresetSelector({ activePreset, onSelect, loading }) {
-      const presets = ['standard', 'pioneer', 'modern'];
+    function CardSourceSelector({ cardSource, onSourceChange }) {
+      const sources = [
+        { key: 'scryfall', label: 'Scryfall Search', desc: 'Search by format, type, color, or Scryfall syntax' },
+        { key: 'prepopulated', label: 'Card Lists', desc: 'Curated lists for specific formats' },
+        { key: 'custom', label: 'Custom List', desc: 'Paste your own card names' },
+      ];
 
       return (
-        <div className="preset-toggle-bar">
-          <div className="preset-primary">
-            {presets.map(key => {
-              const preset = PRESET_DEFINITIONS[key];
-              const isActive = activePreset === key;
-              const isLoading = loading === key;
-
-              return (
-                <button
-                  key={key}
-                  className={`preset-btn ${isActive ? 'active' : ''}`}
-                  onClick={() => onSelect(key)}
-                  disabled={isLoading}
-                >
-                  {isLoading && <span className="spinner-mini" />}
-                  {preset.label}
-                </button>
-              );
-            })}
+        <div className="card-source-selector">
+          {sources.map(s => (
             <button
-              className={`preset-btn ${activePreset === 'customList' ? 'active' : ''}`}
-              onClick={() => onSelect('customList')}
-              disabled={loading === 'customList'}
+              key={s.key}
+              className={`source-tab ${cardSource === s.key ? 'active' : ''}`}
+              onClick={() => onSourceChange(s.key)}
             >
-              {loading === 'customList' && <span className="spinner-mini" />}
-              My List
+              <div className="source-tab-label">{s.label}</div>
+              <div className="source-tab-desc">{s.desc}</div>
             </button>
-            <button
-              className={`preset-btn ${activePreset === 'pauper' ? 'active' : ''}`}
-              onClick={() => onSelect('pauper')}
-              disabled={loading === 'pauper'}
-            >
-              {loading === 'pauper' && <span className="spinner-mini" />}
-              Pauper
-            </button>
-          </div>
+          ))}
         </div>
       );
     }
@@ -1817,48 +2011,28 @@
       );
     }
 
-    function CustomListInput({ value, onChange, onLoad, onLoadPrepopulated, loading, notFound, activePreset }) {
-      const isPrepopulated = activePreset !== 'customList';
-
+    function CustomListInput({ value, onChange, onLoad, loading, notFound }) {
       return (
         <div className="custom-list-container">
-          {!isPrepopulated && (
-            <>
-              <textarea
-                className="custom-list-textarea"
-                placeholder={"Enter card names, one per line:\nLightning Bolt\nCounterspell\nSwords to Plowshares"}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                rows={8}
-              />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
-                <button
-                  className="search-btn"
-                  onClick={onLoad}
-                  disabled={loading || !value.trim()}
-                >
-                  {loading ? 'Loading...' : 'Load Cards'}
-                </button>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {value.trim() ? `${value.trim().split('\n').filter(l => l.trim()).length} names entered` : ''}
-                </span>
-              </div>
-            </>
-          )}
-          {isPrepopulated && (
-            <div style={{ padding: '12px', background: 'var(--surface)', borderRadius: '8px', marginBottom: '8px' }}>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                {Object.values(PREPOPULATED_LISTS).find(l => l.label.toLowerCase().includes(activePreset))?.cards.length || 0} cards selected
-              </div>
-              <button
-                className="search-btn"
-                onClick={() => onLoadPrepopulated(activePreset)}
-                disabled={loading}
-              >
-                {loading ? 'Loading...' : 'Load Prepopulated List'}
-              </button>
-            </div>
-          )}
+          <textarea
+            className="custom-list-textarea"
+            placeholder={"Enter card names, one per line:\nLightning Bolt\nCounterspell\nSwords to Plowshares"}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            rows={8}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+            <button
+              className="search-btn"
+              onClick={onLoad}
+              disabled={loading || !value.trim()}
+            >
+              {loading ? 'Loading...' : 'Load Cards'}
+            </button>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {value.trim() ? `${value.trim().split('\n').filter(l => l.trim()).length} names entered` : ''}
+            </span>
+          </div>
           {notFound && notFound.length > 0 && (
             <div style={{
               marginTop: '8px',
@@ -2331,6 +2505,49 @@
       );
     }
 
+    function HistoryTable({ history, onClear }) {
+      if (history.length === 0) return null;
+
+      return (
+        <div className="history-section">
+          <div className="history-header">
+            <div className="history-title">Question History ({history.length})</div>
+            <button className="history-clear-btn" onClick={onClear}>
+              Clear History
+            </button>
+          </div>
+          <div className="history-table-wrapper">
+            <table className="history-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th></th>
+                  <th>Card</th>
+                  <th>Asked</th>
+                  <th>Your Answer</th>
+                  <th>Correct Answer</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.slice().reverse().map((entry, idx) => (
+                  <tr key={idx}>
+                    <td>{history.length - idx}</td>
+                    <td className={entry.correct ? 'history-correct' : 'history-wrong'}>
+                      {entry.correct ? '✓' : '✗'}
+                    </td>
+                    <td>{entry.cardName}</td>
+                    <td>{entry.askField || entry.type}</td>
+                    <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.userAnswer}</td>
+                    <td>{entry.correct ? '—' : entry.correctAnswer}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
     function Feedback({ isCorrect, pointsEarned, streakBonus, correctAnswer, onNext }) {
       return (
         <div className={`feedback ${isCorrect ? 'correct' : 'wrong'}`}>
@@ -2378,6 +2595,7 @@
 
       // Filters
       const [activePreset, setActivePreset] = useState('standard');
+      const [cardSource, setCardSource] = useState('scryfall');
       const [searchQuery, setSearchQuery] = useState(PRESET_DEFINITIONS.standard.query);
       const [colorFilter, setColorFilter] = useState('');
       const [rarityFilter, setRarityFilter] = useState('');
@@ -2563,18 +2781,11 @@
         }
       };
 
-      const handlePresetSelect = (key) => {
-        if (key === 'customList') {
+      const handleSourceChange = (source) => {
+        setCardSource(source);
+        if (source === 'custom') {
           setActivePreset('customList');
-          // Don't auto-load — user needs to click "Load Cards"
-          return;
         }
-        if (Object.keys(PREPOPULATED_LISTS).includes(key)) {
-          setActivePreset(key);
-          // Don't auto-load — user needs to click "Load Prepopulated List"
-          return;
-        }
-        loadPreset(key);
       };
 
       const handleSearch = async (query) => {
@@ -2682,6 +2893,7 @@
         setHistory(prev => [...prev, {
           type: currentQuestion.type,
           cardName: currentQuestion.card.name,
+          askField: FIELD_CONFIG[currentQuestion.askField]?.label || currentQuestion.askField,
           correct,
           userAnswer: userAnswer || '',
           correctAnswer: currentQuestion.correctAnswer,
@@ -2695,7 +2907,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.10.2 (2026-02-18)</div>
+            <div className="subtitle">Custom Mode Only — v2.11.0 (2026-02-18)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -2718,30 +2930,34 @@
             </div>
           </div>
 
-          <PresetSelector
-            activePreset={activePreset}
-            onSelect={handlePresetSelect}
-            loading={loading}
+          <CardSourceSelector
+            cardSource={cardSource}
+            onSourceChange={handleSourceChange}
           />
 
-          {activePreset === 'customList' || Object.keys(PREPOPULATED_LISTS).includes(activePreset) ? (
-            <CustomListInput
-              value={customListText}
-              onChange={setCustomListText}
-              onLoad={loadCustomList}
-              onLoadPrepopulated={loadPrepopulatedList}
-              loading={loading === activePreset}
-              notFound={customListNotFound}
-              activePreset={activePreset}
-            />
-          ) : (
+          {cardSource === 'scryfall' && (
             <>
+              <div className="source-presets">
+                {['standard', 'pioneer', 'modern'].map(key => {
+                  const preset = PRESET_DEFINITIONS[key];
+                  return (
+                    <button
+                      key={key}
+                      className={`preset-btn ${activePreset === key ? 'active' : ''}`}
+                      onClick={() => loadPreset(key)}
+                      disabled={loading === key}
+                    >
+                      {loading === key && <span className="spinner-mini" />}
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
               <SearchField
                 value={searchQuery}
                 onChange={setSearchQuery}
                 onSearch={handleSearch}
               />
-
               <FilterBar
                 colorFilter={colorFilter}
                 rarityFilter={rarityFilter}
@@ -2749,6 +2965,33 @@
                 onRarityChange={setRarityFilter}
               />
             </>
+          )}
+
+          {cardSource === 'prepopulated' && (
+            <div className="source-lists">
+              {Object.entries(PREPOPULATED_LISTS).map(([key, list]) => (
+                <button
+                  key={key}
+                  className={`list-btn ${activePreset === key ? 'active' : ''}`}
+                  onClick={() => loadPrepopulatedList(key)}
+                  disabled={loading === key}
+                >
+                  {loading === key && <span className="spinner-mini" />}
+                  <span>{list.label}</span>
+                  <span className="list-btn-count">({list.cards.length} cards)</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {cardSource === 'custom' && (
+            <CustomListInput
+              value={customListText}
+              onChange={setCustomListText}
+              onLoad={loadCustomList}
+              loading={loading === 'customList'}
+              notFound={customListNotFound}
+            />
           )}
 
           {cardPool && (
@@ -2801,6 +3044,14 @@
               {streakPopup} STREAK!
             </div>
           )}
+
+          <HistoryTable
+            history={history}
+            onClear={() => {
+              setHistory([]);
+              setScore({ points: 0, questions: 0, correct: 0, streak: 0, bestStreak: 0 });
+            }}
+          />
         </div>
       );
     }
