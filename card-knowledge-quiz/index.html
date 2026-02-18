@@ -38,6 +38,28 @@
       line-height: 1.5;
     }
 
+    /* ===== LOCAL VERSION BANNER ===== */
+    .local-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-weight: 900;
+      font-size: 1.2rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+      border-bottom: 3px solid #7f1d1d;
+    }
+    .local-banner-spacer {
+      height: 52px;
+    }
+
     /* ===== Layout ===== */
     .app-container {
       max-width: 720px;
@@ -175,10 +197,6 @@
       cursor: wait;
     }
 
-    .preset-btn.loading {
-      position: relative;
-    }
-
     .spinner-mini {
       display: inline-block;
       width: 12px;
@@ -189,58 +207,8 @@
       animation: spin 0.6s linear infinite;
     }
 
-    .preset-more {
-      position: relative;
-    }
-
-    .preset-more-btn {
-      padding: 8px 14px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface);
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .preset-more-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
-    .preset-secondary {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      margin-top: 4px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 180px;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
-    .preset-secondary .preset-btn {
-      width: 100%;
-      justify-content: flex-start;
-    }
-
-    @media (max-width: 600px) {
-      .preset-primary {
-        width: 100%;
-      }
-
-      .preset-btn {
-        flex: 1;
-        min-width: calc(50% - 4px);
-        justify-content: center;
-      }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* ===== Search Field ===== */
@@ -309,13 +277,41 @@
       .search-input {
         min-width: 100%;
       }
-
       .search-btn {
         width: 100%;
       }
     }
 
-    /* ===== Custom Mode Configuration Panel ===== */
+    /* ===== Custom List ===== */
+    .custom-list-container {
+      margin-bottom: 16px;
+    }
+
+    .custom-list-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: 'Segoe UI', sans-serif;
+      resize: vertical;
+      line-height: 1.5;
+      box-sizing: border-box;
+    }
+
+    .custom-list-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .custom-list-textarea::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    /* ===== Config Panel ===== */
     .config-panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -406,241 +402,125 @@
     .difficulty-4 { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .difficulty-5 { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
 
-    /* ===== Preview Panel ===== */
-    .preview-panel {
-      background: rgba(108, 99, 255, 0.05);
-      border: 1px dashed var(--accent);
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 16px;
-    }
-
-    .preview-panel h4 {
-      color: var(--accent);
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .preview-content {
-      background: var(--surface);
-      border-radius: 8px;
-      padding: 16px;
-    }
-
-    .preview-field {
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
-    }
-
-    .preview-field:last-child {
-      border-bottom: none;
-    }
-
-    .preview-field strong {
-      color: var(--accent);
-      margin-right: 8px;
-    }
-
-    .preview-question {
-      padding: 12px 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .preview-answer {
-      padding: 8px 12px;
-      background: rgba(108, 99, 255, 0.1);
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-top: 8px;
-    }
-
-    .preview-answer.blurred {
-      filter: blur(5px);
-      opacity: 0.5;
-      user-select: none;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .preview-answer.blurred:hover {
-      filter: blur(0);
-      opacity: 1;
-    }
-
-    .preview-error {
-      color: var(--wrong);
-      padding: 12px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    .validation-messages {
-      margin-top: 12px;
-    }
-
-    .validation-error,
-    .validation-warning {
-      padding: 10px 14px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .validation-error {
-      background: var(--wrong-bg);
-      color: var(--wrong);
-      border: 1px solid var(--wrong);
-    }
-
-    .validation-warning {
-      background: rgba(245, 158, 11, 0.12);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    /* ===== Answer Input Variants ===== */
-    .text-input-container,
-    .number-input-container {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-      align-items: center;
-    }
-
-    .text-input,
-    .number-input {
-      flex: 1;
-      padding: 14px 16px;
-      background: var(--bg);
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 1rem;
-      font-family: 'Courier New', monospace;
-      transition: all 0.15s;
-    }
-
-    .text-input:focus,
-    .number-input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
-    }
-
-    .text-input:disabled,
-    .number-input:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .submit-answer-btn {
-      padding: 14px 32px;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .submit-answer-btn:hover:not(:disabled) {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-    }
-
-    .submit-answer-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .card-image-display {
-      margin: 16px 0;
-      text-align: center;
-    }
-
-    .card-image-display img {
-      max-width: 300px;
-      max-height: 400px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
-    @media (max-width: 600px) {
-      .field-config-table {
-        font-size: 0.85rem;
-      }
-
-      .field-config-table th,
-      .field-config-table td {
-        padding: 8px 4px;
-      }
-
-      .text-input-container,
-      .number-input-container {
-        flex-direction: column;
-      }
-
-      .submit-answer-btn {
-        width: 100%;
-      }
-    }
-
-    /* ===== Question Card ===== */
-    .question-card {
+    /* ===== Question Container ===== */
+    .question-container {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 24px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
+
     .question-type-badge {
       display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.72rem;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       margin-bottom: 12px;
-    }
-    .badge-mana-value { background: rgba(108,99,255,0.15); color: #9b94ff; }
-    .badge-power-toughness { background: rgba(239,68,68,0.15); color: #f87171; }
-    .badge-color { background: rgba(245,158,11,0.15); color: #fbbf24; }
-    .badge-card-type { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .badge-keywords { background: rgba(168,85,247,0.15); color: #c084fc; }
-
-    .question-text {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .card-name-highlight {
+      background: rgba(108, 99, 255, 0.15);
       color: var(--accent);
     }
-    .question-hint {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-bottom: 18px;
+
+    .question-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.4;
     }
 
-    /* ===== Multiple Choice Options ===== */
-    .mc-options {
+    /* ===== Scryfall Card Display ===== */
+    .scryfall-card-display {
+      background: #171717;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .scryfall-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #333;
+    }
+
+    .scryfall-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .scryfall-mana-cost {
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+      color: #aaa;
+    }
+
+    .scryfall-art {
+      width: 50%;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .scryfall-type {
+      font-size: 0.9rem;
+      font-style: italic;
+      color: #bbb;
+      margin-bottom: 12px;
+    }
+
+    .scryfall-oracle {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #ddd;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+    }
+
+    .scryfall-pt {
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .redacted {
+      background: #555;
+      color: transparent;
+      border-radius: 4px;
+      user-select: none;
+      position: relative;
+      display: inline-block;
+    }
+
+    .redacted::after {
+      content: '█████';
+      position: absolute;
+      left: 0;
+      color: #555;
+    }
+
+    /* ===== Answer Choices ===== */
+    .answer-choices {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
-    .mc-option {
-      padding: 14px 16px;
+
+    @media (max-width: 480px) {
+      .answer-choices {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .answer-btn {
+      padding: 12px 16px;
       border: 2px solid var(--border);
       border-radius: 10px;
       background: var(--surface);
@@ -650,247 +530,468 @@
       cursor: pointer;
       transition: all 0.15s;
       text-align: center;
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+      word-break: break-word;
     }
-    .mc-option:hover:not(.disabled) {
+
+    .answer-btn:hover:not(:disabled) {
       border-color: var(--accent);
       background: var(--surface-hover);
     }
-    .mc-option.selected-correct {
+
+    .answer-btn:disabled {
+      cursor: not-allowed;
+    }
+
+    .answer-btn.selected {
+      border-color: var(--accent);
+      background: rgba(108, 99, 255, 0.1);
+    }
+
+    .answer-btn.correct {
       border-color: var(--correct);
       background: var(--correct-bg);
-      color: var(--correct);
     }
-    .mc-option.selected-wrong {
+
+    .answer-btn.wrong {
       border-color: var(--wrong);
       background: var(--wrong-bg);
-      color: var(--wrong);
-    }
-    .mc-option.reveal-correct {
-      border-color: var(--correct);
-      background: var(--correct-bg);
-      color: var(--correct);
-    }
-    .mc-option.disabled {
-      cursor: default;
-      opacity: 0.6;
     }
 
-    /* ===== Color Picker ===== */
-    .color-picker {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .color-btn {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      border: 3px solid var(--border);
-      cursor: pointer;
-      transition: all 0.15s;
+    .answer-btn.short-answer {
+      font-size: 1.5rem;
       font-weight: 700;
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 16px 12px;
     }
-    .color-btn:hover:not(.disabled) {
-      transform: scale(1.1);
-    }
-    .color-btn.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108,99,255,0.3);
-      transform: scale(1.1);
-    }
-    .color-btn.disabled { cursor: default; }
-    .color-btn.W { background: var(--white-mana); color: #333; }
-    .color-btn.U { background: var(--blue-mana); color: #fff; }
-    .color-btn.B { background: var(--black-mana); color: #ccc; border-color: #444; }
-    .color-btn.R { background: var(--red-mana); color: #fff; }
-    .color-btn.G { background: var(--green-mana); color: #fff; }
-    .color-btn.C { background: var(--colorless-mana); color: #333; }
-
-    .color-submit-btn {
-      display: block;
-      margin: 14px auto 0;
-      padding: 10px 32px;
-      border: none;
-      border-radius: 8px;
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .color-submit-btn:hover { background: var(--accent-hover); }
-    .color-submit-btn:disabled { opacity: 0.4; cursor: default; }
 
     /* ===== Feedback ===== */
-    .feedback-section {
+    .feedback {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .feedback-result {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .feedback-result.correct { color: var(--correct); }
-    .feedback-result.wrong { color: var(--wrong); }
-    .feedback-detail {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-    .feedback-card-image {
-      max-width: 260px;
+      border: 2px solid var(--border);
       border-radius: 12px;
-      margin: 12px auto;
-      display: block;
+      padding: 20px;
+      margin-top: 20px;
     }
-    .feedback-stats {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-top: 12px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+
+    .feedback.correct {
+      border-color: var(--correct);
+      background: var(--correct-bg);
+    }
+
+    .feedback.wrong {
+      border-color: var(--wrong);
+      background: var(--wrong-bg);
+    }
+
+    .feedback-header {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feedback.correct .feedback-header {
+      color: var(--correct);
+    }
+
+    .feedback.wrong .feedback-header {
+      color: var(--wrong);
+    }
+
+    .feedback-details {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 16px;
     }
 
     .next-btn {
-      display: block;
-      margin: 18px auto 0;
-      padding: 12px 40px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       background: var(--accent);
       color: #fff;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s;
     }
-    .next-btn:hover { background: var(--accent-hover); }
 
-    /* ===== Streak Animation ===== */
+    .next-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* ===== Inline Feedback (replaces answer choices) ===== */
+    .feedback-inline {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .feedback-result {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      border: 2px solid;
+    }
+
+    .feedback-result.correct {
+      background: var(--correct-bg);
+      border-color: var(--correct);
+    }
+
+    .feedback-result.wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong);
+    }
+
+    .feedback-icon {
+      font-size: 2.5rem;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .feedback-result.correct .feedback-icon {
+      color: var(--correct);
+    }
+
+    .feedback-result.wrong .feedback-icon {
+      color: var(--wrong);
+    }
+
+    .feedback-text {
+      flex: 1;
+      color: var(--text);
+    }
+
+    .feedback-text strong {
+      font-size: 1.1rem;
+    }
+
+    .full-card-reveal {
+      max-width: 200px;
+      width: 50%;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .full-card-reveal img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .next-btn-large {
+      padding: 16px 48px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .next-btn-large:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(108, 99, 255, 0.4);
+    }
+
+    .next-btn-large:active {
+      transform: translateY(0);
+    }
+
+    /* ===== Streak Popup ===== */
     .streak-popup {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, var(--gold), #ff8800);
+      color: #fff;
+      padding: 32px 48px;
+      border-radius: 16px;
       font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--gold);
-      text-shadow: 0 0 30px rgba(245,158,11,0.5);
-      pointer-events: none;
-      animation: streakPop 0.8s ease-out forwards;
-      z-index: 100;
-    }
-    @keyframes streakPop {
-      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-      40% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-      100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5);
+      z-index: 10000;
+      animation: popBounce 0.6s ease-out;
     }
 
-    /* ===== Loading ===== */
-    .loading {
+    @keyframes popBounce {
+      0% { transform: translate(-50%, -50%) scale(0); }
+      50% { transform: translate(-50%, -50%) scale(1.2); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* ===== Loading / Error States ===== */
+    .loading-container {
       text-align: center;
       padding: 40px;
-      color: var(--text-muted);
     }
-    .loading-spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .refresh-btn {
-      padding: 8px 20px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface);
+    .error-container {
+      background: var(--wrong-bg);
+      border: 2px solid var(--wrong);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .error-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--wrong);
+      margin-bottom: 12px;
+    }
+
+    .error-message {
+      font-size: 0.95rem;
       color: var(--text);
-      font-size: 0.85rem;
-      cursor: pointer;
-      margin-top: 12px;
     }
-    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 500px) {
-      .mc-options { grid-template-columns: 1fr; }
-      .score-bar { padding: 10px 12px; }
-      .question-card { padding: 18px; }
-    }
+    /* ===== Utility ===== */
+    .text-center { text-align: center; }
+    .mb-16 { margin-bottom: 16px; }
   </style>
 </head>
 <body>
+  <div class="local-banner">LOCAL VERSION (API)</div>
+  <div class="local-banner-spacer"></div>
+
   <div id="root"></div>
 
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    // ============================================================
-    //  MTG Card Knowledge Quiz — API Version — v0.3.0
-    //  2026-02-13  |  Claude Opus 4.6
-    //
-    //  Uses Scryfall API instead of embedded data
-    //  Caches popular cards for better UX
-    // ============================================================
-
     const { useState, useEffect, useCallback, useRef } = React;
 
-    // ---- Constants ----
-    const QUESTION_TYPES = ['manaValue', 'powerToughness', 'color', 'cardType', 'keywords'];
+    // ===================================================================
+    // VERSION & CHANGELOG
+    // ===================================================================
+    /*
+     * MTG Card Knowledge Quiz - Custom Mode Only
+     * Version: 2.9.0
+     * Last Updated: 2026-02-18 17:04 UTC
+     *
+     * CHANGELOG:
+     * v2.9.0 (2026-02-18) - Custom card list feature ("My List")
+     *   - NEW: "My List" button in preset bar lets you quiz on specific cards
+     *   - Paste card names (one per line) into textarea, click "Load Cards"
+     *   - Uses Scryfall /cards/collection API (batches of 75 for efficiency)
+     *   - Shows which card names weren't found (in red)
+     *   - List text persisted to localStorage across sessions
+     *   - Search/filter UI hidden when in custom list mode
+     *
+     * v2.8.6 (2026-02-18) - Fix stale question when switching Ask field
+     *   - BUG FIX: Switching settings showed previous config's question, not current
+     *   - Root cause: pre-generated cache race condition — cache invalidation useEffect
+     *     hadn't applied yet when nextQuestion useEffect ran, so stale cached question was used
+     *   - Fix: validate cached question matches current askField/answerFormat before using it
+     *
+     * v2.8.5 (2026-02-16) - Fix Show checkboxes not matching card display
+     *   - BUG FIX: Card display now uses live shownFields from config, not stale question snapshot
+     *   - Toggling Show checkboxes instantly updates what's visible on the current card
+     *   - Root cause: question object stored shownFields at generation time, never updated
+     *
+     * v2.8.4 (2026-02-16) - Fix "Next Question" button crash
+     *   - BUG FIX: Added missing onNext prop to QuestionDisplay component
+     *   - "Next Question" button was calling undefined function, causing crash after first answer
+     *   - Now properly passes nextQuestion function as onNext prop
+     *
+     * v2.8.3 (2026-02-16) - Fix blank page after answering
+     *   - BUG FIX: Added missing pointsEarned and streakBonus props to QuestionDisplay
+     *   - Page was crashing due to undefined variable references in feedback display
+     *   - Props now properly passed from CardKnowledgeQuiz to QuestionDisplay component
+     *
+     * v2.8.2 (2026-02-16) - Don't regenerate card when shownFields changes
+     *   - BUG FIX: Toggling Show checkboxes no longer regenerates the question
+     *   - Card only regenerates when: askField changes, answerFormat changes, or pool changes
+     *   - Removed shownFields from useEffect dependencies (lines 2218, 2226)
+     *   - More efficient: changing what's visible doesn't waste API calls or card pool queries
+     *
+     * v2.8.1 (2026-02-15) - Fix "show all" toggle (was backwards)
+     *   - BUG FIX: Added missing canShow/canAsk properties to FIELD_CONFIG
+     *   - "Show all fields (except asked)" now works correctly (was showing nothing when enabled)
+     *   - Root cause: Filter checked FIELD_CONFIG[key].canShow but property didn't exist
+     *
+     * v2.8.0 (2026-02-15) - Inline feedback + full card reveal + "show all" toggle
+     *   - Answer choices replaced with feedback after answering (no separate section)
+     *   - Shows full card image on feedback (reveals all hidden fields)
+     *   - Large "Next Question" button with auto-focus (press Enter or click)
+     *   - NEW: "Show all fields (except asked)" toggle above field table
+     *   - When enabled, automatically updates shown fields when Ask changes
+     *   - Auto-checks old Ask field when switching to new Ask field
+     *   - Manual checkbox changes disable "show all" toggle
+     *   - Feedback shows checkmark/X icon + points earned or correct answer
+     *   - Works for both Multiple Choice and Text Input modes
+     *   - Better UX: click answer → see result + card → hit Enter for next
+     *
+     * v2.7.1 (2026-02-15) - Add background pre-generation for instant "Next Question"
+     *   - Questions now pre-generate in background while user reviews feedback
+     *   - Clicking "Next Question" is instant (uses cached pre-generated question)
+     *   - Especially beneficial for Dynamic strategy (~1s API call happens in background)
+     *   - Cache invalidated when config changes (askField, answerFormat, shownFields, strategy)
+     *   - Flow: Answer → Show feedback → Pre-gen next in background → Click Next (instant!)
+     *
+     * v2.7.0 (2026-02-15) - Add dynamic API strategy (three-way toggle)
+     *   - NEW: Three strategies for generating wrong answers
+     *   - Strategy A (Pool): Search cached 200-card pool by similarity (instant, good quality)
+     *   - Strategy B (Hierarchical): Filter cached pool by exact attributes (instant, harder)
+     *   - Strategy C (Dynamic): Real-time Scryfall API queries for maximally similar cards (~1s, hardest)
+     *   - Dynamic strategy makes hierarchical API queries (Level 1-6 relaxation)
+     *   - Example Dynamic query: "type:creature color:B rarity:m is:legendary -mv:4"
+     *   - Searches ALL Standard cards, not just cached pool
+     *   - Type line parsing: supertypes (Legendary), card types (Creature), subtypes (Phyrexian)
+     *   - Default: Pool (fast), toggle in config panel
+     *
+     * v2.6.0 (2026-02-15) - Add hierarchical wrong answer strategy (toggle)
+     *   - NEW: Two strategies for generating wrong answers (user toggle in config)
+     *   - Strategy A (Similarity): Score by similarity, walk down until 3 unique values
+     *   - Strategy B (Hierarchical): Progressively relax constraints (color, rarity, supertypes, subtypes)
+     *   - Hierarchical finds cards matching all attributes except askField → harder questions
+     *   - Type line parsing: separates supertypes (Legendary), card types (Creature), subtypes (Phyrexian)
+     *   - Default: Hierarchical (better quality), can switch to Similarity (faster)
+     *
+     * v2.5.1 (2026-02-15) - Optimize MC generation with early exit
+     *   - Walk down similarity-sorted list until 3 unique values found
+     *   - Early exit optimization: processes ~15 cards typically (not all 200)
+     *   - Same quality (prioritizes similar wrong answers), faster performance
+     *
+     * v2.5.0 (2026-02-15) - Rewrite MC wrong answer generation (MAJOR FIX)
+     *   - Now searches in decreasing similarity order for unique wrong answers
+     *   - Was limited to top 20 most similar (failed when duplicates)
+     *   - Guarantees maximum variety in answer choices
+     *   - FIX: No longer fails when similar cards have duplicate values
+     *   - Example: Asking for Mana Value now shows diverse options (1,3,5,7) not just (3,3,3,4)
+     *
+     * v2.4.0 (2026-02-15) - Default all fields shown + fix question generation
+     *   - All showable fields now checked by default on first load
+     *   - When selecting new Ask field, old Ask field automatically re-checked in Show
+     *   - Relaxed multiple choice requirements: accepts 2-4 answer choices (was 4 only)
+     *   - Reduced minimum pool size from 4 to 3 cards
+     *   - Improved wrong answer variety (samples from 20 candidates instead of 10)
+     *   - FIX: "Cannot generate questions" error for valid field combinations
+     *
+     * v2.3.0 (2026-02-15) - UI improvements and remove field restrictions
+     *   - Moved Answer Format (Multiple Choice / Text Input) to top of config
+     *   - Removed all incompatibility filtering (except can't show asked field)
+     *   - Card Art field still viewable when checked in Show
+     *   - Simplified field interactions
+     *
+     * v2.2.0 (2026-02-15) - Remove Card Image field
+     *   - Removed cardImage field from config (full Scryfall card display)
+     *   - Kept Card Art field (art_crop only)
+     *   - Simplified to 7 fields total
+     *   - Removed cardImage from incompatibleWith arrays
+     *
+     * v2.1.1 (2026-02-15) - Fix Show/Ask field behavior
+     *   - FIX: Asking for a field now properly removes it from shown fields
+     *   - FIX: Switching ask fields auto-toggles: old → shown, new → hidden
+     *   - FIX: CardDisplay correctly filters out asked field
+     *   - FIX: Asked field never appears in card display
+     *
+     * v2.1.0 (2026-02-15) - Custom-only version
+     *   - Removed ALL predefined question code
+     *   - Simplified to custom mode only
+     *   - Kept all 8 field types with Scryfall card display
+     *   - Kept preset system (Standard, Pioneer, Modern)
+     *   - Kept similarity-based multiple choice
+     *   - Kept auto-search and auto-generation
+     */
 
-    // ---- Field Definitions ----
-    const FIELD_DEFINITIONS = {
+    // ===================================================================
+    // CONSTANTS
+    // ===================================================================
+
+    const SCRYFALL_API_BASE = 'https://api.scryfall.com';
+    const SCRYFALL_DELAY = 100;
+
+    const STORAGE_KEYS = {
+      SCORE: 'card_quiz_score_v2',
+      HISTORY: 'card_quiz_history_v2',
+      CONFIG: 'card_quiz_custom_config',
+    };
+
+    const COLOR_MAP = {
+      W: 'White',
+      U: 'Blue',
+      B: 'Black',
+      R: 'Red',
+      G: 'Green',
+    };
+
+    const DIFFICULTY_WEIGHTS = {
+      0: 1,    // N/A
+      1: 1,    // Easy
+      2: 1.25, // Medium
+      3: 1.5,  // Hard
+      4: 2,    // Very Hard
+      5: 2.5,  // Expert
+    };
+
+    const DIFFICULTY_LABELS = {
+      0: 'N/A',
+      1: 'Easy',
+      2: 'Medium',
+      3: 'Hard',
+      4: 'Very Hard',
+      5: 'Expert',
+    };
+
+    // Field configuration - all 8 field types
+    const FIELD_CONFIG = {
       cardName: {
         id: 'cardName',
         label: 'Card Name',
+        difficulty: 3,
         canShow: true,
         canAsk: true,
-        answerType: 'text',
-        difficulty: 5,
+        requiresApplicability: false,
         extractValue: (card) => card.name,
-        formatDisplay: (value) => value,
-        incompatibleWith: ['cardImage'],
+        formatDisplay: (name) => name,
+        incompatibleWith: [],
       },
       manaValue: {
         id: 'manaValue',
         label: 'Mana Value',
+        difficulty: 2,
         canShow: true,
         canAsk: true,
-        answerType: 'number',
-        difficulty: 2,
+        requiresApplicability: false,
         extractValue: (card) => card.manaValue,
-        formatDisplay: (value) => String(Math.floor(value)),
-        incompatibleWith: ['cardImage'],
+        formatDisplay: (mv) => String(Math.floor(mv)),
+        incompatibleWith: [],
       },
       colors: {
         id: 'colors',
         label: 'Colors',
+        difficulty: 2,
         canShow: true,
         canAsk: true,
-        answerType: 'colorPicker',
-        difficulty: 3,
+        requiresApplicability: false,
         extractValue: (card) => card.colors,
         formatDisplay: (colors) => colors.length ? colors.join('') : 'Colorless',
         incompatibleWith: [],
@@ -898,174 +999,74 @@
       typeLine: {
         id: 'typeLine',
         label: 'Type Line',
+        difficulty: 2,
         canShow: true,
         canAsk: true,
-        answerType: 'multipleChoice',
-        difficulty: 3,
+        requiresApplicability: false,
         extractValue: (card) => card.typeLine,
-        formatDisplay: (value) => value,
-        incompatibleWith: ['cardImage'],
+        formatDisplay: (tl) => tl,
+        incompatibleWith: [],
       },
       powerToughness: {
         id: 'powerToughness',
-        label: 'P/T',
+        label: 'Power / Toughness',
+        difficulty: 3,
         canShow: true,
         canAsk: true,
-        answerType: 'multipleChoice',
-        difficulty: 4,
-        extractValue: (card) => card.power && card.toughness ? `${card.power}/${card.toughness}` : null,
-        formatDisplay: (value) => value || 'N/A',
-        isApplicable: (card) => card.isCreature && card.power && card.toughness && card.power !== '*',
-        incompatibleWith: ['cardImage'],
-      },
-      cardImage: {
-        id: 'cardImage',
-        label: 'Card Image',
-        canShow: true,
-        canAsk: false,
-        answerType: null,
-        difficulty: 0,
-        extractValue: (card) => card.imageUrl,
-        formatDisplay: (url) => url,
+        requiresApplicability: true,
+        checkApplicability: (pool) => pool.filter(c => c.isCreature && c.power && c.toughness).length >= 4,
+        extractValue: (card) => `${card.power}/${card.toughness}`,
+        formatDisplay: (pt) => pt,
         incompatibleWith: [],
       },
-    };
-
-    // ---- Validation Rules ----
-    const VALIDATION_RULES = {
-      minShowFields: 1,
-      maxShowFields: 6,
-      requiredAskField: true,
-
-      incompatibleCombinations: {
-        cardImage: ['cardName', 'manaValue', 'typeLine', 'powerToughness'],
+      oracleText: {
+        id: 'oracleText',
+        label: 'Text Box',
+        difficulty: 4,
+        canShow: true,
+        canAsk: true,
+        requiresApplicability: false,
+        extractValue: (card) => card.oracleText || '',
+        formatDisplay: (text) => text,
+        incompatibleWith: ['cardArt'],
       },
-
-      poolRequirements: {
-        powerToughness: (pool) => pool.filter(c => c.isCreature && c.power && c.toughness).length >= 4,
+      cardArt: {
+        id: 'cardArt',
+        label: 'Card Art',
+        difficulty: 5,
+        canShow: true,
+        canAsk: true,
+        requiresApplicability: false,
+        extractValue: (card) => card.imageUris?.art_crop || '',
+        formatDisplay: (url) => url,
+        incompatibleWith: ['cardName'],
       },
     };
 
-    // ---- Difficulty Weights ----
-    const DIFFICULTY_WEIGHTS = {
-      0: 0,
-      1: 1.0,
-      2: 1.5,
-      3: 2.0,
-      4: 3.0,
-      5: 5.0,
-    };
-
-    const DIFFICULTY_LABELS = {
-      0: 'N/A',
-      1: 'Trivial',
-      2: 'Easy',
-      3: 'Medium',
-      4: 'Hard',
-      5: 'Expert',
-    };
-
-    const QUESTION_TYPE_LABELS = {
-      manaValue: 'Mana Value',
-      powerToughness: 'Power / Toughness',
-      color: 'Color Identity',
-      cardType: 'Card Type',
-      keywords: 'Keywords',
-    };
-
-    const QUESTION_TYPE_BADGES = {
-      manaValue: 'badge-mana-value',
-      powerToughness: 'badge-power-toughness',
-      color: 'badge-color',
-      cardType: 'badge-card-type',
-      keywords: 'badge-keywords',
-    };
-
-    const COLOR_MAP = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
-    const ALL_COLORS = ['W', 'U', 'B', 'R', 'G'];
-
-    const STORAGE_KEYS = {
-      SCORE: 'card_quiz_api_score',
-      HISTORY: 'card_quiz_api_history',
-      CARD_POOL: 'card_quiz_api_pool', // Legacy key for migration
-      PRESET_POOLS: 'card_quiz_preset_pools',
-      CACHE_META: 'card_quiz_cache_meta',
-    };
-
-    // Set options for initial load
-    const DEFAULT_SETS = ['ecl', 'tla', 'eoe', 'fdn', 'blb', 'otj', 'mkm', 'lci'];
-    const ALL_CARDS_QUERY = 'game:paper -type:land'; // All non-land cards
-
-    // Preset definitions for format-based card pools
     const PRESET_DEFINITIONS = {
       standard: {
         label: 'Standard',
         query: 'format:standard game:paper -type:land',
-        ttl: 7 * 24 * 60 * 60 * 1000, // 7 days
+        ttl: 7 * 24 * 60 * 60 * 1000,
         preCache: true,
-        icon: '⚡',
-        description: 'Current Standard-legal cards',
       },
       pioneer: {
         label: 'Pioneer',
         query: 'format:pioneer game:paper -type:land',
-        ttl: 30 * 24 * 60 * 60 * 1000, // 30 days
+        ttl: 30 * 24 * 60 * 60 * 1000,
         preCache: true,
-        icon: '🏛️',
-        description: 'Pioneer format (Return to Ravnica onward)',
       },
       modern: {
         label: 'Modern',
         query: 'format:modern game:paper -type:land',
         ttl: 30 * 24 * 60 * 60 * 1000,
-        preCache: false,
-        icon: '🔥',
-        description: 'Modern format (8th Edition onward)',
-      },
-      edhrec: {
-        label: 'EDHREC Top',
-        query: 'format:commander order:edhrec game:paper -type:land',
-        ttl: 3 * 24 * 60 * 60 * 1000, // 3 days
         preCache: true,
-        icon: '👑',
-        description: 'Most popular Commander cards',
-      },
-      reprints: {
-        label: 'Most Reprinted',
-        query: 'game:paper -type:land is:reprint',
-        sortOrder: 'prints',
-        ttl: 14 * 24 * 60 * 60 * 1000,
-        preCache: false,
-        icon: '♻️',
-        description: 'Classic cards with many printings',
-      },
-      recent: {
-        label: 'Recent Sets',
-        query: '(set:ecl OR set:tla OR set:fdn OR set:blb) game:paper is:booster -type:land',
-        ttl: 14 * 24 * 60 * 60 * 1000,
-        preCache: false,
-        icon: '🆕',
-        description: 'Latest Limited environment',
-      },
-      pauper: {
-        label: 'Pauper',
-        query: 'format:pauper game:paper -type:land',
-        ttl: 14 * 24 * 60 * 60 * 1000,
-        preCache: false,
-        icon: '💎',
-        description: 'Commons-only format',
-      },
-      vintage: {
-        label: 'Vintage',
-        query: 'format:vintage game:paper -type:land order:edhrec',
-        ttl: 30 * 24 * 60 * 60 * 1000,
-        preCache: false,
-        icon: '🏆',
-        description: 'Iconic cards from Magic history',
       },
     };
 
-    // ---- Utility Functions ----
+    // ===================================================================
+    // UTILITY FUNCTIONS
+    // ===================================================================
 
     function shuffle(arr) {
       const a = [...arr];
@@ -1080,1434 +1081,1437 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    function formatManaValue(mv) {
-      return String(Math.floor(mv));
-    }
-
     function formatColors(colors) {
       if (!colors || colors.length === 0) return 'Colorless';
       return colors.map(c => COLOR_MAP[c] || c).join(', ');
     }
 
     function colorsMatch(a, b) {
-      const sa = [...(a || [])].sort().join('');
-      const sb = [...(b || [])].sort().join('');
-      return sa === sb;
+      if (!a || !b) return false;
+      if (a.length !== b.length) return false;
+      const sortedA = [...a].sort().join('');
+      const sortedB = [...b].sort().join('');
+      return sortedA === sortedB;
     }
 
-    function loadStorage(key, fallback) {
-      try {
-        const val = localStorage.getItem(key);
-        return val ? JSON.parse(val) : fallback;
-      } catch { return fallback; }
+    /**
+     * Calculate similarity score between two cards
+     * Higher score = more similar cards (better for wrong answers)
+     */
+    function cardSimilarity(card1, card2, excludeFieldId) {
+      let score = 0;
+
+      // Type Line similarity (highest weight) - unless testing typeLine
+      if (excludeFieldId !== 'typeLine') {
+        if (card1.typeLine === card2.typeLine) score += 10;
+        else if (card1.typeLine && card2.typeLine) {
+          const types1 = card1.typeLine.toLowerCase().split(/[\s—-]+/);
+          const types2 = card2.typeLine.toLowerCase().split(/[\s—-]+/);
+          const overlap = types1.filter(t => types2.includes(t)).length;
+          score += overlap * 3;
+        }
+      }
+
+      // Color identity match - unless testing colors
+      if (excludeFieldId !== 'colors') {
+        const colors1 = (card1.colors || []).sort().join('');
+        const colors2 = (card2.colors || []).sort().join('');
+        if (colors1 === colors2) score += 5;
+      }
+
+      // Mana value proximity - unless testing manaValue
+      if (excludeFieldId !== 'manaValue') {
+        const mvDiff = Math.abs((card1.manaValue || 0) - (card2.manaValue || 0));
+        if (mvDiff === 0) score += 3;
+        else if (mvDiff === 1) score += 2;
+        else if (mvDiff === 2) score += 1;
+      }
+
+      // Power/Toughness similarity - unless testing powerToughness
+      if (excludeFieldId !== 'powerToughness') {
+        if (card1.isCreature && card2.isCreature) {
+          if (card1.power === card2.power) score += 2;
+          if (card1.toughness === card2.toughness) score += 2;
+        }
+      }
+
+      return score;
     }
 
-    function saveStorage(key, val) {
-      try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+    /**
+     * Redact card name from text (smart replacement)
+     */
+    function redactCardName(text, cardName) {
+      if (!text || !cardName) return text;
+      const pattern = new RegExp(cardName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      return text.replace(pattern, '[REDACTED]');
     }
 
-    // ---- Scryfall API Client ----
+    // ===================================================================
+    // SCRYFALL API CLIENT
+    // ===================================================================
 
     class ScryfallClient {
       constructor() {
-        this.baseUrl = 'https://api.scryfall.com';
-        this.requestDelay = 100; // Respect 10 req/sec rate limit
-        this.lastRequest = 0;
-
-        // Migrate old cache to new format
-        this.migrateOldCache();
+        this.cache = new Map();
+        this.lastRequestTime = 0;
       }
 
-      migrateOldCache() {
-        const oldCache = loadStorage(STORAGE_KEYS.CARD_POOL, null);
-        if (!oldCache || !oldCache.cards) return; // No old cache
-
-        const pools = loadStorage(STORAGE_KEYS.PRESET_POOLS, {});
-        if (Object.keys(pools).length > 0) return; // Already migrated
-
-        console.log('Migrating old cache to new preset system...');
-
-        // Assume old cache was "entire database" → map to "recent" preset
-        pools.recent = {
-          cards: oldCache.cards,
-          timestamp: oldCache.timestamp || Date.now(),
-          query: PRESET_DEFINITIONS.recent.query,
-          totalAvailable: oldCache.cards.length,
-          expiresAt: Date.now() + PRESET_DEFINITIONS.recent.ttl,
-        };
-
-        saveStorage(STORAGE_KEYS.PRESET_POOLS, pools);
-
-        // Remove old cache
-        try {
-          localStorage.removeItem(STORAGE_KEYS.CARD_POOL);
-        } catch {}
-
-        console.log('Migration complete!');
-      }
-
-      async wait() {
+      async rateLimit() {
         const now = Date.now();
-        const elapsed = now - this.lastRequest;
-        if (elapsed < this.requestDelay) {
-          await new Promise(r => setTimeout(r, this.requestDelay - elapsed));
+        const elapsed = now - this.lastRequestTime;
+        if (elapsed < SCRYFALL_DELAY) {
+          await new Promise(resolve => setTimeout(resolve, SCRYFALL_DELAY - elapsed));
         }
-        this.lastRequest = Date.now();
+        this.lastRequestTime = Date.now();
       }
 
-      async search(query, page = 1) {
-        await this.wait();
-        const url = `${this.baseUrl}/cards/search?q=${encodeURIComponent(query)}&page=${page}&unique=cards`;
-        console.log(`Scryfall API: ${url}`);
-        const response = await fetch(url);
+      getCacheKey(query) {
+        return `scryfall_query_${query}`;
+      }
 
-        // Handle 429 Too Many Requests
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('Retry-After') || 5;
-          console.warn(`Rate limited, retrying after ${retryAfter}s`);
-          await new Promise(r => setTimeout(r, retryAfter * 1000));
-          return await this.search(query, page); // Retry
+      getCachedPool(key) {
+        const cached = localStorage.getItem(this.getCacheKey(key));
+        if (!cached) return null;
+
+        try {
+          const data = JSON.parse(cached);
+          return data;
+        } catch {
+          return null;
         }
+      }
+
+      setCachedPool(key, cards) {
+        try {
+          const data = {
+            cards,
+            timestamp: Date.now(),
+          };
+          localStorage.setItem(this.getCacheKey(key), JSON.stringify(data));
+        } catch (err) {
+          console.error('Failed to cache pool:', err);
+        }
+      }
+
+      isExpired(cachedData) {
+        const ttl = 24 * 60 * 60 * 1000; // 24 hours default
+        return Date.now() - cachedData.timestamp > ttl;
+      }
+
+      async fetchByQuery(query, limit = 50) {
+        await this.rateLimit();
+
+        const url = `${SCRYFALL_API_BASE}/cards/search?q=${encodeURIComponent(query)}&unique=cards&order=name`;
+        const response = await fetch(url);
 
         if (!response.ok) {
           throw new Error(`Scryfall API error: ${response.status}`);
         }
-        return await response.json();
+
+        const data = await response.json();
+        const cards = data.data.slice(0, limit).map(this.normalizeCard);
+        return cards;
       }
 
-      async fetchCardPool(sets, limit = 200, useAllCards = false) {
-        const cards = [];
-        let fullQuery;
+      /**
+       * Fetch cards similar to a given card with progressive relaxation
+       * Used for dynamic wrong answer generation
+       */
+      async fetchSimilarCards(correctCard, askField, excludeName) {
+        const queries = this.buildSimilarityQueries(correctCard, askField, excludeName);
 
-        if (useAllCards) {
-          fullQuery = ALL_CARDS_QUERY;
-        } else {
-          const setQuery = sets.map(s => `set:${s}`).join(' OR ');
-          fullQuery = `(${setQuery}) game:paper is:booster -type:land`;
-        }
+        const allCards = [];
+        const seenNames = new Set();
 
-        // First request to get total count
-        const firstPage = await this.search(fullQuery, 1);
-        const totalCards = firstPage.total_cards;
-        const cardsPerPage = firstPage.data.length; // Usually ~175
-        const totalPages = Math.ceil(totalCards / cardsPerPage);
+        // Try each query level until we have enough cards
+        for (const query of queries) {
+          if (allCards.length >= 50) break; // Stop when we have enough
 
-        console.log(`Found ${totalCards} cards across ${totalPages} pages`);
-
-        // Add first page cards
-        cards.push(...firstPage.data.map(card => this.transformCard(card)));
-
-        // Calculate how many more pages we need
-        const pagesNeeded = Math.ceil((limit - cards.length) / cardsPerPage);
-        let randomPages = [];
-
-        if (pagesNeeded > 0 && totalPages > 1) {
-          // Generate random page numbers (excluding page 1 which we already fetched)
-          const availablePages = Array.from({length: totalPages - 1}, (_, i) => i + 2);
-          randomPages = this.pickRandomPages(availablePages, Math.min(pagesNeeded, availablePages.length));
-
-          // Fetch random pages
-          for (const page of randomPages) {
-            if (cards.length >= limit) break;
-            const data = await this.search(fullQuery, page);
-            cards.push(...data.data.map(card => this.transformCard(card)));
-          }
-        }
-
-        // Shuffle and limit
-        const shuffled = this.shuffleArray(cards).slice(0, limit);
-        console.log(`Fetched ${shuffled.length} cards from ${randomPages.length + 1} random pages (${totalCards} total cards available)`);
-        return shuffled;
-      }
-
-      pickRandomPages(pages, count) {
-        const shuffled = [...pages];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled.slice(0, count);
-      }
-
-      shuffleArray(arr) {
-        const a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-      }
-
-      transformCard(scryfallCard) {
-        const face = scryfallCard.card_faces ? scryfallCard.card_faces[0] : scryfallCard;
-
-        return {
-          name: scryfallCard.name,
-          set: scryfallCard.set,
-          rarity: scryfallCard.rarity.charAt(0).toUpperCase(),
-          manaCost: face.mana_cost || scryfallCard.mana_cost || '',
-          manaValue: scryfallCard.cmc || 0,
-          typeLine: face.type_line || scryfallCard.type_line || '',
-          oracleText: face.oracle_text || scryfallCard.oracle_text || '',
-          power: face.power || null,
-          toughness: face.toughness || null,
-          colors: face.colors || scryfallCard.colors || [],
-          colorIdentity: scryfallCard.color_identity || [],
-          keywords: scryfallCard.keywords || [],
-          imageUrl: scryfallCard.image_uris?.normal || scryfallCard.card_faces?.[0]?.image_uris?.normal || '',
-          isCreature: (face.type_line || scryfallCard.type_line || '').includes('Creature'),
-          mainType: this.getMainType(face.type_line || scryfallCard.type_line || ''),
-        };
-      }
-
-      getMainType(typeLine) {
-        const mainPart = typeLine.split('—')[0].split('//')[0].trim();
-        const types = ['Creature', 'Instant', 'Sorcery', 'Enchantment', 'Artifact', 'Planeswalker', 'Land', 'Battle'];
-        for (const t of types) {
-          if (mainPart.includes(t)) return t;
-        }
-        return 'Other';
-      }
-
-      // ---- Cache Management Methods ----
-
-      getCachedPool(presetKey) {
-        const pools = loadStorage(STORAGE_KEYS.PRESET_POOLS, {});
-        return pools[presetKey] || null;
-      }
-
-      cachePool(presetKey, cards, query) {
-        const pools = loadStorage(STORAGE_KEYS.PRESET_POOLS, {});
-        const preset = PRESET_DEFINITIONS[presetKey];
-        const now = Date.now();
-
-        pools[presetKey] = {
-          cards,
-          timestamp: now,
-          query,
-          totalAvailable: cards.length,
-          expiresAt: now + preset.ttl,
-        };
-
-        // Check total size and prune if needed
-        this.pruneOldPools(pools);
-
-        saveStorage(STORAGE_KEYS.PRESET_POOLS, pools);
-      }
-
-      isExpired(cached) {
-        return Date.now() > cached.expiresAt;
-      }
-
-      isStale(cached) {
-        const staleWindow = 7 * 24 * 60 * 60 * 1000; // 7 days grace period
-        const staleAt = cached.expiresAt + staleWindow;
-        return Date.now() > cached.expiresAt && Date.now() < staleAt;
-      }
-
-      pruneOldPools(pools) {
-        // Estimate localStorage size
-        const sizeEstimate = JSON.stringify(pools).length;
-        const MAX_SIZE = 3 * 1024 * 1024; // 3MB limit (conservative)
-
-        if (sizeEstimate < MAX_SIZE) return;
-
-        console.warn('localStorage approaching limit, pruning old pools...');
-
-        // Sort pools by last access time, keep protected pools
-        const entries = Object.entries(pools);
-        const sorted = entries.sort((a, b) => {
-          // Protect pre-cache pools
-          const aProtected = PRESET_DEFINITIONS[a[0]]?.preCache;
-          const bProtected = PRESET_DEFINITIONS[b[0]]?.preCache;
-          if (aProtected && !bProtected) return 1;
-          if (!aProtected && bProtected) return -1;
-
-          // Sort by timestamp (oldest first)
-          return a[1].timestamp - b[1].timestamp;
-        });
-
-        // Remove oldest non-protected pool
-        const toRemove = sorted.find(([key, _]) => !PRESET_DEFINITIONS[key]?.preCache);
-        if (toRemove) {
-          console.log(`Removing old pool: ${toRemove[0]}`);
-          delete pools[toRemove[0]];
-        }
-      }
-
-      backgroundRefresh(presetKey) {
-        // Queue background refresh (non-blocking)
-        setTimeout(async () => {
           try {
-            console.log(`Background refresh started for ${presetKey}`);
-            await this.fetchPresetPool(presetKey, true); // Force fresh
-            console.log(`Background refresh complete for ${presetKey}`);
+            const cards = await this.fetchByQuery(query, 20);
+
+            // Deduplicate by card name
+            for (const card of cards) {
+              if (!seenNames.has(card.name)) {
+                seenNames.add(card.name);
+                allCards.push(card);
+              }
+            }
           } catch (err) {
-            console.error(`Background refresh failed for ${presetKey}:`, err);
+            console.warn(`Query failed: ${query}`, err);
+            continue; // Try next level
           }
-        }, 1000); // Small delay to not interfere with user interaction
-      }
-
-      async fetchPresetPool(presetKey, forceFresh = false) {
-        // 1. Check cache
-        const cached = this.getCachedPool(presetKey);
-
-        // 2. Is cache valid?
-        if (!forceFresh && cached && !this.isExpired(cached)) {
-          console.log(`Using cached pool for ${presetKey}`);
-
-          // 3. Is cache stale? Background refresh
-          if (this.isStale(cached)) {
-            console.log(`Pool is stale, refreshing in background`);
-            this.backgroundRefresh(presetKey);
-          }
-
-          return cached.cards;
         }
 
-        // 4. No cache or expired → fetch fresh
-        const preset = PRESET_DEFINITIONS[presetKey];
-        const query = preset.query;
-        const cards = await this.fetchByQuery(query, 200);
+        return allCards;
+      }
 
-        // 5. Cache result
-        this.cachePool(presetKey, cards, query);
+      /**
+       * Build hierarchical queries from most to least specific
+       */
+      buildSimilarityQueries(card, askField, excludeName) {
+        const queries = [];
+        const type = parseTypeLine(card.typeLine);
+        const colors = (card.colors || []).sort().join('');
+        const rarity = card.rarity;
+        const mv = card.manaValue;
+
+        // Build color query part
+        const colorQuery = colors ? `color:${colors}` : 'colorless';
+
+        // Build type query parts
+        const supertypeQuery = type.supertypes.length > 0
+          ? type.supertypes.map(t => `type:${t}`).join(' ')
+          : '';
+        const cardTypeQuery = type.cardTypes.length > 0
+          ? type.cardTypes.map(t => `type:${t}`).join(' ')
+          : '';
+        const subtypeQuery = type.subtypes.length > 0
+          ? type.subtypes.map(t => `type:${t}`).join(' ')
+          : '';
+
+        // Base exclude (never include the correct card)
+        const excludeQuery = `-name:"${excludeName}"`;
+
+        // Also exclude the tested value (e.g., don't show cards with same MV)
+        let excludeValueQuery = '';
+        if (askField === 'manaValue') excludeValueQuery = `-mv:${mv}`;
+        else if (askField === 'colors') excludeValueQuery = colors ? `-color:${colors}` : '';
+
+        // Level 1: Everything matches except askField
+        if (supertypeQuery && cardTypeQuery && subtypeQuery) {
+          queries.push(`${colorQuery} ${supertypeQuery} ${cardTypeQuery} ${subtypeQuery} rarity:${rarity} ${excludeQuery} ${excludeValueQuery}`.trim());
+        }
+
+        // Level 2: Relax subtypes
+        if (supertypeQuery && cardTypeQuery) {
+          queries.push(`${colorQuery} ${supertypeQuery} ${cardTypeQuery} rarity:${rarity} ${excludeQuery} ${excludeValueQuery}`.trim());
+        }
+
+        // Level 3: Relax rarity
+        if (supertypeQuery && cardTypeQuery) {
+          queries.push(`${colorQuery} ${supertypeQuery} ${cardTypeQuery} ${excludeQuery} ${excludeValueQuery}`.trim());
+        }
+
+        // Level 4: Relax supertypes
+        if (cardTypeQuery) {
+          queries.push(`${colorQuery} ${cardTypeQuery} ${excludeQuery} ${excludeValueQuery}`.trim());
+        }
+
+        // Level 5: Relax colors
+        if (cardTypeQuery) {
+          queries.push(`${cardTypeQuery} ${excludeQuery} ${excludeValueQuery}`.trim());
+        }
+
+        // Level 6: Just exclude the correct card
+        queries.push(excludeQuery);
+
+        return queries;
+      }
+
+      async fetchPresetPool(presetKey, useCache = true) {
+        const preset = PRESET_DEFINITIONS[presetKey];
+        if (!preset) throw new Error(`Unknown preset: ${presetKey}`);
+
+        // Check cache first
+        if (useCache) {
+          const cached = this.getCachedPool(presetKey);
+          if (cached && !this.isExpired(cached)) {
+            console.log(`Using cached ${presetKey} pool`);
+            return cached.cards;
+          }
+        }
+
+        // Fetch fresh
+        console.log(`Fetching ${presetKey} pool from Scryfall...`);
+        const cards = await this.fetchByQuery(preset.query, 100);
+
+        // Cache result
+        this.setCachedPool(presetKey, cards);
 
         return cards;
       }
 
-      async fetchByQuery(query, limit) {
-        const cards = [];
-        const firstPage = await this.search(query, 1);
-        const totalCards = firstPage.total_cards;
-        const cardsPerPage = firstPage.data.length;
-        const totalPages = Math.ceil(totalCards / cardsPerPage);
+      async fetchByNames(names) {
+        const BATCH_SIZE = 75;
+        const allFound = [];
+        const allNotFound = [];
 
-        console.log(`Found ${totalCards} cards across ${totalPages} pages`);
+        for (let i = 0; i < names.length; i += BATCH_SIZE) {
+          await this.rateLimit();
+          const batch = names.slice(i, i + BATCH_SIZE);
+          const identifiers = batch.map(name => ({ name }));
 
-        cards.push(...firstPage.data.map(card => this.transformCard(card)));
+          const response = await fetch(`${SCRYFALL_API_BASE}/cards/collection`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifiers }),
+          });
 
-        const pagesNeeded = Math.ceil((limit - cards.length) / cardsPerPage);
-
-        // Auto-detect: if query has 'order:', fetch sequentially to preserve sort
-        const isSorted = query.includes('order:');
-
-        if (pagesNeeded > 0 && totalPages > 1) {
-          if (isSorted) {
-            // Sequential fetch (pages 2, 3, 4...) to preserve order
-            console.log(`Sorted query detected, fetching sequentially...`);
-            for (let page = 2; page <= Math.min(totalPages, pagesNeeded + 1); page++) {
-              if (cards.length >= limit) break;
-              const data = await this.search(query, page);
-              cards.push(...data.data.map(card => this.transformCard(card)));
-            }
-
-            // Take first N cards (preserves order)
-            return cards.slice(0, limit);
-          } else {
-            // Random pages for unsorted queries (faster)
-            const availablePages = Array.from({length: totalPages - 1}, (_, i) => i + 2);
-            const randomPages = this.pickRandomPages(availablePages, Math.min(pagesNeeded, availablePages.length));
-
-            for (const page of randomPages) {
-              if (cards.length >= limit) break;
-              const data = await this.search(query, page);
-              cards.push(...data.data.map(card => this.transformCard(card)));
-            }
-
-            // Shuffle for variety
-            return this.shuffleArray(cards).slice(0, limit);
+          if (!response.ok) {
+            throw new Error(`Scryfall collection API error: ${response.status}`);
           }
+
+          const data = await response.json();
+          allFound.push(...(data.data || []).map(card => this.normalizeCard(card)));
+          allNotFound.push(...(data.not_found || []).map(nf => nf.name));
         }
 
-        return isSorted ? cards.slice(0, limit) : this.shuffleArray(cards).slice(0, limit);
+        return { found: allFound, notFound: allNotFound };
+      }
+
+      normalizeCard(raw) {
+        return {
+          name: raw.name,
+          manaValue: raw.cmc || 0,
+          colors: raw.colors || [],
+          colorIdentity: raw.color_identity || [],
+          typeLine: raw.type_line || '',
+          oracleText: raw.oracle_text || '',
+          power: raw.power,
+          toughness: raw.toughness,
+          isCreature: (raw.type_line || '').includes('Creature'),
+          imageUris: raw.image_uris || {},
+          scryfallUri: raw.scryfall_uri,
+        };
       }
     }
 
-    // ---- Question Generator (same as before) ----
-    function generateQuestion(cards, questionTypeFilter = 'all') {
-      if (cards.length < 2) return null;
-
-      // No filtering - cards are already filtered by Scryfall query
-      const pool = [...cards];
-
-      // Determine valid question types
-      let validTypes = [...QUESTION_TYPES];
-
-      // Apply question type filter if specified
-      if (questionTypeFilter && questionTypeFilter !== 'all') {
-        validTypes = validTypes.filter(t => t === questionTypeFilter);
-      }
-
-      const creatures = pool.filter(c => c.isCreature && c.power && c.toughness && c.power !== '*');
-      const withKeywords = pool.filter(c => c.keywords.length > 0);
-
-      if (creatures.length < 2) validTypes = validTypes.filter(t => t !== 'powerToughness');
-      if (withKeywords.length < 2) validTypes = validTypes.filter(t => t !== 'keywords');
-
-      if (validTypes.length === 0) return null;
-
-      const questionType = pickRandom(validTypes);
-
-      let cardPool = questionType === 'powerToughness' ? creatures
-        : questionType === 'keywords' ? withKeywords
-        : pool;
-
-      const card = pickRandom(cardPool);
-
-      // Generate distractors from the same pool
-      const generateDistractors = (correctValue, extractor, count = 3) => {
-        const values = [...new Set(pool.map(extractor))].filter(v => v !== correctValue);
-        return shuffle(values).slice(0, count);
-      };
-
-      switch (questionType) {
-        case 'manaValue': {
-          const correctMV = card.manaValue;
-          const distractors = generateDistractors(correctMV, c => c.manaValue);
-          const options = shuffle([correctMV, ...distractors]).map(v => ({
-            value: formatManaValue(v),
-            label: formatManaValue(v),
-            isCorrect: v === correctMV,
-          }));
-          return {
-            type: 'manaValue',
-            card,
-            questionText: `What is the mana value of`,
-            hint: card.typeLine,
-            options,
-            correctAnswer: formatManaValue(correctMV),
-            format: 'mc',
-          };
-        }
-
-        case 'powerToughness': {
-          const correctPT = `${card.power}/${card.toughness}`;
-          const distractors = generateDistractors(correctPT, c => `${c.power}/${c.toughness}`);
-          const options = shuffle([correctPT, ...distractors]).map(v => ({
-            value: v,
-            label: v,
-            isCorrect: v === correctPT,
-          }));
-          return {
-            type: 'powerToughness',
-            card,
-            questionText: `What is the power/toughness of`,
-            hint: `${card.typeLine} (MV ${formatManaValue(card.manaValue)})`,
-            options,
-            correctAnswer: correctPT,
-            format: 'mc',
-          };
-        }
-
-        case 'color': {
-          const correctColors = card.colors.length > 0 ? [...card.colors].sort() : [];
-          return {
-            type: 'color',
-            card,
-            questionText: `What color(s) is`,
-            hint: card.typeLine,
-            correctColors,
-            correctAnswer: correctColors.length > 0 ? formatColors(correctColors) : 'Colorless',
-            format: 'color',
-          };
-        }
-
-        case 'cardType': {
-          const correctType = card.mainType;
-          const distractors = generateDistractors(correctType, c => c.mainType);
-          const options = shuffle([correctType, ...distractors]).map(v => ({
-            value: v,
-            label: v,
-            isCorrect: v === correctType,
-          }));
-          return {
-            type: 'cardType',
-            card,
-            questionText: `What type of card is`,
-            hint: card.manaCost ? `Mana cost: ${card.manaCost}` : 'No mana cost',
-            options,
-            correctAnswer: correctType,
-            format: 'mc',
-          };
-        }
-
-        case 'keywords': {
-          const correctKW = [...card.keywords].sort();
-          const distractors = generateDistractors(correctKW.join(','), c => c.keywords.sort().join(','))
-            .map(kw => kw.split(','));
-          const options = shuffle([correctKW, ...distractors]).map(kws => ({
-            value: kws.join(', '),
-            label: kws.join(', '),
-            isCorrect: kws.sort().join(',') === correctKW.join(','),
-          }));
-          return {
-            type: 'keywords',
-            card,
-            questionText: `What keyword abilities does`,
-            hint: `${card.typeLine} — ${card.power}/${card.toughness}`,
-            options,
-            correctAnswer: correctKW.join(', '),
-            format: 'mc',
-          };
-        }
-
-        default:
-          return null;
-      }
-    }
-
-    // ---- Custom Quiz Validation ----
-
-    function validateQuizConfig(config, cardPool) {
-      const errors = [];
-
-      // Check minimum show fields
-      const shownFields = config.shownFields.filter(id => id !== config.askField);
-      if (shownFields.length < VALIDATION_RULES.minShowFields) {
-        errors.push(`Must show at least ${VALIDATION_RULES.minShowFields} field(s)`);
-      }
-
-      // Check ask field is selected
-      if (!config.askField) {
-        errors.push('Must select a field to ask');
-      }
-
-      // Check for incompatible combinations
-      const allFields = [...config.shownFields, config.askField];
-      for (const fieldId of allFields) {
-        const field = FIELD_DEFINITIONS[fieldId];
-        if (!field) continue;
-
-        const incompatible = field.incompatibleWith || [];
-        for (const otherFieldId of allFields) {
-          if (otherFieldId === fieldId) continue;
-          if (incompatible.includes(otherFieldId)) {
-            errors.push(`${field.label} cannot be used with ${FIELD_DEFINITIONS[otherFieldId]?.label}`);
-          }
-        }
-      }
-
-      // Check pool requirements for specific field types
-      if (config.askField === 'powerToughness') {
-        const validCreatures = cardPool.filter(c =>
-          c.isCreature && c.power && c.toughness && c.power !== '*'
-        );
-        if (validCreatures.length < 4) {
-          errors.push('Not enough creatures with P/T in card pool (need at least 4)');
-        }
-      }
-
-      return errors;
-    }
+    // ===================================================================
+    // QUESTION GENERATION - CUSTOM MODE
+    // ===================================================================
 
     function getApplicableCards(cardPool, config) {
-      // Filter cards to only those where the ask field is applicable
-      const askField = FIELD_DEFINITIONS[config.askField];
-      if (!askField) return cardPool;
+      const { askField } = config;
+      const fieldDef = FIELD_CONFIG[askField];
 
-      if (askField.isApplicable) {
-        return cardPool.filter(card => askField.isApplicable(card));
+      if (!fieldDef) return cardPool;
+
+      // If field requires applicability check, filter pool
+      if (fieldDef.requiresApplicability && fieldDef.checkApplicability) {
+        return cardPool.filter(c => {
+          if (askField === 'powerToughness') {
+            return c.isCreature && c.power && c.toughness;
+          }
+          return true;
+        });
       }
 
       return cardPool;
     }
 
-    // ---- Custom Question Generator ----
+    function validateQuizConfig(config, cardPool) {
+      const errors = [];
 
-    function generateCustomQuestion(cardPool, config) {
+      if (!config.askField) {
+        errors.push('No "Ask" field selected');
+      }
+
+      if (config.shownFields.length === 0) {
+        errors.push('At least one field must be shown');
+      }
+
+      // Check if enough applicable cards (need 3 minimum: 1 correct + 2 wrong)
+      const applicable = getApplicableCards(cardPool, config);
+      if (applicable.length < 3) {
+        errors.push(`Not enough cards for selected field (need 3, found ${applicable.length})`);
+      }
+
+      return errors;
+    }
+
+    async function generateCustomQuestion(cardPool, config, scryfallClient) {
       if (!cardPool || cardPool.length < 2) return null;
       if (!config.askField) return null;
 
-      // Get applicable cards
       const applicableCards = getApplicableCards(cardPool, config);
-      if (applicableCards.length < 2) return null;
+      // Text input only needs 1 card, MC needs at least 3 (1 correct + 2 unique wrong values)
+      // Exception: dynamic strategy can work with any pool size (fetches from API)
+      const minRequired = config.answerFormat === 'multipleChoice' && config.wrongAnswerStrategy !== 'dynamic' ? 3 : 1;
+      if (applicableCards.length < minRequired) return null;
 
-      // Pick a random card
-      const card = pickRandom(applicableCards);
+      const correctCard = pickRandom(applicableCards);
+      const fieldDef = FIELD_CONFIG[config.askField];
 
-      const askField = FIELD_DEFINITIONS[config.askField];
-      const correctValue = askField.extractValue(card);
+      // Extract correct answer
+      const correctValue = fieldDef.extractValue(correctCard);
+      const correctDisplay = fieldDef.formatDisplay(correctValue);
 
-      if (correctValue === null || correctValue === undefined) return null;
-
-      // Build question text
-      const shownFieldsText = config.shownFields
-        .filter(id => id !== config.askField)
-        .map(id => {
-          const field = FIELD_DEFINITIONS[id];
-          const value = field.extractValue(card);
-          return `${field.label}: ${field.formatDisplay(value)}`;
-        })
-        .join(', ');
-
-      const questionText = `What is the ${askField.label}?`;
-
-      // Generate question based on answer type
-      let question = {
-        type: 'custom',
-        card,
-        askFieldId: config.askField,
-        questionText,
-        shownInfo: shownFieldsText,
-        answerType: askField.answerType,
-        difficulty: askField.difficulty,
-      };
-
-      switch (askField.answerType) {
-        case 'text': {
-          // Text input for card name
-          question.correctAnswer = correctValue;
-          question.checkAnswer = (userAnswer) => {
-            const normalized = userAnswer.toLowerCase().trim();
-            const correct = correctValue.toLowerCase().trim();
-            return normalized === correct;
-          };
-          break;
-        }
-
-        case 'number': {
-          // Number input for mana value
-          question.correctAnswer = Math.floor(correctValue);
-          question.checkAnswer = (userAnswer) => {
-            return parseInt(userAnswer) === Math.floor(correctValue);
-          };
-          break;
-        }
-
-        case 'colorPicker': {
-          // Color picker for colors
-          question.correctColors = correctValue;
-          question.correctAnswer = correctValue.length > 0 ? correctValue.join('') : 'Colorless';
-          question.checkAnswer = (userColors) => {
-            if (!Array.isArray(userColors)) return false;
-            if (userColors.length !== correctValue.length) return false;
-            const sortedUser = [...userColors].sort().join('');
-            const sortedCorrect = [...correctValue].sort().join('');
-            return sortedUser === sortedCorrect;
-          };
-          break;
-        }
-
-        case 'multipleChoice': {
-          // Multiple choice for type line or P/T
-          const generateDistractors = (count = 3) => {
-            const allValues = applicableCards
-              .map(c => askField.extractValue(c))
-              .filter(v => v !== null && v !== undefined && v !== correctValue);
-
-            const uniqueValues = [...new Set(allValues)];
-            return shuffle(uniqueValues).slice(0, count);
-          };
-
-          const distractors = generateDistractors(3);
-          if (distractors.length < 3) return null; // Not enough variety
-
-          const options = shuffle([correctValue, ...distractors]).map(value => ({
-            value,
-            label: askField.formatDisplay(value),
-            isCorrect: value === correctValue,
-          }));
-
-          question.options = options;
-          question.correctAnswer = askField.formatDisplay(correctValue);
-          question.checkAnswer = (selectedIdx) => {
-            return options[selectedIdx]?.isCorrect || false;
-          };
-          break;
-        }
-
-        default:
-          return null;
+      // Build question based on answer format
+      if (config.answerFormat === 'multipleChoice') {
+        return await generateMultipleChoiceQuestion(correctCard, applicableCards, config, fieldDef, correctDisplay, scryfallClient);
+      } else if (config.answerFormat === 'textInput') {
+        return generateTextInputQuestion(correctCard, config, fieldDef, correctDisplay);
       }
 
-      return question;
+      return null;
     }
 
-    // ---- Components ----
+    /**
+     * Parse type line into components
+     * "Legendary Creature — Phyrexian Praetor" → {supertypes: ["Legendary"], cardTypes: ["Creature"], subtypes: ["Phyrexian", "Praetor"]}
+     */
+    function parseTypeLine(typeLine) {
+      if (!typeLine) return { supertypes: [], cardTypes: [], subtypes: [] };
 
-    function ScoreBar({ score }) {
-      const accuracy = score.questions > 0 ? Math.round((score.correct / score.questions) * 100) : 0;
-      return (
-        <div className="score-bar">
-          <div className="score-item">
-            <div className="score-label">Score</div>
-            <div className="score-value">{score.points}</div>
-          </div>
-          <div className="score-item">
-            <div className="score-label">Correct</div>
-            <div className="score-value">{score.correct}/{score.questions}</div>
-          </div>
-          <div className="score-item">
-            <div className="score-label">Accuracy</div>
-            <div className="score-value accuracy">{accuracy}%</div>
-          </div>
-          <div className="score-item">
-            <div className="score-label">Streak</div>
-            <div className="score-value streak">{score.streak}</div>
-          </div>
-        </div>
-      );
+      const [mainPart, subtypePart] = typeLine.split(/\s*[—–-]\s*/);
+      const mainTypes = mainPart.trim().split(/\s+/);
+
+      const SUPERTYPES = ['Legendary', 'Snow', 'Basic', 'World', 'Ongoing'];
+      const CARD_TYPES = ['Creature', 'Artifact', 'Enchantment', 'Planeswalker', 'Instant', 'Sorcery', 'Land', 'Tribal', 'Battle'];
+
+      const supertypes = mainTypes.filter(t => SUPERTYPES.includes(t));
+      const cardTypes = mainTypes.filter(t => CARD_TYPES.includes(t));
+      const subtypes = subtypePart ? subtypePart.trim().split(/\s+/) : [];
+
+      return { supertypes, cardTypes, subtypes };
     }
 
-    function PresetToggleBar({ activePreset, onPresetChange, loadingPresets }) {
-      const [showAll, setShowAll] = React.useState(false);
+    /**
+     * Strategy A: Similarity-based (fast, simpler)
+     * Score all cards by similarity, walk down list until 3 unique values found
+     */
+    function generateMCBySimilarity(correctCard, pool, config, fieldDef, correctDisplay) {
+      // Score all cards by similarity (once)
+      const scoredCards = pool
+        .filter(c => c.name !== correctCard.name)
+        .map(c => ({
+          card: c,
+          similarity: cardSimilarity(c, correctCard, config.askField),
+        }))
+        .sort((a, b) => b.similarity - a.similarity);
 
-      // Primary presets always visible
-      const primaryPresets = ['standard', 'pioneer', 'modern', 'edhrec'];
+      // Walk down similarity-sorted list until 3 unique values found
+      const uniqueWrongValues = new Set();
+      const wrongAnswers = [];
 
-      // Secondary presets in "More" dropdown
-      const secondaryPresets = ['reprints', 'recent', 'pauper', 'vintage'];
+      for (const { card } of scoredCards) {
+        if (wrongAnswers.length >= 3) break;
 
-      const renderButton = (key) => {
-        const preset = PRESET_DEFINITIONS[key];
-        const isActive = activePreset === key;
-        const isLoading = loadingPresets.has(key);
+        const value = fieldDef.extractValue(card);
+        const display = fieldDef.formatDisplay(value);
 
-        return (
-          <button
-            key={key}
-            className={`preset-btn ${isActive ? 'active' : ''} ${isLoading ? 'loading' : ''}`}
-            onClick={() => onPresetChange(key)}
-            disabled={isLoading}
-          >
-            {isLoading && <span className="spinner-mini"></span>}
-            {preset.icon} {preset.label}
-            {isActive && ' ✓'}
-          </button>
-        );
+        // Skip if same as correct answer or already used
+        if (display === correctDisplay || uniqueWrongValues.has(display)) continue;
+
+        uniqueWrongValues.add(display);
+        wrongAnswers.push(display);
+      }
+
+      return wrongAnswers.length >= 2 ? wrongAnswers : null;
+    }
+
+    /**
+     * Strategy B: Dynamic API queries (searches all cards, not just pool)
+     * Makes real-time Scryfall queries for maximally similar cards
+     */
+    async function generateMCByDynamicAPI(correctCard, scryfallClient, config, fieldDef, correctDisplay) {
+      // Fetch similar cards from Scryfall API
+      const similarCards = await scryfallClient.fetchSimilarCards(correctCard, config.askField, correctCard.name);
+
+      if (similarCards.length < 3) {
+        console.warn('Not enough similar cards found via API');
+        return null;
+      }
+
+      // Extract unique wrong values
+      const uniqueWrongValues = new Set();
+      const wrongAnswers = [];
+
+      for (const card of similarCards) {
+        if (wrongAnswers.length >= 3) break;
+
+        const value = fieldDef.extractValue(card);
+        const display = fieldDef.formatDisplay(value);
+
+        // Skip if same as correct answer or already used
+        if (display === correctDisplay || uniqueWrongValues.has(display)) continue;
+
+        uniqueWrongValues.add(display);
+        wrongAnswers.push(display);
+      }
+
+      return wrongAnswers.length >= 2 ? wrongAnswers : null;
+    }
+
+    /**
+     * Strategy C: Hierarchical filtering within pool (filters cached 200 cards)
+     * Progressively relax constraints until enough unique wrong answers found
+     */
+    function generateMCByHierarchy(correctCard, pool, config, fieldDef, correctDisplay) {
+      const askField = config.askField;
+      const otherCards = pool.filter(c => c.name !== correctCard.name);
+
+      // Parse correct card's attributes
+      const correctColors = (correctCard.colors || []).sort().join('');
+      const correctRarity = correctCard.rarity;
+      const correctType = parseTypeLine(correctCard.typeLine);
+
+      // Define relaxation levels (in order of specificity)
+      const relaxationLevels = [
+        // Level 1: Everything matches except askField (most specific)
+        (card) => {
+          const cardColors = (card.colors || []).sort().join('');
+          const cardType = parseTypeLine(card.typeLine);
+
+          return cardColors === correctColors &&
+                 card.rarity === correctRarity &&
+                 cardType.supertypes.sort().join('') === correctType.supertypes.sort().join('') &&
+                 cardType.cardTypes.sort().join('') === correctType.cardTypes.sort().join('') &&
+                 cardType.subtypes.sort().join('') === correctType.subtypes.sort().join('');
+        },
+
+        // Level 2: Relax subtypes (high variance)
+        (card) => {
+          const cardColors = (card.colors || []).sort().join('');
+          const cardType = parseTypeLine(card.typeLine);
+
+          return cardColors === correctColors &&
+                 card.rarity === correctRarity &&
+                 cardType.supertypes.sort().join('') === correctType.supertypes.sort().join('') &&
+                 cardType.cardTypes.sort().join('') === correctType.cardTypes.sort().join('');
+        },
+
+        // Level 3: Relax rarity (medium variance)
+        (card) => {
+          const cardColors = (card.colors || []).sort().join('');
+          const cardType = parseTypeLine(card.typeLine);
+
+          return cardColors === correctColors &&
+                 cardType.supertypes.sort().join('') === correctType.supertypes.sort().join('') &&
+                 cardType.cardTypes.sort().join('') === correctType.cardTypes.sort().join('');
+        },
+
+        // Level 4: Relax supertypes
+        (card) => {
+          const cardColors = (card.colors || []).sort().join('');
+          const cardType = parseTypeLine(card.typeLine);
+
+          return cardColors === correctColors &&
+                 cardType.cardTypes.sort().join('') === correctType.cardTypes.sort().join('');
+        },
+
+        // Level 5: Relax colors (low variance - clusters heavily)
+        (card) => {
+          const cardType = parseTypeLine(card.typeLine);
+          return cardType.cardTypes.sort().join('') === correctType.cardTypes.sort().join('');
+        },
+
+        // Level 6: Any card in pool (broadest)
+        (card) => true,
+      ];
+
+      const uniqueWrongValues = new Set();
+      const wrongAnswers = [];
+
+      // Try each relaxation level until we have 3 unique wrong answers
+      for (const filterFn of relaxationLevels) {
+        if (wrongAnswers.length >= 3) break;
+
+        const candidates = otherCards.filter(filterFn);
+
+        // Extract unique values from this level
+        for (const card of candidates) {
+          if (wrongAnswers.length >= 3) break;
+
+          const value = fieldDef.extractValue(card);
+          const display = fieldDef.formatDisplay(value);
+
+          // Skip if same as correct answer or already used
+          if (display === correctDisplay || uniqueWrongValues.has(display)) continue;
+
+          uniqueWrongValues.add(display);
+          wrongAnswers.push(display);
+        }
+      }
+
+      return wrongAnswers.length >= 2 ? wrongAnswers : null;
+    }
+
+    /**
+     * Main MC question generator - routes to appropriate strategy
+     */
+    async function generateMultipleChoiceQuestion(correctCard, pool, config, fieldDef, correctDisplay, scryfallClient) {
+      const strategy = config.wrongAnswerStrategy || 'pool';
+
+      let wrongAnswers;
+      if (strategy === 'dynamic') {
+        wrongAnswers = await generateMCByDynamicAPI(correctCard, scryfallClient, config, fieldDef, correctDisplay);
+      } else if (strategy === 'hierarchical') {
+        wrongAnswers = generateMCByHierarchy(correctCard, pool, config, fieldDef, correctDisplay);
+      } else {
+        wrongAnswers = generateMCBySimilarity(correctCard, pool, config, fieldDef, correctDisplay);
+      }
+
+      if (!wrongAnswers || wrongAnswers.length < 2) return null;
+
+      const choices = shuffle([correctDisplay, ...wrongAnswers]);
+
+      return {
+        type: 'custom',
+        card: correctCard,
+        questionText: `What is the ${fieldDef.label} of this card?`,
+        choices,
+        correctAnswer: correctDisplay,
+        answerFormat: 'multipleChoice',
+        shownFields: config.shownFields,
+        askField: config.askField,
+        difficulty: fieldDef.difficulty,
       };
+    }
+
+    function generateTextInputQuestion(correctCard, config, fieldDef, correctDisplay) {
+      return {
+        type: 'custom',
+        card: correctCard,
+        questionText: `What is the ${fieldDef.label} of this card?`,
+        correctAnswer: correctDisplay,
+        answerFormat: 'textInput',
+        shownFields: config.shownFields,
+        askField: config.askField,
+        difficulty: fieldDef.difficulty,
+      };
+    }
+
+    // ===================================================================
+    // STORAGE
+    // ===================================================================
+
+    function loadStorage(key, defaultValue) {
+      try {
+        const stored = localStorage.getItem(key);
+        return stored ? JSON.parse(stored) : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+
+    function saveStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error('Failed to save to localStorage:', err);
+      }
+    }
+
+    // ===================================================================
+    // REACT COMPONENTS
+    // ===================================================================
+
+    function PresetSelector({ activePreset, onSelect, loading }) {
+      const presets = ['standard', 'pioneer', 'modern'];
 
       return (
         <div className="preset-toggle-bar">
           <div className="preset-primary">
-            {primaryPresets.map(renderButton)}
-          </div>
+            {presets.map(key => {
+              const preset = PRESET_DEFINITIONS[key];
+              const isActive = activePreset === key;
+              const isLoading = loading === key;
 
-          <div className="preset-more">
+              return (
+                <button
+                  key={key}
+                  className={`preset-btn ${isActive ? 'active' : ''}`}
+                  onClick={() => onSelect(key)}
+                  disabled={isLoading}
+                >
+                  {isLoading && <span className="spinner-mini" />}
+                  {preset.label}
+                </button>
+              );
+            })}
             <button
-              className="preset-more-btn"
-              onClick={() => setShowAll(!showAll)}
+              className={`preset-btn ${activePreset === 'customList' ? 'active' : ''}`}
+              onClick={() => onSelect('customList')}
+              disabled={loading === 'customList'}
             >
-              More {showAll ? '▴' : '▾'}
+              {loading === 'customList' && <span className="spinner-mini" />}
+              My List
             </button>
-
-            {showAll && (
-              <div className="preset-secondary">
-                {secondaryPresets.map(renderButton)}
-              </div>
-            )}
           </div>
         </div>
       );
     }
 
-    function SearchField({ query, onChange, onSearch }) {
-      const [localQuery, setLocalQuery] = React.useState(query);
-
-      const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-          onSearch(localQuery);
-        }
-      };
-
-      React.useEffect(() => {
-        setLocalQuery(query);
-      }, [query]);
-
+    function SearchField({ value, onChange, onSearch }) {
       return (
         <div className="search-field-container">
           <input
             type="text"
             className="search-input"
-            value={localQuery}
-            onChange={(e) => setLocalQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Scryfall syntax: format:standard color:red rarity:m"
+            placeholder="format:standard type:creature"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
           />
-          <button className="search-btn" onClick={() => onSearch(localQuery)}>
-            🔍 Search
+          <button className="search-btn" onClick={() => onSearch(value)}>
+            Search
           </button>
           <div className="search-hint">
-            <a href="https://scryfall.com/docs/syntax" target="_blank">Scryfall syntax guide</a>
+            Use <a href="https://scryfall.com/docs/syntax" target="_blank" rel="noopener">Scryfall syntax</a>
           </div>
         </div>
       );
     }
 
-    function FilterBar({ searchQuery, onSearchChange }) {
-      // Parse current query to extract active filters
-      const activeFilters = React.useMemo(() => {
-        const colorMatch = searchQuery.match(/color:([WUBRG])/);
-        const rarityMatch = searchQuery.match(/rarity:([curmCURM])/);
+    function CustomListInput({ value, onChange, onLoad, loading, notFound }) {
+      return (
+        <div className="custom-list-container">
+          <textarea
+            className="custom-list-textarea"
+            placeholder={"Enter card names, one per line:\nLightning Bolt\nCounterspell\nSwords to Plowshares"}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            rows={8}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+            <button
+              className="search-btn"
+              onClick={onLoad}
+              disabled={loading || !value.trim()}
+            >
+              {loading ? 'Loading...' : 'Load Cards'}
+            </button>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {value.trim() ? `${value.trim().split('\n').filter(l => l.trim()).length} names entered` : ''}
+            </span>
+          </div>
+          {notFound && notFound.length > 0 && (
+            <div style={{
+              marginTop: '8px',
+              padding: '8px 12px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              fontSize: '0.8rem',
+            }}>
+              <div style={{ color: '#ef4444', fontWeight: 600, marginBottom: '4px' }}>
+                Not found ({notFound.length}):
+              </div>
+              <div style={{ color: '#f87171' }}>
+                {notFound.join(', ')}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
 
-        return {
-          color: colorMatch ? colorMatch[1].toUpperCase() : 'all',
-          rarity: rarityMatch ? rarityMatch[1].toUpperCase() : 'all',
-        };
-      }, [searchQuery]);
-
-      const updateQuery = (filterType, value) => {
-        let newQuery = searchQuery;
-
-        // Remove existing filter of this type
-        if (filterType === 'color') {
-          newQuery = newQuery.replace(/color:[WUBRG]\s*/g, '').trim();
-          if (value !== 'all') {
-            newQuery += ` color:${value}`;
-          }
-        } else if (filterType === 'rarity') {
-          newQuery = newQuery.replace(/rarity:[curmCURM]\s*/g, '').trim();
-          if (value !== 'all') {
-            newQuery += ` rarity:${value.toLowerCase()}`;
-          }
-        }
-
-        // Clean up extra spaces
-        newQuery = newQuery.replace(/\s+/g, ' ').trim();
-        onSearchChange(newQuery);
-      };
-
+    function FilterBar({ colorFilter, rarityFilter, onColorChange, onRarityChange }) {
       return (
         <div className="filters">
-          <select className="filter-select" value={activeFilters.color} onChange={e => updateQuery('color', e.target.value)}>
-            <option value="all">All Colors</option>
+          <select className="filter-select" value={colorFilter} onChange={(e) => onColorChange(e.target.value)}>
+            <option value="">All Colors</option>
             <option value="W">White</option>
             <option value="U">Blue</option>
             <option value="B">Black</option>
             <option value="R">Red</option>
             <option value="G">Green</option>
+            <option value="C">Colorless</option>
           </select>
-
-          <select className="filter-select" value={activeFilters.rarity} onChange={e => updateQuery('rarity', e.target.value)}>
-            <option value="all">All Rarities</option>
-            <option value="C">Common</option>
-            <option value="U">Uncommon</option>
-            <option value="R">Rare</option>
-            <option value="M">Mythic</option>
+          <select className="filter-select" value={rarityFilter} onChange={(e) => onRarityChange(e.target.value)}>
+            <option value="">All Rarities</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="mythic">Mythic</option>
           </select>
         </div>
       );
     }
 
-    function MultipleChoice({ options, onSelect, selectedIdx, disabled }) {
-      return (
-        <div className="mc-options">
-          {options.map((opt, i) => {
-            let className = 'mc-option';
-            if (disabled) className += ' disabled';
-            if (selectedIdx !== null) {
-              if (i === selectedIdx && opt.isCorrect) className += ' selected-correct';
-              else if (i === selectedIdx && !opt.isCorrect) className += ' selected-wrong';
-              else if (opt.isCorrect) className += ' reveal-correct';
-            }
-            return <button key={i} className={className} onClick={() => !disabled && onSelect(i)} disabled={disabled}>{opt.label}</button>;
-          })}
-        </div>
-      );
-    }
+    function ConfigPanel({ config, onConfigChange, cardPool }) {
+      const [collapsed, setCollapsed] = useState(false);
 
-    function ColorPicker({ onSubmit, disabled, correctColors, submitted, userColors }) {
-      const [selected, setSelected] = useState([]);
+      const handleShowToggle = (fieldId) => {
+        const isShown = config.shownFields.includes(fieldId);
+        const newShownFields = isShown
+          ? config.shownFields.filter(f => f !== fieldId)
+          : [...config.shownFields, fieldId];
 
-      useEffect(() => { setSelected([]); }, [correctColors]);
+        // Disable "show all except asked" when manually toggling individual fields
+        onConfigChange({ ...config, shownFields: newShownFields, showAllExceptAsked: false });
+      };
 
-      const toggle = (color) => {
-        if (disabled) return;
-        if (color === 'C') {
-          setSelected(prev => prev.includes('C') ? [] : ['C']);
+      const handleAskChange = (fieldId) => {
+        let newShownFields;
+
+        // If "show all except asked" is enabled, update to show all except new askField
+        if (config.showAllExceptAsked) {
+          newShownFields = Object.keys(FIELD_CONFIG)
+            .filter(key => FIELD_CONFIG[key].canShow && key !== fieldId);
         } else {
-          setSelected(prev => {
-            const without = prev.filter(c => c !== 'C');
-            return without.includes(color) ? without.filter(c => c !== color) : [...without, color];
-          });
-        }
-      };
+          // Otherwise, just remove new askField from shownFields, add old askField to shownFields
+          newShownFields = config.shownFields.filter(f => f !== fieldId);
+          const oldAskField = config.askField;
 
-      const handleSubmit = () => {
-        const answer = selected.includes('C') ? [] : selected.sort();
-        onSubmit(answer);
-      };
-
-      const allBtns = [...ALL_COLORS, 'C'];
-      const displaySelected = submitted ? userColors : selected;
-
-      return (
-        <div>
-          <div className="color-picker">
-            {allBtns.map(c => (
-              <button
-                key={c}
-                className={`color-btn ${c} ${displaySelected.includes(c) || (c === 'C' && displaySelected.length === 0 && submitted) ? 'selected' : ''} ${disabled ? 'disabled' : ''}`}
-                onClick={() => toggle(c)}
-                disabled={disabled}
-              >
-                {c === 'C' ? 'None' : COLOR_MAP[c]?.[0] || c}
-              </button>
-            ))}
-          </div>
-          {!submitted && (
-            <button className="color-submit-btn" onClick={handleSubmit} disabled={disabled || selected.length === 0}>
-              Submit
-            </button>
-          )}
-          {submitted && (
-            <div style={{ marginTop: 12, fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-              Correct: {correctColors.length > 0 ? correctColors.map(c => COLOR_MAP[c]).join(', ') : 'Colorless'}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    function TextInput({ onSubmit, disabled, placeholder }) {
-      const [value, setValue] = useState('');
-
-      const handleSubmit = () => {
-        if (value.trim()) {
-          onSubmit(value.trim());
-        }
-      };
-
-      const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && !disabled && value.trim()) {
-          handleSubmit();
-        }
-      };
-
-      return (
-        <div className="text-input-container">
-          <input
-            type="text"
-            className="text-input"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={placeholder || 'Enter your answer...'}
-            disabled={disabled}
-          />
-          <button
-            className="submit-answer-btn"
-            onClick={handleSubmit}
-            disabled={disabled || !value.trim()}
-          >
-            Submit
-          </button>
-        </div>
-      );
-    }
-
-    function NumberInput({ onSubmit, disabled, min, max }) {
-      const [value, setValue] = useState('');
-
-      const handleSubmit = () => {
-        if (value.trim()) {
-          onSubmit(value.trim());
-        }
-      };
-
-      const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && !disabled && value.trim()) {
-          handleSubmit();
-        }
-      };
-
-      const handleChange = (e) => {
-        const val = e.target.value;
-        // Allow empty, numbers, and basic validation
-        if (val === '' || /^\d+$/.test(val)) {
-          setValue(val);
-        }
-      };
-
-      return (
-        <div className="number-input-container">
-          <input
-            type="number"
-            className="number-input"
-            value={value}
-            onChange={handleChange}
-            onKeyPress={handleKeyPress}
-            placeholder={`Enter a number${min !== undefined ? ` (${min}-${max})` : ''}...`}
-            disabled={disabled}
-            min={min}
-            max={max}
-          />
-          <button
-            className="submit-answer-btn"
-            onClick={handleSubmit}
-            disabled={disabled || !value.trim()}
-          >
-            Submit
-          </button>
-        </div>
-      );
-    }
-
-    function AnswerInput({ field, question, onSubmit, disabled }) {
-      if (!field) {
-        return <div style={{ color: 'var(--wrong)', padding: '12px' }}>Error: No field definition</div>;
-      }
-
-      switch (field.answerType) {
-        case 'text':
-          return (
-            <TextInput
-              onSubmit={onSubmit}
-              disabled={disabled}
-              placeholder={`Enter ${field.label.toLowerCase()}...`}
-            />
-          );
-
-        case 'number':
-          return (
-            <NumberInput
-              onSubmit={onSubmit}
-              disabled={disabled}
-              min={field.min}
-              max={field.max}
-            />
-          );
-
-        case 'colorPicker':
-          return (
-            <ColorPicker
-              onSubmit={onSubmit}
-              disabled={disabled}
-              correctColors={question?.correctColors || []}
-              submitted={disabled}
-              userColors={question?.userColors || []}
-            />
-          );
-
-        case 'multipleChoice':
-          return (
-            <MultipleChoice
-              options={question?.options || []}
-              onSelect={(idx) => {
-                const option = question.options[idx];
-                onSubmit(option?.value || option?.label);
-              }}
-              selectedIdx={null}
-              disabled={disabled}
-            />
-          );
-
-        default:
-          return (
-            <div style={{ color: 'var(--text-muted)', padding: '12px', textAlign: 'center' }}>
-              Unsupported answer type: {field.answerType}
-            </div>
-          );
-      }
-    }
-
-    // ---- Custom Mode Components (Sprint 2) ----
-
-    function FieldConfigTable({ config, onConfigChange, validationErrors }) {
-      const fieldIds = Object.keys(FIELD_DEFINITIONS);
-
-      const isIncompatible = (fieldId, askField) => {
-        if (!config.shownFields.includes(fieldId)) return false;
-        const incompatible = FIELD_DEFINITIONS[fieldId]?.incompatibleWith || [];
-        return incompatible.includes(askField);
-      };
-
-      const isDisabledForShow = (fieldId) => {
-        // Check if this field is incompatible with current ask field
-        if (config.askField && isIncompatible(fieldId, config.askField)) {
-          return true;
-        }
-        return false;
-      };
-
-      const isDisabledForAsk = (fieldId) => {
-        const field = FIELD_DEFINITIONS[fieldId];
-        if (!field || !field.canAsk) return true;
-
-        // Check if asking this field would be incompatible with shown fields
-        for (const shownId of config.shownFields) {
-          const incompatible = FIELD_DEFINITIONS[shownId]?.incompatibleWith || [];
-          if (incompatible.includes(fieldId)) {
-            return true;
+          // Add old asked field back to shown (if it exists and can be shown)
+          if (oldAskField && FIELD_CONFIG[oldAskField]?.canShow && !newShownFields.includes(oldAskField)) {
+            newShownFields.push(oldAskField);
           }
         }
+
+        onConfigChange({
+          ...config,
+          askField: fieldId,
+          shownFields: newShownFields
+        });
+      };
+
+      const isFieldDisabled = (fieldId, mode) => {
+        if (mode === 'show') {
+          // Can't show the field you're asking about
+          if (fieldId === config.askField) return true;
+        }
+
+        // No other restrictions
         return false;
       };
 
-      return (
-        <table className="field-config-table">
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Show</th>
-              <th>Ask</th>
-              <th>Difficulty</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fieldIds.map(fieldId => {
-              const field = FIELD_DEFINITIONS[fieldId];
-              const isShown = config.shownFields.includes(fieldId);
-              const isAsked = config.askField === fieldId;
-
-              return (
-                <tr key={fieldId}>
-                  <td><strong>{field.label}</strong></td>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={isShown}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          onConfigChange({
-                            ...config,
-                            shownFields: [...config.shownFields, fieldId],
-                          });
-                        } else {
-                          onConfigChange({
-                            ...config,
-                            shownFields: config.shownFields.filter(id => id !== fieldId),
-                          });
-                        }
-                      }}
-                      disabled={isDisabledForShow(fieldId) || !field.canShow}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="radio"
-                      name="askField"
-                      checked={isAsked}
-                      onChange={() => {
-                        onConfigChange({
-                          ...config,
-                          askField: fieldId,
-                        });
-                      }}
-                      disabled={isDisabledForAsk(fieldId)}
-                    />
-                  </td>
-                  <td>
-                    <span className={`difficulty-badge difficulty-${field.difficulty}`}>
-                      {DIFFICULTY_LABELS[field.difficulty]}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      );
-    }
-
-    function PreviewPanel({ config, cardPool }) {
-      const sampleCard = cardPool && cardPool.length > 0 ? cardPool[0] : null;
-
-      if (!sampleCard || !config.askField) {
-        return (
-          <div className="preview-panel">
-            <h4>Preview</h4>
-            <div className="preview-error">
-              Configure settings to see a preview
-            </div>
-          </div>
-        );
-      }
-
-      const askField = FIELD_DEFINITIONS[config.askField];
-
-      try {
-        return (
-          <div className="preview-panel">
-            <h4>Preview</h4>
-            <div className="preview-content">
-              {config.shownFields.map(fieldId => {
-                const field = FIELD_DEFINITIONS[fieldId];
-                const value = field.extractValue(sampleCard);
-
-                if (fieldId === 'cardImage') {
-                  return (
-                    <div key={fieldId} className="preview-field">
-                      {value && (
-                        <img
-                          src={value}
-                          alt="Card"
-                          style={{
-                            maxWidth: '150px',
-                            maxHeight: '200px',
-                            borderRadius: '6px',
-                            margin: '8px 0',
-                          }}
-                        />
-                      )}
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={fieldId} className="preview-field">
-                    <strong>{field.label}:</strong>{' '}
-                    {field.formatDisplay(value)}
-                  </div>
-                );
-              })}
-
-              <div className="preview-question">
-                What is the {askField.label}?
-              </div>
-
-              <div className="preview-answer blurred">
-                {askField.formatDisplay(askField.extractValue(sampleCard))}
-              </div>
-            </div>
-          </div>
-        );
-      } catch (err) {
-        return (
-          <div className="preview-panel">
-            <h4>Preview</h4>
-            <div className="preview-error">
-              Error generating preview: {err.message}
-            </div>
-          </div>
-        );
-      }
-    }
-
-    function QuizConfigPanel({ config, onConfigChange, cardPool }) {
-      const validationErrors = [];
-      if (!config.shownFields || config.shownFields.length === 0) {
-        validationErrors.push('Select at least one field to show');
-      }
-      if (!config.askField) {
-        validationErrors.push('Select a field to ask about');
-      }
+      const errors = validateQuizConfig(config, cardPool);
 
       return (
         <div className="config-panel">
           <div className="config-header">
-            <h3>Custom Quiz Configuration</h3>
+            <h3>Quiz Configuration</h3>
+            <button className="config-toggle-btn" onClick={() => setCollapsed(!collapsed)}>
+              {collapsed ? 'Show' : 'Hide'}
+            </button>
           </div>
 
-          <FieldConfigTable
-            config={config}
-            onConfigChange={onConfigChange}
-            validationErrors={validationErrors}
-          />
-
-          <PreviewPanel config={config} cardPool={cardPool} />
-
-          {validationErrors.length > 0 && (
-            <div className="validation-messages">
-              {validationErrors.map((error, idx) => (
-                <div key={idx} className="validation-error">
-                  <span>⚠️</span>
-                  <span>{error}</span>
+          {!collapsed && (
+            <>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  Answer Format:
+                </label>
+                <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                  <label>
+                    <input
+                      type="radio"
+                      name="answerFormat"
+                      value="multipleChoice"
+                      checked={config.answerFormat === 'multipleChoice'}
+                      onChange={() => onConfigChange({ ...config, answerFormat: 'multipleChoice' })}
+                    />
+                    {' '}Multiple Choice
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="answerFormat"
+                      value="textInput"
+                      checked={config.answerFormat === 'textInput'}
+                      onChange={() => onConfigChange({ ...config, answerFormat: 'textInput' })}
+                    />
+                    {' '}Text Input
+                  </label>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {config.answerFormat === 'multipleChoice' && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Wrong Answer Strategy:
+                  </label>
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '8px', flexWrap: 'wrap' }}>
+                    <label>
+                      <input
+                        type="radio"
+                        name="wrongAnswerStrategy"
+                        value="pool"
+                        checked={config.wrongAnswerStrategy === 'pool' || !config.wrongAnswerStrategy}
+                        onChange={() => onConfigChange({ ...config, wrongAnswerStrategy: 'pool' })}
+                      />
+                      {' '}Pool (fast)
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="wrongAnswerStrategy"
+                        value="hierarchical"
+                        checked={config.wrongAnswerStrategy === 'hierarchical'}
+                        onChange={() => onConfigChange({ ...config, wrongAnswerStrategy: 'hierarchical' })}
+                      />
+                      {' '}Hierarchical
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="wrongAnswerStrategy"
+                        value="dynamic"
+                        checked={config.wrongAnswerStrategy === 'dynamic'}
+                        onChange={() => onConfigChange({ ...config, wrongAnswerStrategy: 'dynamic' })}
+                      />
+                      {' '}Dynamic (hardest)
+                    </label>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    <strong>Pool:</strong> Searches cached cards by similarity (instant, good quality)
+                    <br />
+                    <strong>Hierarchical:</strong> Filters cached cards by exact attributes (instant, harder)
+                    <br />
+                    <strong>Dynamic:</strong> Queries Scryfall API for maximally similar cards (~1s delay, hardest questions)
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={config.showAllExceptAsked || false}
+                    onChange={(e) => {
+                      const showAll = e.target.checked;
+                      if (showAll) {
+                        // Show all fields except the asked one
+                        const allFieldsExceptAsked = Object.keys(FIELD_CONFIG)
+                          .filter(key => FIELD_CONFIG[key].canShow && key !== config.askField);
+                        onConfigChange({ ...config, showAllExceptAsked: true, shownFields: allFieldsExceptAsked });
+                      } else {
+                        onConfigChange({ ...config, showAllExceptAsked: false });
+                      }
+                    }}
+                  />
+                  {' '}Show all fields (except asked)
+                </label>
+              </div>
+
+              <table className="field-config-table">
+                <thead>
+                  <tr>
+                    <th>Field</th>
+                    <th>Show</th>
+                    <th>Ask</th>
+                    <th>Difficulty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.values(FIELD_CONFIG).map(field => (
+                    <tr key={field.id}>
+                      <td>{field.label}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={config.shownFields.includes(field.id)}
+                          onChange={() => handleShowToggle(field.id)}
+                          disabled={isFieldDisabled(field.id, 'show')}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="radio"
+                          name="askField"
+                          checked={config.askField === field.id}
+                          onChange={() => handleAskChange(field.id)}
+                          disabled={isFieldDisabled(field.id, 'ask')}
+                        />
+                      </td>
+                      <td>
+                        <span className={`difficulty-badge difficulty-${field.difficulty}`}>
+                          {DIFFICULTY_LABELS[field.difficulty]}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {errors.length > 0 && (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '12px',
+                  background: 'var(--wrong-bg)',
+                  border: '1px solid var(--wrong)',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                }}>
+                  {errors.map((err, idx) => (
+                    <div key={idx} style={{ color: 'var(--wrong)' }}>⚠️ {err}</div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       );
     }
 
-    function FeedbackSection({ question, isCorrect, pointsEarned, streakBonus, onNext }) {
-      const [imageLoaded, setImageLoaded] = useState(false);
-      const card = question.card;
+    function ScryfallCardDisplay({ card, shownFields, askField }) {
+      // Filter out the asked field from what should be shown
+      const actualShownFields = shownFields.filter(f => f !== askField);
+
+      // Determine what to show (must be in shownFields AND not the askField)
+      const shouldShowName = actualShownFields.includes('cardName');
+      const shouldShowMV = actualShownFields.includes('manaValue');
+      const shouldShowType = actualShownFields.includes('typeLine');
+      const shouldShowText = actualShownFields.includes('oracleText');
+      const shouldShowPT = actualShownFields.includes('powerToughness') && card.isCreature;
+      const shouldShowArt = actualShownFields.includes('cardArt');
+
+      // Redact card name if asking for name OR if asking for text
+      const shouldRedactNameInText = askField === 'cardName' || askField === 'oracleText';
+
+      let displayText = card.oracleText || '';
+      if (shouldRedactNameInText && card.name) {
+        displayText = redactCardName(displayText, card.name);
+      }
 
       return (
-        <div className="feedback-section">
-          <div className={`feedback-result ${isCorrect ? 'correct' : 'wrong'}`}>
-            {isCorrect ? 'Correct!' : 'Wrong'}
-          </div>
-          <div className="feedback-detail">
-            {!isCorrect && <span>The answer was <strong>{question.correctAnswer}</strong></span>}
-            {isCorrect && pointsEarned > 100 && <span>+{pointsEarned} points {streakBonus > 1 ? `(${streakBonus}x streak!)` : ''}</span>}
-            {isCorrect && pointsEarned <= 100 && <span>+{pointsEarned} points</span>}
+        <div className="scryfall-card-display">
+          <div className="scryfall-header">
+            <div className={`scryfall-name ${!shouldShowName ? 'redacted' : ''}`}>
+              {!shouldShowName ? '[REDACTED]' : card.name}
+            </div>
+            {shouldShowMV && (
+              <div className="scryfall-mana-cost">
+                {Math.floor(card.manaValue)}
+              </div>
+            )}
           </div>
 
-          {card.imageUrl && (
+          {shouldShowArt && card.imageUris?.art_crop && (
             <img
-              className="feedback-card-image"
-              src={card.imageUrl}
-              alt={card.name}
-              onLoad={() => setImageLoaded(true)}
-              style={{ display: imageLoaded ? 'block' : 'none' }}
+              src={card.imageUris.art_crop}
+              alt="Card art"
+              className="scryfall-art"
             />
           )}
-          {card.imageUrl && !imageLoaded && (
-            <div className="loading" style={{ padding: '20px' }}>
-              <div className="loading-spinner"></div>
+
+          {shouldShowType && (
+            <div className="scryfall-type">{card.typeLine}</div>
+          )}
+
+          {shouldShowText && (
+            <div className="scryfall-oracle">
+              {displayText}
             </div>
           )}
 
-          <div className="feedback-stats">
-            <span>{card.manaCost || 'No cost'}</span>
-            <span>MV {formatManaValue(card.manaValue)}</span>
-            {card.power && <span>{card.power}/{card.toughness}</span>}
-            <span>Set: {card.set.toUpperCase()}</span>
-          </div>
-
-          <button className="next-btn" onClick={onNext}>Next Question</button>
+          {shouldShowPT && (
+            <div className="scryfall-pt">
+              {card.power}/{card.toughness}
+            </div>
+          )}
         </div>
       );
     }
 
-    // ---- Main App ----
+    function QuestionDisplay({ question, onAnswer, showFeedback, isCorrect, selectedIdx, pointsEarned, streakBonus, onNext, liveShownFields }) {
+      const [textAnswer, setTextAnswer] = useState('');
 
-    function CardKnowledgeQuiz() {
-      const [cardPool, setCardPool] = useState(null);
-      const [loading, setLoading] = useState(true);
-      const [loadingMessage, setLoadingMessage] = useState('Initializing...');
-      const [error, setError] = useState(null);
+      const handleChoice = (idx) => {
+        if (showFeedback) return;
+        const choice = question.choices[idx];
+        onAnswer(choice === question.correctAnswer, choice);
+      };
 
-      const [searchQuery, setSearchQuery] = useState('format:standard game:paper -type:land');
-      const [isSearching, setIsSearching] = useState(false);
+      const handleTextSubmit = () => {
+        if (showFeedback || !textAnswer.trim()) return;
+        const correct = textAnswer.trim().toLowerCase() === question.correctAnswer.toLowerCase();
+        onAnswer(correct, textAnswer);
+      };
 
-      const [currentQuestion, setCurrentQuestion] = useState(null);
-      const [selectedIdx, setSelectedIdx] = useState(null);
-      const [showFeedback, setShowFeedback] = useState(false);
-      const [isCorrect, setIsCorrect] = useState(false);
-      const [pointsEarned, setPointsEarned] = useState(0);
-      const [streakBonus, setStreakBonus] = useState(1);
-      const [colorSubmitted, setColorSubmitted] = useState(false);
-      const [userColorAnswer, setUserColorAnswer] = useState([]);
-      const [streakPopup, setStreakPopup] = useState(null);
+      return (
+        <div className="question-container">
+          <div className="question-type-badge">
+            Custom Question
+          </div>
 
-      const [score, setScore] = useState(() => loadStorage(STORAGE_KEYS.SCORE, {
-        points: 0, questions: 0, correct: 0, streak: 0, bestStreak: 0,
-      }));
-      const [history, setHistory] = useState(() => loadStorage(STORAGE_KEYS.HISTORY, []));
+          <div className="question-text">
+            {question.questionText}
+          </div>
 
-      const [activePreset, setActivePreset] = useState(() =>
-        loadStorage(STORAGE_KEYS.CACHE_META, {})?.activePreset || 'standard'
+          <ScryfallCardDisplay
+            card={question.card}
+            shownFields={liveShownFields || question.shownFields}
+            askField={question.askField}
+          />
+
+          {!showFeedback && question.answerFormat === 'multipleChoice' && (
+            <div className="answer-choices">
+              {question.choices.map((choice, idx) => {
+                let className = 'answer-btn';
+                if (idx === selectedIdx) {
+                  className += ' selected';
+                }
+                // Add class for single character or number
+                if (choice && choice.length <= 2 && /^[A-Z0-9]/.test(choice)) {
+                  className += ' short-answer';
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    className={className}
+                    onClick={() => handleChoice(idx)}
+                  >
+                    {choice}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {showFeedback && question.answerFormat === 'multipleChoice' && (
+            <div className="feedback-inline">
+              <div className={`feedback-result ${isCorrect ? 'correct' : 'wrong'}`}>
+                <div className="feedback-icon">
+                  {isCorrect ? '✓' : '✗'}
+                </div>
+                <div className="feedback-text">
+                  {isCorrect ? (
+                    <div>
+                      <strong>Correct!</strong>
+                      <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
+                        +{pointsEarned} points (×{streakBonus.toFixed(1)} streak bonus)
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <strong>Incorrect</strong>
+                      <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
+                        Correct answer: <strong>{question.correctAnswer}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {question.card.imageUris?.normal && (
+                <div className="full-card-reveal">
+                  <img src={question.card.imageUris.normal} alt={question.card.name} />
+                </div>
+              )}
+              <button className="next-btn-large" onClick={onNext} autoFocus>
+                Next Question →
+              </button>
+            </div>
+          )}
+
+          {!showFeedback && question.answerFormat === 'textInput' && (
+            <div style={{ marginTop: '20px' }}>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Type your answer..."
+                value={textAnswer}
+                onChange={(e) => setTextAnswer(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
+                style={{ width: '100%', marginBottom: '12px' }}
+              />
+              <button
+                className="search-btn"
+                onClick={handleTextSubmit}
+                disabled={!textAnswer.trim()}
+                style={{ width: '100%' }}
+              >
+                Submit
+              </button>
+            </div>
+          )}
+
+          {showFeedback && question.answerFormat === 'textInput' && (
+            <div className="feedback-inline">
+              <div className={`feedback-result ${isCorrect ? 'correct' : 'wrong'}`}>
+                <div className="feedback-icon">
+                  {isCorrect ? '✓' : '✗'}
+                </div>
+                <div className="feedback-text">
+                  {isCorrect ? (
+                    <div>
+                      <strong>Correct!</strong>
+                      <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
+                        +{pointsEarned} points (×{streakBonus.toFixed(1)} streak bonus)
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <strong>Incorrect</strong>
+                      <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
+                        Correct answer: <strong>{question.correctAnswer}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {question.card.imageUris?.normal && (
+                <div className="full-card-reveal">
+                  <img src={question.card.imageUris.normal} alt={question.card.name} />
+                </div>
+              )}
+              <button className="next-btn-large" onClick={onNext} autoFocus>
+                Next Question →
+              </button>
+            </div>
+          )}
+        </div>
       );
-      const [loadingPresets, setLoadingPresets] = useState(new Set());
-      const [backgroundRefreshing, setBackgroundRefreshing] = useState(new Set());
+    }
 
-      // Custom mode state
-      const [customMode, setCustomMode] = useState(false);
-      const [quizConfig, setQuizConfig] = useState(() =>
-        loadStorage('card_quiz_custom_config', {
-          shownFields: ['colors', 'typeLine', 'manaValue'],
-          askField: 'cardName',
-        })
+    function Feedback({ isCorrect, pointsEarned, streakBonus, correctAnswer, onNext }) {
+      return (
+        <div className={`feedback ${isCorrect ? 'correct' : 'wrong'}`}>
+          <div className="feedback-header">
+            {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+          </div>
+          <div className="feedback-details">
+            {isCorrect ? (
+              <>
+                <div>+{pointsEarned} points (×{streakBonus.toFixed(1)} streak bonus)</div>
+              </>
+            ) : (
+              <>
+                <div>Correct answer: {correctAnswer}</div>
+              </>
+            )}
+          </div>
+          <button className="next-btn" onClick={onNext}>
+            Next Question →
+          </button>
+        </div>
       );
-      const [validationErrors, setValidationErrors] = useState([]);
-      const [showConfigPanel, setShowConfigPanel] = useState(false);
+    }
 
-      // Question type filter for predefined mode
-      const [questionTypeFilter, setQuestionTypeFilter] = useState('all');
+    // ===================================================================
+    // MAIN APP
+    // ===================================================================
 
+    function App() {
       const scryfall = useRef(new ScryfallClient());
 
-      // Load initial preset pool
-      useEffect(() => {
-        const loadCards = async () => {
-          try {
-            setLoadingMessage(`Loading ${PRESET_DEFINITIONS[activePreset].label} cards...`);
-            const cards = await scryfall.current.fetchPresetPool(activePreset, false);
-            setCardPool(cards);
-            setLoading(false);
-          } catch (err) {
-            setError(err.message);
-            setLoading(false);
-          }
-        };
+      // State
+      const [cardPool, setCardPool] = useState(null);
+      const [loading, setLoading] = useState(null);
+      const [error, setError] = useState(null);
+      const [currentQuestion, setCurrentQuestion] = useState(null);
+      const [showFeedback, setShowFeedback] = useState(false);
+      const [isCorrect, setIsCorrect] = useState(false);
+      const [selectedIdx, setSelectedIdx] = useState(null);
+      const [pointsEarned, setPointsEarned] = useState(0);
+      const [streakBonus, setStreakBonus] = useState(1);
+      const [streakPopup, setStreakPopup] = useState(null);
+      const [questionGenError, setQuestionGenError] = useState(null);
+      const [nextQuestionCache, setNextQuestionCache] = useState(null); // Pre-generated next question
 
-        loadCards();
-      }, []);
+      // Filters
+      const [activePreset, setActivePreset] = useState('standard');
+      const [searchQuery, setSearchQuery] = useState(PRESET_DEFINITIONS.standard.query);
+      const [colorFilter, setColorFilter] = useState('');
+      const [rarityFilter, setRarityFilter] = useState('');
 
-      // Generate first question
-      useEffect(() => {
-        if (cardPool && !currentQuestion) {
-          nextQuestion();
-        }
-      }, [cardPool]);
+      // Custom card list
+      const [customListText, setCustomListText] = useState(() =>
+        loadStorage('card_quiz_custom_list', '')
+      );
+      const [customListNotFound, setCustomListNotFound] = useState([]);
+
+      // Config - default all showable fields checked
+      const getDefaultShownFields = () => {
+        return Object.keys(FIELD_CONFIG).filter(key => FIELD_CONFIG[key].canShow);
+      };
+
+      const [quizConfig, setQuizConfig] = useState(() =>
+        loadStorage(STORAGE_KEYS.CONFIG, {
+          shownFields: getDefaultShownFields(),
+          askField: 'cardName',
+          answerFormat: 'multipleChoice',
+          wrongAnswerStrategy: 'pool', // 'pool', 'hierarchical', or 'dynamic'
+        })
+      );
+
+      // Score
+      const [score, setScore] = useState(() =>
+        loadStorage(STORAGE_KEYS.SCORE, {
+          points: 0,
+          questions: 0,
+          correct: 0,
+          streak: 0,
+          bestStreak: 0,
+        })
+      );
+
+      const [history, setHistory] = useState(() =>
+        loadStorage(STORAGE_KEYS.HISTORY, [])
+      );
+
+      const [validationErrors, setValidationErrors] = useState([]);
 
       // Save state
       useEffect(() => { saveStorage(STORAGE_KEYS.SCORE, score); }, [score]);
       useEffect(() => { saveStorage(STORAGE_KEYS.HISTORY, history); }, [history]);
-      useEffect(() => { saveStorage('card_quiz_custom_config', quizConfig); }, [quizConfig]);
+      useEffect(() => { saveStorage(STORAGE_KEYS.CONFIG, quizConfig); }, [quizConfig]);
 
-      // Validate custom quiz config
+      // Validate config
       useEffect(() => {
-        if (customMode && cardPool) {
+        if (cardPool) {
           const errors = validateQuizConfig(quizConfig, cardPool);
           setValidationErrors(errors);
         } else {
           setValidationErrors([]);
         }
-      }, [customMode, quizConfig, cardPool]);
+      }, [quizConfig, cardPool]);
 
-      // Pre-cache common presets in background
+      // Initial load
       useEffect(() => {
-        const preCachePresets = async () => {
-          const toPreCache = Object.entries(PRESET_DEFINITIONS)
-            .filter(([_, def]) => def.preCache)
-            .map(([key, _]) => key);
+        loadPreset('standard');
+      }, []);
 
-          for (const key of toPreCache) {
-            if (key === activePreset) continue; // Already loaded
-
-            // Check if already cached and fresh
-            const cached = scryfall.current.getCachedPool(key);
-            if (cached && !scryfall.current.isExpired(cached)) {
-              console.log(`${key} already cached and fresh`);
-              continue;
-            }
-
-            // Background fetch
-            console.log(`Pre-caching ${key} in background...`);
-            setBackgroundRefreshing(prev => new Set(prev).add(key));
-
-            try {
-              await scryfall.current.fetchPresetPool(key, false);
-              console.log(`${key} pre-cached successfully`);
-            } catch (err) {
-              console.error(`Failed to pre-cache ${key}:`, err);
-            } finally {
-              setBackgroundRefreshing(prev => {
-                const next = new Set(prev);
-                next.delete(key);
-                return next;
-              });
-            }
-
-            // Respect rate limits between pre-cache fetches
-            await new Promise(r => setTimeout(r, 2000));
-          }
-        };
-
-        // Start pre-caching after initial load completes
-        if (cardPool) {
-          setTimeout(preCachePresets, 1000); // Wait 1s after quiz is interactive
+      // Unhighlight preset when search manually modified
+      useEffect(() => {
+        if (activePreset === 'customList') return;
+        const matchingPreset = Object.keys(PRESET_DEFINITIONS).find(
+          key => PRESET_DEFINITIONS[key].query === searchQuery
+        );
+        if (!matchingPreset && activePreset) {
+          setActivePreset(null);
         }
-      }, [cardPool]);
+      }, [searchQuery]);
 
-      // Auto-search when searchQuery changes (in custom mode only, debounced)
+      // Auto-search when searchQuery changes (debounced)
       useEffect(() => {
-        if (!customMode) return; // Only apply in custom mode
-        if (!cardPool) return; // Don't trigger on initial load
+        if (!cardPool) return;
+        if (activePreset === 'customList') return;
 
         const timer = setTimeout(() => {
           handleSearch(searchQuery);
-        }, 800); // 800ms debounce to avoid rapid API calls
+        }, 800);
 
         return () => clearTimeout(timer);
-      }, [searchQuery, customMode]);
+      }, [searchQuery]);
 
-      const nextQuestion = useCallback(() => {
+      // Invalidate cache when config changes that affect question generation
+      useEffect(() => {
+        setNextQuestionCache(null);
+      }, [quizConfig.askField, quizConfig.answerFormat, quizConfig.wrongAnswerStrategy]);
+
+      // Auto-regenerate question only when askField, answerFormat, or pool changes
+      // NOTE: shownFields changes should NOT trigger new question (just show/hide fields on same card)
+      useEffect(() => {
+        if (!cardPool) return;
+        if (showFeedback) return;
+
+        nextQuestion();
+      }, [cardPool, quizConfig.askField, quizConfig.answerFormat, showFeedback]);
+
+      const loadPreset = async (presetKey) => {
+        setLoading(presetKey);
+        setError(null);
+
+        try {
+          const cards = await scryfall.current.fetchPresetPool(presetKey);
+          setCardPool(cards);
+          setActivePreset(presetKey);
+          setSearchQuery(PRESET_DEFINITIONS[presetKey].query);
+        } catch (err) {
+          console.error(err);
+          setError(`Failed to load ${presetKey}: ${err.message}`);
+        } finally {
+          setLoading(null);
+        }
+      };
+
+      const loadCustomList = async () => {
+        const names = customListText
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
+
+        if (names.length === 0) return;
+
+        // Dedupe (case-insensitive)
+        const seen = new Set();
+        const uniqueNames = names.filter(n => {
+          const key = n.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        setLoading('customList');
+        setError(null);
+        setCustomListNotFound([]);
+
+        try {
+          const { found, notFound } = await scryfall.current.fetchByNames(uniqueNames);
+          setCustomListNotFound(notFound);
+
+          if (found.length === 0) {
+            setError('No cards found. Check the card names and try again.');
+            return;
+          }
+
+          setCardPool(found);
+          setActivePreset('customList');
+          saveStorage('card_quiz_custom_list', customListText);
+        } catch (err) {
+          console.error(err);
+          setError(`Failed to load card list: ${err.message}`);
+        } finally {
+          setLoading(null);
+        }
+      };
+
+      const handlePresetSelect = (key) => {
+        if (key === 'customList') {
+          setActivePreset('customList');
+          // Don't auto-load — user needs to click "Load Cards"
+          return;
+        }
+        loadPreset(key);
+      };
+
+      const handleSearch = async (query) => {
+        if (!query.trim()) return;
+
+        setLoading('search');
+        setError(null);
+
+        try {
+          const cards = await scryfall.current.fetchByQuery(query, 100);
+          setCardPool(cards);
+        } catch (err) {
+          console.error(err);
+          setError(`Search failed: ${err.message}`);
+        } finally {
+          setLoading(null);
+        }
+      };
+
+      // Pre-generate next question in background
+      const preGenerateNextQuestion = useCallback(async () => {
+        if (!cardPool || validationErrors.length > 0) return;
+
+        try {
+          const q = await generateCustomQuestion(cardPool, quizConfig, scryfall.current);
+          if (q) {
+            setNextQuestionCache(q);
+          }
+        } catch (err) {
+          console.error('Failed to pre-generate question:', err);
+        }
+      }, [cardPool, quizConfig, validationErrors]);
+
+      const nextQuestion = useCallback(async () => {
         if (!cardPool) return;
 
-        // Use custom question generator if in custom mode
-        const q = customMode && validationErrors.length === 0
-          ? generateCustomQuestion(cardPool, quizConfig)
-          : generateQuestion(cardPool, questionTypeFilter);
+        setQuestionGenError(null);
+
+        // Use cached question if available, but only if it matches current config
+        let q = nextQuestionCache;
+        if (q && (q.askField !== quizConfig.askField || q.answerFormat !== quizConfig.answerFormat)) {
+          q = null; // Cache is stale (config changed since pre-generation)
+        }
+
+        // If no valid cache, generate now
+        if (!q && validationErrors.length === 0) {
+          q = await generateCustomQuestion(cardPool, quizConfig, scryfall.current);
+        }
 
         if (!q) {
-          setError('Unable to generate question. Try different settings.');
+          setQuestionGenError('Unable to generate question with current settings. Try adjusting filters, answer format, or field selections.');
+          setCurrentQuestion(null);
+          setNextQuestionCache(null);
           return;
         }
 
@@ -2517,16 +2521,17 @@
         setIsCorrect(false);
         setPointsEarned(0);
         setStreakBonus(1);
-        setColorSubmitted(false);
-        setUserColorAnswer([]);
-      }, [cardPool, customMode, quizConfig, validationErrors, questionTypeFilter]);
+
+        // Clear cache and start pre-generating next question
+        setNextQuestionCache(null);
+        preGenerateNextQuestion();
+      }, [cardPool, quizConfig, validationErrors, nextQuestionCache, preGenerateNextQuestion]);
 
       const handleAnswer = useCallback((correct, userAnswer) => {
         const streakMult = score.streak >= 10 ? 3 : score.streak >= 5 ? 2 : score.streak >= 3 ? 1.5 : 1;
 
-        // Apply difficulty multiplier for custom mode
         let difficultyMult = 1;
-        if (customMode && currentQuestion?.difficulty !== undefined) {
+        if (currentQuestion?.difficulty !== undefined) {
           difficultyMult = DIFFICULTY_WEIGHTS[currentQuestion.difficulty] || 1;
         }
 
@@ -2545,6 +2550,11 @@
         setStreakBonus(streakMult);
         setShowFeedback(true);
 
+        if (currentQuestion.answerFormat === 'multipleChoice') {
+          const idx = currentQuestion.choices.findIndex(c => c === userAnswer);
+          setSelectedIdx(idx);
+        }
+
         setScore({
           points: score.points + earned,
           questions: score.questions + 1,
@@ -2561,387 +2571,128 @@
           correctAnswer: currentQuestion.correctAnswer,
           timestamp: new Date().toISOString(),
         }]);
-        // Trigger background pool expansion after answer
-        setTimeout(() => expandPoolInBackground(), 1000);
-      }, [score, currentQuestion, cardPool, searchQuery, isSearching]);
+      }, [score, currentQuestion]);
 
-      // Background pool expansion
-      const expandPoolInBackground = useCallback(async () => {
-        if (!cardPool || cardPool.length >= 100) return; // Pool is healthy
-        if (isSearching) return; // Don't interfere with active search
-
-        console.log(`Pool low (${cardPool.length} cards), expanding in background...`);
-
-        try {
-          const moreCards = await scryfall.current.fetchByQuery(searchQuery, 100);
-
-          // Merge with existing pool (deduplicate by name)
-          const existingNames = new Set(cardPool.map(c => c.name));
-          const newCards = moreCards.filter(c => !existingNames.has(c.name));
-
-          if (newCards.length > 0) {
-            console.log(`Added ${newCards.length} new cards to pool`);
-            setCardPool(prev => [...prev, ...newCards]);
-          }
-        } catch (err) {
-          console.error('Background expansion failed:', err);
-        }
-      }, [cardPool, searchQuery, isSearching]);
-
-      const handleMCSelect = useCallback((idx) => {
-        if (selectedIdx !== null) return;
-        setSelectedIdx(idx);
-        const option = currentQuestion.options[idx];
-        handleAnswer(option.isCorrect, option.label);
-      }, [selectedIdx, currentQuestion, handleAnswer]);
-
-      const handleColorSubmit = useCallback((userColors) => {
-        setColorSubmitted(true);
-        const correct = colorsMatch(userColors, currentQuestion.correctColors);
-        const userAnswer = userColors.length > 0 ? formatColors(userColors) : 'Colorless';
-        setUserColorAnswer(userColors.length > 0 ? userColors : ['C']);
-        handleAnswer(correct, userAnswer);
-      }, [currentQuestion, handleAnswer]);
-
-      const handleRefresh = async () => {
-        if (confirm(`Fetch fresh ${PRESET_DEFINITIONS[activePreset].label} cards? This will replace your current card pool.`)) {
-          setLoading(true);
-          setLoadingMessage('Fetching fresh cards...');
-          try {
-            const cards = await scryfall.current.fetchPresetPool(activePreset, true);
-            setCardPool(cards);
-            setLoading(false);
-            nextQuestion();
-          } catch (err) {
-            setError(err.message);
-            setLoading(false);
-          }
-        }
-      };
-
-      const handleSearch = async (query) => {
-        if (!query.trim()) {
-          alert('Please enter a search query');
-          return;
-        }
-
-        setIsSearching(true);
-        setLoading(true);
-        setLoadingMessage('Searching Scryfall...');
-        setSearchQuery(query);
-
-        try {
-          // Fetch cards using the search query
-          const cards = await scryfall.current.fetchByQuery(query, 200);
-
-          if (cards.length === 0) {
-            setError('No cards found for this query. Try a different search.');
-            setLoading(false);
-            setIsSearching(false);
-            return;
-          }
-
-          setCardPool(cards);
-          setLoading(false);
-          setIsSearching(false);
-          nextQuestion();
-        } catch (err) {
-          setError(`Search failed: ${err.message}`);
-          setLoading(false);
-          setIsSearching(false);
-        }
-      };
-
-      const handlePresetChange = async (presetKey) => {
-        if (presetKey === activePreset) return;
-
-        const preset = PRESET_DEFINITIONS[presetKey];
-
-        // Update search field with preset query
-        setSearchQuery(preset.query);
-
-        // Mark as loading
-        setLoadingPresets(prev => new Set(prev).add(presetKey));
-        setLoading(true);
-        setLoadingMessage(`Loading ${preset.label} cards...`);
-
-        try {
-          // Fetch preset pool (uses cache if available)
-          const cards = await scryfall.current.fetchPresetPool(presetKey, false);
-
-          // Update state
-          setCardPool(cards);
-          setActivePreset(presetKey);
-
-          // Save to localStorage
-          const meta = loadStorage(STORAGE_KEYS.CACHE_META, {});
-          meta.activePreset = presetKey;
-          saveStorage(STORAGE_KEYS.CACHE_META, meta);
-
-          setLoading(false);
-          nextQuestion(); // Generate new question from new pool
-        } catch (err) {
-          setError(`Failed to load ${presetKey}: ${err.message}`);
-          setLoading(false);
-        } finally {
-          setLoadingPresets(prev => {
-            const next = new Set(prev);
-            next.delete(presetKey);
-            return next;
-          });
-        }
-      };
-
-      // Custom mode handlers
-      const handleConfigChange = useCallback((newConfig) => {
-        setQuizConfig(newConfig);
-      }, []);
-
-      const handleModeToggle = useCallback(() => {
-        const newMode = !customMode;
-        setCustomMode(newMode);
-
-        // If switching to custom mode, validate config
-        if (newMode && cardPool) {
-          const errors = validateQuizConfig(quizConfig, cardPool);
-          setValidationErrors(errors);
-        }
-
-        // Generate new question for the new mode
-        setTimeout(() => nextQuestion(), 100);
-      }, [customMode, cardPool, quizConfig, nextQuestion]);
-
-      const availableSets = cardPool ? [...new Set(cardPool.map(c => c.set))].sort() : [];
-
-      if (loading) {
-        return (
-          <div className="app-container">
-            <div className="loading">
-              <div className="loading-spinner"></div>
-              <div>{loadingMessage}</div>
-              <div style={{ marginTop: 8, fontSize: '0.8rem' }}>This may take a few seconds...</div>
-            </div>
-          </div>
-        );
-      }
-
-      if (error) {
-        return (
-          <div className="app-container">
-            <div className="loading">
-              <div style={{ color: 'var(--wrong)' }}>Error: {error}</div>
-              <button className="refresh-btn" onClick={handleRefresh}>Retry</button>
-            </div>
-          </div>
-        );
-      }
+      const accuracy = score.questions > 0 ? Math.round((score.correct / score.questions) * 100) : 0;
 
       return (
         <div className="app-container">
-          {streakPopup && <div className="streak-popup">{streakPopup} Streak!</div>}
-
           <div className="header">
-            <h1>Card Knowledge Quiz</h1>
-            <div className="subtitle">{cardPool.length} cards from {PRESET_DEFINITIONS[activePreset].label} ({availableSets.length} sets)</div>
-            <div className="api-badge">Powered by Scryfall API — {PRESET_DEFINITIONS[activePreset].description}</div>
+            <h1>MTG Card Knowledge Quiz</h1>
+            <div className="subtitle">Custom Mode Only — v2.9.0 (2026-02-18)</div>
+            <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
-          <ScoreBar score={score} />
-          <SearchField
-            query={searchQuery}
-            onChange={setSearchQuery}
-            onSearch={handleSearch}
-          />
-          <PresetToggleBar
+          <div className="score-bar">
+            <div className="score-item">
+              <div className="score-label">Score</div>
+              <div className="score-value">{score.points}</div>
+            </div>
+            <div className="score-item">
+              <div className="score-label">Correct</div>
+              <div className="score-value">{score.correct}/{score.questions}</div>
+            </div>
+            <div className="score-item">
+              <div className="score-label">Streak</div>
+              <div className="score-value streak">{score.streak}</div>
+            </div>
+            <div className="score-item">
+              <div className="score-label">Accuracy</div>
+              <div className="score-value accuracy">{accuracy}%</div>
+            </div>
+          </div>
+
+          <PresetSelector
             activePreset={activePreset}
-            onPresetChange={handlePresetChange}
-            loadingPresets={loadingPresets}
-          />
-          <FilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
+            onSelect={handlePresetSelect}
+            loading={loading}
           />
 
-          {/* Mode Toggle Buttons */}
-          <div style={{ marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button
-              className={`preset-btn ${!customMode ? 'active' : ''}`}
-              onClick={() => !customMode || handleModeToggle()}
-              style={{ flex: 'none' }}
-            >
-              🎲 Predefined Questions {!customMode && '✓'}
-            </button>
+          {activePreset === 'customList' ? (
+            <CustomListInput
+              value={customListText}
+              onChange={setCustomListText}
+              onLoad={loadCustomList}
+              loading={loading === 'customList'}
+              notFound={customListNotFound}
+            />
+          ) : (
+            <>
+              <SearchField
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onSearch={handleSearch}
+              />
 
-            {/* Question Type Filter (Predefined Mode Only) */}
-            {!customMode && (
-              <select
-                className="filter-select"
-                value={questionTypeFilter}
-                onChange={(e) => setQuestionTypeFilter(e.target.value)}
-                style={{ flex: 'none', maxWidth: '200px' }}
-              >
-                <option value="all">All Question Types</option>
-                <option value="manaValue">Mana Value</option>
-                <option value="powerToughness">Power/Toughness</option>
-                <option value="color">Colors</option>
-                <option value="cardType">Card Type</option>
-                <option value="keywords">Keywords</option>
-              </select>
-            )}
+              <FilterBar
+                colorFilter={colorFilter}
+                rarityFilter={rarityFilter}
+                onColorChange={setColorFilter}
+                onRarityChange={setRarityFilter}
+              />
+            </>
+          )}
 
-            <button
-              className={`preset-btn ${customMode ? 'active' : ''}`}
-              onClick={() => customMode || handleModeToggle()}
-              style={{ flex: 'none' }}
-            >
-              ⚙️ Custom Quiz {customMode && '✓'}
-            </button>
-            {customMode && (
-              <button
-                className="preset-btn"
-                onClick={() => setShowConfigPanel(!showConfigPanel)}
-                style={{ flex: 'none' }}
-              >
-                {showConfigPanel ? 'Hide Config ▴' : 'Show Config ▾'}
-              </button>
-            )}
-            {customMode && validationErrors.length > 0 && (
-              <span style={{ color: 'var(--wrong)', fontSize: '0.85rem' }}>
-                ⚠️ {validationErrors.length} error(s)
-              </span>
-            )}
-          </div>
-
-          {/* Custom Quiz Config Panel */}
-          {customMode && showConfigPanel && (
-            <QuizConfigPanel
+          {cardPool && (
+            <ConfigPanel
               config={quizConfig}
-              onConfigChange={handleConfigChange}
+              onConfigChange={setQuizConfig}
               cardPool={cardPool}
             />
           )}
 
-          {currentQuestion && !showFeedback && (
-            <div className="question-card">
-              {/* Type badge */}
-              {currentQuestion.type === 'custom' ? (
-                <span className="question-type-badge badge-custom">
-                  Custom: {FIELD_DEFINITIONS[currentQuestion.askFieldId]?.label}
-                  {currentQuestion.difficulty > 0 && (
-                    <span className={`difficulty-badge difficulty-${currentQuestion.difficulty}`}>
-                      {DIFFICULTY_LABELS[currentQuestion.difficulty]}
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <span className={`question-type-badge ${QUESTION_TYPE_BADGES[currentQuestion.type]}`}>
-                  {QUESTION_TYPE_LABELS[currentQuestion.type]}
-                </span>
-              )}
-
-              {/* Question text */}
-              {currentQuestion.type === 'custom' ? (
-                <>
-                  <div className="question-text">{currentQuestion.questionText}</div>
-                  {currentQuestion.shownInfo && (
-                    <div className="question-hint" style={{ marginBottom: '16px', fontSize: '1rem' }}>
-                      {currentQuestion.shownInfo}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="question-text">
-                    {currentQuestion.questionText}{' '}
-                    <span className="card-name-highlight">{currentQuestion.card.name}</span>?
-                  </div>
-                  <div className="question-hint">{currentQuestion.hint}</div>
-                </>
-              )}
-
-              {/* Answer inputs - predefined mode */}
-              {currentQuestion.format === 'mc' && (
-                <MultipleChoice
-                  options={currentQuestion.options}
-                  onSelect={handleMCSelect}
-                  selectedIdx={selectedIdx}
-                  disabled={selectedIdx !== null}
-                />
-              )}
-
-              {currentQuestion.format === 'color' && (
-                <ColorPicker
-                  onSubmit={handleColorSubmit}
-                  disabled={colorSubmitted}
-                  correctColors={currentQuestion.correctColors}
-                  submitted={colorSubmitted}
-                  userColors={userColorAnswer}
-                />
-              )}
-
-              {/* Answer inputs - custom mode */}
-              {currentQuestion.type === 'custom' && currentQuestion.answerType === 'multipleChoice' && (
-                <MultipleChoice
-                  options={currentQuestion.options}
-                  onSelect={handleMCSelect}
-                  selectedIdx={selectedIdx}
-                  disabled={selectedIdx !== null}
-                />
-              )}
-
-              {currentQuestion.type === 'custom' && currentQuestion.answerType === 'colorPicker' && (
-                <ColorPicker
-                  onSubmit={handleColorSubmit}
-                  disabled={colorSubmitted}
-                  correctColors={currentQuestion.correctColors}
-                  submitted={colorSubmitted}
-                  userColors={userColorAnswer}
-                />
-              )}
-
-              {currentQuestion.type === 'custom' && (currentQuestion.answerType === 'text' || currentQuestion.answerType === 'number') && (
-                <AnswerInput
-                  field={FIELD_DEFINITIONS[currentQuestion.askFieldId]}
-                  question={currentQuestion}
-                  onSubmit={(value) => {
-                    const correct = currentQuestion.checkAnswer(value);
-                    handleAnswer(correct, value);
-                  }}
-                  disabled={showFeedback}
-                />
-              )}
+          {loading && (
+            <div className="loading-container">
+              <div className="spinner" />
+              <div>Loading cards...</div>
             </div>
           )}
 
-          {!currentQuestion && !loading && (
-            <div className="question-card" style={{ textAlign: 'center' }}>
-              <div style={{ color: 'var(--text-muted)', padding: 20 }}>
-                Not enough cards for these filters. Try broadening your selection.
-              </div>
+          {error && (
+            <div className="error-container">
+              <div className="error-title">Error</div>
+              <div className="error-message">{error}</div>
             </div>
           )}
 
-          {showFeedback && currentQuestion && (
-            <FeedbackSection
-              question={currentQuestion}
-              isCorrect={isCorrect}
-              pointsEarned={pointsEarned}
-              streakBonus={streakBonus}
-              onNext={nextQuestion}
-            />
+          {questionGenError && (
+            <div className="error-container">
+              <div className="error-title">Cannot Generate Question</div>
+              <div className="error-message">{questionGenError}</div>
+            </div>
           )}
 
-          <div style={{ textAlign: 'center', marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-            <button className="refresh-btn" onClick={handleRefresh}>
-              Refresh Card Pool (Fetch New Cards)
-            </button>
-          </div>
+          {currentQuestion && !loading && (
+            <>
+              <QuestionDisplay
+                question={currentQuestion}
+                onAnswer={handleAnswer}
+                showFeedback={showFeedback}
+                isCorrect={isCorrect}
+                selectedIdx={selectedIdx}
+                pointsEarned={pointsEarned}
+                streakBonus={streakBonus}
+                onNext={nextQuestion}
+                liveShownFields={quizConfig.shownFields}
+              />
+            </>
+          )}
+
+          {streakPopup && (
+            <div className="streak-popup">
+              {streakPopup} STREAK!
+            </div>
+          )}
         </div>
       );
     }
 
+    // ===================================================================
+    // RENDER
+    // ===================================================================
+
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<CardKnowledgeQuiz />);
+    root.render(<App />);
   </script>
 </body>
 </html>
