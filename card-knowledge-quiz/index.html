@@ -1012,10 +1012,16 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.11.1
-     * Last Updated: 2026-02-18 23:05 UTC
+     * Version: 2.12.0
+     * Last Updated: 2026-02-18 23:11 UTC
      *
      * CHANGELOG:
+     * v2.12.0 (2026-02-18) - Pre-cached card data for prepopulated lists
+     *   - Pauper card data now embedded in page (50 cards, ~25KB)
+     *   - Clicking "Pauper Top Cards" loads instantly — no Scryfall API call needed
+     *   - Fallback to API fetch still available for lists without pre-cached data
+     *   - Future prepopulated lists can use either cardData (instant) or cards (API fetch)
+     *
      * v2.11.1 (2026-02-18) - Bug fixes from testing
      *   - FIX: Stale question no longer shown when switching card source or loading new pool
      *   - FIX: Cards with blank oracle text filtered out when asking about text box
@@ -1333,22 +1339,61 @@
       },
     };
 
-    // Top Pauper cards for prepopulated lists
-    const PREPOPULATED_LISTS = {
+    // Top Pauper cards for prepopulated lists (pre-cached from Scryfall)
+const PREPOPULATED_LISTS = {
       pauper: {
         label: 'Pauper Top Cards',
-        cards: [
-          'Pyroblast', 'Blue Elemental Blast', 'Relic of Progenitus',
-          'Hydroblast', 'Red Elemental Blast', 'Lightning Bolt', 'Nihil Spellbomb',
-          'Counterspell', 'Lorien Revealed', 'Cast Down', 'Voldaren Epicure',
-          'Cast into the Fire', 'Bojuka Bog', 'Brainstorm', 'Fanatical Offering', 'Annul',
-          'Weather the Storm', 'Dispel', 'Breath Weapon', 'Ichor Wellspring', 'Faerie Macabre',
-          'Sneaky Snacker', 'Duress', 'Avenging Hunter', 'End the Festivities', 'Lembas',
-          'Eviscerator\'s Insight', 'Generous Ent', 'Galvanic Blast', 'Vault of Whispers', 'Faithless Looting',
-          'Grab the Prize', 'Fiery Temper', 'Nyxborn Hydra', 'Highway Robbery', 'Great Furnace',
-          'Fireblast', 'Searing Blaze', 'Extract a Confession', 'Refurbished Familiar', 'Snuff Out',
-          'Lead the Stampede', 'Murmuring Mystic', 'Winding Way', 'Masked Vandal', 'Drossforge Bridge',
-          'Experimental Synthesizer', 'Chromatic Star', 'Makeshift Munitions', 'Krark-Clan Shaman'
+        cardData: [
+          {name:"Pyroblast",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Choose one —\n• Counter target spell if it's blue.\n• Destroy target permanent if it's blue.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/0/b029eb9a-dd7a-40c2-96c4-0063d9cc002c.jpg?1580014621",normal:"https://cards.scryfall.io/normal/front/b/0/b029eb9a-dd7a-40c2-96c4-0063d9cc002c.jpg?1580014621"}},
+          {name:"Blue Elemental Blast",manaValue:1,colors:["U"],colorIdentity:["U"],typeLine:"Instant",oracleText:"Choose one —\n• Counter target red spell.\n• Destroy target red permanent.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/2/f/2f51f88f-f662-4572-a371-9a77718ed079.jpg?1562434032",normal:"https://cards.scryfall.io/normal/front/2/f/2f51f88f-f662-4572-a371-9a77718ed079.jpg?1562434032"}},
+          {name:"Relic of Progenitus",manaValue:1,colors:[],colorIdentity:[],typeLine:"Artifact",oracleText:"{T}: Target player exiles a card from their graveyard.\n{1}, Exile this artifact: Exile all graveyards. Draw a card.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/4/3/436cd66c-0622-43cd-8748-af4d21a2db3f.jpg?1580015265",normal:"https://cards.scryfall.io/normal/front/4/3/436cd66c-0622-43cd-8748-af4d21a2db3f.jpg?1580015265"}},
+          {name:"Hydroblast",manaValue:1,colors:["U"],colorIdentity:["U"],typeLine:"Instant",oracleText:"Choose one —\n• Counter target spell if it's red.\n• Destroy target permanent if it's red.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/4/c/4c9c9b16-5567-4473-95e6-622292f77336.jpg?1580013995",normal:"https://cards.scryfall.io/normal/front/4/c/4c9c9b16-5567-4473-95e6-622292f77336.jpg?1580013995"}},
+          {name:"Red Elemental Blast",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Choose one —\n• Counter target blue spell.\n• Destroy target blue permanent.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/7/0/70a45e9b-699e-425a-9f3d-267274830d3e.jpg?1562436618",normal:"https://cards.scryfall.io/normal/front/7/0/70a45e9b-699e-425a-9f3d-267274830d3e.jpg?1562436618"}},
+          {name:"Lightning Bolt",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Lightning Bolt deals 3 damage to any target.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/6/b6bc6ff3-f466-4cb0-8b4e-a20d8ed129c8.jpg?1771429068",normal:"https://cards.scryfall.io/normal/front/b/6/b6bc6ff3-f466-4cb0-8b4e-a20d8ed129c8.jpg?1771429068"}},
+          {name:"Nihil Spellbomb",manaValue:1,colors:[],colorIdentity:["B"],typeLine:"Artifact",oracleText:"{T}, Sacrifice this artifact: Exile target player's graveyard.\nWhen this artifact is put into a graveyard from the battlefield, you may pay {B}. If you do, draw a card.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/e/5/e5892a23-efae-4731-9b8f-41c87960fe93.jpg?1562442193",normal:"https://cards.scryfall.io/normal/front/e/5/e5892a23-efae-4731-9b8f-41c87960fe93.jpg?1562442193"}},
+          {name:"Counterspell",manaValue:2,colors:["U"],colorIdentity:["U"],typeLine:"Instant",oracleText:"Counter target spell.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1751282477",normal:"https://cards.scryfall.io/normal/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1751282477"}},
+          {name:"Lórien Revealed",manaValue:5,colors:["U"],colorIdentity:["U"],typeLine:"Sorcery",oracleText:"Draw three cards.\nIslandcycling {1} ({1}, Discard this card: Search your library for an Island card, reveal it, put it into your hand, then shuffle.)",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/0/c/0ce44270-a684-4489-9077-521456e6dfaa.jpg?1687210977",normal:"https://cards.scryfall.io/normal/front/0/c/0ce44270-a684-4489-9077-521456e6dfaa.jpg?1687210977"}},
+          {name:"Cast Down",manaValue:2,colors:["B"],colorIdentity:["B"],typeLine:"Instant",oracleText:"Destroy target nonlegendary creature.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/a/b/aba79021-39af-4e74-beb5-f2f508c865b2.jpg?1674136020",normal:"https://cards.scryfall.io/normal/front/a/b/aba79021-39af-4e74-beb5-f2f508c865b2.jpg?1674136020"}},
+          {name:"Voldaren Epicure",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Creature — Vampire",oracleText:"When this creature enters, it deals 1 damage to each opponent. Create a Blood token. (It's an artifact with \"{1}, {T}, Discard a card, Sacrifice this token: Draw a card.\")",power:"1",toughness:"1",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/e/8/e8fe855c-fe94-4de7-a033-9892a9d6ee0e.jpg?1736468269",normal:"https://cards.scryfall.io/normal/front/e/8/e8fe855c-fe94-4de7-a033-9892a9d6ee0e.jpg?1736468269"}},
+          {name:"Cast into the Fire",manaValue:2,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Choose one —\n• Cast into the Fire deals 1 damage to each of up to two target creatures.\n• Exile target artifact.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/2/e/2ef878cb-27b6-47d8-ad11-bd20529b0e7e.jpg?1686968832",normal:"https://cards.scryfall.io/normal/front/2/e/2ef878cb-27b6-47d8-ad11-bd20529b0e7e.jpg?1686968832"}},
+          {name:"Bojuka Bog",manaValue:0,colors:[],colorIdentity:["B"],typeLine:"Land",oracleText:"This land enters tapped.\nWhen this land enters, exile target player's graveyard.\n{T}: Add {B}.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/0/b0c6fb5e-07e2-4d22-be19-60592f00584a.jpg?1752945235",normal:"https://cards.scryfall.io/normal/front/b/0/b0c6fb5e-07e2-4d22-be19-60592f00584a.jpg?1752945235"}},
+          {name:"Brainstorm",manaValue:1,colors:["U"],colorIdentity:["U"],typeLine:"Instant",oracleText:"Draw three cards, then put two cards from your hand on top of your library in any order.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/8/b/8beb987c-1b67-4a4e-ae71-58547afad2a0.jpg?1726284649",normal:"https://cards.scryfall.io/normal/front/8/b/8beb987c-1b67-4a4e-ae71-58547afad2a0.jpg?1726284649"}},
+          {name:"Fanatical Offering",manaValue:2,colors:["B"],colorIdentity:["B"],typeLine:"Instant",oracleText:"As an additional cost to cast this spell, sacrifice an artifact or creature.\nDraw two cards and create a Map token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/d/8/d896dd52-b134-4b55-ab91-ccb05ecc50f4.jpg?1699044130",normal:"https://cards.scryfall.io/normal/front/d/8/d896dd52-b134-4b55-ab91-ccb05ecc50f4.jpg?1699044130"}},
+          {name:"Annul",manaValue:1,colors:["U"],colorIdentity:["U"],typeLine:"Instant",oracleText:"Counter target artifact or enchantment spell.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/4/f/4feeebea-aa55-4599-ab5a-4e41a54d0dfd.jpg?1752946732",normal:"https://cards.scryfall.io/normal/front/4/f/4feeebea-aa55-4599-ab5a-4e41a54d0dfd.jpg?1752946732"}},
+          {name:"Weather the Storm",manaValue:2,colors:["G"],colorIdentity:["G"],typeLine:"Instant",oracleText:"You gain 3 life.\nStorm (When you cast this spell, copy it for each spell cast before it this turn.)",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/f/6/f6a9fa51-78c3-42e6-8c2e-39658f59ed87.jpg?1562202265",normal:"https://cards.scryfall.io/normal/front/f/6/f6a9fa51-78c3-42e6-8c2e-39658f59ed87.jpg?1562202265"}},
+          {name:"Dispel",manaValue:1,colors:["U"],colorIdentity:["U"],typeLine:"Instant",oracleText:"Counter target instant spell.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/c/bceab6b3-6b64-4964-a501-ce806a6c13ad.jpg?1562939587",normal:"https://cards.scryfall.io/normal/front/b/c/bceab6b3-6b64-4964-a501-ce806a6c13ad.jpg?1562939587"}},
+          {name:"Breath Weapon",manaValue:3,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Breath Weapon deals 2 damage to each non-Dragon creature.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/0/1/0174e40a-0ef5-4439-91e6-3fc39f482520.jpg?1674136462",normal:"https://cards.scryfall.io/normal/front/0/1/0174e40a-0ef5-4439-91e6-3fc39f482520.jpg?1674136462"}},
+          {name:"Ichor Wellspring",manaValue:2,colors:[],colorIdentity:[],typeLine:"Artifact",oracleText:"When this artifact enters or is put into a graveyard from the battlefield, draw a card.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/1/c/1ccdb407-ac8f-4736-89d3-ab0d086096ea.jpg?1625978684",normal:"https://cards.scryfall.io/normal/front/1/c/1ccdb407-ac8f-4736-89d3-ab0d086096ea.jpg?1625978684"}},
+          {name:"Faerie Macabre",manaValue:3,colors:["B"],colorIdentity:["B"],typeLine:"Creature — Faerie Rogue",oracleText:"Flying\nDiscard this card: Exile up to two target cards from graveyards.",power:"2",toughness:"2",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/6/2/62103ceb-b16d-48ea-af42-d3df88d1ee4c.jpg?1562918100",normal:"https://cards.scryfall.io/normal/front/6/2/62103ceb-b16d-48ea-af42-d3df88d1ee4c.jpg?1562918100"}},
+          {name:"Sneaky Snacker",manaValue:2,colors:["B","U"],colorIdentity:["B","U"],typeLine:"Creature — Faerie Rogue",oracleText:"Flying\nWhen you draw your third card in a turn, return this card from your graveyard to the battlefield tapped.",power:"2",toughness:"1",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/0/e/0e3aedae-e4bb-48e3-9f8b-bea0430df306.jpg?1717332127",normal:"https://cards.scryfall.io/normal/front/0/e/0e3aedae-e4bb-48e3-9f8b-bea0430df306.jpg?1717332127"}},
+          {name:"Duress",manaValue:1,colors:["B"],colorIdentity:["B"],typeLine:"Sorcery",oracleText:"Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899",normal:"https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899"}},
+          {name:"Avenging Hunter",manaValue:5,colors:["G"],colorIdentity:["G"],typeLine:"Creature — Dragon Ranger",oracleText:"Trample\nWhen this creature enters, you take the initiative.",power:"5",toughness:"4",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/f/4/f4072640-0f9b-4f0a-84cc-eda415cc92e7.jpg?1674136957",normal:"https://cards.scryfall.io/normal/front/f/4/f4072640-0f9b-4f0a-84cc-eda415cc92e7.jpg?1674136957"}},
+          {name:"End the Festivities",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Sorcery",oracleText:"End the Festivities deals 1 damage to each opponent and each creature and planeswalker they control.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/e/bec748e6-7245-4a71-aeee-cefed8346948.jpg?1643591154",normal:"https://cards.scryfall.io/normal/front/b/e/bec748e6-7245-4a71-aeee-cefed8346948.jpg?1643591154"}},
+          {name:"Lembas",manaValue:2,colors:[],colorIdentity:[],typeLine:"Artifact — Food",oracleText:"When this artifact enters, scry 1, then draw a card.\n{2}, {T}, Sacrifice this artifact: You gain 3 life.\nWhen this artifact is put into a graveyard from the battlefield, its owner shuffles it into their library.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/3/b/3b46aacf-b31a-4380-9e4b-82795fbaba3b.jpg?1686970202",normal:"https://cards.scryfall.io/normal/front/3/b/3b46aacf-b31a-4380-9e4b-82795fbaba3b.jpg?1686970202"}},
+          {name:"Eviscerator's Insight",manaValue:2,colors:["B"],colorIdentity:["B"],typeLine:"Instant",oracleText:"As an additional cost to cast this spell, sacrifice an artifact or creature.\nDraw two cards.\nFlashback {4}{B} (You may cast this card from your graveyard for its flashback cost and any additional costs. Then exile it.)",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/0/b00573bd-5bbb-4531-a0bb-a40f62b92b88.jpg?1717011960",normal:"https://cards.scryfall.io/normal/front/b/0/b00573bd-5bbb-4531-a0bb-a40f62b92b88.jpg?1717011960"}},
+          {name:"Generous Ent",manaValue:6,colors:["G"],colorIdentity:["G"],typeLine:"Creature — Treefolk",oracleText:"Reach\nWhen this creature enters, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nForestcycling {1} ({1}, Discard this card: Search your library for a Forest card, reveal it, put it into your hand, then shuffle.)",power:"5",toughness:"7",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/8/5/85d22d5d-3875-42ff-b51e-c6e21db201f5.jpg?1687210970",normal:"https://cards.scryfall.io/normal/front/8/5/85d22d5d-3875-42ff-b51e-c6e21db201f5.jpg?1687210970"}},
+          {name:"Galvanic Blast",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Galvanic Blast deals 2 damage to any target.\nMetalcraft — Galvanic Blast deals 4 damage instead if you control three or more artifacts.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/0/c/0cf8cb1e-314a-4894-82df-f9812825f52e.jpg?1599706326",normal:"https://cards.scryfall.io/normal/front/0/c/0cf8cb1e-314a-4894-82df-f9812825f52e.jpg?1599706326"}},
+          {name:"Vault of Whispers",manaValue:0,colors:[],colorIdentity:["B"],typeLine:"Artifact Land",oracleText:"{T}: Add {B}.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/e/8/e85e4098-f872-4aa4-a71a-208b6090be28.jpg?1726285577",normal:"https://cards.scryfall.io/normal/front/e/8/e85e4098-f872-4aa4-a71a-208b6090be28.jpg?1726285577"}},
+          {name:"Faithless Looting",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Sorcery",oracleText:"Draw two cards, then discard two cards.\nFlashback {2}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/c/4/c43aeb5a-8bdc-4aa9-89d1-156f97ac38aa.jpg?1743206665",normal:"https://cards.scryfall.io/normal/front/c/4/c43aeb5a-8bdc-4aa9-89d1-156f97ac38aa.jpg?1743206665"}},
+          {name:"Grab the Prize",manaValue:2,colors:["R"],colorIdentity:["R"],typeLine:"Sorcery",oracleText:"As an additional cost to cast this spell, discard a card.\nDraw two cards. If the discarded card wasn't a land card, Grab the Prize deals 2 damage to each opponent.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/5/0/50895202-f1a1-4840-a11a-55b78b8b5929.jpg?1726286361",normal:"https://cards.scryfall.io/normal/front/5/0/50895202-f1a1-4840-a11a-55b78b8b5929.jpg?1726286361"}},
+          {name:"Fiery Temper",manaValue:3,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Fiery Temper deals 3 damage to any target.\nMadness {R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/1/d/1d3a3a1d-c393-4a57-8a0e-5907d1722331.jpg?1736468138",normal:"https://cards.scryfall.io/normal/front/1/d/1d3a3a1d-c393-4a57-8a0e-5907d1722331.jpg?1736468138"}},
+          {name:"Nyxborn Hydra",manaValue:1,colors:["G"],colorIdentity:["G"],typeLine:"Enchantment Creature — Hydra",oracleText:"Bestow {X}{G}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nReach, trample\nThis permanent enters with X +1/+1 counters on it.\nEnchanted creature gets +1/+1 for each +1/+1 counter on this Aura and has reach and trample.",power:"0",toughness:"1",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/9/0/902a969e-9f22-4e92-93eb-9d4536ca82e5.jpg?1717012540",normal:"https://cards.scryfall.io/normal/front/9/0/902a969e-9f22-4e92-93eb-9d4536ca82e5.jpg?1717012540"}},
+          {name:"Highway Robbery",manaValue:2,colors:["R"],colorIdentity:["R"],typeLine:"Sorcery",oracleText:"You may discard a card or sacrifice a land. If you do, draw two cards.\nPlot {1}{R} (You may pay {1}{R} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.)",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/3/1/31a88429-9204-4a23-a7a8-babbd6bab79f.jpg?1712355775",normal:"https://cards.scryfall.io/normal/front/3/1/31a88429-9204-4a23-a7a8-babbd6bab79f.jpg?1712355775"}},
+          {name:"Great Furnace",manaValue:0,colors:[],colorIdentity:["R"],typeLine:"Artifact Land",oracleText:"{T}: Add {R}.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/7/4/74c5bb44-d72c-4c1a-a38f-86b4a8f49ae1.jpg?1752945336",normal:"https://cards.scryfall.io/normal/front/7/4/74c5bb44-d72c-4c1a-a38f-86b4a8f49ae1.jpg?1752945336"}},
+          {name:"Fireblast",manaValue:6,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"You may sacrifice two Mountains rather than pay this spell's mana cost.\nFireblast deals 4 damage to any target.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/a/0/a0ab67cc-b553-4451-9cda-0e5fe3303940.jpg?1763420180",normal:"https://cards.scryfall.io/normal/front/a/0/a0ab67cc-b553-4451-9cda-0e5fe3303940.jpg?1763420180"}},
+          {name:"Searing Blaze",manaValue:2,colors:["R"],colorIdentity:["R"],typeLine:"Instant",oracleText:"Searing Blaze deals 1 damage to target player or planeswalker and 1 damage to target creature that player or that planeswalker's controller controls.\nLandfall — If you had a land enter the battlefield under your control this turn, Searing Blaze deals 3 damage to that player or planeswalker and 3 damage to that creature instead.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/f/6/f659d464-13dd-49e2-a842-098dcba49659.jpg?1581708594",normal:"https://cards.scryfall.io/normal/front/f/6/f659d464-13dd-49e2-a842-098dcba49659.jpg?1581708594"}},
+          {name:"Extract a Confession",manaValue:2,colors:["B"],colorIdentity:["B"],typeLine:"Sorcery",oracleText:"As an additional cost to cast this spell, you may collect evidence 6. (Exile cards with total mana value 6 or greater from your graveyard.)\nEach opponent sacrifices a creature of their choice. If evidence was collected, instead each opponent sacrifices a creature with the greatest power among creatures they control.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/2/5/256c8b6e-4031-458b-8eb9-bbfe58405a0c.jpg?1706241687",normal:"https://cards.scryfall.io/normal/front/2/5/256c8b6e-4031-458b-8eb9-bbfe58405a0c.jpg?1706241687"}},
+          {name:"Refurbished Familiar",manaValue:4,colors:["B"],colorIdentity:["B"],typeLine:"Artifact Creature — Zombie Rat",oracleText:"Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nFlying\nWhen this creature enters, each opponent discards a card. For each opponent who can't, you draw a card.",power:"2",toughness:"1",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/b/3/b338e078-629c-4cac-bd1d-e1f0a132728d.jpg?1717012055",normal:"https://cards.scryfall.io/normal/front/b/3/b338e078-629c-4cac-bd1d-e1f0a132728d.jpg?1717012055"}},
+          {name:"Snuff Out",manaValue:4,colors:["B"],colorIdentity:["B"],typeLine:"Instant",oracleText:"If you control a Swamp, you may pay 4 life rather than pay this spell's mana cost.\nDestroy target nonblack creature. It can't be regenerated.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/7/5/75bbe89f-09af-494e-b58e-271f64bde4b5.jpg?1764758700",normal:"https://cards.scryfall.io/normal/front/7/5/75bbe89f-09af-494e-b58e-271f64bde4b5.jpg?1764758700"}},
+          {name:"Lead the Stampede",manaValue:3,colors:["G"],colorIdentity:["G"],typeLine:"Sorcery",oracleText:"Look at the top five cards of your library. You may reveal any number of creature cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in any order.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/9/e/9e76b676-c7a3-4de6-a78d-3059a0df83f2.jpg?1591227752",normal:"https://cards.scryfall.io/normal/front/9/e/9e76b676-c7a3-4de6-a78d-3059a0df83f2.jpg?1591227752"}},
+          {name:"Murmuring Mystic",manaValue:4,colors:["U"],colorIdentity:["U"],typeLine:"Creature — Human Wizard",oracleText:"Whenever you cast an instant or sorcery spell, create a 1/1 blue Bird Illusion creature token with flying.",power:"1",toughness:"5",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/9/e/9e68dcc2-bba4-4efa-97bb-3ed892037595.jpg?1712592825",normal:"https://cards.scryfall.io/normal/front/9/e/9e68dcc2-bba4-4efa-97bb-3ed892037595.jpg?1712592825"}},
+          {name:"Winding Way",manaValue:2,colors:["G"],colorIdentity:["G"],typeLine:"Sorcery",oracleText:"Choose creature or land. Reveal the top four cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest into your graveyard.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/d/3/d3340062-3071-4d8e-98f8-fd3343a011ad.jpg?1712354656",normal:"https://cards.scryfall.io/normal/front/d/3/d3340062-3071-4d8e-98f8-fd3343a011ad.jpg?1712354656"}},
+          {name:"Masked Vandal",manaValue:2,colors:["G"],colorIdentity:["G"],typeLine:"Creature — Shapeshifter",oracleText:"Changeling (This card is every creature type.)\nWhen this creature enters, you may exile a creature card from your graveyard. If you do, exile target artifact or enchantment an opponent controls.",power:"1",toughness:"3",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/f/0/f0a9c72a-e450-41e3-80e5-06f2f1171245.jpg?1631050675",normal:"https://cards.scryfall.io/normal/front/f/0/f0a9c72a-e450-41e3-80e5-06f2f1171245.jpg?1631050675"}},
+          {name:"Drossforge Bridge",manaValue:0,colors:[],colorIdentity:["B","R"],typeLine:"Artifact Land",oracleText:"This land enters tapped.\nIndestructible\n{T}: Add {B} or {R}.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/5/b/5b46b8d8-723a-4752-b97d-29ef83bd294c.jpg?1626099621",normal:"https://cards.scryfall.io/normal/front/5/b/5b46b8d8-723a-4752-b97d-29ef83bd294c.jpg?1626099621"}},
+          {name:"Experimental Synthesizer",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Artifact",oracleText:"When this artifact enters or leaves the battlefield, exile the top card of your library. Until end of turn, you may play that card.\n{2}{R}, Sacrifice this artifact: Create a 2/2 white Samurai creature token with vigilance. Activate only as a sorcery.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/c/4/c47931c9-685d-4b83-8299-bc347224b4e8.jpg?1654567579",normal:"https://cards.scryfall.io/normal/front/c/4/c47931c9-685d-4b83-8299-bc347224b4e8.jpg?1654567579"}},
+          {name:"Chromatic Star",manaValue:1,colors:[],colorIdentity:[],typeLine:"Artifact",oracleText:"{1}, {T}, Sacrifice this artifact: Add one mana of any color.\nWhen this artifact is put into a graveyard from the battlefield, draw a card.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/c/2/c2e8d492-2c67-410b-b556-c157a14c4cec.jpg?1681724919",normal:"https://cards.scryfall.io/normal/front/c/2/c2e8d492-2c67-410b-b556-c157a14c4cec.jpg?1681724919"}},
+          {name:"Makeshift Munitions",manaValue:2,colors:["R"],colorIdentity:["R"],typeLine:"Enchantment",oracleText:"{1}, Sacrifice an artifact or creature: This enchantment deals 1 damage to any target.",isCreature:false,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/6/0/60715b6d-b223-431a-85d8-27d7c05469b2.jpg?1689998038",normal:"https://cards.scryfall.io/normal/front/6/0/60715b6d-b223-431a-85d8-27d7c05469b2.jpg?1689998038"}},
+          {name:"Krark-Clan Shaman",manaValue:1,colors:["R"],colorIdentity:["R"],typeLine:"Creature — Goblin Shaman",oracleText:"Sacrifice an artifact: This creature deals 1 damage to each creature without flying.",power:"1",toughness:"1",isCreature:true,imageUris:{art_crop:"https://cards.scryfall.io/art_crop/front/9/7/975f9ea8-af2c-456f-acd0-ffa9ea0d98c1.jpg?1562151699",normal:"https://cards.scryfall.io/normal/front/9/7/975f9ea8-af2c-456f-acd0-ffa9ea0d98c1.jpg?1562151699"}},
         ]
       }
     };
@@ -2877,36 +2922,44 @@
         }
       };
 
-      const loadPrepopulatedList = async (listKey) => {
+      const loadPrepopulatedList = (listKey) => {
         const list = PREPOPULATED_LISTS[listKey];
         if (!list) return;
 
-        setLoading(listKey);
-        setError(null);
-        setCustomListNotFound([]);
         setCurrentQuestion(null);
         setShowFeedback(false);
         setNextQuestionCache(null);
+        setError(null);
+        setCustomListNotFound([]);
 
-        try {
-          const { found, notFound } = await scryfall.current.fetchByNames(list.cards);
-          setCustomListNotFound(notFound);
-
-          if (found.length === 0) {
-            setError(`No cards found from ${list.label}`);
-            return;
-          }
-
-          setCardPool(found);
+        // Use pre-cached card data if available (instant, no API call)
+        if (list.cardData) {
+          setCardPool(list.cardData);
           setActivePreset(listKey);
-          // Populate textarea with the list
-          setCustomListText(list.cards.join('\n'));
-        } catch (err) {
-          console.error(err);
-          setError(`Failed to load ${list.label}: ${err.message}`);
-        } finally {
-          setLoading(null);
+          setCustomListText(list.cardData.map(c => c.name).join('\n'));
+          return;
         }
+
+        // Fallback to API fetch for lists without pre-cached data
+        (async () => {
+          setLoading(listKey);
+          try {
+            const { found, notFound } = await scryfall.current.fetchByNames(list.cards);
+            setCustomListNotFound(notFound);
+            if (found.length === 0) {
+              setError(`No cards found from ${list.label}`);
+              return;
+            }
+            setCardPool(found);
+            setActivePreset(listKey);
+            setCustomListText(list.cards.join('\n'));
+          } catch (err) {
+            console.error(err);
+            setError(`Failed to load ${list.label}: ${err.message}`);
+          } finally {
+            setLoading(null);
+          }
+        })();
       };
 
       const handleSourceChange = (source) => {
@@ -3035,7 +3088,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.11.1 (2026-02-18)</div>
+            <div className="subtitle">Custom Mode Only — v2.12.0 (2026-02-18)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -3106,7 +3159,7 @@
                 >
                   {loading === key && <span className="spinner-mini" />}
                   <span>{list.label}</span>
-                  <span className="list-btn-count">({list.cards.length} cards)</span>
+                  <span className="list-btn-count">({(list.cardData || list.cards).length} cards)</span>
                 </button>
               ))}
             </div>
