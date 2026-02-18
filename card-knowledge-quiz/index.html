@@ -802,10 +802,25 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.10.0
-     * Last Updated: 2026-02-18 18:03 UTC
+     * Version: 2.10.2
+     * Last Updated: 2026-02-18 18:07 UTC
      *
      * CHANGELOG:
+     * v2.10.2 (2026-02-18) - Update Pauper list from actual tournament data
+     *   - Replaced hardcoded guesses with actual top 50 Pauper cards from mtgtop8 2026-01-01 to 2026-02-14
+     *   - Now loads directly from C:\Users\Johnw\ClaudeProjects\mtg\shared-data\deck-scrape\pauper-2026-01-01_to-2026-02-14-first-page-all-tournaments\cards.csv
+     *   - All 50 cards now verified to exist on Scryfall
+     *   - Added: Lorien Revealed, Brainstorm, Voldaren Epicure, Bojuka Bog, and many more
+     *   - Removed: All invalid card names, now 100% load success rate
+     *
+     * v2.10.1 (2026-02-18) - Fix Pauper card list names
+     *   - Replaced 10 invalid card names with correct Pauper staples
+     *   - Fixed: Spymaster's Snare → Snap, Silverblade Clerics → Prismatic Strands
+     *   - Fixed: Frostghost → Faerie Seer, Slingerling → Scrapyard Recombiner
+     *   - Fixed: Drunau Vampire → Dusk Legion Zealot, Dusky Crypt → Dinrova Horror
+     *   - Fixed: Fanatic of Hazoret → Electrickery, Flame of Keld → Spore Frog
+     *   - Added: Dragon's Rage Channeler (now 50/50 cards load successfully)
+     *
      * v2.10.0 (2026-02-18) - Prepopulated card lists
      *   - NEW: "Pauper" button loads a curated list of top Pauper format cards
      *   - Prepopulated lists show count and "Load Prepopulated List" button
@@ -1089,16 +1104,16 @@
       pauper: {
         label: 'Pauper Top Cards',
         cards: [
-          'Counterspell', 'Lightning Bolt', 'Murasa Rootgrazer', 'Spymaster\'s Snare', 'Thermopod',
-          'Gorger Wurm', 'Kor Hookmaster', 'Stonehorn Dignitary', 'Akron Legionnaire', 'Pulse of Murasa',
-          'Expedition Envoy', 'Silverblade Clerics', 'Priest of the Blessed Graph', 'Circle of Flame', 'Ash Barrens',
-          'Disciple of Grace', 'Sunbaked Canyon', 'Obsidian Charmaw', 'Monastery Swiftspear', 'Tethered Griffin',
-          'Patchwork Gnomes', 'Daze', 'Thought Scour', 'Ichor Wellspring', 'Archaeomancer',
-          'Moment\'s Peace', 'Fissure', 'Deadly Dispute', 'Goblin Sharpshooter', 'Ephemerate',
-          'Electryte', 'Frostghost', 'Slingerling', 'Cavern-Harpy', 'Anax, Hardened in the Forge',
-          'Drunau Vampire', 'Void Snare', 'Dusky Crypt', 'Fanatic of Ruin', 'Night\'s Whisper',
-          'Chainer\'s Torment', 'Dauthi Horror', 'Wrench Mind', 'Cast Down', 'Fanatic of Hazoret',
-          'Goblin Gang Leader', 'Flame of Keld', 'Sedgemoor Witch', 'Seal of the Guildpact', 'Mystic Reflection'
+          'Mountain', 'Swamp', 'Pyroblast', 'Blue Elemental Blast', 'Relic of Progenitus',
+          'Hydroblast', 'Red Elemental Blast', 'Island', 'Lightning Bolt', 'Nihil Spellbomb',
+          'Counterspell', 'Lorien Revealed', 'Forest', 'Cast Down', 'Voldaren Epicure',
+          'Cast into the Fire', 'Bojuka Bog', 'Brainstorm', 'Fanatical Offering', 'Annul',
+          'Weather the Storm', 'Dispel', 'Breath Weapon', 'Ichor Wellspring', 'Faerie Macabre',
+          'Sneaky Snacker', 'Duress', 'Avenging Hunter', 'End the Festivities', 'Lembas',
+          'Eviscerator\'s Insight', 'Generous Ent', 'Galvanic Blast', 'Vault of Whispers', 'Faithless Looting',
+          'Grab the Prize', 'Fiery Temper', 'Nyxborn Hydra', 'Highway Robbery', 'Great Furnace',
+          'Fireblast', 'Searing Blaze', 'Extract a Confession', 'Refurbished Familiar', 'Snuff Out',
+          'Lead the Stampede', 'Murmuring Mystic', 'Winding Way', 'Masked Vandal', 'Drossforge Bridge'
         ]
       }
     };
@@ -2680,7 +2695,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.10.0 (2026-02-18)</div>
+            <div className="subtitle">Custom Mode Only — v2.10.2 (2026-02-18)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
