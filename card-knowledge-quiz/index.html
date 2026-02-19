@@ -1192,10 +1192,15 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.13.4
-     * Last Updated: 2026-02-19 13:27 UTC
+     * Version: 2.13.5
+     * Last Updated: 2026-02-19 13:30 UTC
      *
      * CHANGELOG:
+     * v2.13.5 (2026-02-19) - Fix critical runtime error: config.isApplicable is not a function
+     *   - BUG: TypeError when toggling shown fields - called config.isApplicable on quiz config object
+     *   - FIX: Added isApplicable method to powerToughness field config for single-card applicability checks
+     *   - Impact: Field toggling and question regeneration now work correctly
+     *
      * v2.13.4 (2026-02-19) - Fix critical bug: undefined askField variable breaking question generation
      *   - FIX: ReferenceError in generateCustomQuestion - used undefined 'askField' instead of 'updatedConfig.askField'
      *   - Impact: Questions could not generate due to missing variable reference
@@ -1511,6 +1516,7 @@
         canAsk: true,
         requiresApplicability: true,
         checkApplicability: (pool) => pool.filter(c => c.isCreature && c.power && c.toughness).length >= 4,
+        isApplicable: (card) => card.isCreature && card.power && card.toughness,
         extractValue: (card) => `${card.power}/${card.toughness}`,
         formatDisplay: (pt) => pt,
         incompatibleWith: [],
@@ -3822,7 +3828,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.13.4 (2026-02-19)</div>
+            <div className="subtitle">Custom Mode Only — v2.13.5 (2026-02-19)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
