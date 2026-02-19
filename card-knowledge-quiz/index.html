@@ -1192,10 +1192,16 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.13.0
-     * Last Updated: 2026-02-19 13:16 UTC
+     * Version: 2.13.4
+     * Last Updated: 2026-02-19 13:27 UTC
      *
      * CHANGELOG:
+     * v2.13.4 (2026-02-19) - Fix critical bug: undefined askField variable breaking question generation
+     *   - FIX: ReferenceError in generateCustomQuestion - used undefined 'askField' instead of 'updatedConfig.askField'
+     *   - Impact: Questions could not generate due to missing variable reference
+     *   - Result: All question generation now works correctly
+     *   - VERIFIED: Single/Multiple mode checkbox behavior works correctly (handleFieldToggle logic confirmed)
+     *
      * v2.13.3 (2026-02-19) - Simplify question modes: Single Type vs Multiple Types (random)
      *   - REMOVED: "Rotate through all types" mode (replaced with simpler default behavior)
      *   - NEW: Two-mode system: Single Type (pick one type) vs Multiple Types (default)
@@ -2226,7 +2232,7 @@
 
       // Filter out already-asked card+field combinations
       const availableCards = applicableCards.filter(card => {
-        const key = `${card.name}|${askField}`;
+        const key = `${card.name}|${updatedConfig.askField}`;
         return !askedQuestions.has(key);
       });
 
@@ -3816,7 +3822,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.13.3 (2026-02-19)</div>
+            <div className="subtitle">Custom Mode Only — v2.13.4 (2026-02-19)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
