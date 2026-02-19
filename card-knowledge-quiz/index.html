@@ -1151,7 +1151,7 @@
   </style>
 </head>
 <body>
-  <div class="local-banner">LOCAL VERSION (API)</div>
+  <div class="local-banner">LIVE VERSION</div>
   <div class="local-banner-spacer"></div>
 
   <div id="root"></div>
@@ -1169,9 +1169,15 @@
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
      * Version: 2.13.0
-     * Last Updated: 2026-02-19 12:54 UTC
+     * Last Updated: 2026-02-19 13:16 UTC
      *
      * CHANGELOG:
+     * v2.13.1 (2026-02-19) - Bug fix: Prepopulated list switching
+     *   - FIX: Switching to "Card Lists" tab now loads the highlighted list immediately
+     *   - Previous logic: Only loaded if cardPool was empty, or if activePreset was already a prepopulated list
+     *   - New logic: Checks if activePreset is a valid prepopulated list; if not, loads the first available list
+     *   - Result: No need to click another list then back to make selection work
+     *
      * v2.13.0 (2026-02-19) - Major feature update: 7 new features
      *   - NEW: Question rotation mode - cycle through all enabled question types instead of random
      *   - NEW: Casting Cost replaces Mana Value - shows full mana symbols (e.g., {2}{U}{U})
@@ -3489,8 +3495,31 @@
 
       const handleSourceChange = (source) => {
         setCardSource(source);
+
+        // Clear current state when switching sources
+        setCurrentQuestion(null);
+        setShowFeedback(false);
+        setNextQuestionCache(null);
+        setError(null);
+
         if (source === 'custom') {
           setActivePreset('customList');
+        } else if (source === 'prepopulated') {
+          // Check if activePreset is already a valid prepopulated list
+          if (activePreset && PREPOPULATED_LISTS[activePreset]) {
+            // activePreset is valid, reload it
+            loadPrepopulatedList(activePreset);
+          } else {
+            // activePreset is not a prepopulated list (likely a Scryfall preset), load the first one
+            const firstList = Object.keys(PREPOPULATED_LISTS)[0];
+            if (firstList) {
+              loadPrepopulatedList(firstList);
+            }
+          }
+        } else if (source === 'scryfall') {
+          // Clear activePreset when switching to scryfall
+          setActivePreset(null);
+          setCardPool([]);
         }
       };
 
@@ -3692,8 +3721,8 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.13.0 (2026-02-19)</div>
-            <div className="api-badge">LIVE VERSION - Powered by Scryfall API</div>
+            <div className="subtitle">Custom Mode Only — v2.13.1 (2026-02-19)</div>
+            <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
           <div className="score-bar">
