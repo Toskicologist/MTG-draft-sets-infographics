@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Format Comparison — Pauper / Modern / Standard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; font-size: 1.5rem; color: #fff; margin-bottom: 4px; }
+  .subtitle { text-align: center; font-size: 0.82rem; color: #888; margin-bottom: 16px; }
+
+  .format-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .format-tab { background: #16213e; color: #aaa; border: 1px solid #444; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.88rem; transition: all 0.2s; }
+  .format-tab:hover { background: #1a4a8a; color: #fff; }
+  .format-tab.active { background: #e94560; color: #fff; border-color: #e94560; font-weight: 600; }
+
+  /* Histogram */
+  .histogram-container { max-width: 1200px; margin: 0 auto 24px; background: #16213e; border: 1px solid #1e2a45; border-radius: 8px; padding: 16px; }
+  .histogram-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .histogram-title { font-size: 1rem; color: #e0e0e0; font-weight: 600; }
+  .histogram-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .histogram-controls label { font-size: 0.8rem; color: #aaa; display: flex; align-items: center; gap: 4px; }
+  .histogram-controls select, .histogram-controls input[type=checkbox] { cursor: pointer; }
+  .histogram-controls select { background: #0f3460; color: #e0e0e0; border: 1px solid #444; padding: 4px 8px; border-radius: 4px; font-size: 0.82rem; }
+  #histogramCanvas { width: 100%; height: 300px; cursor: pointer; }
+
+  /* Comparison section */
+  .comparison-section { max-width: 1200px; margin: 0 auto 24px; background: #16213e; border: 1px solid #1e2a45; border-radius: 8px; padding: 16px; }
+  .comparison-title { font-size: 1rem; color: #e0e0e0; font-weight: 600; margin-bottom: 12px; }
+  #comparisonCanvas { width: 100%; height: 280px; }
+  .comparison-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+  .stat-card { background: #0f3460; padding: 10px; border-radius: 6px; }
+  .stat-label { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
+  .stat-value { font-size: 1.1rem; color: #e94560; font-weight: 600; }
+
+  /* Explanation */
+  .explanation { max-width: 900px; margin: 0 auto 18px; background: #16213e; border: 1px solid #1e2a45; border-radius: 8px; padding: 14px 18px; font-size: 0.82rem; color: #bbb; line-height: 1.55; }
+  .explanation summary { cursor: pointer; color: #e0e0e0; font-weight: 600; font-size: 0.88rem; }
+  .explanation summary:hover { color: #e94560; }
+  .explanation ul { margin: 8px 0 0 18px; }
+  .explanation li { margin-bottom: 3px; }
+  .explanation a { color: #00d2ff; text-decoration: none; }
+  .explanation a:hover { text-decoration: underline; }
+
+  /* Controls */
+  .controls { display: flex; gap: 14px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .controls label { font-size: 0.82rem; color: #aaa; }
+  .controls select, .controls input[type=text] {
+    background: #16213e; color: #e0e0e0; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem;
+  }
+  .controls input[type=text] { width: 200px; }
+  .controls input[type=checkbox] { cursor: pointer; }
+
+  .summary { text-align: center; font-size: 0.82rem; color: #aaa; margin-bottom: 10px; }
+  .summary strong { color: #e94560; }
+
+  /* Table */
+  table { width: 100%; max-width: 1060px; margin: 0 auto; border-collapse: collapse; }
+  thead { position: sticky; top: 0; z-index: 2; }
+  th {
+    background: #0f3460; color: #e0e0e0; padding: 8px 10px; text-align: left; font-size: 0.8rem;
+    cursor: pointer; user-select: none; white-space: nowrap; border-bottom: 2px solid #e94560;
+  }
+  th:hover { background: #1a4a8a; }
+  th .arrow { font-size: 0.7rem; margin-left: 4px; color: #e94560; }
+  td { padding: 6px 10px; font-size: 0.82rem; border-bottom: 1px solid #1e2a45; }
+  tr:hover td { background: #1e2a45; }
+  tr.basic td { color: #777; font-style: italic; }
+
+  /* Tier coloring */
+  tr[data-tier="1"] td:first-child { border-left: 3px solid #e94560; }
+  tr[data-tier="2"] td:first-child { border-left: 3px solid #c23152; }
+  tr[data-tier="3"] td:first-child { border-left: 3px solid #8b2040; }
+  tr[data-tier="4"] td:first-child { border-left: 3px solid #53162e; }
+  tr[data-tier="5"] td:first-child { border-left: 3px solid #2a0d18; }
+
+  .pen-bar { display: inline-block; height: 14px; border-radius: 2px; vertical-align: middle; margin-right: 6px; min-width: 2px; }
+  .tier-badge { font-size: 0.7rem; padding: 1px 6px; border-radius: 3px; color: #fff; font-weight: 600; white-space: nowrap; }
+  .tier-1 { background: #e94560; }
+  .tier-2 { background: #c23152; }
+  .tier-3 { background: #8b2040; }
+  .tier-4 { background: #53162e; }
+  .tier-5 { background: #2a0d18; }
+
+  .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.78rem; }
+  .legend span { display: flex; align-items: center; gap: 4px; color: #aaa; }
+
+  /* Card links */
+  td a.card-link { color: #e0e0e0; text-decoration: none; border-bottom: 1px dotted #555; }
+  td a.card-link:hover { color: #00d2ff; border-bottom-color: #00d2ff; }
+  tr.basic td a.card-link { color: #777; }
+
+  /* Card image */
+  .card-thumb { width: 48px; height: 67px; border-radius: 3px; object-fit: cover; vertical-align: middle; }
+  td.img-cell { padding: 3px 6px; width: 60px; }
+  .img-col-hidden .img-cell, .img-col-hidden th.img-header { display: none; }
+
+  /* Hover preview */
+  .card-preview { position: fixed; z-index: 100; pointer-events: none; display: none; }
+  .card-preview img { width: 250px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.7); }
+
+  /* Copy buttons */
+  .copy-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .copy-btn { background: #0f3460; color: #e0e0e0; border: 1px solid #444; padding: 5px 14px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s; }
+  .copy-btn:hover { background: #1a4a8a; }
+  .copy-btn.copied { background: #2a7a3a; border-color: #4a4; }
+  .copy-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2a7a3a; color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; display: none; z-index: 200; }
+</style>
+</head>
+<body>
+
+<h1>Format Comparison — Card Frequency by Deck Penetration</h1>
+<p class="subtitle">Pauper (477 decks) • Modern (397 decks) • Standard (495 decks)</p>
+
+<div class="format-tabs">
+  <button class="format-tab active" data-format="pauper">Pauper</button>
+  <button class="format-tab" data-format="modern">Modern</button>
+  <button class="format-tab" data-format="standard">Standard</button>
+</div>
+
+<details class="explanation" open>
+  <summary>How this comparison works</summary>
+  <p style="margin-top:8px">This page compares card popularity across three Magic: The Gathering formats using scraped tournament data:</p>
+  <ul>
+    <li><strong>Pauper:</strong> 477 decks from MTG Goldfish (Jan 1 – Feb 14, 2026)</li>
+    <li><strong>Modern:</strong> 397 decks (deduped from 787) combining MTG Goldfish and MTG Top 8</li>
+    <li><strong>Standard:</strong> 495 decks (deduped from 805) combining MTG Goldfish and MTG Top 8</li>
+  </ul>
+  <p style="margin-top:8px"><strong>Deck penetration %</strong> = percentage of all decks that include at least one copy of the card (mainboard + sideboard combined).</p>
+  <p style="margin-top:8px">The histogram shows distribution of cards by penetration range. Click histogram bars to filter the table to that range. Use the format tabs to switch between formats. The comparison chart overlays all three distributions.</p>
+</details>
+
+<!-- Histogram for current format -->
+<div class="histogram-container">
+  <div class="histogram-header">
+    <div class="histogram-title" id="histogramTitle">Pauper: Card Penetration Distribution</div>
+    <div class="histogram-controls">
+      <label>Bin width: <select id="binWidth">
+        <option value="1">1%</option>
+        <option value="2" selected>2%</option>
+        <option value="5">5%</option>
+        <option value="10">10%</option>
+      </select></label>
+      <label><input type="checkbox" id="logScale"> Log scale</label>
+      <label><input type="checkbox" id="hideBasicsHisto" checked> Hide basic lands</label>
+    </div>
+  </div>
+  <canvas id="histogramCanvas"></canvas>
+</div>
+
+<!-- Format comparison -->
+<div class="comparison-section">
+  <div class="comparison-title">Format Comparison — Overlay Distributions</div>
+  <canvas id="comparisonCanvas"></canvas>
+  <div class="comparison-stats">
+    <div class="stat-card">
+      <div class="stat-label">Pauper: Cards > 10% penetration</div>
+      <div class="stat-value" id="statPauper10">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Modern: Cards > 10% penetration</div>
+      <div class="stat-value" id="statModern10">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Standard: Cards > 10% penetration</div>
+      <div class="stat-value" id="statStandard10">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pauper: Total distinct cards</div>
+      <div class="stat-value" id="statPauperTotal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Modern: Total distinct cards</div>
+      <div class="stat-value" id="statModernTotal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Standard: Total distinct cards</div>
+      <div class="stat-value" id="statStandardTotal">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><span class="tier-badge tier-1">Tier 1</span> ≥20% — Format staples</span>
+  <span><span class="tier-badge tier-2">Tier 2</span> 10–20% — Core cards</span>
+  <span><span class="tier-badge tier-3">Tier 3</span> 5–10% — Archetype staples</span>
+  <span><span class="tier-badge tier-4">Tier 4</span> 2–5% — Niche playables</span>
+  <span><span class="tier-badge tier-5">Tier 5</span> <2% — Fringe / 1-deck cards</span>
+</div>
+
+<div class="controls">
+  <label>Search: <input type="text" id="search" placeholder="Filter by card name..."></label>
+  <label>Tier:
+    <select id="tierFilter">
+      <option value="all">All tiers</option>
+      <option value="1">Tier 1 (≥20%)</option>
+      <option value="2">Tier 2 (10–20%)</option>
+      <option value="3">Tier 3 (5–10%)</option>
+      <option value="4">Tier 4 (2–5%)</option>
+      <option value="5">Tier 5 (<2%)</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="hideBasics" checked> Hide basic lands</label>
+  <label><input type="checkbox" id="showImages"> Show card images</label>
+</div>
+
+<div class="copy-bar">
+  <button class="copy-btn" id="copyNames">Copy card names</button>
+  <button class="copy-btn" id="copyWithQty">Copy with quantities</button>
+  <button class="copy-btn" id="copyCSV">Copy as CSV</button>
+</div>
+
+<p class="summary" id="summary"></p>
+<div class="copy-toast" id="toast">Copied!</div>
+
+<div class="card-preview" id="cardPreview"><img id="previewImg" src="" alt=""></div>
+
+<table id="mainTable">
+  <thead>
+    <tr>
+      <th data-col="rank"># <span class="arrow"></span></th>
+      <th class="img-header">Img</th>
+      <th data-col="name">Card Name <span class="arrow"></span></th>
+      <th data-col="pen">Deck Penetration <span class="arrow"></span></th>
+      <th data-col="decks">Decks <span class="arrow"></span></th>
+      <th data-col="copies">Total Copies <span class="arrow"></span></th>
+      <th data-col="avg">Avg Copies <span class="arrow"></span></th>
+      <th data-col="tier">Tier <span class="arrow"></span></th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<script>
+// Embedded data
+const FORMAT_DATA = {
+  pauper: {
+    name: 'Pauper',
+    decks: 477,
+    cards: [["Mountain",1696,167,10.156,35.01],["Swamp",738,159,4.642,33.33],["Pyroblast",471,154,3.058,32.29],["Blue Elemental Blast",415,144,2.882,30.19],["Relic of Progenitus",400,144,2.778,30.19],["Hydroblast",452,143,3.161,29.98],["Red Elemental Blast",415,141,2.943,29.56],["Island",1494,132,11.318,27.67],["Lightning Bolt",499,128,3.898,26.83],["Nihil Spellbomb",356,125,2.848,26.21],["Counterspell",484,122,3.967,25.58],["Lorien Revealed",458,118,3.881,24.74],["Forest",715,117,6.111,24.53],["Cast Down",408,117,3.487,24.53],["Voldaren Epicure",426,107,3.981,22.43],["Cast into the Fire",270,103,2.621,21.59],["Bojuka Bog",158,102,1.549,21.38],["Brainstorm",391,101,3.871,21.17],["Fanatical Offering",302,95,3.179,19.92],["Annul",299,94,3.181,19.71],["Weather the Storm",315,91,3.462,19.08],["Dispel",198,91,2.176,19.08],["Breath Weapon",187,91,2.055,19.08],["Ichor Wellspring",329,90,3.656,18.87],["Faerie Macabre",185,86,2.151,18.03],["Sneaky Snacker",331,83,3.988,17.4],["Duress",235,81,2.901,16.98],["Avenging Hunter",232,81,2.864,16.98],["End the Festivities",190,78,2.436,16.35],["Lembas",213,76,2.803,15.93],["Eviscerator's Insight",197,76,2.592,15.93],["Generous Ent",287,75,3.827,15.72],["Galvanic Blast",273,71,3.845,14.88],["Vault of Whispers",172,68,2.529,14.26],["Faithless Looting",253,67,3.776,14.05],["Grab the Prize",264,66,4,13.84],["Fiery Temper",262,66,3.97,13.84],["Nyxborn Hydra",190,66,2.879,13.84],["Highway Robbery",252,65,3.877,13.63],["Great Furnace",237,65,3.646,13.63],["Fireblast",174,65,2.677,13.63],["Searing Blaze",154,65,2.369,13.63],["Extract a Confession",118,63,1.873,13.21],["Refurbished Familiar",244,61,4,12.79],["Snuff Out",169,61,2.77,12.79],["Lead the Stampede",236,60,3.933,12.58],["Murmuring Mystic",100,59,1.695,12.37],["Winding Way",232,58,4,12.16],["Masked Vandal",223,56,3.982,11.74],["Drossforge Bridge",221,56,3.946,11.74],["Krark-Clan Shaman",176,54,3.259,11.32],["Thraben Charm",147,54,2.722,11.32],["Quirion Ranger",176,53,3.321,11.11],["Troublemaker Ouphe",108,53,2.038,11.11],["Pulse of Murasa",105,53,1.981,11.11],["Blood Fountain",88,53,1.66,11.11],["Tolarian Terror",208,52,4,10.9],["Lava Dart",203,51,3.98,10.69],["Kessig Flamebreather",202,51,3.961,10.69],["Ponder",160,51,3.137,10.69],["Sagu Wildling",137,51,2.686,10.69],["Deep Analysis",63,50,1.26,10.48],["Makeshift Munitions",50,50,1,10.48],["Thought Scour",196,49,4,10.27],["Mental Note",193,49,3.939,10.27],["Guttersnipe",155,49,3.163,10.27],["Spell Pierce",78,48,1.625,10.06],["Troll of Khazad-dum",118,47,2.511,9.85],["Toxin Analysis",99,47,2.106,9.85],["Cryptic Serpent",180,46,3.913,9.64],["Deem Inferior",103,46,2.239,9.64],["Writhing Chrysalis",180,45,4,9.43],["Sleep of the Dead",88,45,1.956,9.43],["Spellstutter Sprite",175,44,3.977,9.22],["Vitu-Ghazi Inspector",145,44,3.295,9.22],["Tithing Blade",126,44,2.864,9.22],["Faerie Seer",167,42,3.976,8.81],["Gut Shot",149,42,3.548,8.81],["Reckoner's Bargain",128,42,3.048,8.81],["Campfire",94,42,2.238,8.81],["Khalni Garden",158,41,3.854,8.6],["Prismatic Strands",140,41,3.415,8.6],["Flaring Pain",48,41,1.171,8.6],["Clockwork Percussionist",160,40,4,8.39],["Goblin Tomb Raider",160,40,4,8.39],["Experimental Synthesizer",136,40,3.4,8.39],["Envelop",67,40,1.675,8.39],["Arms of Hadar",49,40,1.225,8.39],["Plains",268,39,6.872,8.18],["Journey to Nowhere",131,39,3.359,8.18],["Ninja of the Deep Hours",131,39,3.359,8.18],["Dust to Dust",130,39,3.333,8.18],["Drown in Sorrow",96,39,2.462,8.18],["Thorn of the Black Rose",66,39,1.692,8.18],["Priest of Titania",150,38,3.947,7.97],["Goblin Bushwhacker",146,37,3.946,7.76],["Timberwatch Elf",141,36,3.917,7.55],["Suffocating Fumes",46,36,1.278,7.55],["Elvish Mystic",103,35,2.943,7.34],["Llanowar Elves",103,35,2.943,7.34],["Delver of Secrets",136,34,4,7.13],["Cleansing Wildfire",135,34,3.971,7.13],["Burning-Tree Emissary",132,33,4,6.92],["Rally at the Hornburg",132,33,4,6.92],["Twisted Landscape",124,33,3.758,6.92],["Fyndhorn Elves",98,33,2.97,6.92],["Reckless Impulse",95,33,2.879,6.92],["Moon-Circuit Hacker",108,32,3.375,6.71],["Force Spike",85,32,2.656,6.71],["Cryogen Relic",72,32,2.25,6.71],["Slagwoods Bridge",120,30,4,6.29],["Mistvault Bridge",118,30,3.933,6.29],["Augur of Bolas",107,30,3.567,6.29],["Contaminated Aquifer",99,30,3.3,6.29],["Seat of the Synod",77,30,2.567,6.29],["Gorilla Shaman",44,30,1.467,6.29],["Haunted Mire",31,30,1.033,6.29],["Gingerbread Cabin",30,30,1,6.29],["Thoughtcast",114,29,3.931,6.08],["Monstrous Emergence",111,29,3.828,6.08],["Preordain",87,29,3,6.08],["Mesmeric Fiend",105,28,3.75,5.87],["Snap",91,28,3.25,5.87],["Idyllic Beachfront",29,28,1.036,5.87],["The Modern Age",103,27,3.815,5.66],["Basilisk Gate",101,27,3.741,5.66],["Dread Return",70,27,2.593,5.66],["Lotleth Giant",70,27,2.593,5.66],["Chain Lightning",60,27,2.222,5.66],["Myr Enforcer",104,26,4,5.45],["Squadron Hawk",104,26,4,5.45],["Kor Skyfisher",103,26,3.962,5.45],["Spinewoods Paladin",76,26,2.923,5.45],["Wellwisher",70,26,2.692,5.45],["Heap Gate",57,26,2.192,5.45],["Citadel Gate",100,25,4,5.24],["Wrenn's Resolve",79,25,3.16,5.24],["Black Mage's Rod",73,25,2.92,5.24],["Outlaw Medic",67,25,2.68,5.24],["Silverbluff Bridge",62,25,2.48,5.24],["Smash to Smithereens",47,25,1.88,5.24],["Malevolent Rumble",90,24,3.75,5.03],["Crypt Rats",71,24,2.958,5.03],["Unexpected Fangs",35,24,1.458,5.03],["Faerie Miscreant",92,23,4,4.82],["Land Grant",92,23,4,4.82],["Guardian of the Guildpact",37,23,1.609,4.82],["Heritage Reclamation",25,23,1.087,4.82],["Sacred Cat",88,22,4,4.61],["Sea Gate",88,22,4,4.61],["Defile",81,22,3.682,4.61],["Moment's Peace",58,22,2.636,4.61],["Mukotai Ambusher",47,22,2.136,4.61],["Overgrown Battlement",84,21,4,4.4],["Saruli Caretaker",84,21,4,4.4],["Steel Sabotage",39,21,1.857,4.4],["Harrier Strix",40,20,2,4.19],["Balustrade Spy",76,19,4,3.98],["Gatecreeper Vine",67,19,3.526,3.98],["Wall of Roots",67,19,3.526,3.98],["Novice Inspector",63,19,3.316,3.98],["Accursed Marauder",49,19,2.579,3.98],["Vampire's Kiss",72,18,4,3.77],["Of One Mind",70,18,3.889,3.77],["Brinebarrow Intruder",67,18,3.722,3.77],["Fiery Cannonade",28,18,1.556,3.77],["Go for the Throat",26,18,1.444,3.77],["Alms of the Vein",68,17,4,3.56],["Glint Hawk",68,17,4,3.56],["Jagged Barrens",68,17,4,3.56],["Kitchen Imp",68,17,4,3.56],["Thraben Inspector",68,17,4,3.56],["Azorius Guildgate",34,17,2,3.56],["Electrickery",30,17,1.765,3.56],["Golgari Rot Farm",30,17,1.765,3.56],["Snow-Covered Mountain",62,16,3.875,3.35],["Dark Withering",40,16,2.5,3.35],["Tormod's Crypt",35,16,2.188,3.35],["Tragic Slip",35,16,2.188,3.35],["Expedition Map",60,15,4,3.14],["Urza's Mine",60,15,4,3.14],["Urza's Power Plant",60,15,4,3.14],["Urza's Tower",60,15,4,3.14],["Healer of the Glade",49,15,3.267,3.14],["Razortrap Gorge",33,15,2.2,3.14],["Ghostly Flicker",30,15,2,3.14],["Arbor Elf",56,14,4,2.94],["Skred",50,14,3.571,2.94],["Desert",36,14,2.571,2.94],["Ancient Grudge",35,14,2.5,2.94],["Bind the Monster",30,14,2.143,2.94],["Prohibit",24,14,1.714,2.94],["Rakdos Carnarium",23,14,1.643,2.94],["Seething Landscape",14,14,1,2.94],["Eldrazi Repurposer",46,13,3.538,2.73],["Standard Bearer",29,13,2.231,2.73],["Ephemerate",28,13,2.154,2.73],["Stonehorn Dignitary",23,13,1.769,2.73],["Crop Rotation",22,13,1.692,2.73],["Destroy Evil",19,13,1.462,2.73],["Mulldrifter",42,12,3.5,2.52],["Ancient Den",31,12,2.583,2.52],["Gixian Infiltrator",31,12,2.583,2.52],["Negate",27,12,2.25,2.52],["Wooded Ridgeline",12,12,1,2.52],["Snow-Covered Forest",120,11,10.909,2.31],["Snow-Covered Island",94,11,8.545,2.31],["Carrion Feeder",44,11,4,2.31],["Nested Shambler",44,11,4,2.31],["Nutrient Block",44,11,4,2.31],["Utopia Sprawl",44,11,4,2.31],["Candy Trail",43,11,3.909,2.31],["Boarding Party",42,11,3.818,2.31],["Infestation Sage",41,11,3.727,2.31],["Bloodthrone Vampire",40,11,3.636,2.31],["Mortician Beetle",39,11,3.545,2.31],["Supernatural Stamina",38,11,3.455,2.31],["Volatile Fjord",38,11,3.455,2.31],["Wild Growth",36,11,3.273,2.31],["Cauldron Familiar",34,11,3.091,2.31],["Nylea's Disciple",33,11,3,2.31],["Pestilence",33,11,3,2.31],["Deglamer",32,11,2.909,2.31],["Archaeomancer",29,11,2.636,2.31],["Tectonic Hazard",24,11,2.182,2.31],["Hunter's Blowgun",11,11,1,2.31],["Battle Screech",40,10,4,2.1],["Lunarch Veteran",40,10,4,2.1],["Prophetic Prism",38,10,3.8,2.1],["Village Rites",36,10,3.6,2.1],["Navigator's Compass",32,10,3.2,2.1],["Annoyed Altisaur",28,10,2.8,2.1],["Abandon Attachments",27,10,2.7,2.1],["Fang Dragon",27,10,2.7,2.1],["Contaminated Landscape",22,10,2.2,2.1],["Fume Spitter",21,10,2.1,2.1],["Last Breath",20,10,2,2.1],["Piracy Charm",20,10,2,2.1],["Radiant Fountain",16,10,1.6,2.1],["Unable to Scream",12,10,1.2,2.1],["Crypt Incursion",10,10,1,2.1],["Saiba Cryptomancer",10,10,1,2.1],["Sunscape Familiar",36,9,4,1.89],["Molten Gatekeeper",35,9,3.889,1.89],["Gnaw to the Bone",34,9,3.778,1.89],["God-Pharaoh's Faithful",34,9,3.778,1.89],["Azorius Chancery",33,9,3.667,1.89],["Jewel Thief",30,9,3.333,1.89],["Shambling Ghast",30,9,3.333,1.89],["Corrupted Conviction",27,9,3,1.89],["Holdout Settlement",26,9,2.889,1.89],["Perilous Landscape",26,9,2.889,1.89],["Survivors' Encampment",25,9,2.778,1.89],["Grim Bauble",21,9,2.333,1.89],["Elves of Deep Shadow",18,9,2,1.89],["Idyllic Grange",18,9,2,1.89],["Heaped Harvest",16,9,1.778,1.89],["Scattershot Archer",16,9,1.778,1.89],["Viridian Longbow",15,9,1.667,1.89],["Spinning Darkness",14,9,1.556,1.89],["Conduit Pylons",13,9,1.444,1.89],["Azure Fleet Admiral",10,9,1.111,1.89],["Mortuary Mire",9,9,1,1.89],["Circle of the Land Druid",32,8,4,1.68],["Raffine's Informant",32,8,4,1.68],["Satyr Wayfinder",32,8,4,1.68],["Scrapwork Mutt",32,8,4,1.68],["Stinkweed Imp",32,8,4,1.68],["Town Greeter",32,8,4,1.68],["Momentary Blink",27,8,3.375,1.68],["Nezumi Linkbreaker",26,8,3.25,1.68],["Energy Refractor",23,8,2.875,1.68],["Jaspera Sentinel",23,8,2.875,1.68],["Guardians' Pledge",20,8,2.5,1.68],["Lotus Petal",17,8,2.125,1.68],["Ram Through",17,8,2.125,1.68],["Gurmag Angler",15,8,1.875,1.68],["Spider-Man, Web-Slinger",15,8,1.875,1.68],["Rite of Consumption",13,8,1.625,1.68],["Suplex",12,8,1.5,1.68],["Tangled Islet",9,8,1.125,1.68],["Snow-Covered Plains",46,7,6.571,1.47],["Frantic Inventory",28,7,4,1.47],["Black Dragon Gate",22,7,3.143,1.47],["Raze",21,7,3,1.47],["Fangren Marauder",18,7,2.571,1.47],["Sea Gate Oracle",18,7,2.571,1.47],["Mnemonic Wall",16,7,2.286,1.47],["Glorious Gale",14,7,2,1.47],["Holy Light",14,7,2,1.47],["Illvoi Galeblade",13,7,1.857,1.47],["Witch's Cottage",11,7,1.571,1.47],["Acorn Harvest",10,7,1.429,1.47],["Crimson Fleet Commodore",9,7,1.286,1.47],["Eagles of the North",9,7,1.286,1.47],["Beastrider Vanguard",7,7,1,1.47],["Gingerbrute",24,6,4,1.26],["Manamorphose",24,6,4,1.26],["Perigee Beckoner",24,6,4,1.26],["Melded Moxite",23,6,3.833,1.26],["Chromatic Star",22,6,3.667,1.26],["Glimpse the Impossible",22,6,3.667,1.26],["Maelstrom Colossus",22,6,3.667,1.26],["Martyr of Sands",22,6,3.667,1.26],["Ancient Stirrings",21,6,3.5,1.26],["Goldmire Bridge",19,6,3.167,1.26],["Mystical Teachings",17,6,2.833,1.26],["Meeting of Minds",16,6,2.667,1.26],["Pactdoll Terror",16,6,2.667,1.26],["Summon: Choco/Mog",15,6,2.5,1.26],["Unearth",15,6,2.5,1.26],["Rotten Reunion",13,6,2.167,1.26],["Ride's End",12,6,2,1.26],["Humbling Elder",11,6,1.833,1.26],["Kabira Crossroads",11,6,1.833,1.26],["Ice Tunnel",10,6,1.667,1.26],["Dawnbringer Cleric",7,6,1.167,1.26],["Kaervek's Torch",7,6,1.167,1.26],["Foreboding Landscape",6,6,1,1.26],["Hickory Woodlot",20,5,4,1.05],["Mwonvuli Acid-Moss",20,5,4,1.05],["Thermokarst",20,5,4,1.05],["Cuombajj Witches",18,5,3.6,1.05],["Pinnacle Kill-Ship",18,5,3.6,1.05],["Sandstone Needle",18,5,3.6,1.05],["Axebane Guardian",15,5,3,1.05],["Seeker of the Way",15,5,3,1.05],["Smash to Dust",15,5,3,1.05],["Orzhov Basilica",13,5,2.6,1.05],["Dark Ritual",12,5,2.4,1.05],["Hallow",12,5,2.4,1.05],["Sylvok Lifestaff",12,5,2.4,1.05],["Sadistic Glee",11,5,2.2,1.05],["Bannerhide Krushok",10,5,2,1.05],["Ash Barrens",8,5,1.6,1.05],["Okiba-Gang Shinobi",8,5,1.6,1.05],["Exclude",7,5,1.4,1.05],["Kenku Artificer",7,5,1.4,1.05],["Revoke Existence",6,5,1.2,1.05],["Glacial Floodplain",5,5,1,1.05],["Lose Focus",5,5,1,1.05],["Molten Tributary",5,5,1,1.05],["Omen of the Dead",5,5,1,1.05],["Unwind",5,5,1,1.05],["Alpine Meadow",16,4,4,0.84],["Big Score",16,4,4,0.84],["Boulderbranch Golem",16,4,4,0.84],["Ethereal Armor",16,4,4,0.84],["Geothermal Crevice",16,4,4,0.84],["Goblin Anarchomancer",16,4,4,0.84],["Inventor's Axe",16,4,4,0.84],["Reckless Lackey",16,4,4,0.84],["Seething Song",16,4,4,0.84],["Thornscape Familiar",16,4,4,0.84],["Ashen-Skin Zubera",15,4,3.75,0.84],["Hyena Umbra",14,4,3.5,0.84],["Pirate's Pillage",14,4,3.5,0.84],["Spirit Link",14,4,3.5,0.84],["Gearseeker Serpent",13,4,3.25,0.84],["Blossombind",12,4,3,0.84],["Elvish Vanguard",12,4,3,0.84],["First Day of Class",12,4,3,0.84],["Wretched Gryff",11,4,2.75,0.84],["Cliffgate",10,4,2.5,0.84],["Crimson Acolyte",10,4,2.5,0.84],["Lone Missionary",9,4,2.25,0.84],["Ghoulcaller's Chant",8,4,2,0.84],["Seize the Storm",8,4,2,0.84],["Spider Manifestation",8,4,2,0.84],["Trufflesnout",8,4,2,0.84],["Flash of Defiance",7,4,1.75,0.84],["Mysidian Elder",7,4,1.75,0.84],["Essence Harvest",6,4,1.5,0.84],["Serpentine Curve",6,4,1.5,0.84],["Simian Spirit Guide",6,4,1.5,0.84],["Barren Moor",4,4,1,0.84],["Firebending Lesson",4,4,1,0.84],["Jack-o'-Lantern",4,4,1,0.84],["Origin of Metalbending",4,4,1,0.84],["Sazacap's Brew",4,4,1,0.84],["Snow-Covered Swamp",17,3,5.667,0.63],["Bramble Wurm",12,3,4,0.63],["Impulse",12,3,4,0.63],["Lagonna-Band Trailblazer",12,3,4,0.63],["Myr Retriever",12,3,4,0.63],["Rubblebelt Maverick",12,3,4,0.63],["Sentinel's Eyes",12,3,4,0.63],["Ashnod's Altar",11,3,3.667,0.63],["Benevolent Blessing",11,3,3.667,0.63],["Burning Curiosity",11,3,3.667,0.63],["Homestead Courage",11,3,3.667,0.63],["Rustvale Bridge",11,3,3.667,0.63],["Skyward Spider",11,3,3.667,0.63],["Bone Picker",10,3,3.333,0.63],["Mask of Law and Grace",10,3,3.333,0.63],["Nest Invader",10,3,3.333,0.63],["Scoured Barrens",10,3,3.333,0.63],["Serrated Scorpion",10,3,3.333,0.63],["Shield of Duty and Reason",10,3,3.333,0.63],["Tangle",10,3,3.333,0.63],["Many Partings",9,3,3,0.63],["Vines of Vastwood",9,3,3,0.63],["Manor Gate",8,3,2.667,0.63],["Mutagenic Growth",8,3,2.667,0.63],["Rancor",8,3,2.667,0.63],["Apostle's Blessing",7,3,2.333,0.63],["Escape Tunnel",7,3,2.333,0.63],["Foil",7,3,2.333,0.63],["Goldhound",7,3,2.333,0.63],["Lifelink",7,3,2.333,0.63],["Salt Road Packbeast",7,3,2.333,0.63],["Tinder Wall",7,3,2.333,0.63],["Behold the Multiverse",6,3,2,0.63],["Celestial Flare",6,3,2,0.63],["Circle of Protection: Blue",6,3,2,0.63],["Fire // Ice",6,3,2,0.63],["Oliphaunt",6,3,2,0.63],["Remove Soul",6,3,2,0.63],["Tamiyo's Safekeeping",6,3,2,0.63],["Undergrowth Leopard",6,3,2,0.63],["Obsidian Acolyte",5,3,1.667,0.63],["Crystal Grotto",4,3,1.333,0.63],["Last Rites",4,3,1.333,0.63],["Stream of Thought",4,3,1.333,0.63],["Swarm, Being of Bees",4,3,1.333,0.63],["Essence Warden",3,3,1,0.63],["How to Start a Riot",3,3,1,0.63],["Inspiring Overseer",3,3,1,0.63],["Life Goes On",3,3,1,0.63],["Rimewood Falls",3,3,1,0.63],["Shadow Alley Denizen",3,3,1,0.63],["Unfathomable Truths",3,3,1,0.63],["Whispersilk Cloak",3,3,1,0.63],["You Meet in a Tavern",3,3,1,0.63],["Akroan Skyguard",8,2,4,0.42],["Drift of Phantasms",8,2,4,0.42],["Gemhide Sliver",8,2,4,0.42],["Ghitu Lavarunner",8,2,4,0.42],["Golden Egg",8,2,4,0.42],["Guiding Voice",8,2,4,0.42],["Muscle Sliver",8,2,4,0.42],["Pieces of the Puzzle",8,2,4,0.42],["Plated Sliver",8,2,4,0.42],["Predatory Sliver",8,2,4,0.42],["Remote Farm",8,2,4,0.42],["Sidewinder Sliver",8,2,4,0.42],["Sinew Sliver",8,2,4,0.42],["Armadillo Cloak",7,2,3.5,0.42],["Razortide Bridge",7,2,3.5,0.42],["Rooftop Percher",7,2,3.5,0.42],["Boros Garrison",6,2,3,0.42],["Bountiful Landscape",6,2,3,0.42],["Coffin Purge",6,2,3,0.42],["Crippling Fatigue",6,2,3,0.42],["Filigree Familiar",6,2,3,0.42],["Hopeless Nightmare",6,2,3,0.42],["Masked Meower",6,2,3,0.42],["Peat Bog",6,2,3,0.42],["Sheltering Landscape",6,2,3,0.42],["Shield-Wall Sentinel",6,2,3,0.42],["Snarling Gorehound",6,2,3,0.42],["Thermo-Alchemist",6,2,3,0.42],["Union of the Third Path",6,2,3,0.42],["Diabolic Edict",5,2,2.5,0.42],["Dimir Aqueduct",5,2,2.5,0.42],["Divest",5,2,2.5,0.42],["Emerge Unscathed",5,2,2.5,0.42],["Temporal Intervention",5,2,2.5,0.42],["Wind-Scarred Crag",5,2,2.5,0.42],["Blighted Agent",4,2,2,0.42],["Crypt Sliver",4,2,2,0.42],["Curfew",4,2,2,0.42],["Elven Farsight",4,2,2,0.42],["Haunted Fengraf",4,2,2,0.42],["Mine Collapse",4,2,2,0.42],["Orochi Leafcaller",4,2,2,0.42],["Return to Nature",4,2,2,0.42],["Reverent Silence",4,2,2,0.42],["Shattered Landscape",4,2,2,0.42],["Shrivel",4,2,2,0.42],["Spidersilk Armor",4,2,2,0.42],["Staunch Throneguard",4,2,2,0.42],["Sunken City",4,2,2,0.42],["Temur Battle Rage",4,2,2,0.42],["Consider",3,2,1.5,0.42],["Disrupt",3,2,1.5,0.42],["Evincar's Justice",3,2,1.5,0.42],["Horrific Assault",3,2,1.5,0.42],["Rolling Thunder",3,2,1.5,0.42],["Ulamog's Crusher",3,2,1.5,0.42],["Vampiric Link",3,2,1.5,0.42],["Airbending Lesson",2,2,1,0.42],["Artful Dodge",2,2,1,0.42],["Command Bridge",2,2,1,0.42],["Defy Gravity",2,2,1,0.42],["Dinrova Horror",2,2,1,0.42],["Echoing Truth",2,2,1,0.42],["Fling",2,2,1,0.42],["Frantic Salvage",2,2,1,0.42],["Freed from the Real",2,2,1,0.42],["Galvanic Alchemist",2,2,1,0.42],["Greatsword of Tyr",2,2,1,0.42],["Kor Sanctifiers",2,2,1,0.42],["Orzhov Guildgate",2,2,1,0.42],["Reaping the Graves",2,2,1,0.42],["Respite",2,2,1,0.42],["Scattershot",2,2,1,0.42],["Skyshroud Cutter",2,2,1,0.42],["Structural Distortion",2,2,1,0.42],["Swirling Sandstorm",2,2,1,0.42],["Tuktuk Rubblefort",2,2,1,0.42],["Valakut Invoker",2,2,1,0.42],["Yip Yip!",2,2,1,0.42],["Abundant Growth",4,1,4,0.21],["Accumulated Knowledge",4,1,4,0.21],["Adventuring Gear",4,1,4,0.21],["Akoum Hellhound",4,1,4,0.21],["Ancestral Anger",4,1,4,0.21],["Ancestral Mask",4,1,4,0.21],["Arcane Denial",4,1,4,0.21],["Assault Strobe",4,1,4,0.21],["Basilica Screecher",4,1,4,0.21],["Bayou Groff",4,1,4,0.21],["Blossoming Sands",4,1,4,0.21],["Brood Birthing",4,1,4,0.21],["Brute Force",4,1,4,0.21],["Bump in the Night",4,1,4,0.21],["Cartouche of Solidarity",4,1,4,0.21],["Cemetery Gate",4,1,4,0.21],["Cloakwood Swarmkeeper",4,1,4,0.21],["Clockwork Fox",4,1,4,0.21],["Commune with Spirits",4,1,4,0.21],["Contentious Plan",4,1,4,0.21],["Deftblade Elite",4,1,4,0.21],["Dismal Backwater",4,1,4,0.21],["Dream Stalker",4,1,4,0.21],["Exhume",4,1,4,0.21],["Experimental Augury",4,1,4,0.21],["Fake Your Own Death",4,1,4,0.21],["Festival Crasher",4,1,4,0.21],["Flatten",4,1,4,0.21],["Floating-Dream Zubera",4,1,4,0.21],["Galvanic Discharge",4,1,4,0.21],["Gladecover Scout",4,1,4,0.21],["Glistener Elf",4,1,4,0.21],["Goliath Paladin",4,1,4,0.21],["Guul Draz Vampire",4,1,4,0.21],["Hand of Emrakul",4,1,4,0.21],["Hard Evidence",4,1,4,0.21],["Hunter Sliver",4,1,4,0.21],["Icatian Javelineers",4,1,4,0.21],["Infectious Inquiry",4,1,4,0.21],["Iron Giant",4,1,4,0.21],["Kiln Fiend",4,1,4,0.21],["Lava Spike",4,1,4,0.21],["Midnight Tilling",4,1,4,0.21],["Not Dead After All",4,1,4,0.21],["Obsessive Search",4,1,4,0.21],["Okiba Reckoner Raid",4,1,4,0.21],["Pentad Prism",4,1,4,0.21],["Plated Geopede",4,1,4,0.21],["Ramosian Rally",4,1,4,0.21],["Ransack the Lab",4,1,4,0.21],["Resentful Revelation",4,1,4,0.21],["Rift Bolt",4,1,4,0.21],["Rite of Flame",4,1,4,0.21],["Rune Snag",4,1,4,0.21],["Saprazzan Skerry",4,1,4,0.21],["Scour from Existence",4,1,4,0.21],["Self-Assembler",4,1,4,0.21],["Shard Volley",4,1,4,0.21],["Shock",4,1,4,0.21],["Shred Memory",4,1,4,0.21],["Slippery Bogle",4,1,4,0.21],["Solid Footing",4,1,4,0.21],["Tend the Sprigs",4,1,4,0.21],["Thirsting Roots",4,1,4,0.21],["Thrilling Discovery",4,1,4,0.21],["Vendetta",4,1,4,0.21],["Virulent Sliver",4,1,4,0.21],["Viscera Seer",4,1,4,0.21],["Vivisurgeon's Insight",4,1,4,0.21],["Voidpouncer",4,1,4,0.21],["Volcanic Spite",4,1,4,0.21],["Wall of Hope",4,1,4,0.21],["Wizard's Rockets",4,1,4,0.21],["World Map",4,1,4,0.21],["Abjure",3,1,3,0.21],["Armored Armadillo",3,1,3,0.21],["Birchlore Rangers",3,1,3,0.21],["Cabal Ritual",3,1,3,0.21],["Cache Grab",3,1,3,0.21],["Culling the Weak",3,1,3,0.21],["Favor of the Overbeing",3,1,3,0.21],["Fourth Bridge Prowler",3,1,3,0.21],["Gray Merchant of Asphodel",3,1,3,0.21],["Growth Spiral",3,1,3,0.21],["Impact Tremors",3,1,3,0.21],["Jace's Erasure",3,1,3,0.21],["Kozilek's Predator",3,1,3,0.21],["Night's Whisper",3,1,3,0.21],["Pegasus Guardian",3,1,3,0.21],["Prologue to Phyresis",3,1,3,0.21],["Rally the Peasants",3,1,3,0.21],["Retraction Helix",3,1,3,0.21],["Silhana Ledgewalker",3,1,3,0.21],["Simic Growth Chamber",3,1,3,0.21],["Soul Reap",3,1,3,0.21],["Steady Progress",3,1,3,0.21],["Steelfin Whale",3,1,3,0.21],["Sulfur Vent",3,1,3,0.21],["Sunlance",3,1,3,0.21],["Thornwood Falls",3,1,3,0.21],["Tilling Treefolk",3,1,3,0.21],["Tooth of Chiss-Goria",3,1,3,0.21],["Tranquil Thicket",3,1,3,0.21],["Tyrant's Choice",3,1,3,0.21],["Unstable Experiment",3,1,3,0.21],["Vault Skirge",3,1,3,0.21],["Vedalken Certarch",3,1,3,0.21],["Zektar Shrine Expedition",3,1,3,0.21],["Ashes to Ashes",2,1,2,0.21],["Avoid Fate",2,1,2,0.21],["Benevolent Bodyguard",2,1,2,0.21],["Bequeathal",2,1,2,0.21],["Bone Shards",2,1,2,0.21],["Boomerang",2,1,2,0.21],["Chainer's Edict",2,1,2,0.21],["Changeling Outcast",2,1,2,0.21],["Charge",2,1,2,0.21],["Coalition Honor Guard",2,1,2,0.21],["Cornered by Black Mages",2,1,2,0.21],["Crackling Cyclops",2,1,2,0.21],["Dash Hopes",2,1,2,0.21],["Dead Weight",2,1,2,0.21],["Echoing Decay",2,1,2,0.21],["Electric Revelation",2,1,2,0.21],["Ember-Fist Zubera",2,1,2,0.21],["Feed the Swarm",2,1,2,0.21],["Ghitu Amplifier",2,1,2,0.21],["Gleeful Sabotage",2,1,2,0.21],["Golem Foundry",2,1,2,0.21],["Greedy Freebooter",2,1,2,0.21],["Guardian Naga",2,1,2,0.21],["Guildsworn Prowler",2,1,2,0.21],["Immolating Souleater",2,1,2,0.21],["Innocent Blood",2,1,2,0.21],["Jolted Awake",2,1,2,0.21],["Jungle Hollow",2,1,2,0.21],["Laughing Mad",2,1,2,0.21],["Mana Tithe",2,1,2,0.21],["Naturalize",2,1,2,0.21],["Out Cold",2,1,2,0.21],["Patrician's Scorn",2,1,2,0.21],["Pick Your Poison",2,1,2,0.21],["Plagued Rusalka",2,1,2,0.21],["Raven of Fell Omens",2,1,2,0.21],["Raze the Effigy",2,1,2,0.21],["Rush of Knowledge",2,1,2,0.21],["Sandstone Bridge",2,1,2,0.21],["Savor",2,1,2,0.21],["Scarblade's Malice",2,1,2,0.21],["Secluded Steppe",2,1,2,0.21],["Selesnya Sanctuary",2,1,2,0.21],["Shinen of Life's Roar",2,1,2,0.21],["Siege Smash",2,1,2,0.21],["Slice from the Shadows",2,1,2,0.21],["Sovereign's Bite",2,1,2,0.21],["Spell Shrivel",2,1,2,0.21],["Stone Rain",2,1,2,0.21],["Trespasser's Curse",2,1,2,0.21],["Warren Elder",2,1,2,0.21],["Webweaver Changeling",2,1,2,0.21],["Winged Sliver",2,1,2,0.21],["Withstand Death",2,1,2,0.21],["Aqueous Form",1,1,1,0.21],["Arctic Treeline",1,1,1,0.21],["Contaminated Ground",1,1,1,0.21],["Cower in Fear",1,1,1,0.21],["Crypt Creeper",1,1,1,0.21],["Cunning Maneuver",1,1,1,0.21],["Dark Privilege",1,1,1,0.21],["Darkness",1,1,1,0.21],["Demand Answers",1,1,1,0.21],["Distress",1,1,1,0.21],["Dragon Wings",1,1,1,0.21],["Fade Away",1,1,1,0.21],["Faerie Duelist",1,1,1,0.21],["Flame Slash",1,1,1,0.21],["Focus the Mind",1,1,1,0.21],["Fog",1,1,1,0.21],["Geothermal Bog",1,1,1,0.21],["Goblin Gaveleer",1,1,1,0.21],["Gruul Turf",1,1,1,0.21],["Heart Sliver",1,1,1,0.21],["Highland Forest",1,1,1,0.21],["Horned Sliver",1,1,1,0.21],["Late to Dinner",1,1,1,0.21],["Loran's Escape",1,1,1,0.21],["Merchant of the Vale",1,1,1,0.21],["Military Discipline",1,1,1,0.21],["Mind Extraction",1,1,1,0.21],["Muddle the Mixture",1,1,1,0.21],["Myr Kinsmith",1,1,1,0.21],["Mystic Remora",1,1,1,0.21],["Palace Sentinels",1,1,1,0.21],["Pharika's Chosen",1,1,1,0.21],["Quick Sliver",1,1,1,0.21],["Raid Bombardment",1,1,1,0.21],["Reckless Charge",1,1,1,0.21],["Reckless Ransacking",1,1,1,0.21],["Reclaim",1,1,1,0.21],["Remote Isle",1,1,1,0.21],["Rhystic Study",1,1,1,0.21],["Rumble Arena",1,1,1,0.21],["Satyr's Cunning",1,1,1,0.21],["Sejiri Steppe",1,1,1,0.21],["Sentinel Sliver",1,1,1,0.21],["Smoke Shroud",1,1,1,0.21],["Stormshriek Feral",1,1,1,0.21],["Striking Sliver",1,1,1,0.21],["Tangletrap",1,1,1,0.21],["Thriving Grove",1,1,1,0.21],["Thriving Heath",1,1,1,0.21],["Thriving Moor",1,1,1,0.21],["Trailblazer's Torch",1,1,1,0.21],["Underworld Rage-Hound",1,1,1,0.21],["Waterbending Lesson",1,1,1,0.21],["Wedding Invitation",1,1,1,0.21],["Witherbloom Campus",1,1,1,0.21],["Zuko's Exile",1,1,1,0.21]]
+  },
+  modern: {
+    name: 'Modern',
+    decks: 397,
+    cards: [["Consign to Memory",625,184,3.397,46.35],["Flooded Strand",578,166,3.482,41.81],["Arid Mesa",560,164,3.415,41.31],["Mystical Dispute",385,156,2.468,39.29],["Mountain",284,146,1.945,36.78],["Plains",269,143,1.881,36.02],["Wrath of the Skies",341,142,2.401,35.77],["Sacred Foundry",273,122,2.238,30.73],["Damping Sphere",234,122,1.918,30.73],["Elegant Parlor",193,117,1.65,29.47],["Scalding Tarn",275,114,2.412,28.72],["Phlage, Titan of Fire's Fury",426,112,3.804,28.21],["Arena of Glory",290,111,2.613,27.96],["Swamp",203,111,1.829,27.96],["Steam Vents",179,110,1.627,27.71],["Vexing Bauble",176,110,1.6,27.71],["Ragavan, Nimble Pilferer",413,108,3.824,27.2],["Celestial Purge",174,106,1.642,26.7],["Wooded Foothills",270,102,2.647,25.69],["Island",178,100,1.78,25.19],["Surgical Extraction",146,100,1.46,25.19],["High Noon",168,99,1.697,24.94],["Marsh Flats",290,97,2.99,24.43],["Obsidian Charmaw",237,94,2.521,23.68],["Orim's Chant",233,91,2.56,22.92],["Thundering Falls",88,87,1.011,21.91],["Galvanic Discharge",328,84,3.905,21.16],["Wear // Tear",147,82,1.793,20.65],["Fatal Push",280,80,3.5,20.15],["Blood Moon",136,79,1.722,19.9],["Force of Negation",173,78,2.218,19.65],["Polluted Delta",221,76,2.908,19.14],["Prismatic Ending",187,75,2.493,18.89],["Guide of Souls",288,72,4,18.14],["Ocelot Pride",288,72,4,18.14],["Bloodstained Mire",216,72,3,18.14],["Watery Grave",121,69,1.754,17.38],["Teferi, Time Raveler",127,68,1.868,17.13],["Lightning Bolt",233,66,3.53,16.62],["Thraben Charm",131,66,1.985,16.62],["Windswept Heath",155,65,2.385,16.37],["Voice of Victory",144,65,2.215,16.37],["Boseiju, Who Endures",119,65,1.831,16.37],["Ajani, Nacatl Pariah",256,64,4,16.12],["Goblin Bombardment",192,64,3,16.12],["Seasoned Pyromancer",188,64,2.938,16.12],["Dismember",145,64,2.266,16.12],["Forest",133,64,2.078,16.12],["The Legend of Roku",110,63,1.746,15.87],["Undercity Sewers",93,61,1.525,15.37],["Misty Rainforest",174,60,2.9,15.11],["Hallowed Fountain",91,60,1.517,15.11],["Mishra's Bauble",230,58,3.966,14.61],["Thoughtseize",192,58,3.31,14.61],["Sink into Stupor",147,58,2.534,14.61],["Ranger-Captain of Eos",118,58,2.034,14.61],["Meticulous Archive",77,58,1.328,14.61],["Solitude",216,56,3.857,14.11],["Spell Snare",107,53,2.019,13.35],["Tormod's Crypt",96,51,1.882,12.85],["Quantum Riddler",177,50,3.54,12.59],["Breeding Pool",57,50,1.14,12.59],["Otawara, Soaring City",56,50,1.12,12.59],["Dalkovan Encampment",50,50,1,12.59],["Endurance",104,49,2.122,12.34],["Eldrazi Temple",180,45,4,11.34],["Kozilek's Command",180,45,4,11.34],["Urza's Saga",180,45,4,11.34],["Subtlety",159,45,3.533,11.34],["Force of Vigor",75,44,1.705,11.08],["Hedge Maze",75,44,1.705,11.08],["Orcish Bowmasters",138,43,3.209,10.83],["Meltdown",89,43,2.07,10.83],["Harbinger of the Seas",81,43,1.884,10.83],["Wear / Tear",75,43,1.744,10.83],["Verdant Catacombs",130,42,3.095,10.58],["Fiery Islet",98,41,2.39,10.33],["Sunbaked Canyon",57,41,1.39,10.33],["Ugin's Labyrinth",160,40,4,10.08],["Nihil Spellbomb",50,40,1.25,10.08],["Malevolent Rumble",142,39,3.641,9.82],["Unholy Heat",124,39,3.179,9.82],["Gemstone Caverns",53,39,1.359,9.82],["Ephemerate",108,38,2.842,9.57],["Devourer of Destiny",131,37,3.541,9.32],["Engineered Explosives",108,37,2.919,9.32],["Walking Ballista",64,37,1.73,9.32],["Godless Shrine",46,37,1.243,9.32],["Counterspell",131,36,3.639,9.07],["Ashiok, Dream Render",48,36,1.333,9.07],["Grafdigger's Cage",35,35,1,8.82],["Trinisphere",62,34,1.824,8.56],["Spell Pierce",59,34,1.735,8.56],["Pithing Needle",38,34,1.118,8.56],["Phelia, Exuberant Shepherd",124,32,3.875,8.06],["Glaring Fleshraker",112,32,3.5,8.06],["Formidable Speaker",79,32,2.469,8.06],["Valakut Awakening",62,32,1.938,8.06],["Overgrown Tomb",55,32,1.719,8.06],["Soulless Jailer",50,32,1.562,8.06],["Manamorphose",124,31,4,7.81],["Thought-Knot Seer",114,31,3.677,7.81],["Disruptor Flute",54,31,1.742,7.81],["Desperate Ritual",120,30,4,7.56],["Pyretic Ritual",120,30,4,7.56],["Ruby Medallion",120,30,4,7.56],["Consult the Star Charts",95,30,3.167,7.56],["Grapeshot",54,30,1.8,7.56],["Blood Crypt",51,30,1.7,7.56],["Ensnaring Bridge",37,30,1.233,7.56],["Temple Garden",30,30,1,7.56],["Past in Flames",116,29,4,7.3],["Ral, Monsoon Mage",116,29,4,7.3],["Reckless Impulse",116,29,4,7.3],["Wrenn's Resolve",116,29,4,7.3],["Psychic Frog",112,29,3.862,7.3],["Ugin, Eye of the Storms",101,29,3.483,7.3],["Chalice of the Void",62,29,2.138,7.3],["Wish",58,29,2,7.3],["Clarion Conqueror",43,29,1.483,7.3],["Mox Opal",112,28,4,7.05],["Dragon's Rage Channeler",104,28,3.714,7.05],["Stubborn Denial",71,28,2.536,7.05],["Empty the Warrens",28,28,1,7.05],["Leyline Binding",108,27,4,6.8],["Field of Ruin",88,27,3.259,6.8],["Cling to Dust",48,27,1.778,6.8],["Strix Serenade",44,27,1.63,6.8],["Snow-Covered Island",43,27,1.593,6.8],["Stomping Ground",43,27,1.593,6.8],["Underground Mortuary",35,27,1.296,6.8],["Summoner's Pact",81,26,3.115,6.55],["Abhorrent Oculus",79,26,3.038,6.55],["Sire of Seven Deaths",42,26,1.615,6.55],["Brotherhood's End",39,26,1.5,6.55],["Shadowspear",26,26,1,6.55],["Karn, the Great Creator",99,25,3.96,6.3],["Preordain",87,25,3.48,6.3],["Glimpse the Impossible",59,25,2.36,6.3],["Fable of the Mirror-Breaker",58,25,2.32,6.3],["Torpor Orb",27,25,1.08,6.3],["Commercial District",26,25,1.04,6.3],["Lavaspur Boots",25,25,1,6.3],["Liquimetal Coating",25,25,1,6.3],["Expedition Map",96,24,4,6.05],["Leyline of the Guildpact",96,24,4,6.05],["Scion of Draco",96,24,4,6.05],["Territorial Kavu",96,24,4,6.05],["Urza's Mine",96,24,4,6.05],["Urza's Power Plant",96,24,4,6.05],["Urza's Tower",96,24,4,6.05],["Mind Stone",94,24,3.917,6.05],["Metallic Rebuke",78,24,3.25,6.05],["Break the Ice",71,24,2.958,6.05],["Artist's Talent",44,24,1.833,6.05],["Flare of Denial",75,23,3.261,5.79],["Witch Enchanter",73,23,3.174,5.79],["Emry, Lurker of the Loch",66,23,2.87,5.79],["Sheoldred's Edict",55,23,2.391,5.79],["Nature's Claim",49,23,2.13,5.79],["Fire Magic",32,23,1.391,5.79],["Containment Priest",26,23,1.13,5.79],["The Stone Brain",24,23,1.043,5.79],["The Filigree Sylex",23,23,1,5.79],["Monastery Swiftspear",88,22,4,5.54],["Cori-Steel Cutter",86,22,3.909,5.54],["Expressive Iteration",82,22,3.727,5.54],["Spirebluff Canal",82,22,3.727,5.54],["Street Wraith",75,22,3.409,5.54],["Emrakul, the Promised End",46,22,2.091,5.54],["Soul-Guide Lantern",27,22,1.227,5.54],["Cityscape Leveler",22,22,1,5.54],["Extinguisher Battleship",22,22,1,5.54],["Kappa Cannoneer",84,21,4,5.29],["Pinnacle Emissary",84,21,4,5.29],["Shardless Agent",84,21,4,5.29],["Boggart Trawler",50,21,2.381,5.29],["Strike It Rich",41,21,1.952,5.29],["Shifting Woodland",24,21,1.143,5.29],["Indatha Triome",21,21,1,5.29],["Weapons Manufacturing",74,20,3.7,5.04],["Doorkeeper Thrull",61,20,3.05,5.04],["Emperor of Bones",56,20,2.8,5.04],["Claws of Gix",54,20,2.7,5.04],["Generous Ent",47,20,2.35,5.04],["Snow-Covered Forest",38,20,1.9,5.04],["Whipflare",37,20,1.85,5.04],["Pyroclasm",36,20,1.8,5.04],["Collector Ouphe",25,20,1.25,5.04],["Lava Dart",76,19,4,4.79],["Overlord of the Balemurk",76,19,4,4.79],["Green Sun's Zenith",59,19,3.105,4.79],["March of Otherworldly Light",31,19,1.632,4.79],["Toxic Deluge",22,19,1.158,4.79],["Ice-Fang Coatl",70,18,3.889,4.53],["Wan Shi Tong, Librarian",61,18,3.389,4.53],["Graveyard Trespasser",40,18,2.222,4.53],["Violent Urge",40,18,2.222,4.53],["Galvanic Blast",36,18,2,4.53],["Atraxa, Grand Unifier",33,18,1.833,4.53],["Ghost Vacuum",20,18,1.111,4.53],["Haywire Mite",20,18,1.111,4.53],["Griselbrand",19,18,1.056,4.53],["Ulamog, the Ceaseless Hunger",19,18,1.056,4.53],["Aether Spellbomb",18,18,1,4.53],["Slickshot Show-Off",67,17,3.941,4.28],["Veil of Summer",55,17,3.235,4.28],["Mutagenic Growth",49,17,2.882,4.28],["Arcbound Ravager",33,17,1.941,4.28],["Disciple of Freyalise",33,17,1.941,4.28],["Pick Your Poison",25,17,1.471,4.28],["Rest in Peace",24,17,1.412,4.28],["Bojuka Bog",17,17,1,4.28],["Dryad Arbor",17,17,1,4.28],["Cavern of Souls",31,16,1.938,4.03],["Culling Ritual",31,16,1.938,4.03],["Path to Exile",28,16,1.75,4.03],["Shivan Reef",21,16,1.312,4.03],["Relic of Progenitus",20,16,1.25,4.03],["Raucous Theater",18,16,1.125,4.03],["Shadowy Backstreet",18,16,1.125,4.03],["Faithless Looting",60,15,4,3.78],["Nethergoyf",55,15,3.667,3.78],["Pact of Negation",52,15,3.467,3.78],["Wastes",15,15,1,3.78],["Birthing Ritual",56,14,4,3.53],["Neoform",53,14,3.786,3.53],["Stock Up",27,14,1.929,3.53],["Isochron Scepter",26,14,1.857,3.53],["Stern Scolding",23,14,1.643,3.53],["Ghost Quarter",22,14,1.571,3.53],["Murktide Regent",20,14,1.429,3.53],["Kaito, Bane of Nightmares",19,14,1.357,3.53],["The Meathook Massacre",18,14,1.286,3.53],["Skysovereign, Consul Flagship",14,14,1,3.53],["Allosaurus Rider",52,13,4,3.27],["Eldritch Evolution",52,13,4,3.27],["Moonshadow",51,13,3.923,3.27],["Sowing Mycospawn",51,13,3.923,3.27],["Arboreal Grazer",50,13,3.846,3.27],["Ghalta, Stampede Tyrant",30,13,2.308,3.27],["Hooting Mandrills",26,13,2,3.27],["Dreams of Steel and Oil",22,13,1.692,3.27],["Xenagos, God of Revels",15,13,1.154,3.27],["Six",14,13,1.077,3.27],["Ureni, the Song Unending",13,13,1,3.27],["Welding Jar",13,13,1,3.27],["Amulet of Vigor",48,12,4,3.02],["Primeval Titan",48,12,4,3.02],["Spelunking",47,12,3.917,3.02],["Crumbling Vestige",46,12,3.833,3.02],["Wistfulness",46,12,3.833,3.02],["Badgermole Cub",44,12,3.667,3.02],["Young Wolf",43,12,3.583,3.02],["Flagstones of Trokair",39,12,3.25,3.02],["Simic Growth Chamber",39,12,3.25,3.02],["Yawgmoth, Thran Physician",39,12,3.25,3.02],["Scapeshift",38,12,3.167,3.02],["Gruul Turf",34,12,2.833,3.02],["Force of Despair",26,12,2.167,3.02],["Lotus Field",24,12,2,3.02],["Into the Flood Maw",21,12,1.75,3.02],["Bridgeworks Battle",19,12,1.583,3.02],["Grist, the Hunger Tide",18,12,1.5,3.02],["Mystic Gate",16,12,1.333,3.02],["Aftermath Analyst",13,12,1.083,3.02],["Echoing Deeps",12,12,1,3.02],["Hanweir Battlements",12,12,1,3.02],["Lush Portico",12,12,1,3.02],["Mirrorpool",12,12,1,3.02],["Tolaria West",12,12,1,3.02],["Vesuva",12,12,1,3.02],["Coiling Oracle",44,11,4,2.77],["Delighted Halfling",44,11,4,2.77],["Planar Genesis",44,11,4,2.77],["Utopia Sprawl",44,11,4,2.77],["White Orchid Phantom",42,11,3.818,2.77],["Archon of Cruelty",37,11,3.364,2.77],["Fulminator Mage",21,11,1.909,2.77],["Hexing Squelcher",18,11,1.636,2.77],["Icetill Explorer",17,11,1.545,2.77],["Springleaf Drum",14,11,1.273,2.77],["Static Prison",14,11,1.273,2.77],["Elesh Norn, Grand Cenobite",11,11,1,2.77],["Necrodominance",40,10,4,2.52],["Soul Spike",40,10,4,2.52],["Agatha's Soul Cauldron",39,10,3.9,2.52],["Talisman of Impulse",37,10,3.7,2.52],["Inquisition of Kozilek",33,10,3.3,2.52],["Tamiyo, Inquisitive Student",30,10,3,2.52],["Flickerwisp",29,10,2.9,2.52],["March of Wretched Sorrow",27,10,2.7,2.52],["Kozilek's Return",26,10,2.6,2.52],["Flusterstorm",24,10,2.4,2.52],["Teferi, Hero of Dominaria",20,10,2,2.52],["Fade from History",17,10,1.7,2.52],["World Breaker",16,10,1.6,2.52],["Swan Song",14,10,1.4,2.52],["Winternight Stories",13,10,1.3,2.52],["Damnation",11,10,1.1,2.52],["Hall of Storm Giants",10,10,1,2.52],["Logic Knot",10,10,1,2.52],["Monumental Henge",10,10,1,2.52],["Oblivion Stone",10,10,1,2.52],["Fell the Profane",32,9,3.556,2.27],["Sheoldred, the Apocalypse",30,9,3.333,2.27],["Castle Locthwain",28,9,3.111,2.27],["Living End",27,9,3,2.27],["Spymaster's Vault",27,9,3,2.27],["Flame of Anor",23,9,2.556,2.27],["Sanctifier en-Vec",20,9,2.222,2.27],["Inevitable Betrayal",18,9,2,2.27],["Duress",16,9,1.778,2.27],["Fblthp, the Lost",14,9,1.556,2.27],["Drannith Magistrate",13,9,1.444,2.27],["All Is Dust",10,9,1.111,2.27],["Murderous Cut",9,9,1,2.27],["Outland Liberator",9,9,1,2.27],["Snow-Covered Wastes",9,9,1,2.27],["Strangleroot Geist",9,9,1,2.27],["Persist",32,8,4,2.02],["Detective's Phoenix",29,8,3.625,2.02],["Unearth",28,8,3.5,2.02],["Thoughtcast",25,8,3.125,2.02],["Deceit",22,8,2.75,2.02],["Dredger's Insight",20,8,2.5,2.02],["Nourishing Shoal",15,8,1.875,2.02],["Pest Control",14,8,1.75,2.02],["Commandeer",10,8,1.25,2.02],["Magus of the Moon",10,8,1.25,2.02],["Halo Forager",8,8,1,2.02],["Goblin Charbelcher",28,7,4,1.76],["Memnite",25,7,3.571,1.76],["Brainsurge",24,7,3.429,1.76],["Dauthi Voidwalker",23,7,3.286,1.76],["Snow-Covered Plains",14,7,2,1.76],["Snapcaster Mage",12,7,1.714,1.76],["Supreme Verdict",10,7,1.429,1.76],["Untimely Malfunction",10,7,1.429,1.76],["Flooded Grove",7,7,1,1.76],["Ignoble Hierarch",7,7,1,1.76],["Kaheera, the Orphanguard",7,7,1,1.76],["Scavenging Ooze",7,7,1,1.76],["Strategic Betrayal",7,7,1,1.76],["Urza's Cave",7,7,1,1.76],["Basking Broodscale",24,6,4,1.51],["Blade of the Bloodchief",24,6,4,1.51],["Death's Shadow",24,6,4,1.51],["Disrupting Shoal",24,6,4,1.51],["Hydroelectric Specimen",24,6,4,1.51],["Lotus Bloom",24,6,4,1.51],["Sea Gate Restoration",24,6,4,1.51],["Suppression Ray",24,6,4,1.51],["Whir of Invention",24,6,4,1.51],["Terminus",23,6,3.833,1.51],["Thundertrap Trainer",23,6,3.833,1.51],["Tameshi, Reality Architect",22,6,3.667,1.51],["Thought Scour",22,6,3.667,1.51],["Faithful Mending",20,6,3.333,1.51],["Mana Tithe",18,6,3,1.51],["Portable Hole",18,6,3,1.51],["Extirpate",14,6,2.333,1.51],["Wastescape Battlemage",14,6,2.333,1.51],["Thief of Existence",13,6,2.167,1.51],["Tarfire",12,6,2,1.51],["Natural State",11,6,1.833,1.51],["Darkslick Shores",10,6,1.667,1.51],["Lorien Revealed",10,6,1.667,1.51],["Superior Spider-Man",10,6,1.667,1.51],["Firespout",9,6,1.5,1.51],["Foundation Breaker",9,6,1.5,1.51],["Hurkyl's Recall",9,6,1.5,1.51],["Deafening Silence",8,6,1.333,1.51],["Mai, Scornful Striker",7,6,1.167,1.51],["Galvanic Relay",6,6,1,1.51],["Insidious Fungus",6,6,1,1.51],["Sanctum of Ugin",6,6,1,1.51],["Ancient Stirrings",20,5,4,1.26],["Archive Trap",20,5,4,1.26],["Burning Inquiry",20,5,4,1.26],["Fractured Sanity",20,5,4,1.26],["Goryo's Vengeance",20,5,4,1.26],["Hedron Crab",20,5,4,1.26],["Jwari Disruption",20,5,4,1.26],["Narset, Parter of Veils",20,5,4,1.26],["Ruin Crab",20,5,4,1.26],["Leyline of the Void",19,5,3.8,1.26],["Drown in the Loch",17,5,3.4,1.26],["Fallaji Archaeologist",17,5,3.4,1.26],["Price of Freedom",17,5,3.4,1.26],["Tasha's Hideous Laughter",16,5,3.2,1.26],["Reprieve",15,5,3,1.26],["Visions of Beyond",15,5,3,1.26],["Tribal Flames",12,5,2.4,1.26],["Waterlogged Teachings",12,5,2.4,1.26],["Day's Undoing",10,5,2,1.26],["Agadeem's Awakening",9,5,1.8,1.26],["Herigast, Erupting Nullkite",9,5,1.8,1.26],["No More Lies",9,5,1.8,1.26],["Opt",9,5,1.8,1.26],["Tishana's Tidebinder",9,5,1.8,1.26],["Long Goodbye",8,5,1.6,1.26],["Salvage Titan",8,5,1.6,1.26],["Skyclave Apparition",8,5,1.6,1.26],["Stormscale Scion",8,5,1.6,1.26],["Urborg, Tomb of Yawgmoth",8,5,1.6,1.26],["Crypt Incursion",7,5,1.4,1.26],["Faerie Macabre",7,5,1.4,1.26],["Dress Down",6,5,1.2,1.26],["Heroes' Hangout",6,5,1.2,1.26],["Geier Reach Sanitarium",5,5,1,1.26],["Mistrise Village",5,5,1,1.26],["Oboro, Palace in the Clouds",5,5,1,1.26],["Seal of Fire",5,5,1,1.26],["Boltwave",16,4,4,1.01],["Cleansing Wildfire",16,4,4,1.01],["Goblin Guide",16,4,4,1.01],["Grove of the Burnwillows",16,4,4,1.01],["Hollow One",16,4,4,1.01],["Lava Spike",16,4,4,1.01],["Skewer the Critics",16,4,4,1.01],["Starfield Shepherd",16,4,4,1.01],["Barbarian Ring",13,4,3.25,1.01],["Mox Amber",12,4,3,1.01],["Shadow of Doubt",12,4,3,1.01],["Writhing Chrysalis",10,4,2.5,1.01],["Curator of Mysteries",9,4,2.25,1.01],["Abrupt Decay",8,4,2,1.01],["Telling Time",8,4,2,1.01],["Snow-Covered Mountain",7,4,1.75,1.01],["Bitter Triumph",5,4,1.25,1.01],["Colossal Skyturtle",5,4,1.25,1.01],["Heritage Reclamation",5,4,1.25,1.01],["Necromentia",5,4,1.25,1.01],["Vandalblast",5,4,1.25,1.01],["Blast Zone",4,4,1,1.01],["Castle Vantress",4,4,1,1.01],["Cephalid Coliseum",4,4,1,1.01],["Cultivator Colossus",4,4,1,1.01],["Elesh Norn, Mother of Machines",4,4,1,1.01],["Ilharg, the Raze-Boar",4,4,1,1.01],["Jace, the Perfected Mind",4,4,1,1.01],["Kozilek, Butcher of Truth",4,4,1,1.01],["March of Reckless Joy",4,4,1,1.01],["Nurturing Peatland",4,4,1,1.01],["Shelldock Isle",4,4,1,1.01],["Boom // Bust",12,3,4,0.76],["Cauldron Familiar",12,3,4,0.76],["Chord of Calling",12,3,4,0.76],["Cosmogoyf",12,3,4,0.76],["Eldrazi Linebreaker",12,3,4,0.76],["Gemstone Mine",12,3,4,0.76],["Gilded Goose",12,3,4,0.76],["It That Heralds the End",12,3,4,0.76],["Magmatic Hellkite",12,3,4,0.76],["Marauding Mako",12,3,4,0.76],["Pillage",12,3,4,0.76],["Samwise Gamgee",12,3,4,0.76],["Secluded Courtyard",12,3,4,0.76],["Serum Powder",12,3,4,0.76],["Skullcrack",12,3,4,0.76],["Sundering Eruption",12,3,4,0.76],["Suppression Field",12,3,4,0.76],["Demolition Field",11,3,3.667,0.76],["Eidolon of the Great Revel",11,3,3.667,0.76],["Searing Blaze",11,3,3.667,0.76],["Fear of Missing Out",10,3,3.333,0.76],["Ghostly Prison",10,3,3.333,0.76],["Magus of the Tabernacle",10,3,3.333,0.76],["Plunge into Darkness",10,3,3.333,0.76],["Profane Tutor",10,3,3.333,0.76],["Rough // Tumble",10,3,3.333,0.76],["Wrenn and Six",10,3,3.333,0.76],["Cascading Cataracts",9,3,3,0.76],["Molten Rain",9,3,3,0.76],["Explore",8,3,2.667,0.76],["Inspiring Vantage",8,3,2.667,0.76],["Ancient Grudge",7,3,2.333,0.76],["Beyeen Veil",7,3,2.333,0.76],["Glimpse the Unthinkable",7,3,2.333,0.76],["Thoughts of Ruin",7,3,2.333,0.76],["Troll of Khazad-dum",7,3,2.333,0.76],["Lórien Revealed",6,3,2,0.76],["Magebane Lizard",6,3,2,0.76],["Unlicensed Hearse",6,3,2,0.76],["Viscera Seer",6,3,2,0.76],["Vampires' Vengeance",5,3,1.667,0.76],["Void Mirror",5,3,1.667,0.76],["Witherbloom Command",5,3,1.667,0.76],["Boil",4,3,1.333,0.76],["Suncleanser",4,3,1.333,0.76],["Baleful Mastery",3,3,1,0.76],["Dosan the Falling Leaf",3,3,1,0.76],["Echoing Truth",3,3,1,0.76],["Gaddock Teeg",3,3,1,0.76],["Glasspool Mimic",3,3,1,0.76],["Golgari Rot Farm",3,3,1,0.76],["Keen-Eyed Curator",3,3,1,0.76],["Mikokoro, Center of the Sea",3,3,1,0.76],["Minamo, School at Water's Edge",3,3,1,0.76],["Mine Collapse",3,3,1,0.76],["Mockingbird",3,3,1,0.76],["Nulldrifter",3,3,1,0.76],["Prosperous Innkeeper",3,3,1,0.76],["Revitalizing Repast",3,3,1,0.76],["Snow-Covered Swamp",3,3,1,0.76],["Tezzeret the Seeker",3,3,1,0.76],["The Wandering Minstrel",3,3,1,0.76],["Tireless Tracker",3,3,1,0.76],["Vibrance",3,3,1,0.76],["Xander's Lounge",3,3,1,0.76],["Blooming Marsh",8,2,4,0.5],["Boros Charm",8,2,4,0.5],["Destructive Revelry",8,2,4,0.5],["Eladamri's Call",8,2,4,0.5],["Glittering Wish",8,2,4,0.5],["Ornithopter",8,2,4,0.5],["Rift Bolt",8,2,4,0.5],["Stoneforge Mystic",8,2,4,0.5],["Sunken Citadel",8,2,4,0.5],["Unclaimed Territory",8,2,4,0.5],["Gran-Gran",7,2,3.5,0.5],["Omnath, Locus of Creation",7,2,3.5,0.5],["Smash to Smithereens",7,2,3.5,0.5],["Carrion Feeder",6,2,3,0.5],["Pillage the Bog",6,2,3,0.5],["Prismatic Vista",6,2,3,0.5],["Spoils of the Vault",6,2,3,0.5],["Unholy Annex // Ritual Chamber",6,2,3,0.5],["Battlefield Forge",5,2,2.5,0.5],["Boomerang Basics",5,2,2.5,0.5],["Deflecting Palm",5,2,2.5,0.5],["Leyline of Sanctity",5,2,2.5,0.5],["Pinnacle Monk",5,2,2.5,0.5],["Repeal",5,2,2.5,0.5],["Sorin of House Markov",5,2,2.5,0.5],["Temur Battle Rage",5,2,2.5,0.5],["Troll of Khazad-dûm",5,2,2.5,0.5],["Assassin's Trophy",4,2,2,0.5],["Floodfarm Verge",4,2,2,0.5],["Forked Bolt",4,2,2,0.5],["Gloomlake Verge",4,2,2,0.5],["Mana Leak",4,2,2,0.5],["Mutavault",4,2,2,0.5],["Pawpatch Formation",4,2,2,0.5],["Play with Fire",4,2,2,0.5],["Shard Volley",4,2,2,0.5],["Shatterstorm",4,2,2,0.5],["Temporary Lockdown",4,2,2,0.5],["Unable to Scream",4,2,2,0.5],["Darksteel Citadel",3,2,1.5,0.5],["Elder Gargaroth",3,2,1.5,0.5],["Kataki, War's Wage",3,2,1.5,0.5],["Plague Engineer",3,2,1.5,0.5],["Sephiroth, Fabled SOLDIER",3,2,1.5,0.5],["Showdown of the Skalds",3,2,1.5,0.5],["Valakut, the Molten Pinnacle",3,2,1.5,0.5],["Aether Gust",2,2,1,0.5],["Beza, the Bounding Spring",2,2,1,0.5],["Crucible of Worlds",2,2,1,0.5],["Crystal Barricade",2,2,1,0.5],["Exorcise",2,2,1,0.5],["Flashfires",2,2,1,0.5],["Go for the Throat",2,2,1,0.5],["Illness in the Ranks",2,2,1,0.5],["Kraul Harpooner",2,2,1,0.5],["Lindblum, Industrial Regency",2,2,1,0.5],["Lithomantic Barrage",2,2,1,0.5],["Masked Vandal",2,2,1,0.5],["Molten Collapse",2,2,1,0.5],["Nature's Chant",2,2,1,0.5],["Ouroboroid",2,2,1,0.5],["Repudiate / Replicate",2,2,1,0.5],["Repudiate // Replicate",2,2,1,0.5],["Screaming Nemesis",2,2,1,0.5],["Starfield Vocalist",2,2,1,0.5],["The Endstone",2,2,1,0.5],["Tunnel Ignus",2,2,1,0.5],["Ulamog, the Defiler",2,2,1,0.5],["Winds of Abandon",2,2,1,0.5],["Zagoth Triome",2,2,1,0.5],["Aang, Swift Savior",4,1,4,0.25],["Abundant Harvest",4,1,4,0.25],["Academic Dispute",4,1,4,0.25],["Aether Vial",4,1,4,0.25],["Anticausal Vestige",4,1,4,0.25],["Arclight Phoenix",4,1,4,0.25],["Ardent Plea",4,1,4,0.25],["Asmoranomardicadaistinaculdacar",4,1,4,0.25],["Aurora Awakener",4,1,4,0.25],["Battlefield Improvisation",4,1,4,0.25],["Bitter Reunion",4,1,4,0.25],["Blackcleave Cliffs",4,1,4,0.25],["Blazing Rootwalla",4,1,4,0.25],["Bloodbraid Elf",4,1,4,0.25],["Bloodchief's Thirst",4,1,4,0.25],["Boom / Bust",4,1,4,0.25],["Break Out",4,1,4,0.25],["Cabal Coffers",4,1,4,0.25],["Chancellor of the Tangle",4,1,4,0.25],["Colossus Hammer",4,1,4,0.25],["Creeping Chill",4,1,4,0.25],["Dark Petition",4,1,4,0.25],["Dour Port-Mage",4,1,4,0.25],["Fire // Ice",4,1,4,0.25],["Flame Rift",4,1,4,0.25],["Flare of Cultivation",4,1,4,0.25],["Golgari Thug",4,1,4,0.25],["Gonti's Machinations",4,1,4,0.25],["Ifnir Deadlands",4,1,4,0.25],["Indomitable Creativity",4,1,4,0.25],["Irencrag Feat",4,1,4,0.25],["Iridescent Vinelasher",4,1,4,0.25],["Karplusan Forest",4,1,4,0.25],["Legion Leadership",4,1,4,0.25],["Leyline Axe",4,1,4,0.25],["Leyline of Punishment",4,1,4,0.25],["Life from the Loam",4,1,4,0.25],["Light Up the Stage",4,1,4,0.25],["Loch Mare",4,1,4,0.25],["Lord of Atlantis",4,1,4,0.25],["Master of the Pearl Trident",4,1,4,0.25],["Meteor Sword",4,1,4,0.25],["Mindspring Merfolk",4,1,4,0.25],["Monument to Endurance",4,1,4,0.25],["Not of This World",4,1,4,0.25],["Oko, Lorwyn Liege",4,1,4,0.25],["Omnivorous Flytrap",4,1,4,0.25],["Ovalchase Daredevil",4,1,4,0.25],["Primal Prayers",4,1,4,0.25],["Puresteel Paladin",4,1,4,0.25],["Questing Druid",4,1,4,0.25],["Resentful Revelation",4,1,4,0.25],["Rush of Inspiration",4,1,4,0.25],["Selesnya Sanctuary",4,1,4,0.25],["Shatterskull Smashing",4,1,4,0.25],["Shefet Dunes",4,1,4,0.25],["Silvergill Mentor",4,1,4,0.25],["Song of Creation",4,1,4,0.25],["Soul-Scar Mage",4,1,4,0.25],["Stinkweed Imp",4,1,4,0.25],["Stone Rain",4,1,4,0.25],["Sylvan Scrying",4,1,4,0.25],["The Underworld Cookbook",4,1,4,0.25],["Thud",4,1,4,0.25],["Vengevine",4,1,4,0.25],["Vexing Devil",4,1,4,0.25],["Yavimaya Coast",4,1,4,0.25],["Aven Mindcensor",3,1,3,0.25],["Cathartic Reunion",3,1,3,0.25],["Combat Thresher",3,1,3,0.25],["Conflagrate",3,1,3,0.25],["Dwarven Mine",3,1,3,0.25],["Emergency Eject",3,1,3,0.25],["Emptiness",3,1,3,0.25],["Esper Sentinel",3,1,3,0.25],["Greenbelt Rampager",3,1,3,0.25],["Haliya, Guided by Light",3,1,3,0.25],["Keen Sense",3,1,3,0.25],["Kirol, Attentive First-Year",3,1,3,0.25],["Kroxa, Titan of Death's Hunger",3,1,3,0.25],["Momo, Friendly Flier",3,1,3,0.25],["Pentad Prism",3,1,3,0.25],["Rakshasa's Bargain",3,1,3,0.25],["Rite of Consumption",3,1,3,0.25],["Rustvale Bridge",3,1,3,0.25],["Sevinne's Reclamation",3,1,3,0.25],["Siren Stormtamer",3,1,3,0.25],["Slaughter Games",3,1,3,0.25],["Summoning Trap",3,1,3,0.25],["Svyelun of Sea and Sky",3,1,3,0.25],["Tide Shaper",3,1,3,0.25],["Vampire Hexmage",3,1,3,0.25],["Volcanic Fallout",3,1,3,0.25],["Waker of Waves",3,1,3,0.25],["Aether Hub",2,1,2,0.25],["Anoint with Affliction",2,1,2,0.25],["Bleachbone Verge",2,1,2,0.25],["Blood Knight",2,1,2,0.25],["Collective Brutality",2,1,2,0.25],["Consider",2,1,2,0.25],["Copperline Gorge",2,1,2,0.25],["Cori Mountain Monastery",2,1,2,0.25],["Dawnbringer Cleric",2,1,2,0.25],["Dispatch",2,1,2,0.25],["Eddymurk Crab",2,1,2,0.25],["Ephara's Dispersal",2,1,2,0.25],["Escape to the Wilds",2,1,2,0.25],["Essence Flux",2,1,2,0.25],["Feed the Swarm",2,1,2,0.25],["Flame Slash",2,1,2,0.25],["Forge Anew",2,1,2,0.25],["Glimmervoid",2,1,2,0.25],["Goblin Anarchomancer",2,1,2,0.25],["Goblin Lore",2,1,2,0.25],["Hapatra's Mark",2,1,2,0.25],["Hope of Ghirapur",2,1,2,0.25],["Inkmoth Nexus",2,1,2,0.25],["Ketria Triome",2,1,2,0.25],["Kolaghan's Command",2,1,2,0.25],["Merfolk Trickster",2,1,2,0.25],["Moonmist",2,1,2,0.25],["Paradise Mantle",2,1,2,0.25],["Profane Memento",2,1,2,0.25],["Rakdos Charm",2,1,2,0.25],["Ratchet Bomb",2,1,2,0.25],["Recruiter of the Guard",2,1,2,0.25],["Rhys, the Evermore",2,1,2,0.25],["Roiling Vortex",2,1,2,0.25],["Seachrome Coast",2,1,2,0.25],["Serra Paragon",2,1,2,0.25],["Shadow Prophecy",2,1,2,0.25],["Spreading Seas",2,1,2,0.25],["Steelshaper's Gift",2,1,2,0.25],["Step Through",2,1,2,0.25],["Striped Riverwinder",2,1,2,0.25],["Tainted Indulgence",2,1,2,0.25],["Talisman of Resilience",2,1,2,0.25],["Tamiyo's Safekeeping",2,1,2,0.25],["The Rise of Sozin",2,1,2,0.25],["Thought Monitor",2,1,2,0.25],["Vodalian Hexcatcher",2,1,2,0.25],["Abandon Attachments",1,1,1,0.25],["Abrade",1,1,1,0.25],["Abstergo Entertainment",1,1,1,0.25],["Awaken the Honored Dead",1,1,1,0.25],["Bile Blight",1,1,1,0.25],["Birds of Paradise",1,1,1,0.25],["Blightstep Pathway",1,1,1,0.25],["Bristling Backwoods",1,1,1,0.25],["Callous Sell-Sword",1,1,1,0.25],["Caves of Koilos",1,1,1,0.25],["Chainsaw",1,1,1,0.25],["Cloudshift",1,1,1,0.25],["Come Back Wrong",1,1,1,0.25],["Cosmic Rebirth",1,1,1,0.25],["Creeping Corrosion",1,1,1,0.25],["Crime // Punishment",1,1,1,0.25],["Cursed Totem",1,1,1,0.25],["Darkbore Pathway",1,1,1,0.25],["Dead Weight",1,1,1,0.25],["Deadly Cover-Up",1,1,1,0.25],["Destroy Evil",1,1,1,0.25],["Dryad of the Ilysian Grove",1,1,1,0.25],["Eidolon of Rhetoric",1,1,1,0.25],["Eldrazi Displacer",1,1,1,0.25],["Emrakul, the Aeons Torn",1,1,1,0.25],["Enduring Tenacity",1,1,1,0.25],["Exquisite Firecraft",1,1,1,0.25],["Feed the Cycle",1,1,1,0.25],["Firebending Lesson",1,1,1,0.25],["Gaea's Blessing",1,1,1,0.25],["Gaze of Granite",1,1,1,0.25],["Get Lost",1,1,1,0.25],["Go Blank",1,1,1,0.25],["Greater Gargadon",1,1,1,0.25],["Harvester of Misery",1,1,1,0.25],["Haunting Echoes",1,1,1,0.25],["Horizon Canopy",1,1,1,0.25],["Hushwood Verge",1,1,1,0.25],["Inti, Seneschal of the Sun",1,1,1,0.25],["Jace, the Mind Sculptor",1,1,1,0.25],["Jace, Wielder of Mysteries",1,1,1,0.25],["Jetmir's Garden",1,1,1,0.25],["Kaldra Compleat",1,1,1,0.25],["Ketramose, the New Dawn",1,1,1,0.25],["Kishla Village",1,1,1,0.25],["Koma, World-Eater",1,1,1,0.25],["Laboratory Maniac",1,1,1,0.25],["Lair of the Hydra",1,1,1,0.25],["Mazemind Tome",1,1,1,0.25],["Mind Sludge",1,1,1,0.25],["Night's Whisper",1,1,1,0.25],["Origin of Metalbending",1,1,1,0.25],["Path of Peril",1,1,1,0.25],["Pendelhaven",1,1,1,0.25],["Picklock Prankster",1,1,1,0.25],["Pond Prophet",1,1,1,0.25],["Qarsi Revenant",1,1,1,0.25],["Rain of Tears",1,1,1,0.25],["Raugrin Triome",1,1,1,0.25],["Redirect Lightning",1,1,1,0.25],["Restoration Angel",1,1,1,0.25],["Rimewood Falls",1,1,1,0.25],["Satoru, the Infiltrator",1,1,1,0.25],["Savai Triome",1,1,1,0.25],["Scheming Symmetry",1,1,1,0.25],["Shadows' Verdict",1,1,1,0.25],["Shatter Assumptions",1,1,1,0.25],["Shoot the Sheriff",1,1,1,0.25],["Sickening Shoal",1,1,1,0.25],["Slaughter Pact",1,1,1,0.25],["Sundering Titan",1,1,1,0.25],["Sunken Ruins",1,1,1,0.25],["Susurian Voidborn",1,1,1,0.25],["Sylvan Safekeeper",1,1,1,0.25],["Takenuma, Abandoned Mire",1,1,1,0.25],["Terminate",1,1,1,0.25],["The Elderspell",1,1,1,0.25],["The Mycosynth Gardens",1,1,1,0.25],["Titania's Command",1,1,1,0.25],["Torment of Hailfire",1,1,1,0.25],["Tourach, Dread Cantor",1,1,1,0.25],["Twilight Mire",1,1,1,0.25],["Umara Wizard",1,1,1,0.25],["Umori, the Collector",1,1,1,0.25],["Victimize",1,1,1,0.25],["Vito, Thorn of the Dusk Rose",1,1,1,0.25],["Warping Wail",1,1,1,0.25],["Wasteland Strangler",1,1,1,0.25],["Weathered Runestone",1,1,1,0.25],["Wildest Dreams",1,1,1,0.25]]
+  },
+  standard: {
+    name: 'Standard',
+    decks: 495,
+    cards: [["Soul-Guide Lantern",744,370,2.011,74.75],["Island",1180,270,4.37,54.55],["Multiversal Passage",594,246,2.415,49.7],["Spell Snare",436,217,2.009,43.84],["Disdainful Stroke",272,191,1.424,38.59],["Annul",364,187,1.947,37.78],["Steam Vents",622,165,3.77,33.33],["Sear",354,162,2.185,32.73],["Mountain",682,154,4.429,31.11],["Quantum Riddler",360,152,2.368,30.71],["Swamp",818,148,5.527,29.9],["Requiting Hex",512,147,3.483,29.7],["Spell Pierce",215,144,1.493,29.09],["Bitter Triumph",329,140,2.35,28.28],["Pyroclasm",278,140,1.986,28.28],["Spirebluff Canal",498,137,3.635,27.68],["Watery Grave",529,135,3.919,27.27],["Duress",365,135,2.704,27.27],["Gloomlake Verge",497,129,3.853,26.06],["Riverpyre Verge",474,125,3.792,25.25],["Starting Town",399,124,3.218,25.05],["Forest",1156,120,9.633,24.24],["Wan Shi Tong, Librarian",163,120,1.358,24.24],["Tishana's Tidebinder",330,119,2.773,24.04],["Restless Reef",320,117,2.735,23.64],["Negate",141,117,1.205,23.64],["Stock Up",359,114,3.149,23.03],["Shoot the Sheriff",252,114,2.211,23.03],["Llanowar Elves",439,110,3.991,22.22],["Torpor Orb",239,109,2.193,22.02],["Ral, Crackling Wit",212,108,1.963,21.82],["Ba Sing Se",252,104,2.423,21.01],["Spider-Sense",210,101,2.079,20.4],["Badgermole Cub",377,96,3.927,19.39],["Winternight Stories",277,93,2.978,18.79],["Deceit",364,92,3.957,18.59],["Fabled Passage",351,89,3.944,17.98],["Burst Lightning",329,88,3.739,17.78],["Three Steps Ahead",152,88,1.727,17.78],["Escape Tunnel",291,87,3.345,17.58],["Icetill Explorer",324,86,3.767,17.37],["Agna Qel'a",123,85,1.447,17.17],["Mightform Harmonizer",296,84,3.524,16.97],["Intimidation Tactics",183,84,2.179,16.97],["Abandon Attachments",302,83,3.639,16.77],["The Unagi of Kyoshi Island",91,82,1.11,16.57],["Earthbender Ascension",312,81,3.852,16.36],["Floodpits Drowner",311,81,3.84,16.36],["Boomerang Basics",295,81,3.642,16.36],["Enduring Curiosity",257,81,3.173,16.36],["Soulstone Sanctuary",196,80,2.45,16.16],["Flashfreeze",114,80,1.425,16.16],["Stormchaser's Talent",288,79,3.646,15.96],["Monument to Endurance",311,78,3.987,15.76],["Superior Spider-Man",260,72,3.611,14.55],["Strategic Betrayal",114,72,1.583,14.55],["Ghost Vacuum",96,72,1.333,14.55],["Sapling Nursery",266,70,3.8,14.14],["Breeding Pool",221,70,3.157,14.14],["Essence Scatter",88,70,1.257,14.14],["Accumulate Wisdom",276,69,4,13.94],["Combustion Technique",276,69,4,13.94],["Firebending Lesson",274,69,3.971,13.94],["It'll Quench Ya!",166,69,2.406,13.94],["Gran-Gran",272,68,4,13.74],["Artist's Talent",271,68,3.985,13.74],["Wistfulness",194,68,2.853,13.74],["Origin of Metalbending",169,68,2.485,13.74],["Get Lost",196,67,2.925,13.54],["Rest in Peace",139,67,2.075,13.54],["Cavern of Souls",208,66,3.152,13.33],["Sazh's Chocobo",247,64,3.859,12.93],["Bounce Off",141,64,2.203,12.93],["Meltstrider's Resolve",209,63,3.317,12.73],["Undercity Sewers",102,63,1.619,12.73],["Plains",191,62,3.081,12.53],["Kaito, Bane of Nightmares",240,61,3.934,12.32],["Harvester of Misery",137,60,2.283,12.12],["Into the Flood Maw",83,60,1.383,12.12],["Broadside Barrage",75,60,1.25,12.12],["Cecil, Dark Knight",123,58,2.121,11.72],["Mossborn Hydra",155,57,2.719,11.52],["Floodfarm Verge",202,55,3.673,11.11],["Hallowed Fountain",194,55,3.527,11.11],["Fecund Greenshell",147,54,2.722,10.91],["Deadly Cover-Up",127,54,2.352,10.91],["Deep-Cavern Bat",198,53,3.736,10.71],["Spyglass Siren",197,53,3.717,10.71],["Surrak, Elusive Hunter",84,52,1.615,10.51],["Vivien Reid",68,52,1.308,10.51],["Voice of Victory",165,51,3.235,10.3],["Seam Rip",165,49,3.367,9.9],["Sunderflock",174,48,3.625,9.7],["Archdruid's Charm",65,47,1.383,9.49],["Willowrush Verge",121,46,2.63,9.29],["Keen-Eyed Curator",88,46,1.913,9.29],["Fountainport",60,45,1.333,9.09],["Promising Vein",106,43,2.465,8.69],["Day of Black Sun",78,42,1.857,8.48],["Abrade",60,42,1.429,8.48],["Ashling, Rekindled",146,41,3.561,8.28],["Vibrance",142,41,3.463,8.28],["Opt",160,40,4,8.08],["Doomsday Excruciator",112,40,2.8,8.08],["Iroh's Demonstration",72,40,1.8,8.08],["Get Out",64,40,1.6,8.08],["Sleight of Hand",153,39,3.923,7.88],["Esper Origins",119,39,3.051,7.88],["Sunspine Lynx",117,39,3,7.88],["Lumbering Worldwagon",60,39,1.538,7.88],["Flitterwing Nuisance",77,38,2.026,7.68],["Cori Mountain Monastery",40,38,1.053,7.68],["Insatiable Avarice",100,37,2.703,7.47],["Marang River Regent",53,37,1.432,7.47],["Formidable Speaker",84,34,2.471,6.87],["Nova Hellkite",128,33,3.879,6.67],["Sunbillow Verge",103,33,3.121,6.67],["Archenemy's Charm",38,33,1.152,6.67],["Aang, Swift Savior",118,32,3.688,6.46],["Glen Elendra Guardian",55,32,1.719,6.46],["Pawpatch Formation",42,32,1.312,6.46],["Consult the Star Charts",121,31,3.903,6.26],["Phantom Interference",38,31,1.226,6.26],["Slickshot Show-Off",120,30,4,6.06],["Full Bore",102,30,3.4,6.06],["Sacred Foundry",98,30,3.267,6.06],["No More Lies",93,30,3.1,6.06],["Restless Anchorage",60,30,2,6.06],["Flamebraider",114,29,3.931,5.86],["High Noon",96,29,3.31,5.86],["Roaming Throne",111,28,3.964,5.66],["Aven Interrupter",94,28,3.357,5.66],["Heritage Reclamation",51,28,1.821,5.66],["Overlord of the Balemurk",82,27,3.037,5.45],["Ouroboroid",75,27,2.778,5.45],["The Legend of Roku",51,27,1.889,5.45],["Oko, Lorwyn Liege",48,27,1.778,5.45],["Hexing Squelcher",96,26,3.692,5.25],["Avatar's Wrath",80,26,3.077,5.25],["Requisition Raid",38,26,1.462,5.25],["Elspeth, Storm Slayer",37,26,1.423,5.25],["Pit of Offerings",31,26,1.192,5.25],["Thundering Falls",29,26,1.115,5.25],["Hired Claw",100,25,4,5.05],["Stomping Ground",81,25,3.24,5.05],["Oildeep Gearhulk",45,25,1.8,5.05],["Beza, the Bounding Spring",43,25,1.72,5.05],["Outrageous Robbery",32,25,1.28,5.05],["Cruelclaw's Heist",31,25,1.24,5.05],["Gene Pollinator",94,24,3.917,4.85],["Torch the Tower",56,24,2.333,4.85],["Tersa Lightshatter",51,24,2.125,4.85],["Mockingbird",50,24,2.083,4.85],["Abandoned Air Temple",45,24,1.875,4.85],["Bristly Bill, Spine Sower",36,24,1.5,4.85],["Craterhoof Behemoth",25,24,1.042,4.85],["Nature's Rhythm",92,23,4,4.65],["Elusive Otter",91,23,3.957,4.65],["Spider Manifestation",91,23,3.957,4.65],["Botanical Sanctum",83,23,3.609,4.65],["Clarion Conqueror",66,23,2.87,4.65],["Meticulous Archive",50,23,2.174,4.65],["Wild Ride",46,23,2,4.65],["Secluded Courtyard",80,22,3.636,4.44],["Shock",71,22,3.227,4.44],["Day of Judgment",69,22,3.136,4.44],["Eclipsed Realms",57,22,2.591,4.44],["Unable to Scream",49,22,2.227,4.44],["Slagstorm",27,22,1.227,4.44],["Shared Roots",59,21,2.81,4.24],["Magebane Lizard",72,20,3.6,4.04],["Blood Crypt",71,20,3.55,4.04],["Ajani, Outland Chaperone",44,20,2.2,4.04],["Burnout Bashtronaut",74,19,3.895,3.84],["Blazemire Verge",68,19,3.579,3.84],["Sandman, Shifting Scoundrel",21,19,1.105,3.84],["Overgrown Tomb",62,18,3.444,3.64],["Lightning Strike",50,18,2.778,3.64],["Inspiring Vantage",68,17,4,3.43],["Lightning Helix",65,17,3.824,3.43],["Kutzil's Flanker",32,17,1.882,3.43],["Eddymurk Crab",64,16,4,3.23],["Temple Garden",59,16,3.688,3.23],["Hearth Elemental",60,15,4,3.03],["Hushwood Verge",55,15,3.667,3.03],["Doorkeeper Thrull",37,15,2.467,3.03],["Moonshadow",56,14,4,2.83],["Preacher of the Schism",41,14,2.929,2.83],["Bitterbloom Bearer",37,14,2.643,2.83],["Rockface Village",32,14,2.286,2.83],["Hydro-Man, Fluid Felon",28,14,2,2.83],["Qarsi Revenant",28,14,2,2.83],["Elegant Parlor",23,14,1.643,2.83],["Fire Magic",21,14,1.5,2.83],["Ultima",20,14,1.429,2.83],["Emberheart Challenger",51,13,3.923,2.63],["Twinmaw Stormbrood",36,13,2.769,2.63],["Glacial Dragonhunt",31,13,2.385,2.63],["Exorcise",23,13,1.769,2.63],["Royal Treatment",22,13,1.692,2.63],["Mistrise Village",19,13,1.462,2.63],["Reclamation Sage",18,13,1.385,2.63],["The End",18,13,1.385,2.63],["Riverchurn Monument",14,13,1.077,2.63],["Restless Vinestalk",13,13,1,2.63],["Iron-Shield Elf",45,12,3.75,2.42],["Jeskai Revelation",37,12,3.083,2.42],["Thornspire Verge",27,12,2.25,2.42],["Secret Identity",22,12,1.833,2.42],["Spell Stutter",21,12,1.75,2.42],["Chomping Changeling",18,12,1.5,2.42],["Demolition Field",41,11,3.727,2.22],["Enduring Innocence",32,11,2.909,2.22],["Wastewood Verge",31,11,2.818,2.22],["Case of the Crimson Pulse",23,11,2.091,2.22],["Ill-Timed Explosion",23,11,2.091,2.22],["Bloodthorn Flail",40,10,4,2.02],["Flamewake Phoenix",40,10,4,2.02],["Momo, Friendly Flier",40,10,4,2.02],["Magmatic Hellkite",39,10,3.9,2.02],["Sarkhan, Dragon Ascendant",39,10,3.9,2.02],["Marauding Mako",38,10,3.8,2.02],["Maelstrom of the Spirit Dragon",35,10,3.5,2.02],["Inti, Seneschal of the Sun",27,10,2.7,2.02],["Dragonhawk, Fate's Tempest",21,10,2.1,2.02],["Nowhere to Run",14,10,1.4,2.02],["Bloodghast",36,9,4,1.82],["Bramble Familiar",32,9,3.556,1.82],["Zhao, the Moon Slayer",27,9,3,1.82],["Great Divide Guide",23,9,2.556,1.82],["Ardyn, the Usurper",20,9,2.222,1.82],["Scrapshooter",20,9,2.222,1.82],["Boulder Dash",19,9,2.111,1.82],["Loch Mare",11,9,1.222,1.82],["Sab-Sunen, Luxa Embodied",11,9,1.222,1.82],["Analyze the Pollen",10,9,1.111,1.82],["Bringer of the Last Gift",32,8,4,1.62],["Aang, at the Crossroads",31,8,3.875,1.62],["Appa, Steadfast Guardian",31,8,3.875,1.62],["Doc Aurlock, Grizzled Genius",31,8,3.875,1.62],["Bleachbone Verge",27,8,3.375,1.62],["Airbender Ascension",25,8,3.125,1.62],["Glimpse the Core",25,8,3.125,1.62],["Drake Hatcher",19,8,2.375,1.62],["Sheltered by Ghosts",17,8,2.125,1.62],["Frostcliff Siege",11,8,1.375,1.62],["Kaito, Cunning Infiltrator",9,8,1.125,1.62],["Fear of Missing Out",27,7,3.857,1.41],["Interdimensional Web Watch",25,7,3.571,1.41],["Blooming Marsh",23,7,3.286,1.41],["Godless Shrine",21,7,3,1.41],["Twisted Fealty",21,7,3,1.41],["Snakeskin Veil",20,7,2.857,1.41],["Split Up",17,7,2.429,1.41],["Roaring Furnace // Steaming Sauna",16,7,2.286,1.41],["Aang's Iceberg",14,7,2,1.41],["Stab",10,7,1.429,1.41],["Restless Vents",9,7,1.286,1.41],["Underground Mortuary",9,7,1.286,1.41],["Kellan, Planar Trailblazer",7,7,1,1.41],["Songcrafter Mage",7,7,1,1.41],["Fanatical Firebrand",20,6,3.333,1.21],["Catharsis",14,6,2.333,1.21],["The Legend of Kuruk",14,6,2.333,1.21],["Sunken Citadel",13,6,2.167,1.21],["Seedship Impact",12,6,2,1.21],["Parting Gust",9,6,1.5,1.21],["Pyrrhic Strike",9,6,1.5,1.21],["Long River's Pull",7,6,1.167,1.21],["Raucous Theater",7,6,1.167,1.21],["Glamer Gifter",6,6,1,1.21],["Insidious Fungus",6,6,1,1.21],["Razorkin Needlehead",20,5,4,1.01],["Thundertrap Trainer",19,5,3.8,1.01],["Boros Charm",18,5,3.6,1.01],["Abhorrent Oculus",17,5,3.4,1.01],["Awaken the Honored Dead",16,5,3.2,1.01],["Splash Portal",16,5,3.2,1.01],["Howlsquad Heavy",15,5,3,1.01],["Restless Cottage",14,5,2.8,1.01],["Sygg, Wanderwine Wisdom",13,5,2.6,1.01],["Authority of the Consuls",12,5,2.4,1.01],["Pinnacle Starcage",11,5,2.2,1.01],["Elegy Acolyte",9,5,1.8,1.01],["Heartless Act",9,5,1.8,1.01],["Overlord of the Mistmoors",9,5,1.8,1.01],["Vengeful Possession",9,5,1.8,1.01],["Black Cat, Cunning Thief",7,5,1.4,1.01],["Chandra, Spark Hunter",7,5,1.4,1.01],["Cut Propulsion",7,5,1.4,1.01],["Urgent Necropsy",7,5,1.4,1.01],["Zero Point Ballad",7,5,1.4,1.01],["Tragic Trajectory",6,5,1.2,1.01],["Realm of Koh",5,5,1,1.01],["Thunder Magic",5,5,1,1.01],["Callous Sell-Sword",16,4,4,0.81],["Tifa Lockhart",16,4,4,0.81],["Unholy Annex // Ritual Chamber",15,4,3.75,0.81],["Emptiness",14,4,3.5,0.81],["Likeness Looter",14,4,3.5,0.81],["Longstalk Brawl",13,4,3.25,0.81],["Faerie Dreamthief",12,4,3,0.81],["Cruel Somnophage",8,4,2,0.81],["Faebloom Trick",8,4,2,0.81],["Stingerback Terror",7,4,1.75,0.81],["Wear Down",7,4,1.75,0.81],["Glarb, Calamity's Augur",6,4,1.5,0.81],["Ashling's Command",4,4,1,0.81],["Brightglass Gearhulk",4,4,1,0.81],["Malcolm, Alluring Scoundrel",4,4,1,0.81],["Malicious Eclipse",4,4,1,0.81],["Oblivious Bookworm",12,3,4,0.61],["Rot-Curse Rakshasa",12,3,4,0.61],["Turn Inside Out",12,3,4,0.61],["Bristlebane Battler",11,3,3.667,0.61],["Inevitable Defeat",11,3,3.667,0.61],["Azure Beastbinder",10,3,3.333,0.61],["Leyline of the Void",10,3,3.333,0.61],["Price of Freedom",10,3,3.333,0.61],["Dispelling Exhale",9,3,3,0.61],["Frenzied Baloth",9,3,3,0.61],["Ojer Axonil, Deepest Might",9,3,3,0.61],["Pawpatch Recruit",9,3,3,0.61],["Shiko, Paragon of the Way",9,3,3,0.61],["Valley Floodcaller",9,3,3,0.61],["Dreadmaw's Ire",8,3,2.667,0.61],["Helping Hand",8,3,2.667,0.61],["Gwen Stacy",7,3,2.333,0.61],["Roaring Furnace / Steaming Sauna",7,3,2.333,0.61],["Darkstar Augur",6,3,2,0.61],["Doc Ock's Tentacles",6,3,2,0.61],["Quag Feast",6,3,2,0.61],["Springleaf Drum",6,3,2,0.61],["Stoic Sphinx",6,3,2,0.61],["Undying Malice",6,3,2,0.61],["Virtue of Loyalty",6,3,2,0.61],["Cease // Desist",5,3,1.667,0.61],["Evolving Wilds",5,3,1.667,0.61],["Disruptive Stormbrood",4,3,1.333,0.61],["Maelstrom Pulse",4,3,1.333,0.61],["Shadowy Backstreet",4,3,1.333,0.61],["Champion of the Weird",3,3,1,0.61],["Explosive Prodigy",3,3,1,0.61],["Opulent Palace",3,3,1,0.61],["Sentinel of Lost Lore",3,3,1,0.61],["Terror of the Peaks",3,3,1,0.61],["Unsummon",3,3,1,0.61],["Vren, the Relentless",3,3,1,0.61],["Ygra, Eater of All",3,3,1,0.61],["Blossoming Defense",8,2,4,0.4],["Deepchannel Duelist",8,2,4,0.4],["Desperate Measures",8,2,4,0.4],["Giant Growth",8,2,4,0.4],["Hemosymbic Mite",8,2,4,0.4],["Leyline of Resonance",8,2,4,0.4],["Repurposing Bay",8,2,4,0.4],["Sentinel of the Nameless City",8,2,4,0.4],["Silvergill Mentor",8,2,4,0.4],["Simulacrum Synthesizer",8,2,4,0.4],["Stadium Headliner",8,2,4,0.4],["United Battlefront",8,2,4,0.4],["Wanderbrine Trapper",8,2,4,0.4],["Caretaker's Talent",7,2,3.5,0.4],["Clay-Fired Bricks",7,2,3.5,0.4],["Deepway Navigator",7,2,3.5,0.4],["Firdoch Core",7,2,3.5,0.4],["Mindspring Merfolk",7,2,3.5,0.4],["Perilous Snare",7,2,3.5,0.4],["Repulsive Mutation",7,2,3.5,0.4],["Unholy Annex / Ritual Chamber",7,2,3.5,0.4],["Herd Heirloom",6,2,3,0.4],["Traveling Chocobo",6,2,3,0.4],["Twilight Diviner",6,2,3,0.4],["Abigale, Eloquent First-Year",5,2,2.5,0.4],["Astrologian's Planisphere",5,2,2.5,0.4],["Demon Wall",5,2,2.5,0.4],["Mutable Explorer",5,2,2.5,0.4],["Uthros, Titanic Godcore",5,2,2.5,0.4],["Winnowing",5,2,2.5,0.4],["Bovine Intervention",4,2,2,0.4],["Bulk Up",4,2,2,0.4],["Dusk Rose Reliquary",4,2,2,0.4],["Felonious Rage",4,2,2,0.4],["Horned Loch-Whale",4,2,2,0.4],["Shimmerwilds Growth",4,2,2,0.4],["Spring-Loaded Sawblades",4,2,2,0.4],["Untimely Malfunction",4,2,2,0.4],["Valorous Stance",4,2,2,0.4],["Cathar Commando",3,2,1.5,0.4],["Feed the Swarm",3,2,1.5,0.4],["Glen Elendra's Answer",3,2,1.5,0.4],["Hedge Maze",3,2,1.5,0.4],["Toph, Hardheaded Teacher",3,2,1.5,0.4],["Town Greeter",3,2,1.5,0.4],["Ugin, Eye of the Storms",3,2,1.5,0.4],["Ancient Vendetta",2,2,1,0.4],["Balmor, Battlemage Captain",2,2,1,0.4],["Channeled Dragonfire",2,2,1,0.4],["Dauntless Scrapbot",2,2,1,0.4],["Entropic Battlecruiser",2,2,1,0.4],["Lord Skitter, Sewer King",2,2,1,0.4],["Momentum Breaker",2,2,1,0.4],["Oscorp Industries",2,2,1,0.4],["Personify",2,2,1,0.4],["The Fire Crystal",2,2,1,0.4],["The Soul Stone",2,2,1,0.4],["Tinybones Joins Up",2,2,1,0.4],["Trumpeting Carnosaur",2,2,1,0.4],["Valgavoth, Terror Eater",2,2,1,0.4],["Bloom Tender",4,1,4,0.2],["Burrowguard Mentor",4,1,4,0.2],["Candy Trail",4,1,4,0.2],["Carrot Cake",4,1,4,0.2],["Case of the Uneaten Feast",4,1,4,0.2],["Cheeky House-Mouse",4,1,4,0.2],["Commune with Beavers",4,1,4,0.2],["Concealed Courtyard",4,1,4,0.2],["Conduit Pylons",4,1,4,0.2],["Cryogen Relic",4,1,4,0.2],["Disruptor of Currents",4,1,4,0.2],["Dragon Sniper",4,1,4,0.2],["Earth King's Lieutenant",4,1,4,0.2],["Earth Kingdom Protectors",4,1,4,0.2],["Earthen Ally",4,1,4,0.2],["Enter the Enigma",4,1,4,0.2],["Etali's Favor",4,1,4,0.2],["Evendo, Waking Haven",4,1,4,0.2],["Figure of Fable",4,1,4,0.2],["Flamecache Gecko",4,1,4,0.2],["Flowerfoot Swordmaster",4,1,4,0.2],["Fugitive Codebreaker",4,1,4,0.2],["Geological Appraiser",4,1,4,0.2],["Growing Dread",4,1,4,0.2],["Imodane's Recruiter",4,1,4,0.2],["Invasion Reinforcements",4,1,4,0.2],["Jasmine Dragon Tea Shop",4,1,4,0.2],["Kinscaer Sentry",4,1,4,0.2],["Kona, Rescue Beastie",4,1,4,0.2],["Lightstall Inquisitor",4,1,4,0.2],["Mabel, Heir to Cragflame",4,1,4,0.2],["Manifold Mouse",4,1,4,0.2],["Molt Tender",4,1,4,0.2],["Mosswood Dreadknight",4,1,4,0.2],["Not Dead After All",4,1,4,0.2],["Novice Inspector",4,1,4,0.2],["Omniscience",4,1,4,0.2],["Quintorius Kand",4,1,4,0.2],["Rally the Monastery",4,1,4,0.2],["Ride's End",4,1,4,0.2],["Riling Dawnbreaker",4,1,4,0.2],["Roiling Dragonstorm",4,1,4,0.2],["Sage of the Skies",4,1,4,0.2],["Shardmage's Rescue",4,1,4,0.2],["Shocking Sharpshooter",4,1,4,0.2],["Skyknight Squire",4,1,4,0.2],["Sleep-Cursed Faerie",4,1,4,0.2],["Smuggler's Surprise",4,1,4,0.2],["South Pole Voyager",4,1,4,0.2],["Sygg's Command",4,1,4,0.2],["Valley Questcaller",4,1,4,0.2],["Warleader's Call",4,1,4,0.2],["Waterbending Scroll",4,1,4,0.2],["Witness Protection",4,1,4,0.2],["Aetherize",3,1,3,0.2],["Allies at Last",3,1,3,0.2],["Anim Pakal, Thousandth Moon",3,1,3,0.2],["Boiling Rock Rioter",3,1,3,0.2],["Braided Net",3,1,3,0.2],["Celestial Reunion",3,1,3,0.2],["Charming Prince",3,1,3,0.2],["Colossal Rattlewurm",3,1,3,0.2],["Deeproot Pilgrimage",3,1,3,0.2],["Dollmaker's Shop // Porcelain Gallery",3,1,3,0.2],["Fear of Impostors",3,1,3,0.2],["Focus Fire",3,1,3,0.2],["Fresh Start",3,1,3,0.2],["Hakoda, Selfless Commander",3,1,3,0.2],["Harbinger of the Tides",3,1,3,0.2],["Hauntwoods Shrieker",3,1,3,0.2],["Hide on the Ceiling",3,1,3,0.2],["Hobgoblin, Mantled Marauder",3,1,3,0.2],["Lost in the Maze",3,1,3,0.2],["Pick Your Poison",3,1,3,0.2],["Picklock Prankster",3,1,3,0.2],["Questing Druid",3,1,3,0.2],["Resolute Reinforcements",3,1,3,0.2],["Return the Favor",3,1,3,0.2],["Sunset Strikemaster",3,1,3,0.2],["Aloe Alchemist",2,1,2,0.2],["Arachne, Psionic Weaver",2,1,2,0.2],["Arana, Heart of the Spider",2,1,2,0.2],["Carnage, Crimson Chaos",2,1,2,0.2],["Caustic Exhale",2,1,2,0.2],["Cease / Desist",2,1,2,0.2],["Chart a Course",2,1,2,0.2],["Disenchant",2,1,2,0.2],["Eluge, the Shoreless Sea",2,1,2,0.2],["Exalted Sunborn",2,1,2,0.2],["Glass Casket",2,1,2,0.2],["Innkeeper's Talent",2,1,2,0.2],["Lifecraft Engine",2,1,2,0.2],["Midnight Tilling",2,1,2,0.2],["Mox Jasper",2,1,2,0.2],["Redirect Lightning",2,1,2,0.2],["Repel Calamity",2,1,2,0.2],["Scavenger Regent",2,1,2,0.2],["Scout for Survivors",2,1,2,0.2],["Season of the Burrow",2,1,2,0.2],["Spectacular Tactics",2,1,2,0.2],["Spider-Woman, Stunning Savior",2,1,2,0.2],["Spinerock Tyrant",2,1,2,0.2],["Temple of Enlightenment",2,1,2,0.2],["Tiger-Seal",2,1,2,0.2],["Unauthorized Exit",2,1,2,0.2],["University Campus",2,1,2,0.2],["Aclazotz, Deepest Betrayal",1,1,1,0.2],["Adagia, Windswept Bastion",1,1,1,0.2],["Adept Watershaper",1,1,1,0.2],["Arid Archway",1,1,1,0.2],["Caught Red-Handed",1,1,1,0.2],["Commercial District",1,1,1,0.2],["Cryptic Caves",1,1,1,0.2],["Cursed Recording",1,1,1,0.2],["Dalkovan Encampment",1,1,1,0.2],["Dark Confidant",1,1,1,0.2],["Eirdu, Carrier of Dawn",1,1,1,0.2],["Enduring Courage",1,1,1,0.2],["Faerie Fencing",1,1,1,0.2],["Feed the Cycle",1,1,1,0.2],["Felidar Retreat",1,1,1,0.2],["Final Showdown",1,1,1,0.2],["Fomori Vault",1,1,1,0.2],["Greasewrench Goblin",1,1,1,0.2],["Herald of Eternal Dawn",1,1,1,0.2],["Kitesail Larcenist",1,1,1,0.2],["Lazav, Wearer of Faces",1,1,1,0.2],["Long Goodbye",1,1,1,0.2],["Lush Portico",1,1,1,0.2],["Myojin of Night's Reach",1,1,1,0.2],["New Way Forward",1,1,1,0.2],["Opera Love Song",1,1,1,0.2],["Overprotect",1,1,1,0.2],["Pest Control",1,1,1,0.2],["Phyrexian Arena",1,1,1,0.2],["Restless Fortress",1,1,1,0.2],["Restless Prairie",1,1,1,0.2],["Restless Spire",1,1,1,0.2],["Restoration Magic",1,1,1,0.2],["River's Rebuke",1,1,1,0.2],["Rumble Arena",1,1,1,0.2],["Sorcerous Spyglass",1,1,1,0.2],["Starfield Vocalist",1,1,1,0.2],["Summon: Leviathan",1,1,1,0.2],["Talion, the Kindly Lord",1,1,1,0.2],["Temple of Triumph",1,1,1,0.2],["Tezzeret, Cruel Captain",1,1,1,0.2],["Thousand Moons Smithy",1,1,1,0.2],["Tyvar, the Pummeler",1,1,1,0.2],["Unravel",1,1,1,0.2],["Valgavoth's Lair",1,1,1,0.2],["Virtue of Persistence",1,1,1,0.2],["Volatile Fault",1,1,1,0.2],["Werefox Bodyguard",1,1,1,0.2]]
+  }
+};
+
+const BASICS = new Set(['Mountain','Island','Swamp','Forest','Plains',
+  'Snow-Covered Mountain','Snow-Covered Island','Snow-Covered Swamp','Snow-Covered Forest','Snow-Covered Plains','Wastes','Snow-Covered Wastes']);
+
+let currentFormat = 'pauper';
+let sortCol = 'pen';
+let sortDir = -1;
+let lastFiltered = [];
+let histogramFilter = null; // {min, max} or null
+
+function getTier(pen) {
+  if (pen >= 20) return 1;
+  if (pen >= 10) return 2;
+  if (pen >= 5) return 3;
+  if (pen >= 2) return 4;
+  return 5;
+}
+
+function tierLabel(t) {
+  return ['','Format Staple','Core Card','Archetype Staple','Niche','Fringe'][t];
+}
+
+// Process cards for current format
+function getCards() {
+  const fmt = FORMAT_DATA[currentFormat];
+  return fmt.cards.map((c, i) => ({
+    name: c[0], copies: c[1], decks: c[2], avg: c[3], pen: c[4],
+    isBasic: BASICS.has(c[0]), tier: getTier(c[4]), origRank: i + 1
+  }));
+}
+
+const tbody = document.getElementById('tbody');
+const search = document.getElementById('search');
+const tierFilter = document.getElementById('tierFilter');
+const hideBasics = document.getElementById('hideBasics');
+const showImages = document.getElementById('showImages');
+const summary = document.getElementById('summary');
+const mainTable = document.getElementById('mainTable');
+const cardPreview = document.getElementById('cardPreview');
+const previewImg = document.getElementById('previewImg');
+const toast = document.getElementById('toast');
+
+function scryfallUrl(name) {
+  return 'https://scryfall.com/search?q=!"' + encodeURIComponent(name) + '"&unique=cards';
+}
+function scryfallImgUrl(name, version) {
+  return 'https://api.scryfall.com/cards/named?exact=' + encodeURIComponent(name) + '&format=image&version=' + (version || 'small');
+}
+
+function render() {
+  const query = search.value.toLowerCase();
+  const tierVal = tierFilter.value;
+  const hideBas = hideBasics.checked;
+  const imgOn = showImages.checked;
+
+  mainTable.classList.toggle('img-col-hidden', !imgOn);
+
+  let cards = getCards();
+  let filtered = cards.filter(c => {
+    if (hideBas && c.isBasic) return false;
+    if (tierVal !== 'all' && c.tier !== parseInt(tierVal)) return false;
+    if (query && !c.name.toLowerCase().includes(query)) return false;
+    if (histogramFilter && (c.pen < histogramFilter.min || c.pen >= histogramFilter.max)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    let va, vb;
+    switch (sortCol) {
+      case 'rank': va = a.origRank; vb = b.origRank; break;
+      case 'name': return sortDir * a.name.localeCompare(b.name);
+      case 'pen': va = a.pen; vb = b.pen; break;
+      case 'decks': va = a.decks; vb = b.decks; break;
+      case 'copies': va = a.copies; vb = b.copies; break;
+      case 'avg': va = a.avg; vb = b.avg; break;
+      case 'tier': va = a.tier; vb = b.tier; break;
+      default: va = a.pen; vb = b.pen;
+    }
+    return sortDir * (va - vb);
+  });
+
+  lastFiltered = filtered;
+  const fmt = FORMAT_DATA[currentFormat];
+  summary.innerHTML = `Showing <strong>${filtered.length}</strong> of ${cards.length} cards (${fmt.name})`;
+
+  const maxPen = Math.max(...cards.map(c => c.pen));
+  let html = '';
+  filtered.forEach((c, i) => {
+    const barW = (c.pen / maxPen) * 100;
+    const tierColors = ['','#e94560','#c23152','#8b2040','#53162e','#2a0d18'];
+    const barColor = tierColors[c.tier];
+    const sUrl = scryfallUrl(c.name);
+    const imgSrc = scryfallImgUrl(c.name, 'small');
+    html += `<tr data-tier="${c.tier}" class="${c.isBasic ? 'basic' : ''}" data-card="${c.name.replace(/"/g,'&quot;')}">
+      <td>${i + 1}</td>
+      <td class="img-cell">${imgOn ? `<img class="card-thumb" src="${imgSrc}" alt="" loading="lazy">` : ''}</td>
+      <td><a class="card-link" href="${sUrl}" target="_blank" rel="noopener">${c.name}</a></td>
+      <td><span class="pen-bar" style="width:${barW}%;background:${barColor}"></span>${c.pen.toFixed(1)}%</td>
+      <td>${c.decks}</td>
+      <td>${c.copies}</td>
+      <td>${c.avg.toFixed(2)}</td>
+      <td><span class="tier-badge tier-${c.tier}">T${c.tier}</span> ${tierLabel(c.tier)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+
+  document.querySelectorAll('th[data-col]').forEach(th => {
+    const col = th.dataset.col;
+    const arrow = th.querySelector('.arrow');
+    if (col === sortCol) {
+      arrow.textContent = sortDir === -1 ? ' ▼' : ' ▲';
+    } else {
+      arrow.textContent = '';
+    }
+  });
+}
+
+// Hover preview
+let previewTimeout;
+tbody.addEventListener('mouseover', e => {
+  const row = e.target.closest('tr[data-card]');
+  if (!row) return;
+  const name = row.dataset.card;
+  clearTimeout(previewTimeout);
+  previewTimeout = setTimeout(() => {
+    previewImg.src = scryfallImgUrl(name, 'normal');
+    cardPreview.style.display = 'block';
+  }, 250);
+});
+tbody.addEventListener('mousemove', e => {
+  if (cardPreview.style.display !== 'block') return;
+  const x = e.clientX + 20;
+  const y = Math.min(e.clientY - 40, window.innerHeight - 380);
+  cardPreview.style.left = (x + 270 > window.innerWidth ? e.clientX - 270 : x) + 'px';
+  cardPreview.style.top = Math.max(8, y) + 'px';
+});
+tbody.addEventListener('mouseout', e => {
+  const row = e.target.closest('tr[data-card]');
+  if (!row || !row.contains(e.relatedTarget)) {
+    clearTimeout(previewTimeout);
+    cardPreview.style.display = 'none';
+    previewImg.src = '';
+  }
+});
+
+// Copy functions
+function showToast(msg) {
+  toast.textContent = msg || 'Copied!';
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 1800);
+}
+function flashBtn(btn) {
+  btn.classList.add('copied');
+  setTimeout(() => btn.classList.remove('copied'), 1500);
+}
+
+document.getElementById('copyNames').addEventListener('click', function() {
+  const text = lastFiltered.map(c => c.name).join('\n');
+  navigator.clipboard.writeText(text).then(() => { showToast(`${lastFiltered.length} card names copied`); flashBtn(this); });
+});
+
+document.getElementById('copyWithQty').addEventListener('click', function() {
+  const text = lastFiltered.map(c => {
+    const qty = Math.round(c.avg);
+    return `${qty} ${c.name}`;
+  }).join('\n');
+  navigator.clipboard.writeText(text).then(() => { showToast(`${lastFiltered.length} cards copied with quantities`); flashBtn(this); });
+});
+
+document.getElementById('copyCSV').addEventListener('click', function() {
+  let text = 'Card Name,Deck Penetration %,Decks,Total Copies,Avg Copies,Tier\n';
+  text += lastFiltered.map(c =>
+    `"${c.name}",${c.pen.toFixed(2)},${c.decks},${c.copies},${c.avg.toFixed(3)},${c.tier}`
+  ).join('\n');
+  navigator.clipboard.writeText(text).then(() => { showToast(`CSV copied (${lastFiltered.length} rows)`); flashBtn(this); });
+});
+
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = -1; }
+    render();
+  });
+});
+
+search.addEventListener('input', render);
+tierFilter.addEventListener('change', render);
+hideBasics.addEventListener('change', render);
+showImages.addEventListener('change', render);
+
+// Format tabs
+document.querySelectorAll('.format-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.format-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFormat = tab.dataset.format;
+    histogramFilter = null; // Clear filter on format switch
+    drawHistogram();
+    render();
+  });
+});
+
+// Histogram
+const histogramCanvas = document.getElementById('histogramCanvas');
+const histogramCtx = histogramCanvas.getContext('2d');
+const comparisonCanvas = document.getElementById('comparisonCanvas');
+const comparisonCtx = comparisonCanvas.getContext('2d');
+
+function drawHistogram() {
+  const dpr = window.devicePixelRatio || 1;
+  histogramCanvas.width = histogramCanvas.offsetWidth * dpr;
+  histogramCanvas.height = histogramCanvas.offsetHeight * dpr;
+  histogramCtx.scale(dpr, dpr);
+
+  const w = histogramCanvas.offsetWidth;
+  const h = histogramCanvas.offsetHeight;
+  const binWidth = parseInt(document.getElementById('binWidth').value);
+  const logScale = document.getElementById('logScale').checked;
+  const hideBasicsHisto = document.getElementById('hideBasicsHisto').checked;
+
+  const fmt = FORMAT_DATA[currentFormat];
+  let cards = fmt.cards.map(c => ({ name: c[0], pen: c[4], isBasic: BASICS.has(c[0]) }));
+  if (hideBasicsHisto) cards = cards.filter(c => !c.isBasic);
+
+  const bins = [];
+  for (let i = 0; i <= 100; i += binWidth) {
+    bins.push({ min: i, max: i + binWidth, count: 0 });
+  }
+  cards.forEach(c => {
+    const idx = Math.floor(c.pen / binWidth);
+    if (idx >= 0 && idx < bins.length) bins[idx].count++;
+  });
+
+  const maxCount = Math.max(...bins.map(b => b.count));
+  const padding = { top: 20, right: 30, bottom: 40, left: 50 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+
+  histogramCtx.clearRect(0, 0, w, h);
+
+  // Draw bars
+  const barWidth = chartW / bins.length;
+  bins.forEach((bin, i) => {
+    const barH = logScale
+      ? (bin.count > 0 ? (Math.log10(bin.count + 1) / Math.log10(maxCount + 1)) * chartH : 0)
+      : (bin.count / maxCount) * chartH;
+    const x = padding.left + i * barWidth;
+    const y = padding.top + chartH - barH;
+
+    const isFiltered = histogramFilter && (bin.min === histogramFilter.min);
+    histogramCtx.fillStyle = isFiltered ? '#00d2ff' : '#e94560';
+    histogramCtx.fillRect(x, y, barWidth - 2, barH);
+
+    // Label every 5 bins
+    if (i % 5 === 0 || i === bins.length - 1) {
+      histogramCtx.fillStyle = '#888';
+      histogramCtx.font = '10px sans-serif';
+      histogramCtx.textAlign = 'center';
+      histogramCtx.fillText(bin.min + '%', x + barWidth / 2, h - padding.bottom + 15);
+    }
+  });
+
+  // Y-axis labels
+  histogramCtx.fillStyle = '#888';
+  histogramCtx.font = '10px sans-serif';
+  histogramCtx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const val = logScale
+      ? Math.pow(10, (i / 5) * Math.log10(maxCount + 1)) - 1
+      : (i / 5) * maxCount;
+    const y = padding.top + chartH - (i / 5) * chartH;
+    histogramCtx.fillText(Math.round(val).toString(), padding.left - 5, y + 3);
+  }
+
+  // Axes
+  histogramCtx.strokeStyle = '#555';
+  histogramCtx.lineWidth = 1;
+  histogramCtx.beginPath();
+  histogramCtx.moveTo(padding.left, padding.top);
+  histogramCtx.lineTo(padding.left, padding.top + chartH);
+  histogramCtx.lineTo(padding.left + chartW, padding.top + chartH);
+  histogramCtx.stroke();
+
+  // Title
+  document.getElementById('histogramTitle').textContent = `${fmt.name}: Card Penetration Distribution`;
+}
+
+histogramCanvas.addEventListener('click', (e) => {
+  const rect = histogramCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const binWidth = parseInt(document.getElementById('binWidth').value);
+  const padding = { left: 50, right: 30 };
+  const chartW = histogramCanvas.offsetWidth - padding.left - padding.right;
+  const barWidth = chartW / (100 / binWidth);
+
+  const clickX = x - padding.left;
+  if (clickX < 0 || clickX > chartW) return;
+
+  const binIdx = Math.floor(clickX / barWidth);
+  const min = binIdx * binWidth;
+  const max = min + binWidth;
+
+  if (histogramFilter && histogramFilter.min === min) {
+    histogramFilter = null; // Toggle off
+  } else {
+    histogramFilter = { min, max };
+  }
+
+  drawHistogram();
+  render();
+});
+
+document.getElementById('binWidth').addEventListener('change', drawHistogram);
+document.getElementById('logScale').addEventListener('change', drawHistogram);
+document.getElementById('hideBasicsHisto').addEventListener('change', drawHistogram);
+
+// Comparison chart
+function drawComparison() {
+  const dpr = window.devicePixelRatio || 1;
+  comparisonCanvas.width = comparisonCanvas.offsetWidth * dpr;
+  comparisonCanvas.height = comparisonCanvas.offsetHeight * dpr;
+  comparisonCtx.scale(dpr, dpr);
+
+  const w = comparisonCanvas.offsetWidth;
+  const h = comparisonCanvas.offsetHeight;
+  const binWidth = 2;
+
+  const datasets = [
+    { name: 'Pauper', cards: FORMAT_DATA.pauper.cards, color: '#e94560' },
+    { name: 'Modern', cards: FORMAT_DATA.modern.cards, color: '#00d2ff' },
+    { name: 'Standard', cards: FORMAT_DATA.standard.cards, color: '#4CAF50' }
+  ];
+
+  const allBins = [];
+  for (let i = 0; i <= 100; i += binWidth) {
+    allBins.push({ min: i, max: i + binWidth, pauper: 0, modern: 0, standard: 0 });
+  }
+
+  datasets.forEach((ds, dsIdx) => {
+    const formatKey = ['pauper', 'modern', 'standard'][dsIdx];
+    ds.cards.forEach(c => {
+      if (BASICS.has(c[0])) return; // Skip basics for comparison
+      const pen = c[4];
+      const idx = Math.floor(pen / binWidth);
+      if (idx >= 0 && idx < allBins.length) allBins[idx][formatKey]++;
+    });
+  });
+
+  const maxCount = Math.max(...allBins.flatMap(b => [b.pauper, b.modern, b.standard]));
+  const padding = { top: 20, right: 30, bottom: 40, left: 50 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+
+  comparisonCtx.clearRect(0, 0, w, h);
+
+  // Draw lines
+  const barWidth = chartW / allBins.length;
+  datasets.forEach((ds, dsIdx) => {
+    const formatKey = ['pauper', 'modern', 'standard'][dsIdx];
+    comparisonCtx.strokeStyle = ds.color;
+    comparisonCtx.lineWidth = 2;
+    comparisonCtx.beginPath();
+    allBins.forEach((bin, i) => {
+      const x = padding.left + i * barWidth + barWidth / 2;
+      const y = padding.top + chartH - (bin[formatKey] / maxCount) * chartH;
+      if (i === 0) comparisonCtx.moveTo(x, y);
+      else comparisonCtx.lineTo(x, y);
+    });
+    comparisonCtx.stroke();
+  });
+
+  // X-axis labels
+  comparisonCtx.fillStyle = '#888';
+  comparisonCtx.font = '10px sans-serif';
+  comparisonCtx.textAlign = 'center';
+  for (let i = 0; i <= 100; i += 10) {
+    const x = padding.left + (i / binWidth) * barWidth;
+    comparisonCtx.fillText(i + '%', x, h - padding.bottom + 15);
+  }
+
+  // Y-axis labels
+  comparisonCtx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const val = (i / 5) * maxCount;
+    const y = padding.top + chartH - (i / 5) * chartH;
+    comparisonCtx.fillText(Math.round(val).toString(), padding.left - 5, y + 3);
+  }
+
+  // Axes
+  comparisonCtx.strokeStyle = '#555';
+  comparisonCtx.lineWidth = 1;
+  comparisonCtx.beginPath();
+  comparisonCtx.moveTo(padding.left, padding.top);
+  comparisonCtx.lineTo(padding.left, padding.top + chartH);
+  comparisonCtx.lineTo(padding.left + chartW, padding.top + chartH);
+  comparisonCtx.stroke();
+
+  // Legend
+  const legendX = padding.left + 10;
+  const legendY = padding.top + 10;
+  datasets.forEach((ds, i) => {
+    comparisonCtx.strokeStyle = ds.color;
+    comparisonCtx.lineWidth = 3;
+    comparisonCtx.beginPath();
+    comparisonCtx.moveTo(legendX, legendY + i * 20);
+    comparisonCtx.lineTo(legendX + 30, legendY + i * 20);
+    comparisonCtx.stroke();
+
+    comparisonCtx.fillStyle = '#e0e0e0';
+    comparisonCtx.font = '12px sans-serif';
+    comparisonCtx.textAlign = 'left';
+    comparisonCtx.fillText(ds.name, legendX + 35, legendY + i * 20 + 4);
+  });
+
+  // Update stats
+  const count10 = (cards) => cards.filter(c => c[4] >= 10 && !BASICS.has(c[0])).length;
+  document.getElementById('statPauper10').textContent = count10(FORMAT_DATA.pauper.cards);
+  document.getElementById('statModern10').textContent = count10(FORMAT_DATA.modern.cards);
+  document.getElementById('statStandard10').textContent = count10(FORMAT_DATA.standard.cards);
+  document.getElementById('statPauperTotal').textContent = FORMAT_DATA.pauper.cards.length;
+  document.getElementById('statModernTotal').textContent = FORMAT_DATA.modern.cards.length;
+  document.getElementById('statStandardTotal').textContent = FORMAT_DATA.standard.cards.length;
+}
+
+// Initial render
+mainTable.classList.add('img-col-hidden');
+render();
+drawHistogram();
+drawComparison();
+
+// Redraw on resize
+window.addEventListener('resize', () => {
+  drawHistogram();
+  drawComparison();
+});
+</script>
+</body>
+</html>
