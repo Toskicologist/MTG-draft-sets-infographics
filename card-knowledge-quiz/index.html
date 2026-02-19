@@ -1172,6 +1172,15 @@
      * Last Updated: 2026-02-19 13:16 UTC
      *
      * CHANGELOG:
+     * v2.13.2 (2026-02-19) - Bug fixes: Toggle regeneration and auto-scroll
+     *   - FIX: Toggling question type fields (Name, Type, Mana Value, etc.) now regenerates question
+     *   - Problem: When clicking toggle buttons, enabledFields changed but question wasn't regenerated
+     *   - Solution: Added useEffect to regenerate question using same card when shownFields change
+     *   - NEW: Auto-scroll to quiz container when new question appears
+     *   - Behavior: After answering a question and clicking Next, page auto-scrolls to new question
+     *   - Smooth scroll animation makes it clear that question has changed
+     *   - Especially useful on mobile/narrow screens where quiz might be off-screen
+     *
      * v2.13.1 (2026-02-19) - Bug fix: Prepopulated list switching
      *   - FIX: Switching to "Card Lists" tab now loads the highlighted list immediately
      *   - Previous logic: Only loaded if cardPool was empty, or if activePreset was already a prepopulated list
@@ -3321,6 +3330,9 @@
       const [questionMode, setQuestionMode] = useState('random'); // 'random' or 'rotate'
       const [lastAskedField, setLastAskedField] = useState(null);
 
+      // Ref for auto-scrolling to quiz container
+      const quizContainerRef = useRef(null);
+
       // Save state
       useEffect(() => { saveStorage(STORAGE_KEYS.SCORE, score); }, [score]);
       useEffect(() => { saveStorage(STORAGE_KEYS.HISTORY, history); }, [history]);
@@ -3377,6 +3389,74 @@
 
         nextQuestion();
       }, [cardPool, quizConfig.askField, quizConfig.answerFormat, showFeedback]);
+
+      // When shownFields changes, regenerate question using same card with new field availability
+      // This allows toggling "shown" fields to immediately update what the user sees
+      useEffect(() => {
+        if (!cardPool || !currentQuestion || showFeedback) return;
+
+        // When shownFields change, we should regenerate the question using the same card
+        // but now with the updated list of available fields to ask about.
+        // This is different from changing askField directly - the user is just toggling
+        // which fields are enabled, so we pick a new random enabled field for the same card.
+        const validEnabledFields = quizConfig.shownFields.filter(fid => {
+          const config = FIELD_CONFIG[fid];
+          if (!config || !config.canAsk) return false;
+          if (config.requiresApplicability && !config.isApplicable(currentQuestion.card)) return false;
+          return true;
+        });
+
+        if (validEnabledFields.length === 0) return;
+
+        // Only regenerate if the current question's askField is no longer enabled
+        if (!validEnabledFields.includes(currentQuestion.askField)) {
+          // Pick a new random enabled field from the same card
+          const newAskField = validEnabledFields[Math.floor(Math.random() * validEnabledFields.length)];
+
+          // Regenerate question using the same card but with new field
+          const fieldDef = FIELD_CONFIG[newAskField];
+          const correctValue = fieldDef.extractValue(currentQuestion.card);
+          const correctDisplay = fieldDef.formatDisplay(correctValue);
+          const updatedConfig = { ...quizConfig, askField: newAskField };
+
+          // Generate the new question asynchronously
+          (async () => {
+            let newQuestion = null;
+            if (updatedConfig.answerFormat === 'multipleChoice') {
+              newQuestion = await generateMultipleChoiceQuestion(
+                currentQuestion.card,
+                cardPool,
+                updatedConfig,
+                fieldDef,
+                correctDisplay,
+                scryfall.current
+              );
+            } else if (updatedConfig.answerFormat === 'textInput') {
+              newQuestion = generateTextInputQuestion(
+                currentQuestion.card,
+                updatedConfig,
+                fieldDef,
+                correctDisplay
+              );
+            }
+
+            if (newQuestion) {
+              setCurrentQuestion(newQuestion);
+              setShowFeedback(false);
+            }
+          })();
+        }
+      }, [quizConfig.shownFields, currentQuestion, showFeedback, cardPool, quizConfig.askField, quizConfig.answerFormat]);
+
+      // Auto-scroll to quiz container when new question appears
+      useEffect(() => {
+        if (currentQuestion && !showFeedback && quizContainerRef.current) {
+          // Use a small delay to allow DOM to update
+          setTimeout(() => {
+            quizContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
+      }, [currentQuestion, showFeedback]);
 
       const loadPreset = async (presetKey) => {
         setLoading(presetKey);
@@ -3721,7 +3801,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.13.1 (2026-02-19)</div>
+            <div className="subtitle">Custom Mode Only — v2.13.2 (2026-02-19)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -3878,7 +3958,7 @@
           )}
 
           {currentQuestion && !loading && (
-            <>
+            <div ref={quizContainerRef}>
               <QuestionDisplay
                 question={currentQuestion}
                 onAnswer={handleAnswer}
@@ -3890,7 +3970,7 @@
                 onNext={nextQuestion}
                 liveShownFields={quizConfig.shownFields}
               />
-            </>
+            </div>
           )}
 
           {streakPopup && (
