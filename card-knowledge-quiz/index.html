@@ -151,6 +151,7 @@
     /* ===== Question Mode Selector ===== */
     .question-mode-selector {
       display: flex;
+      align-items: center;
       gap: 16px;
       margin-bottom: 16px;
       padding: 12px;
@@ -159,20 +160,43 @@
       border: 1px solid var(--border);
     }
 
-    .question-mode-selector label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
+    .mode-label {
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
       font-size: 0.9rem;
     }
 
-    .question-mode-selector label input[type="radio"] {
+    .mode-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface);
+    }
+
+    .mode-option.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .mode-option input[type="radio"] {
+      margin: 0;
       cursor: pointer;
     }
 
-    .question-mode-selector label:hover {
-      color: var(--accent);
+    .mode-option span {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .mode-option:hover {
+      border-color: var(--accent);
     }
 
     /* ===== Card Source Selector ===== */
@@ -1151,7 +1175,7 @@
   </style>
 </head>
 <body>
-  <div class="local-banner">LIVE VERSION</div>
+  <div class="local-banner">LOCAL VERSION (API)</div>
   <div class="local-banner-spacer"></div>
 
   <div id="root"></div>
@@ -1172,6 +1196,15 @@
      * Last Updated: 2026-02-19 13:16 UTC
      *
      * CHANGELOG:
+     * v2.13.3 (2026-02-19) - Simplify question modes: Single Type vs Multiple Types (random)
+     *   - REMOVED: "Rotate through all types" mode (replaced with simpler default behavior)
+     *   - NEW: Two-mode system: Single Type (pick one type) vs Multiple Types (default)
+     *   - Multiple Types mode: All 8 question types enabled by default, randomly selected
+     *   - Single Type mode: Only ONE type can be checked at a time
+     *   - Default: Start with Multiple Types mode, all fields enabled
+     *   - Question selection: Always random from enabled types (no rotation logic)
+     *   - Simplified state: removed lastAskedField tracking, removed rotation logic
+     *
      * v2.13.2 (2026-02-19) - Bug fixes: Toggle regeneration and auto-scroll
      *   - FIX: Toggling question type fields (Name, Type, Mana Value, etc.) now regenerates question
      *   - Problem: When clicking toggle buttons, enabledFields changed but question wasn't regenerated
@@ -2179,44 +2212,10 @@
       return errors;
     }
 
-    function selectQuestionConfig(customConfig, lastAskedField = null, mode = 'random') {
-      const enabledFields = Object.keys(FIELD_CONFIG).filter(id => {
-        const field = FIELD_CONFIG[id];
-        return field.canAsk && customConfig[id]?.ask;
-      });
-
-      if (mode === 'rotate' && lastAskedField && enabledFields.length > 0) {
-        const currentIndex = enabledFields.indexOf(lastAskedField);
-        const nextIndex = (currentIndex + 1) % enabledFields.length;
-        return { askField: enabledFields[nextIndex], showFields: [] };
-      }
-
-      // Fallback to random selection (when not in rotate mode or first time)
-      if (enabledFields.length === 0) return null;
-      const askField = pickRandom(enabledFields);
-      return { askField, showFields: [] };
-    }
-
-    async function generateCustomQuestion(cardPool, config, scryfallClient, questionMode = 'random', lastAskedField = null, askedQuestions = new Set(), activePreset = null, handleNoAvailableCards = null) {
+    async function generateCustomQuestion(cardPool, config, scryfallClient, askedQuestions = new Set(), activePreset = null, handleNoAvailableCards = null) {
       if (!cardPool || cardPool.length < 2) return null;
 
-      // Determine which field to ask about
-      let askField = config.askField;
-      if (questionMode === 'rotate' && lastAskedField !== null) {
-        const rotationConfig = selectQuestionConfig(
-          Object.keys(FIELD_CONFIG).reduce((acc, id) => {
-            acc[id] = { ask: config.shownFields.includes(id) && FIELD_CONFIG[id].canAsk };
-            return acc;
-          }, {}),
-          lastAskedField,
-          'rotate'
-        );
-        if (rotationConfig?.askField) {
-          askField = rotationConfig.askField;
-        }
-      }
-
-      const updatedConfig = { ...config, askField };
+      const updatedConfig = { ...config };
       if (!updatedConfig.askField) return null;
 
       const applicableCards = getApplicableCards(cardPool, updatedConfig);
@@ -2724,17 +2723,14 @@
       );
     }
 
-    function ConfigPanel({ config, onConfigChange, cardPool }) {
+    function ConfigPanel({ config, onConfigChange, cardPool, questionMode, onFieldToggle }) {
       const [collapsed, setCollapsed] = useState(false);
 
       const handleShowToggle = (fieldId) => {
-        const isShown = config.shownFields.includes(fieldId);
-        const newShownFields = isShown
-          ? config.shownFields.filter(f => f !== fieldId)
-          : [...config.shownFields, fieldId];
-
+        // Use the parent's mode-aware toggle handler
+        onFieldToggle(fieldId);
         // Disable "show all except asked" when manually toggling individual fields
-        onConfigChange({ ...config, shownFields: newShownFields, showAllExceptAsked: false });
+        onConfigChange({ ...config, showAllExceptAsked: false });
       };
 
       const handleAskChange = (fieldId) => {
@@ -3326,9 +3322,8 @@
       const [askedQuestions, setAskedQuestions] = useState(new Set()); // Set of "cardName|askField" strings
       const [backgroundFetching, setBackgroundFetching] = useState(false);
 
-      // Question rotation mode
-      const [questionMode, setQuestionMode] = useState('random'); // 'random' or 'rotate'
-      const [lastAskedField, setLastAskedField] = useState(null);
+      // Question mode: 'single' (one type) or 'multiple' (random from enabled)
+      const [questionMode, setQuestionMode] = useState('multiple');
 
       // Ref for auto-scrolling to quiz container
       const quizContainerRef = useRef(null);
@@ -3675,19 +3670,42 @@
         }
       };
 
+      // Handle field toggle with mode awareness
+      const handleFieldToggle = (fieldId) => {
+        if (questionMode === 'single') {
+          // Single mode: only this field should be checked
+          setQuizConfig(prev => ({
+            ...prev,
+            shownFields: [fieldId]
+          }));
+        } else {
+          // Multiple mode: toggle this field
+          setQuizConfig(prev => {
+            const newFields = prev.shownFields.includes(fieldId)
+              ? prev.shownFields.filter(f => f !== fieldId)
+              : [...prev.shownFields, fieldId];
+
+            // Prevent unchecking all fields
+            if (newFields.length === 0) return prev;
+
+            return { ...prev, shownFields: newFields };
+          });
+        }
+      };
+
       // Pre-generate next question in background
       const preGenerateNextQuestion = useCallback(async () => {
         if (!cardPool || validationErrors.length > 0) return;
 
         try {
-          const q = await generateCustomQuestion(cardPool, quizConfig, scryfall.current, questionMode, lastAskedField, askedQuestions, activePreset, handleNoAvailableCards);
+          const q = await generateCustomQuestion(cardPool, quizConfig, scryfall.current, askedQuestions, activePreset, handleNoAvailableCards);
           if (q) {
             setNextQuestionCache(q);
           }
         } catch (err) {
           console.error('Failed to pre-generate question:', err);
         }
-      }, [cardPool, quizConfig, validationErrors, questionMode, lastAskedField, askedQuestions, activePreset, handleNoAvailableCards]);
+      }, [cardPool, quizConfig, validationErrors, askedQuestions, activePreset, handleNoAvailableCards]);
 
       const nextQuestion = useCallback(async () => {
         if (!cardPool) return;
@@ -3702,7 +3720,7 @@
 
         // If no valid cache, generate now
         if (!q && validationErrors.length === 0) {
-          q = await generateCustomQuestion(cardPool, quizConfig, scryfall.current, questionMode, lastAskedField, askedQuestions, activePreset, handleNoAvailableCards);
+          q = await generateCustomQuestion(cardPool, quizConfig, scryfall.current, askedQuestions, activePreset, handleNoAvailableCards);
         }
 
         if (!q) {
@@ -3718,9 +3736,6 @@
         setIsCorrect(false);
         setPointsEarned(0);
         setStreakBonus(1);
-
-        // Track the asked field for rotation mode
-        setLastAskedField(q.askField);
 
         // Track this question as asked
         setAskedQuestions(prev => new Set([...prev, `${q.card.name}|${q.askField}`]));
@@ -3738,7 +3753,7 @@
         // Clear cache and start pre-generating next question
         setNextQuestionCache(null);
         preGenerateNextQuestion();
-      }, [cardPool, quizConfig, validationErrors, nextQuestionCache, preGenerateNextQuestion, questionMode, lastAskedField, askedQuestions, activePreset, backgroundFetching, triggerBackgroundFetch]);
+      }, [cardPool, quizConfig, validationErrors, nextQuestionCache, preGenerateNextQuestion, askedQuestions, activePreset, backgroundFetching, triggerBackgroundFetch]);
 
       const handleAnswer = useCallback((correct, userAnswer) => {
         const streakMult = score.streak >= 10 ? 3 : score.streak >= 5 ? 2 : score.streak >= 3 ? 1.5 : 1;
@@ -3801,7 +3816,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.13.2 (2026-02-19)</div>
+            <div className="subtitle">Custom Mode Only — v2.13.3 (2026-02-19)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -3891,21 +3906,26 @@
           {cardPool && (
             <>
               <div className="question-mode-selector">
-                <label>
+                <label className="mode-label">Question Mode:</label>
+                <label className={`mode-option ${questionMode === 'single' ? 'active' : ''}`}>
                   <input
                     type="radio"
-                    checked={questionMode === 'random'}
-                    onChange={() => setQuestionMode('random')}
+                    name="questionMode"
+                    value="single"
+                    checked={questionMode === 'single'}
+                    onChange={() => setQuestionMode('single')}
                   />
-                  Random Questions
+                  <span>Single Type</span>
                 </label>
-                <label>
+                <label className={`mode-option ${questionMode === 'multiple' ? 'active' : ''}`}>
                   <input
                     type="radio"
-                    checked={questionMode === 'rotate'}
-                    onChange={() => setQuestionMode('rotate')}
+                    name="questionMode"
+                    value="multiple"
+                    checked={questionMode === 'multiple'}
+                    onChange={() => setQuestionMode('multiple')}
                   />
-                  Rotate Through All Types
+                  <span>Multiple Types</span>
                 </label>
               </div>
 
@@ -3913,6 +3933,8 @@
                 config={quizConfig}
                 onConfigChange={setQuizConfig}
                 cardPool={cardPool}
+                questionMode={questionMode}
+                onFieldToggle={handleFieldToggle}
               />
 
               {askedQuestions.size > 0 && (
