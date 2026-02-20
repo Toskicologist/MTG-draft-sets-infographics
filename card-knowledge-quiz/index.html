@@ -1246,6 +1246,13 @@
      * Last Updated: 2026-02-20 15:00 UTC
      *
      * CHANGELOG:
+     * v2.15.6 (2026-02-20) - Fix 5 bugs from code review
+     *   - FIX: displayMode not passed to QuestionDisplay (ReferenceError crash)
+     *   - FIX: streakPopup set to object caused "[object Object] STREAK!" display
+     *   - FIX: validateQuizConfig required 3 cards for text-input mode (only needs 1)
+     *   - FIX: Power/toughness excluded 0-power creatures (Ornithopter, etc.)
+     *   - FIX: Color/rarity filters had no effect on Scryfall search results
+     *
      * v2.15.5 (2026-02-20) - Fix crash when config.askableFields is undefined during render
      *   - BUG: config.askableFields.includes() called before askableFields guaranteed to exist
      *   - FIX: Guard all askableFields accesses with (config.askableFields || []) fallback
@@ -1627,8 +1634,8 @@
         canShow: true,
         canAsk: true,
         requiresApplicability: true,
-        checkApplicability: (pool) => pool.filter(c => c.isCreature && c.power && c.toughness).length >= 4,
-        isApplicable: (card) => card.isCreature && card.power && card.toughness,
+        checkApplicability: (pool) => pool.filter(c => c.isCreature && c.power != null && c.toughness != null).length >= 4,
+        isApplicable: (card) => card.isCreature && card.power != null && card.toughness != null,
         extractValue: (card) => `${card.power}/${card.toughness}`,
         formatDisplay: (pt) => pt,
         incompatibleWith: [],
@@ -2594,10 +2601,11 @@
         errors.push('At least one field must be shown');
       }
 
-      // Check if enough applicable cards (need 3 minimum: 1 correct + 2 wrong)
+      // Check if enough applicable cards (text input needs 1, multiple choice needs 3)
       const applicable = getApplicableCards(cardPool, config);
-      if (applicable.length < 3) {
-        errors.push(`Not enough cards for selected field (need 3, found ${applicable.length})`);
+      const minRequired = config.answerFormat === 'multipleChoice' ? 3 : 1;
+      if (applicable.length < minRequired) {
+        errors.push(`Not enough cards for selected field (need ${minRequired}, found ${applicable.length})`);
       }
 
       return errors;
@@ -3478,7 +3486,7 @@
       );
     }
 
-    function QuestionDisplay({ question, onAnswer, showFeedback, isCorrect, selectedIdx, pointsEarned, streakBonus, onNext, liveShownFields }) {
+    function QuestionDisplay({ question, onAnswer, showFeedback, isCorrect, selectedIdx, pointsEarned, streakBonus, onNext, liveShownFields, displayMode }) {
       const [textAnswer, setTextAnswer] = useState('');
 
       const handleChoice = (idx) => {
@@ -4132,13 +4140,6 @@
       const handleNoAvailableCards = (allCards, config) => {
         // If in prepopulated/custom list mode: allow repeats with notification
         if (['customList', 'pauper', 'modern', 'standard'].includes(activePreset)) {
-          setStreakPopup({
-            type: 'info',
-            title: 'List Exhausted',
-            message: `You've been asked about all cards with this field. Questions will now repeat.`,
-            show: true,
-          });
-
           // Clear history for this askField only
           setAskedQuestions(prev => {
             const newSet = new Set();
@@ -4166,7 +4167,16 @@
         setBackgroundFetching(true);
 
         try {
-          const newCards = await scryfall.current.fetchByQuery(searchQuery, 100);
+          // Build query with color and rarity filters
+          let fullQuery = searchQuery;
+          if (colorFilter && colorFilter !== 'all') {
+            fullQuery += ` c:${colorFilter}`;
+          }
+          if (rarityFilter && rarityFilter !== 'all') {
+            fullQuery += ` r:${rarityFilter}`;
+          }
+
+          const newCards = await scryfall.current.fetchByQuery(fullQuery, 100);
 
           // Merge with existing pool (dedupe by name)
           const existingNames = new Set(cardPool.map(c => c.name));
@@ -4365,7 +4375,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.15.5 (2026-02-20)</div>
+            <div className="subtitle">Custom Mode Only — v2.15.6 (2026-02-20)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -4492,12 +4502,6 @@
                 <div className="history-controls">
                   <button onClick={() => {
                     setAskedQuestions(new Set());
-                    setStreakPopup({
-                      type: 'info',
-                      title: 'History Reset',
-                      message: 'Question history has been cleared.',
-                      show: true,
-                    });
                   }} className="reset-history-btn">
                     Reset Question History
                   </button>
@@ -4542,6 +4546,7 @@
                 streakBonus={streakBonus}
                 onNext={nextQuestion}
                 liveShownFields={quizConfig.shownFields}
+                displayMode={displayMode}
               />
             </div>
           )}
