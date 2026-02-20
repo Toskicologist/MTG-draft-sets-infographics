@@ -1246,6 +1246,11 @@
      * Last Updated: 2026-02-20 15:00 UTC
      *
      * CHANGELOG:
+     * v2.15.5 (2026-02-20) - Fix crash when config.askableFields is undefined during render
+     *   - BUG: config.askableFields.includes() called before askableFields guaranteed to exist
+     *   - FIX: Guard all askableFields accesses with (config.askableFields || []) fallback
+     *   - Root cause: React renders multi-mode branch synchronously; no time for state init guard
+     *
      * v2.15.4 (2026-02-20) - Fix blank page crash on old localStorage state
      *   - BUG: quizConfig.askableFields undefined when user had pre-v2.15 localStorage
      *   - FIX: Merge stored config with defaults so new fields always initialise correctly
@@ -3121,9 +3126,10 @@
 
       const handleAskToggle = (fieldId) => {
         // For Multi Mode: Toggle field in askableFields
-        const newAskableFields = config.askableFields.includes(fieldId)
-          ? config.askableFields.filter(f => f !== fieldId)
-          : [...config.askableFields, fieldId];
+        const currentAskable = config.askableFields || [];
+        const newAskableFields = currentAskable.includes(fieldId)
+          ? currentAskable.filter(f => f !== fieldId)
+          : [...currentAskable, fieldId];
 
         // Prevent unchecking all fields
         if (newAskableFields.length === 0) {
@@ -3364,7 +3370,7 @@
                           <td>
                             <input
                               type="checkbox"
-                              checked={config.askableFields.includes(field.id)}
+                              checked={(config.askableFields || []).includes(field.id)}
                               onChange={() => handleAskToggle(field.id)}
                               disabled={!field.canAsk}
                             />
@@ -4359,7 +4365,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.15.4 (2026-02-20)</div>
+            <div className="subtitle">Custom Mode Only — v2.15.5 (2026-02-20)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
