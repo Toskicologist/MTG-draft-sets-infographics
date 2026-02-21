@@ -70,6 +70,70 @@
     }
 
     /* ===== Header ===== */
+    /* ===== Banner ===== */
+    .banner {
+      position: relative;
+      background-image: url('https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 40px 16px;
+      text-align: center;
+      margin: 0 -16px 20px;
+      overflow: hidden;
+    }
+
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%);
+      z-index: 1;
+    }
+
+    .banner-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .banner h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin: 0 0 12px;
+    }
+
+    .banner p {
+      font-size: 11px;
+      color: #e0e0e0;
+      margin: 0;
+      line-height: 1.5;
+      max-width: 65ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .banner a {
+      color: #fff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .banner a:hover {
+      opacity: 0.9;
+    }
+
+    .banner-scryfall {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 16px !important;
+      color: #fff;
+    }
+
     .header {
       text-align: center;
       padding: 24px 0 16px;
@@ -1323,6 +1387,20 @@
      * Last Updated: 2026-02-21 17:05 UTC
      *
      * CHANGELOG:
+     * v2.18.8-local (2026-02-21) - Add Scryfall attribution
+     *   - UI: Add Scryfall API attribution with links (larger, bold text)
+     *   - Link to Scryfall.com and Patreon support page
+     * v2.18.7-local (2026-02-21) - Banner polish + full footer text
+     *   - UI: Add background image with gradient overlay (matches 17lands quiz style)
+     *   - UI: Add full footer text with links to GitHub, related projects, and social media
+     *   - UI: Update version number and timestamp in banner
+     * v2.18.6-local (2026-02-21) - Banner redesign + stats relocation
+     *   - UI: Replace header section with gradient banner (consistent with 17lands quiz)
+     *   - UI: Move Score/Correct/Streak/Accuracy to top of History section
+     *   - FIX: Only show stats when history has questions
+     * v2.18.5-local (2026-02-21) - Fix source switching bug
+     *   - FIX: Switching to custom list now clears cardPool (was keeping prepopulated data)
+     *   - FIX: Switching back to prepopulated from custom now correctly loads the list
      * v2.18.4-local (2026-02-21) - Show header UX polish
      *   - UI: th headers now top-aligned (vertical-align: top)
      *   - UI: Random N spinner always visible (value defaults to 1 when All selected)
@@ -3815,11 +3893,29 @@
       );
     }
 
-    function HistoryTable({ history, onClear }) {
+    function HistoryTable({ history, onClear, score, accuracy }) {
       if (history.length === 0) return null;
 
       return (
         <div className="history-section">
+          <div className="score-bar">
+            <div className="score-item">
+              <div className="score-label">Score</div>
+              <div className="score-value">{score.points}</div>
+            </div>
+            <div className="score-item">
+              <div className="score-label">Correct</div>
+              <div className="score-value">{score.correct}/{score.questions}</div>
+            </div>
+            <div className="score-item">
+              <div className="score-label">Streak</div>
+              <div className="score-value streak">{score.streak}</div>
+            </div>
+            <div className="score-item">
+              <div className="score-label">Accuracy</div>
+              <div className="score-value accuracy">{accuracy}%</div>
+            </div>
+          </div>
           <div className="history-header">
             <div className="history-title">Question History ({history.length})</div>
             <button className="history-clear-btn" onClick={onClear}>
@@ -4197,6 +4293,7 @@
 
         if (source === 'custom') {
           setActivePreset('customList');
+          setCardPool(null); // Wait for user to load a custom list
         } else if (source === 'prepopulated') {
           // Check if activePreset is already a valid prepopulated list
           if (activePreset && PREPOPULATED_LISTS[activePreset]) {
@@ -4443,28 +4540,17 @@
 
       return (
         <div className="app-container">
-          <div className="header">
-            <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.18.0 (2026-02-21)</div>
-            <div className="api-badge">Powered by Scryfall API</div>
-          </div>
-
-          <div className="score-bar">
-            <div className="score-item">
-              <div className="score-label">Score</div>
-              <div className="score-value">{score.points}</div>
-            </div>
-            <div className="score-item">
-              <div className="score-label">Correct</div>
-              <div className="score-value">{score.correct}/{score.questions}</div>
-            </div>
-            <div className="score-item">
-              <div className="score-label">Streak</div>
-              <div className="score-value streak">{score.streak}</div>
-            </div>
-            <div className="score-item">
-              <div className="score-label">Accuracy</div>
-              <div className="score-value accuracy">{accuracy}%</div>
+          <div className="banner">
+            <div className="banner-content">
+              <h1>MTG Card Knowledge Quiz</h1>
+              <p>
+                Lovingly vibe coded with Claude Code • <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics/tree/main/card-knowledge-quiz" target="_blank" rel="noopener noreferrer">View source on GitHub</a> • Version 2.18.8 • Last updated 2026-02-21 00:00 UTC
+                <br />
+                Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Interactive Color Wheel of ECL draft archetypes</a>, <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer">normalized review comparison</a>, or my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">17Lands draft data quiz</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+              </p>
+              <p className="banner-scryfall">
+                Card info and images use the <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
+              </p>
             </div>
           </div>
 
@@ -4620,6 +4706,8 @@
 
           <HistoryTable
             history={history}
+            score={score}
+            accuracy={accuracy}
             onClear={() => {
               setHistory([]);
               setScore({ points: 0, questions: 0, correct: 0, streak: 0, bestStreak: 0 });
