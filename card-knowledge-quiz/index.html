@@ -1227,8 +1227,15 @@
   </style>
 </head>
 <body>
-  <div class="local-banner">LOCAL VERSION (API)</div>
-  <div class="local-banner-spacer"></div>
+  <script>
+    (function() {
+      var h = window.location.hostname;
+      var isLocal = h === 'localhost' || h === '127.0.0.1' || h === '';
+      if (isLocal) {
+        document.write('<div class="local-banner">LOCAL VERSION (API)<\/div><div class="local-banner-spacer"><\/div>');
+      }
+    })();
+  </script>
 
   <div id="root"></div>
 
@@ -1248,6 +1255,7 @@
      * Last Updated: 2026-02-21 10:10 UTC
      *
      * CHANGELOG:
+     * v2.16.3 (2026-02-21) - Banner auto-hides on GitHub Pages, shows only on localhost
      * v2.16.2 (2026-02-21) - Fix "cannot generate question" error on prepopulated lists
      *   - generateSyntheticWrong now handles manaValue, typeLine, cardName, oracleText
      *     (previously only handled castingCost, powerToughness, colors - returning empty
@@ -4416,7 +4424,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.16.2 (2026-02-21)</div>
+            <div className="subtitle">Custom Mode Only — v2.16.3 (2026-02-21)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
