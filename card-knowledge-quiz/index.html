@@ -1255,6 +1255,14 @@
      * Last Updated: 2026-02-21 10:10 UTC
      *
      * CHANGELOG:
+     * v2.17.0 (2026-02-21) - Major question-mode and hint-selection fixes
+     *   - FIX: Single Type mode now strictly respects selected Ask field
+     *   - FIX: Show-column checkboxes independently toggleable in both modes
+     *   - FIX: Ask radio no longer mutates Show selections
+     *   - FIX: Show/Ask fields no longer greyed based on config.askField (per-question logic handles it)
+     *   - FIX: Show One (random) now picks only non-empty/renderable hint fields
+     *   - FIX: Colors hint field is now rendered in card display (was missing)
+     *   - REFACTOR: Replaced shownFields-driven ask reassignment with clean alignment effect
      * v2.16.5 (2026-02-21) - Bug fixes from local test build (9 changes)
      *   - FIX: castingCost/colors now excluded for land cards (isLandCard helper)
      *   - FIX: getApplicableCards uses fieldDef.isApplicable for generalised filtering
@@ -3231,37 +3239,15 @@
       };
 
       const handleAskChange = (fieldId) => {
-        let newShownFields;
-
-        // If "show all except asked" is enabled, update to show all except new askField
-        if (config.showAllExceptAsked) {
-          newShownFields = Object.keys(FIELD_CONFIG)
-            .filter(key => FIELD_CONFIG[key].canShow && key !== fieldId);
-        } else {
-          // Otherwise, just remove new askField from shownFields, add old askField to shownFields
-          newShownFields = config.shownFields.filter(f => f !== fieldId);
-          const oldAskField = config.askField;
-
-          // Add old asked field back to shown (if it exists and can be shown)
-          if (oldAskField && FIELD_CONFIG[oldAskField]?.canShow && !newShownFields.includes(oldAskField)) {
-            newShownFields.push(oldAskField);
-          }
-        }
-
         onConfigChange({
           ...config,
-          askField: fieldId,
-          shownFields: newShownFields
+          askField: fieldId
         });
       };
 
       const isFieldDisabled = (fieldId, mode) => {
-        if (mode === 'show') {
-          // Can't show the field you're asking about
-          if (fieldId === config.askField) return true;
-        }
-
-        // No other restrictions
+        // Deliberately do not disable based on config.askField.
+        // Asked field hiding is handled per-question in card display logic.
         return false;
       };
 
@@ -3499,15 +3485,29 @@
       // Filter out the asked field from what should be shown
       let actualShownFields = shownFields.filter(f => f !== askField);
 
+      const hasDisplayValueForField = (fieldId) => {
+        if (fieldId === 'cardName') return Boolean(card.name && card.name.trim());
+        if (fieldId === 'castingCost') return Boolean((card.manaCost || '{0}').trim());
+        if (fieldId === 'colors') return true; // formatColors handles empty arrays as "Colorless"
+        if (fieldId === 'typeLine') return Boolean(card.typeLine && card.typeLine.trim());
+        if (fieldId === 'oracleText') return Boolean(card.oracleText && card.oracleText.trim());
+        if (fieldId === 'powerToughness') return card.isCreature && card.power != null && card.toughness != null;
+        if (fieldId === 'cardArt') return Boolean(card.imageUris?.art_crop);
+        return false;
+      };
+
       // Feature 3: Implement "show one" mode - randomly select one field to show
       if (displayMode === 'showOne' && actualShownFields.length > 1) {
-        const randomField = actualShownFields[Math.floor(Math.random() * actualShownFields.length)];
+        const nonEmptyCandidates = actualShownFields.filter(hasDisplayValueForField);
+        const candidates = nonEmptyCandidates.length > 0 ? nonEmptyCandidates : actualShownFields;
+        const randomField = candidates[Math.floor(Math.random() * candidates.length)];
         actualShownFields = [randomField];
       }
 
       // Determine what to show (must be in shownFields AND not the askField)
       const shouldShowName = actualShownFields.includes('cardName');
       const shouldShowCastingCost = actualShownFields.includes('castingCost');
+      const shouldShowColors = actualShownFields.includes('colors');
       const shouldShowType = actualShownFields.includes('typeLine');
       const shouldShowText = actualShownFields.includes('oracleText');
       const shouldShowPT = actualShownFields.includes('powerToughness') && card.isCreature;
@@ -3549,6 +3549,10 @@
 
           {shouldShowType && (
             <div className="scryfall-type">{card.typeLine}</div>
+          )}
+
+          {shouldShowColors && (
+            <div className="scryfall-type">{formatColors(card.colors || [])}</div>
           )}
 
           {shouldShowText && (
@@ -3989,63 +3993,28 @@
         }
       }, [quizConfig.askableFields, lastAskedField]);
 
-      // When shownFields changes, regenerate question using same card with new field availability
-      // This allows toggling "shown" fields to immediately update what the user sees
+      // Keep current question aligned with ask configuration changes
+      // - Single mode: always use selected askField
+      // - Multiple mode: ensure current ask field remains askable/applicable
       useEffect(() => {
         if (!cardPool || !currentQuestion || showFeedback) return;
 
-        // When shownFields change, we should regenerate the question using the same card
-        // but now with the updated list of available fields to ask about.
-        // This is different from changing askField directly - the user is just toggling
-        // which fields are enabled, so we pick a new random enabled field for the same card.
-        const validEnabledFields = quizConfig.shownFields.filter(fid => {
-          const config = FIELD_CONFIG[fid];
-          if (!config || !config.canAsk) return false;
-          if (config.requiresApplicability && !config.isApplicable(currentQuestion.card)) return false;
-          return true;
-        });
-
-        if (validEnabledFields.length === 0) return;
-
-        // Only regenerate if the current question's askField is no longer enabled
-        if (!validEnabledFields.includes(currentQuestion.askField)) {
-          // Pick a new random enabled field from the same card
-          const newAskField = validEnabledFields[Math.floor(Math.random() * validEnabledFields.length)];
-
-          // Regenerate question using the same card but with new field
-          const fieldDef = FIELD_CONFIG[newAskField];
-          const correctValue = fieldDef.extractValue(currentQuestion.card);
-          const correctDisplay = fieldDef.formatDisplay(correctValue);
-          const updatedConfig = { ...quizConfig, askField: newAskField };
-
-          // Generate the new question asynchronously
-          (async () => {
-            let newQuestion = null;
-            if (updatedConfig.answerFormat === 'multipleChoice') {
-              newQuestion = await generateMultipleChoiceQuestion(
-                currentQuestion.card,
-                cardPool,
-                updatedConfig,
-                fieldDef,
-                correctDisplay,
-                scryfall.current
-              );
-            } else if (updatedConfig.answerFormat === 'textInput') {
-              newQuestion = generateTextInputQuestion(
-                currentQuestion.card,
-                updatedConfig,
-                fieldDef,
-                correctDisplay
-              );
-            }
-
-            if (newQuestion) {
-              setCurrentQuestion(newQuestion);
-              setShowFeedback(false);
-            }
-          })();
+        if (questionMode === 'single') {
+          if (currentQuestion.askField !== quizConfig.askField) {
+            nextQuestion();
+          }
+          return;
         }
-      }, [quizConfig.shownFields, currentQuestion, showFeedback, cardPool, quizConfig.askField, quizConfig.answerFormat]);
+
+        const currentAskable = quizConfig.askableFields || [];
+        const fieldDef = FIELD_CONFIG[currentQuestion.askField];
+        const isApplicableForCard = !fieldDef?.requiresApplicability || !fieldDef.isApplicable || fieldDef.isApplicable(currentQuestion.card);
+        const isStillValid = currentAskable.includes(currentQuestion.askField) && isApplicableForCard;
+
+        if (!isStillValid) {
+          nextQuestion();
+        }
+      }, [quizConfig.askField, quizConfig.askableFields, questionMode, currentQuestion, showFeedback, cardPool]);
 
       // Auto-scroll to quiz container when new question appears
       useEffect(() => {
@@ -4286,26 +4255,17 @@
 
       // Handle field toggle with mode awareness
       const handleFieldToggle = (fieldId) => {
-        if (questionMode === 'single') {
-          // Single mode: only this field should be checked
-          setQuizConfig(prev => ({
-            ...prev,
-            shownFields: [fieldId],
-            showAllExceptAsked: false,
-          }));
-        } else {
-          // Multiple mode: toggle this field
-          setQuizConfig(prev => {
-            const newFields = prev.shownFields.includes(fieldId)
-              ? prev.shownFields.filter(f => f !== fieldId)
-              : [...prev.shownFields, fieldId];
+        // Show fields are independently toggleable in both modes
+        setQuizConfig(prev => {
+          const newFields = prev.shownFields.includes(fieldId)
+            ? prev.shownFields.filter(f => f !== fieldId)
+            : [...prev.shownFields, fieldId];
 
-            // Prevent unchecking all fields
-            if (newFields.length === 0) return prev;
+          // Keep at least one visible hint field
+          if (newFields.length === 0) return prev;
 
-            return { ...prev, shownFields: newFields, showAllExceptAsked: false };
-          });
-        }
+          return { ...prev, shownFields: newFields, showAllExceptAsked: false };
+        });
       };
 
       // Helper: Get ask field for multiple mode (no repeat if possible)
@@ -4468,7 +4428,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.16.5 (2026-02-21)</div>
+            <div className="subtitle">Custom Mode Only — v2.17.0 (2026-02-21)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
