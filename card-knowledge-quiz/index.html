@@ -1244,10 +1244,16 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.16.1
-     * Last Updated: 2026-02-21 09:52 UTC
+     * Version: 2.16.2
+     * Last Updated: 2026-02-21 10:10 UTC
      *
      * CHANGELOG:
+     * v2.16.2 (2026-02-21) - Fix "cannot generate question" error on prepopulated lists
+     *   - generateSyntheticWrong now handles manaValue, typeLine, cardName, oracleText
+     *     (previously only handled castingCost, powerToughness, colors - returning empty
+     *     fallback for all other fields, causing MC mode to fail after a few questions)
+     *   - Lowered minimum wrong answers threshold: 1 wrong answer accepted (3-choice MC)
+     *     instead of requiring 2 (prevents hard failure when pool has low value diversity)
      * v2.16.1 (2026-02-21) - Remove broken Iconic Staples preset list
      *   - Removed iconicStaples from PREPOPULATED_LISTS (had empty data for split cards)
      * v2.16.0 (2026-02-21) - Fix black screen: restore truncated file + 4 bug fixes
@@ -2923,6 +2929,32 @@
           if (answers.size >= count) break;
           if (combo !== correctDisplay) answers.add(combo);
         }
+      } else if (askField === 'manaValue') {
+        const mv = correctCard.manaValue ?? 0;
+        for (const delta of [1, 2, -1, 3, -2, 4, 0]) {
+          if (answers.size >= count) break;
+          const v = String(mv + delta);
+          if (v !== correctDisplay && parseInt(v) >= 0) answers.add(v);
+        }
+      } else if (askField === 'typeLine') {
+        const allTypes = ['Creature', 'Instant', 'Sorcery', 'Enchantment', 'Artifact', 'Land', 'Planeswalker', 'Legendary Creature', 'Artifact Creature', 'Enchantment Creature'];
+        for (const t of shuffle(allTypes)) {
+          if (answers.size >= count) break;
+          if (t !== correctDisplay) answers.add(t);
+        }
+      } else if (askField === 'cardName') {
+        // Use placeholder names as last resort
+        const placeholders = ['Lightning Bolt', 'Counterspell', 'Dark Ritual', 'Giant Growth', 'Llanowar Elves', 'Swords to Plowshares', 'Wrath of God', 'Brainstorm'];
+        for (const name of shuffle(placeholders)) {
+          if (answers.size >= count) break;
+          if (name !== correctDisplay) answers.add(name);
+        }
+      } else if (askField === 'oracleText') {
+        const snippets = ['Counter target spell.', 'Draw a card.', 'Destroy target creature.', 'Flying', 'Target creature gets +2/+2 until end of turn.'];
+        for (const s of shuffle(snippets)) {
+          if (answers.size >= count) break;
+          if (s !== correctDisplay) answers.add(s);
+        }
       }
 
       return [...answers].slice(0, count);
@@ -2945,16 +2977,15 @@
       }
 
       // If pool-based strategies didn't produce enough, try synthetic fallback
-      if (!wrongAnswers || wrongAnswers.length < 2) {
-        const needed = wrongAnswers ? 2 - wrongAnswers.length : 3;
+      if (!wrongAnswers || wrongAnswers.length < 1) {
         const existing = wrongAnswers || [];
-        const synthetic = generateSyntheticWrong(config.askField, correctCard, correctDisplay, needed + 2);
+        const synthetic = generateSyntheticWrong(config.askField, correctCard, correctDisplay, 4);
         const combined = [...existing, ...synthetic.filter(s => !existing.includes(s))];
-        wrongAnswers = combined.length >= 2 ? combined.slice(0, 3) : null;
+        wrongAnswers = combined.length >= 1 ? combined.slice(0, 3) : null;
       }
 
       // Last resort: try dynamic API if we haven't already
-      if ((!wrongAnswers || wrongAnswers.length < 2) && strategy !== 'dynamic') {
+      if ((!wrongAnswers || wrongAnswers.length < 1) && strategy !== 'dynamic') {
         try {
           wrongAnswers = await generateMCByDynamicAPI(correctCard, scryfallClient, config, fieldDef, correctDisplay);
         } catch (e) {
@@ -2962,7 +2993,7 @@
         }
       }
 
-      if (!wrongAnswers || wrongAnswers.length < 2) return null;
+      if (!wrongAnswers || wrongAnswers.length < 1) return null;
 
       const choices = shuffle([correctDisplay, ...wrongAnswers.slice(0, 3)]);
 
@@ -4385,7 +4416,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.16.1 (2026-02-21)</div>
+            <div className="subtitle">Custom Mode Only — v2.16.2 (2026-02-21)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
