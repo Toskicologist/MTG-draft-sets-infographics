@@ -1255,6 +1255,16 @@
      * Last Updated: 2026-02-21 10:10 UTC
      *
      * CHANGELOG:
+     * v2.16.5 (2026-02-21) - Bug fixes from local test build (9 changes)
+     *   - FIX: castingCost/colors now excluded for land cards (isLandCard helper)
+     *   - FIX: getApplicableCards uses fieldDef.isApplicable for generalised filtering
+     *   - FIX: normalizeCard now includes rarity field
+     *   - FIX: Text-input mode works with 1-card pools (gate was < 2, now < 1)
+     *   - FIX: Casting cost display checks 'castingCost' field id and renders manaCost string
+     *   - FIX: Show-toggle is now atomic (no stale showAllExceptAsked overwrite race)
+     *   - FIX: Search immediately applies active color/rarity filters
+     *   - CHANGE: Default source on load is Prepopulated Lists / Pauper
+     *   - UX: Auto-scroll to question only fires on explicit Next button click
      * v2.16.4 (2026-02-21) - Add ?reset URL param to wipe all app localStorage on demand
      * v2.16.3 (2026-02-21) - Banner auto-hides on GitHub Pages, shows only on localhost
      * v2.16.2 (2026-02-21) - Fix "cannot generate question" error on prepopulated lists
@@ -1631,7 +1641,9 @@
         difficulty: 2,
         canShow: true,
         canAsk: true,
-        requiresApplicability: false,
+        requiresApplicability: true,
+        checkApplicability: (pool) => pool.filter(c => !isLandCard(c)).length >= 4,
+        isApplicable: (card) => !isLandCard(card),
         extractValue: (card) => card.manaCost || '',
         formatDisplay: (cost) => cost || '{0}',
         incompatibleWith: [],
@@ -1642,7 +1654,9 @@
         difficulty: 2,
         canShow: true,
         canAsk: true,
-        requiresApplicability: false,
+        requiresApplicability: true,
+        checkApplicability: (pool) => pool.filter(c => !isLandCard(c)).length >= 4,
+        isApplicable: (card) => !isLandCard(card),
         extractValue: (card) => card.colors,
         formatDisplay: (colors) => colors.length ? colors.join('') : 'Colorless',
         incompatibleWith: [],
@@ -2262,6 +2276,10 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
+    function isLandCard(card) {
+      return (card?.typeLine || '').includes('Land');
+    }
+
     function formatColors(colors) {
       if (!colors || colors.length === 0) return 'Colorless';
       return colors.map(c => COLOR_MAP[c] || c).join(', ');
@@ -2579,6 +2597,7 @@
           power: raw.power,
           toughness: raw.toughness,
           isCreature: (raw.type_line || '').includes('Creature'),
+          rarity: raw.rarity || '',
           imageUris: raw.image_uris || {},
           scryfallUri: raw.scryfall_uri,
         };
@@ -2603,11 +2622,9 @@
       }
 
       // If field requires applicability check, filter pool
-      if (fieldDef.requiresApplicability && fieldDef.checkApplicability) {
+      if (fieldDef.requiresApplicability) {
         pool = pool.filter(c => {
-          if (askField === 'powerToughness') {
-            return c.isCreature && c.power && c.toughness;
-          }
+          if (fieldDef.isApplicable) return fieldDef.isApplicable(c);
           return true;
         });
       }
@@ -2637,7 +2654,7 @@
     }
 
     async function generateCustomQuestion(cardPool, config, scryfallClient, askedQuestions = new Set(), activePreset = null, handleNoAvailableCards = null) {
-      if (!cardPool || cardPool.length < 2) return null;
+      if (!cardPool || cardPool.length < 1) return null;
 
       const updatedConfig = { ...config };
       if (!updatedConfig.askField) return null;
@@ -3191,10 +3208,8 @@
       const [collapsed, setCollapsed] = useState(false);
 
       const handleShowToggle = (fieldId) => {
-        // Use the parent's mode-aware toggle handler
+        // Parent performs a single atomic state update to avoid stale overwrite races
         onFieldToggle(fieldId);
-        // Disable "show all except asked" when manually toggling individual fields
-        onConfigChange({ ...config, showAllExceptAsked: false });
       };
 
       const handleAskToggle = (fieldId) => {
@@ -3492,7 +3507,7 @@
 
       // Determine what to show (must be in shownFields AND not the askField)
       const shouldShowName = actualShownFields.includes('cardName');
-      const shouldShowMV = actualShownFields.includes('manaValue');
+      const shouldShowCastingCost = actualShownFields.includes('castingCost');
       const shouldShowType = actualShownFields.includes('typeLine');
       const shouldShowText = actualShownFields.includes('oracleText');
       const shouldShowPT = actualShownFields.includes('powerToughness') && card.isCreature;
@@ -3517,9 +3532,9 @@
             <div className={`scryfall-name ${!shouldShowName ? 'redacted' : ''}`}>
               {!shouldShowName ? '[REDACTED]' : card.name}
             </div>
-            {shouldShowMV && (
+            {shouldShowCastingCost && (
               <div className="scryfall-mana-cost">
-                {Math.floor(card.manaValue)}
+                {card.manaCost || '{0}'}
               </div>
             )}
           </div>
@@ -3830,8 +3845,8 @@
       const [nextQuestionCache, setNextQuestionCache] = useState(null); // Pre-generated next question
 
       // Filters
-      const [activePreset, setActivePreset] = useState('standard');
-      const [cardSource, setCardSource] = useState('scryfall');
+      const [activePreset, setActivePreset] = useState('pauper');
+      const [cardSource, setCardSource] = useState('prepopulated');
       const [searchQuery, setSearchQuery] = useState(PRESET_DEFINITIONS.standard.query);
       const [colorFilter, setColorFilter] = useState('');
       const [rarityFilter, setRarityFilter] = useState('');
@@ -3899,6 +3914,7 @@
 
       // Ref for auto-scrolling to quiz container
       const quizContainerRef = useRef(null);
+      const shouldAutoScrollToQuestionRef = useRef(false);
 
       // Save state
       useEffect(() => { saveStorage(STORAGE_KEYS.SCORE, score); }, [score]);
@@ -3918,7 +3934,10 @@
 
       // Initial load
       useEffect(() => {
-        loadPreset('standard');
+        const firstPrepopulated = Object.keys(PREPOPULATED_LISTS)[0];
+        if (firstPrepopulated) {
+          loadPrepopulatedList(firstPrepopulated);
+        }
       }, []);
 
       // Unhighlight preset when search manually modified
@@ -4030,11 +4049,12 @@
 
       // Auto-scroll to quiz container when new question appears
       useEffect(() => {
-        if (currentQuestion && !showFeedback && quizContainerRef.current) {
+        if (currentQuestion && !showFeedback && quizContainerRef.current && shouldAutoScrollToQuestionRef.current) {
           // Use a small delay to allow DOM to update
           setTimeout(() => {
             quizContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 100);
+          shouldAutoScrollToQuestionRef.current = false;
         }
       }, [currentQuestion, showFeedback]);
 
@@ -4190,7 +4210,14 @@
         setError(null);
 
         try {
-          const cards = await scryfall.current.fetchByQuery(query, 100);
+          let fullQuery = query;
+          if (colorFilter && colorFilter !== 'all') {
+            fullQuery += ` c:${colorFilter}`;
+          }
+          if (rarityFilter && rarityFilter !== 'all') {
+            fullQuery += ` r:${rarityFilter}`;
+          }
+          const cards = await scryfall.current.fetchByQuery(fullQuery, 100);
           setCardPool(cards);
           setAskedQuestions(new Set()); // Reset history when starting new search
         } catch (err) {
@@ -4263,7 +4290,8 @@
           // Single mode: only this field should be checked
           setQuizConfig(prev => ({
             ...prev,
-            shownFields: [fieldId]
+            shownFields: [fieldId],
+            showAllExceptAsked: false,
           }));
         } else {
           // Multiple mode: toggle this field
@@ -4275,7 +4303,7 @@
             // Prevent unchecking all fields
             if (newFields.length === 0) return prev;
 
-            return { ...prev, shownFields: newFields };
+            return { ...prev, shownFields: newFields, showAllExceptAsked: false };
           });
         }
       };
@@ -4440,7 +4468,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.16.4 (2026-02-21)</div>
+            <div className="subtitle">Custom Mode Only — v2.16.5 (2026-02-21)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -4609,7 +4637,10 @@
                 selectedIdx={selectedIdx}
                 pointsEarned={pointsEarned}
                 streakBonus={streakBonus}
-                onNext={nextQuestion}
+                onNext={() => {
+                  shouldAutoScrollToQuestionRef.current = true;
+                  nextQuestion();
+                }}
                 liveShownFields={quizConfig.shownFields}
                 displayMode={displayMode}
               />
