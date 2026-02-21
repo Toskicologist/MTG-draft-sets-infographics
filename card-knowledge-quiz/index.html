@@ -1255,6 +1255,7 @@
      * Last Updated: 2026-02-21 10:10 UTC
      *
      * CHANGELOG:
+     * v2.16.4 (2026-02-21) - Add ?reset URL param to wipe all app localStorage on demand
      * v2.16.3 (2026-02-21) - Banner auto-hides on GitHub Pages, shows only on localhost
      * v2.16.2 (2026-02-21) - Fix "cannot generate question" error on prepopulated lists
      *   - generateSyntheticWrong now handles manaValue, typeLine, cardName, oracleText
@@ -3041,6 +3042,21 @@
     // STORAGE
     // ===================================================================
 
+    // ?reset param: wipe all app localStorage then redirect without it
+    (function() {
+      if (new URLSearchParams(window.location.search).has('reset')) {
+        const toDelete = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('card_quiz_') || k.startsWith('scryfall_query_'))) toDelete.push(k);
+        }
+        toDelete.forEach(k => localStorage.removeItem(k));
+        const url = new URL(window.location.href);
+        url.searchParams.delete('reset');
+        window.location.replace(url.toString());
+      }
+    })();
+
     function loadStorage(key, defaultValue) {
       try {
         const stored = localStorage.getItem(key);
@@ -4424,7 +4440,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.16.3 (2026-02-21)</div>
+            <div className="subtitle">Custom Mode Only — v2.16.4 (2026-02-21)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
