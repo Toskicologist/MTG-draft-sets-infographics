@@ -434,6 +434,19 @@
       text-decoration: underline;
     }
 
+    .search-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-filters-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
     @media (max-width: 600px) {
       .search-input {
         min-width: 100%;
@@ -581,6 +594,7 @@
       text-transform: uppercase;
       font-size: 0.75rem;
       letter-spacing: 0.05em;
+      vertical-align: top;
     }
 
     .field-config-table input[type="checkbox"],
@@ -611,6 +625,26 @@
     .difficulty-3 { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
     .difficulty-4 { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .difficulty-5 { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+
+    .n-spinner {
+      width: 48px;
+      padding: 2px 4px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .col-mode-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+      color: var(--text-muted);
+    }
 
     /* ===== Question Container ===== */
     .question-container {
@@ -1224,6 +1258,32 @@
     /* ===== Utility ===== */
     .text-center { text-align: center; }
     .mb-16 { margin-bottom: 16px; }
+
+    /* ===== Section Headers ===== */
+    .section-header {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 20px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--accent);
+      letter-spacing: 0.03em;
+    }
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0 16px;
+    }
+
+    .source-explanation {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 6px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -1232,7 +1292,15 @@
       var h = window.location.hostname;
       var isLocal = h === 'localhost' || h === '127.0.0.1' || h === '';
       if (isLocal) {
-        document.write('<div class="local-banner">LOCAL VERSION (API)<\/div><div class="local-banner-spacer"><\/div>');
+        document.addEventListener('DOMContentLoaded', function() {
+          var banner = document.createElement('div');
+          banner.className = 'local-banner';
+          banner.textContent = 'LOCAL VERSION (API)';
+          var spacer = document.createElement('div');
+          spacer.className = 'local-banner-spacer';
+          document.body.insertBefore(spacer, document.body.firstChild);
+          document.body.insertBefore(banner, document.body.firstChild);
+        });
       }
     })();
   </script>
@@ -1251,10 +1319,43 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.16.2
-     * Last Updated: 2026-02-21 10:10 UTC
+     * Version: 2.18.2-local
+     * Last Updated: 2026-02-21 17:05 UTC
      *
      * CHANGELOG:
+     * v2.18.4-local (2026-02-21) - Show header UX polish
+     *   - UI: th headers now top-aligned (vertical-align: top)
+     *   - UI: Random N spinner always visible (value defaults to 1 when All selected)
+     *   - UX: Adjusting spinner while All is selected auto-switches to Random
+     * v2.18.3-local (2026-02-21) - Sort UX improvements + header styling + 404 fix
+     *   - FEATURE: Sort dropdown writes order: token into search bar (visible to user)
+     *   - FEATURE: Added Sort: Oldest, Newest, Price (USD) options
+     *   - FIX: fetchByQuery extracts order: from query string into proper URL params
+     *   - FIX: triggerBackgroundFetch now guards against empty searchQuery (was causing 404)
+     *   - UI: FIELD/SHOW/ASK column headers larger, bold, stacked above controls
+     * v2.18.2-local (2026-02-21) - Fix JSX syntax error (blank page)
+     *   - FIX: Prepopulated lists block had two adjacent JSX elements without a fragment wrapper
+     *   - Caused Babel parse error: "Adjacent JSX elements must be wrapped in an enclosing tag"
+     * v2.18.1-local (2026-02-21) - Bug fixes (Codex analysis)
+     *   - FIX: colorFilter/rarityFilter ReferenceError in triggerBackgroundFetch (caused blank page crash)
+     *   - FIX: activePreset key collision — scryfall presets now use 'scryfall:key' prefix
+     *   - FIX: Switching to Scryfall source now sets pool to null (not []) to avoid premature errors
+     *   - FIX: textAnswer now clears on each new question
+     *   - FIX: setAskedQuestions(new Set()) now called in all pool loaders (preset, prepopulated, custom)
+     *   - REFACTOR: isFixedPool() helper replaces hardcoded key lists throughout
+     * v2.18.0-local (2026-02-21) - Major UI restructure: Card Pool / Question Generation sections
+     *   - UI: Split into two sections: "Card Pool" (with header) and "Question Generation" (with header)
+     *   - UI: Scryfall search now has sort dropdown (default EDHREC) + color/rarity insert dropdowns
+     *   - UI: Pool size increased to 175; filters insert syntax into search bar instead of separate state
+     *   - UI: Explanatory text added under each card source
+     *   - FIX: Custom list now handles double-faced card names (Front // Back → Front)
+     *   - UI: ConfigPanel restructured — field table first, then answer format, then wrong answer strategy
+     *   - UI: "Show All / N random" control embedded in Show column header (replaces showAllExceptAsked + displayMode radio)
+     *   - UI: Difficulty column removed from field table
+     *   - UI: "Single Type / Multiple Types" mode toggle removed — Ask column always uses checkboxes
+     *   - REFACTOR: displayMode state replaced by numShowFields (null = all, N = pick N randomly)
+     *   - REFACTOR: questionMode state removed; lastAskedField state removed
+     *   - REFACTOR: Alignment effect simplified (always multiple-mode behaviour)
      * v2.17.0 (2026-02-21) - Major question-mode and hint-selection fixes
      *   - FIX: Single Type mode now strictly respects selected Ask field
      *   - FIX: Show-column checkboxes independently toggleable in both modes
@@ -1601,7 +1702,6 @@
       HISTORY: 'card_quiz_history_v2',
       CONFIG: 'card_quiz_custom_config',
       ASK_FIELDS: 'card_quiz_ask_fields',
-      DISPLAY_MODE: 'card_quiz_display_mode',
     };
 
     const COLOR_MAP = {
@@ -2430,7 +2530,22 @@
       async fetchByQuery(query, limit = 50) {
         await this.rateLimit();
 
-        const url = `${SCRYFALL_API_BASE}/cards/search?q=${encodeURIComponent(query)}&unique=cards&order=name`;
+        // Extract order: token from query and convert to URL params
+        // "order:released-desc" → &order=released&dir=desc
+        const orderMatch = query.match(/order:(\S+)/);
+        let cleanQuery = query.replace(/\s*order:\S+/g, '').trim();
+        let sortParams = '';
+        if (orderMatch) {
+          const orderVal = orderMatch[1];
+          if (orderVal.endsWith('-desc')) {
+            sortParams = `&order=${orderVal.slice(0, -5)}&dir=desc`;
+          } else {
+            sortParams = `&order=${orderVal}`;
+          }
+        } else {
+          sortParams = '&order=edhrec';
+        }
+        const url = `${SCRYFALL_API_BASE}/cards/search?q=${encodeURIComponent(cleanQuery)}&unique=cards${sortParams}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -3126,21 +3241,82 @@
       );
     }
 
-    function SearchField({ value, onChange, onSearch }) {
+    function SearchField({ value, onChange, onSearch, sortOrder, onSortChange }) {
+      const appendToQuery = (snippet) => {
+        const sep = value.trim() ? ' ' : '';
+        onChange(value + sep + snippet);
+      };
+
+      const handleSortChange = (newSort) => {
+        onSortChange(newSort);
+        // Replace existing order: token in search bar, or append if absent
+        const updated = value.replace(/\s*order:\S+/g, '').trim();
+        onChange(updated ? updated + ' order:' + newSort : 'order:' + newSort);
+      };
+
       return (
         <div className="search-field-container">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="format:standard type:creature"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-          />
-          <button className="search-btn" onClick={() => onSearch(value)}>
-            Search
-          </button>
+          <div className="search-row">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="format:standard type:creature"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') onSearch(value); }}
+            />
+            <button className="search-btn" onClick={() => onSearch(value)}>
+              Search
+            </button>
+          </div>
+          <div className="search-filters-row">
+            <select
+              className="filter-select"
+              value={sortOrder}
+              onChange={(e) => handleSortChange(e.target.value)}
+              title="Sort order"
+            >
+              <option value="edhrec">Sort: EDHREC</option>
+              <option value="name">Sort: Name</option>
+              <option value="color">Sort: Color</option>
+              <option value="rarity">Sort: Rarity</option>
+              <option value="cmc">Sort: CMC</option>
+              <option value="power">Sort: Power</option>
+              <option value="toughness">Sort: Toughness</option>
+              <option value="released">Sort: Oldest</option>
+              <option value="released-desc">Sort: Newest</option>
+              <option value="usd">Sort: Price (USD)</option>
+            </select>
+            <select
+              className="filter-select"
+              defaultValue=""
+              onChange={(e) => { if (e.target.value) { appendToQuery(e.target.value); e.target.value = ''; } }}
+              title="Insert color filter"
+            >
+              <option value="" disabled>+ Color</option>
+              <option value="c:W">White (c:W)</option>
+              <option value="c:U">Blue (c:U)</option>
+              <option value="c:B">Black (c:B)</option>
+              <option value="c:R">Red (c:R)</option>
+              <option value="c:G">Green (c:G)</option>
+              <option value="c:C">Colorless (c:C)</option>
+            </select>
+            <select
+              className="filter-select"
+              defaultValue=""
+              onChange={(e) => { if (e.target.value) { appendToQuery(e.target.value); e.target.value = ''; } }}
+              title="Insert rarity filter"
+            >
+              <option value="" disabled>+ Rarity</option>
+              <option value="r:common">Common</option>
+              <option value="r:uncommon">Uncommon</option>
+              <option value="r:rare">Rare</option>
+              <option value="r:mythic">Mythic</option>
+            </select>
+          </div>
           <div className="search-hint">
             Use <a href="https://scryfall.com/docs/syntax" target="_blank" rel="noopener">Scryfall syntax</a>
+            {' · '}Returns up to 175 cards, not the full result set.
           </div>
         </div>
       );
@@ -3189,66 +3365,20 @@
       );
     }
 
-    function FilterBar({ colorFilter, rarityFilter, onColorChange, onRarityChange }) {
-      return (
-        <div className="filters">
-          <select className="filter-select" value={colorFilter} onChange={(e) => onColorChange(e.target.value)}>
-            <option value="">All Colors</option>
-            <option value="W">White</option>
-            <option value="U">Blue</option>
-            <option value="B">Black</option>
-            <option value="R">Red</option>
-            <option value="G">Green</option>
-            <option value="C">Colorless</option>
-          </select>
-          <select className="filter-select" value={rarityFilter} onChange={(e) => onRarityChange(e.target.value)}>
-            <option value="">All Rarities</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="mythic">Mythic</option>
-          </select>
-        </div>
-      );
-    }
-
-    function ConfigPanel({ config, onConfigChange, cardPool, questionMode, onFieldToggle, displayMode, onDisplayModeChange }) {
+    function ConfigPanel({ config, onConfigChange, cardPool, onFieldToggle, numShowFields, onNumShowChange, numAskFields, onNumAskChange }) {
       const [collapsed, setCollapsed] = useState(false);
 
       const handleShowToggle = (fieldId) => {
-        // Parent performs a single atomic state update to avoid stale overwrite races
         onFieldToggle(fieldId);
       };
 
       const handleAskToggle = (fieldId) => {
-        // For Multi Mode: Toggle field in askableFields
         const currentAskable = config.askableFields || [];
         const newAskableFields = currentAskable.includes(fieldId)
           ? currentAskable.filter(f => f !== fieldId)
           : [...currentAskable, fieldId];
-
-        // Prevent unchecking all fields
-        if (newAskableFields.length === 0) {
-          return;
-        }
-
-        onConfigChange({
-          ...config,
-          askableFields: newAskableFields
-        });
-      };
-
-      const handleAskChange = (fieldId) => {
-        onConfigChange({
-          ...config,
-          askField: fieldId
-        });
-      };
-
-      const isFieldDisabled = (fieldId, mode) => {
-        // Deliberately do not disable based on config.askField.
-        // Asked field hiding is handled per-question in card display logic.
-        return false;
+        if (newAskableFields.length === 0) return;
+        onConfigChange({ ...config, askableFields: newAskableFields });
       };
 
       const errors = validateQuizConfig(config, cardPool);
@@ -3264,7 +3394,60 @@
 
           {!collapsed && (
             <>
-              <div style={{ marginBottom: '16px' }}>
+              <table className="field-config-table">
+                <thead>
+                  <tr>
+                    <th style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.05em' }}>FIELD</th>
+                    <th>
+                      <div style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '6px' }}>SHOW</div>
+                      <div className="col-mode-control" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <input type="radio" name="showMode" checked={numShowFields === null}
+                            onChange={() => onNumShowChange(null)} /> All
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <input type="radio" name="showMode" checked={numShowFields !== null}
+                            onChange={() => onNumShowChange(numShowFields ?? 1)} /> Random:
+                          <input type="number" min={1} max={7}
+                            value={numShowFields ?? 1}
+                            className="n-spinner"
+                            onChange={e => onNumShowChange(Math.max(1, parseInt(e.target.value) || 1))} />
+                        </label>
+                      </div>
+                    </th>
+                    <th>
+                      <div style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '6px' }}>ASK</div>
+                      <div className="col-mode-control">
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>1 random</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.values(FIELD_CONFIG).map(field => (
+                    <tr key={field.id}>
+                      <td>{field.label}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={config.shownFields.includes(field.id)}
+                          onChange={() => handleShowToggle(field.id)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={(config.askableFields || []).includes(field.id)}
+                          onChange={() => handleAskToggle(field.id)}
+                          disabled={!field.canAsk}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div style={{ marginBottom: '16px', marginTop: '16px' }}>
                 <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600' }}>
                   Answer Format:
                 </label>
@@ -3339,128 +3522,6 @@
                 </div>
               )}
 
-              <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={config.showAllExceptAsked || false}
-                    onChange={(e) => {
-                      const showAll = e.target.checked;
-                      if (showAll) {
-                        // Show all fields except the asked one
-                        const allFieldsExceptAsked = Object.keys(FIELD_CONFIG)
-                          .filter(key => FIELD_CONFIG[key].canShow && key !== config.askField);
-                        onConfigChange({ ...config, showAllExceptAsked: true, shownFields: allFieldsExceptAsked });
-                      } else {
-                        onConfigChange({ ...config, showAllExceptAsked: false });
-                      }
-                    }}
-                  />
-                  {' '}Show all fields (except asked)
-                </label>
-              </div>
-
-              {/* Feature 3: Display Mode Toggle */}
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Hints Display:
-                </label>
-                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                  <label>
-                    <input
-                      type="radio"
-                      name="displayMode"
-                      value="showAll"
-                      checked={displayMode === 'showAll'}
-                      onChange={() => onDisplayModeChange('showAll')}
-                    />
-                    {' '}Show All
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="displayMode"
-                      value="showOne"
-                      checked={displayMode === 'showOne'}
-                      onChange={() => onDisplayModeChange('showOne')}
-                    />
-                    {' '}Show One (random)
-                  </label>
-                </div>
-              </div>
-
-              <table className="field-config-table">
-                <thead>
-                  <tr>
-                    <th>Field</th>
-                    {questionMode === 'single' ? (
-                      <>
-                        <th>Show</th>
-                        <th>Ask</th>
-                      </>
-                    ) : (
-                      <>
-                        <th>Show</th>
-                        <th>Ask</th>
-                      </>
-                    )}
-                    <th>Difficulty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.values(FIELD_CONFIG).map(field => (
-                    <tr key={field.id}>
-                      <td>{field.label}</td>
-                      {questionMode === 'single' ? (
-                        <>
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={config.shownFields.includes(field.id)}
-                              onChange={() => handleShowToggle(field.id)}
-                              disabled={isFieldDisabled(field.id, 'show')}
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="radio"
-                              name="askField"
-                              checked={config.askField === field.id}
-                              onChange={() => handleAskChange(field.id)}
-                              disabled={isFieldDisabled(field.id, 'ask')}
-                            />
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={config.shownFields.includes(field.id)}
-                              onChange={() => handleShowToggle(field.id)}
-                              disabled={isFieldDisabled(field.id, 'show')}
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={(config.askableFields || []).includes(field.id)}
-                              onChange={() => handleAskToggle(field.id)}
-                              disabled={!field.canAsk}
-                            />
-                          </td>
-                        </>
-                      )}
-                      <td>
-                        <span className={`difficulty-badge difficulty-${field.difficulty}`}>
-                          {DIFFICULTY_LABELS[field.difficulty]}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
               {errors.length > 0 && (
                 <div style={{
                   marginTop: '16px',
@@ -3481,7 +3542,7 @@
       );
     }
 
-    function ScryfallCardDisplay({ card, shownFields, askField, displayMode = 'showAll' }) {
+    function ScryfallCardDisplay({ card, shownFields, askField, numShowFields = null }) {
       // Filter out the asked field from what should be shown
       let actualShownFields = shownFields.filter(f => f !== askField);
 
@@ -3496,12 +3557,12 @@
         return false;
       };
 
-      // Feature 3: Implement "show one" mode - randomly select one field to show
-      if (displayMode === 'showOne' && actualShownFields.length > 1) {
+      // Apply numShowFields: null = show all checked, number = pick N randomly
+      if (numShowFields !== null && actualShownFields.length > numShowFields) {
         const nonEmptyCandidates = actualShownFields.filter(hasDisplayValueForField);
-        const candidates = nonEmptyCandidates.length > 0 ? nonEmptyCandidates : actualShownFields;
-        const randomField = candidates[Math.floor(Math.random() * candidates.length)];
-        actualShownFields = [randomField];
+        const candidates = nonEmptyCandidates.length >= numShowFields ? nonEmptyCandidates : actualShownFields;
+        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+        actualShownFields = shuffled.slice(0, numShowFields);
       }
 
       // Determine what to show (must be in shownFields AND not the askField)
@@ -3570,8 +3631,11 @@
       );
     }
 
-    function QuestionDisplay({ question, onAnswer, showFeedback, isCorrect, selectedIdx, pointsEarned, streakBonus, onNext, liveShownFields, displayMode }) {
+    function QuestionDisplay({ question, onAnswer, showFeedback, isCorrect, selectedIdx, pointsEarned, streakBonus, onNext, liveShownFields, numShowFields }) {
       const [textAnswer, setTextAnswer] = useState('');
+
+      // Clear text answer whenever a new question arrives
+      useEffect(() => { setTextAnswer(''); }, [question?.card?.name, question?.askField]);
 
       const handleChoice = (idx) => {
         if (showFeedback) return;
@@ -3599,7 +3663,7 @@
             card={question.card}
             shownFields={liveShownFields || question.shownFields}
             askField={question.askField}
-            displayMode={displayMode}
+            numShowFields={numShowFields}
           />
 
           {!showFeedback && question.answerFormat === 'multipleChoice' && (
@@ -3852,8 +3916,7 @@
       const [activePreset, setActivePreset] = useState('pauper');
       const [cardSource, setCardSource] = useState('prepopulated');
       const [searchQuery, setSearchQuery] = useState(PRESET_DEFINITIONS.standard.query);
-      const [colorFilter, setColorFilter] = useState('');
-      const [rarityFilter, setRarityFilter] = useState('');
+      const [sortOrder, setSortOrder] = useState('edhrec');
 
       // Custom card list
       const [customListText, setCustomListText] = useState(() =>
@@ -3905,16 +3968,11 @@
       const [askedQuestions, setAskedQuestions] = useState(new Set()); // Set of "cardName|askField" strings
       const [backgroundFetching, setBackgroundFetching] = useState(false);
 
-      // Question mode: 'single' (one type) or 'multiple' (random from enabled)
-      const [questionMode, setQuestionMode] = useState('multiple');
+      // How many shown fields to display (null = all checked, number = pick N randomly)
+      const [numShowFields, setNumShowFields] = useState(null);
 
-      // Track last asked field (for no-repeat in multiple mode)
-      const [lastAskedField, setLastAskedField] = useState(null);
-
-      // Display mode: 'showAll' or 'showOne'
-      const [displayMode, setDisplayMode] = useState(() =>
-        loadStorage(STORAGE_KEYS.DISPLAY_MODE, 'showAll')
-      );
+      // How many ask fields per question (1 = current behaviour; N>1 deferred)
+      const [numAskFields, setNumAskFields] = useState(1);
 
       // Ref for auto-scrolling to quiz container
       const quizContainerRef = useRef(null);
@@ -3924,7 +3982,6 @@
       useEffect(() => { saveStorage(STORAGE_KEYS.SCORE, score); }, [score]);
       useEffect(() => { saveStorage(STORAGE_KEYS.HISTORY, history); }, [history]);
       useEffect(() => { saveStorage(STORAGE_KEYS.CONFIG, quizConfig); }, [quizConfig]);
-      useEffect(() => { saveStorage(STORAGE_KEYS.DISPLAY_MODE, displayMode); }, [displayMode]);
 
       // Validate config
       useEffect(() => {
@@ -3946,7 +4003,7 @@
 
       // Unhighlight preset when search manually modified
       useEffect(() => {
-        if (activePreset === 'customList' || Object.keys(PREPOPULATED_LISTS).includes(activePreset)) return;
+        if (isFixedPool(activePreset)) return;
         const matchingPreset = Object.keys(PRESET_DEFINITIONS).find(
           key => PRESET_DEFINITIONS[key].query === searchQuery
         );
@@ -3958,7 +4015,7 @@
       // Auto-search when searchQuery changes (debounced)
       useEffect(() => {
         if (!cardPool) return;
-        if (activePreset === 'customList' || Object.keys(PREPOPULATED_LISTS).includes(activePreset)) return;
+        if (isFixedPool(activePreset)) return;
 
         const timer = setTimeout(() => {
           handleSearch(searchQuery);
@@ -3981,30 +4038,10 @@
         nextQuestion();
       }, [cardPool, quizConfig.askField, quizConfig.answerFormat, showFeedback]);
 
-      // Reset lastAskedField when switching question modes (to allow fresh start)
-      useEffect(() => {
-        setLastAskedField(null);
-      }, [questionMode]);
-
-      // Reset lastAskedField when askableFields change (in case the last asked field is no longer askable)
-      useEffect(() => {
-        if (lastAskedField && !quizConfig.askableFields.includes(lastAskedField)) {
-          setLastAskedField(null);
-        }
-      }, [quizConfig.askableFields, lastAskedField]);
 
       // Keep current question aligned with ask configuration changes
-      // - Single mode: always use selected askField
-      // - Multiple mode: ensure current ask field remains askable/applicable
       useEffect(() => {
         if (!cardPool || !currentQuestion || showFeedback) return;
-
-        if (questionMode === 'single') {
-          if (currentQuestion.askField !== quizConfig.askField) {
-            nextQuestion();
-          }
-          return;
-        }
 
         const currentAskable = quizConfig.askableFields || [];
         const fieldDef = FIELD_CONFIG[currentQuestion.askField];
@@ -4014,7 +4051,7 @@
         if (!isStillValid) {
           nextQuestion();
         }
-      }, [quizConfig.askField, quizConfig.askableFields, questionMode, currentQuestion, showFeedback, cardPool]);
+      }, [quizConfig.askableFields, currentQuestion, showFeedback, cardPool]);
 
       // Auto-scroll to quiz container when new question appears
       useEffect(() => {
@@ -4033,11 +4070,12 @@
         setCurrentQuestion(null);
         setShowFeedback(false);
         setNextQuestionCache(null);
+        setAskedQuestions(new Set());
 
         try {
           const cards = await scryfall.current.fetchPresetPool(presetKey);
           setCardPool(cards);
-          setActivePreset(presetKey);
+          setActivePreset('scryfall:' + presetKey);
           setSearchQuery(PRESET_DEFINITIONS[presetKey].query);
         } catch (err) {
           console.error(err);
@@ -4059,6 +4097,10 @@
             l = l.replace(/^\d+x?\s+/i, '');
             // Strip set code and collector number: "Card Name (SET) 123" → "Card Name"
             l = l.replace(/\s*\([A-Z0-9]{2,5}\)\s*\d*\s*$/, '');
+            // Handle double-faced card names: "Front // Back" → "Front"
+            if (l.includes(' // ')) {
+              l = l.split(' // ')[0].trim();
+            }
             return l.trim();
           })
           .filter(l => l.length > 0);
@@ -4068,6 +4110,7 @@
         setCurrentQuestion(null);
         setShowFeedback(false);
         setNextQuestionCache(null);
+        setAskedQuestions(new Set());
 
         // Dedupe (case-insensitive)
         const seen = new Set();
@@ -4111,6 +4154,7 @@
         setNextQuestionCache(null);
         setError(null);
         setCustomListNotFound([]);
+        setAskedQuestions(new Set());
 
         // Use pre-cached card data if available (instant, no API call)
         if (list.cardData) {
@@ -4166,9 +4210,9 @@
             }
           }
         } else if (source === 'scryfall') {
-          // Clear activePreset when switching to scryfall
+          // Clear activePreset when switching to scryfall; null pool = waiting for search
           setActivePreset(null);
-          setCardPool([]);
+          setCardPool(null);
         }
       };
 
@@ -4180,13 +4224,8 @@
 
         try {
           let fullQuery = query;
-          if (colorFilter && colorFilter !== 'all') {
-            fullQuery += ` c:${colorFilter}`;
-          }
-          if (rarityFilter && rarityFilter !== 'all') {
-            fullQuery += ` r:${rarityFilter}`;
-          }
-          const cards = await scryfall.current.fetchByQuery(fullQuery, 100);
+          if (!/order:\w/.test(fullQuery)) fullQuery += ` order:${sortOrder}`;
+          const cards = await scryfall.current.fetchByQuery(fullQuery, 175);
           setCardPool(cards);
           setAskedQuestions(new Set()); // Reset history when starting new search
         } catch (err) {
@@ -4197,10 +4236,14 @@
         }
       };
 
+      // Returns true if the current pool is a fixed list (not a live Scryfall search that can be topped up)
+      const isFixedPool = (preset) =>
+        preset === 'customList' || Boolean(PREPOPULATED_LISTS[preset]);
+
       // Handle situation where all available cards have been asked
       const handleNoAvailableCards = (allCards, config) => {
         // If in prepopulated/custom list mode: allow repeats with notification
-        if (['customList', 'pauper', 'modern', 'standard', 'edhrec', 'mostReprinted'].includes(activePreset)) {
+        if (isFixedPool(activePreset)) {
           // Clear history for this askField only
           setAskedQuestions(prev => {
             const newSet = new Set();
@@ -4221,23 +4264,14 @@
 
       // Trigger background fetch when running low on cards in search mode
       const triggerBackgroundFetch = async () => {
-        if (!activePreset || backgroundFetching || ['customList', 'pauper', 'modern', 'standard', 'edhrec', 'mostReprinted'].includes(activePreset)) {
+        if (isFixedPool(activePreset) || backgroundFetching || cardSource !== 'scryfall' || !searchQuery.trim()) {
           return;
         }
 
         setBackgroundFetching(true);
 
         try {
-          // Build query with color and rarity filters
-          let fullQuery = searchQuery;
-          if (colorFilter && colorFilter !== 'all') {
-            fullQuery += ` c:${colorFilter}`;
-          }
-          if (rarityFilter && rarityFilter !== 'all') {
-            fullQuery += ` r:${rarityFilter}`;
-          }
-
-          const newCards = await scryfall.current.fetchByQuery(fullQuery, 100);
+          const newCards = await scryfall.current.fetchByQuery(searchQuery, 175);
 
           // Merge with existing pool (dedupe by name)
           const existingNames = new Set(cardPool.map(c => c.name));
@@ -4264,29 +4298,19 @@
           // Keep at least one visible hint field
           if (newFields.length === 0) return prev;
 
-          return { ...prev, shownFields: newFields, showAllExceptAsked: false };
+          return { ...prev, shownFields: newFields };
         });
       };
 
       // Helper: Get ask field for multiple mode (no repeat if possible)
       const getAskFieldForMultipleMode = () => {
-        if (questionMode === 'single') return quizConfig.askField;
-
-        // Multiple mode: pick from askableFields, avoid lastAskedField if possible
+        // Pick randomly from askableFields
         let validFields = quizConfig.askableFields.filter(f => {
           const fieldConfig = FIELD_CONFIG[f];
           return fieldConfig && fieldConfig.canAsk;
         });
 
         if (validFields.length === 0) return quizConfig.askField; // fallback
-
-        // Feature 1: No-repeat questions - filter out lastAskedField if we have choices
-        if (lastAskedField && validFields.length > 1) {
-          const filtered = validFields.filter(f => f !== lastAskedField);
-          if (filtered.length > 0) {
-            validFields = filtered;
-          }
-        }
 
         return validFields[Math.floor(Math.random() * validFields.length)];
       };
@@ -4297,10 +4321,8 @@
 
         try {
           const currentAskField = getAskFieldForMultipleMode();
-          const configForQuestion = questionMode === 'multiple' 
-            ? { ...quizConfig, askField: currentAskField }
-            : quizConfig;
-          
+          const configForQuestion = { ...quizConfig, askField: currentAskField };
+
           const q = await generateCustomQuestion(cardPool, configForQuestion, scryfall.current, askedQuestions, activePreset, handleNoAvailableCards);
           if (q) {
             setNextQuestionCache(q);
@@ -4308,18 +4330,16 @@
         } catch (err) {
           console.error('Failed to pre-generate question:', err);
         }
-      }, [cardPool, quizConfig, validationErrors, askedQuestions, activePreset, handleNoAvailableCards, questionMode, lastAskedField]);
+      }, [cardPool, quizConfig, validationErrors, askedQuestions, activePreset, handleNoAvailableCards]);
 
       const nextQuestion = useCallback(async () => {
         if (!cardPool) return;
 
         setQuestionGenError(null);
 
-        // Feature 2/Feature 1: In multiple mode, select random ask field (with no-repeat logic)
+        // Select random ask field from askableFields
         const currentAskField = getAskFieldForMultipleMode();
-        const configForQuestion = questionMode === 'multiple' 
-          ? { ...quizConfig, askField: currentAskField }
-          : quizConfig;
+        const configForQuestion = { ...quizConfig, askField: currentAskField };
 
         // Use cached question if available, but only if it matches current config
         let q = nextQuestionCache;
@@ -4346,9 +4366,6 @@
         setPointsEarned(0);
         setStreakBonus(1);
 
-        // Feature 1: Track lastAskedField for no-repeat in multiple mode
-        setLastAskedField(q.askField);
-
         // Track this question as asked
         setAskedQuestions(prev => new Set([...prev, `${q.card.name}|${q.askField}`]));
 
@@ -4358,14 +4375,14 @@
           return !askedQuestions.has(key);
         }).length;
 
-        if (availableCount < 10 && !['customList', 'pauper', 'modern', 'standard', 'edhrec', 'mostReprinted'].includes(activePreset) && !backgroundFetching) {
+        if (availableCount < 10 && !isFixedPool(activePreset) && cardSource === 'scryfall' && !backgroundFetching) {
           triggerBackgroundFetch();
         }
 
         // Clear cache and start pre-generating next question
         setNextQuestionCache(null);
         preGenerateNextQuestion();
-      }, [cardPool, quizConfig, validationErrors, nextQuestionCache, preGenerateNextQuestion, askedQuestions, activePreset, backgroundFetching, triggerBackgroundFetch, questionMode, lastAskedField]);
+      }, [cardPool, quizConfig, validationErrors, nextQuestionCache, preGenerateNextQuestion, askedQuestions, activePreset, backgroundFetching, triggerBackgroundFetch]);
 
       const handleAnswer = useCallback((correct, userAnswer) => {
         const streakMult = score.streak >= 10 ? 3 : score.streak >= 5 ? 2 : score.streak >= 3 ? 1.5 : 1;
@@ -4428,7 +4445,7 @@
         <div className="app-container">
           <div className="header">
             <h1>MTG Card Knowledge Quiz</h1>
-            <div className="subtitle">Custom Mode Only — v2.17.0 (2026-02-21)</div>
+            <div className="subtitle">Custom Mode Only — v2.18.0 (2026-02-21)</div>
             <div className="api-badge">Powered by Scryfall API</div>
           </div>
 
@@ -4451,6 +4468,8 @@
             </div>
           </div>
 
+          <div className="section-header">Card Pool</div>
+
           <CardSourceSelector
             cardSource={cardSource}
             onSourceChange={handleSourceChange}
@@ -4464,7 +4483,7 @@
                   return (
                     <button
                       key={key}
-                      className={`preset-btn ${activePreset === key ? 'active' : ''}`}
+                      className={`preset-btn ${activePreset === 'scryfall:' + key ? 'active' : ''}`}
                       onClick={() => loadPreset(key)}
                       disabled={loading === key}
                     >
@@ -4478,77 +4497,63 @@
                 value={searchQuery}
                 onChange={setSearchQuery}
                 onSearch={handleSearch}
-              />
-              <FilterBar
-                colorFilter={colorFilter}
-                rarityFilter={rarityFilter}
-                onColorChange={setColorFilter}
-                onRarityChange={setRarityFilter}
+                sortOrder={sortOrder}
+                onSortChange={setSortOrder}
               />
             </>
           )}
 
           {cardSource === 'prepopulated' && (
-            <div className="source-lists">
-              {Object.entries(PREPOPULATED_LISTS).map(([key, list]) => (
-                <button
-                  key={key}
-                  className={`list-btn ${activePreset === key ? 'active' : ''}`}
-                  onClick={() => loadPrepopulatedList(key)}
-                  disabled={loading === key}
-                >
-                  {loading === key && <span className="spinner-mini" />}
-                  <span>{list.label}</span>
-                  <span className="list-btn-count">({(list.cardData || list.cards).length} cards)</span>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="source-lists">
+                {Object.entries(PREPOPULATED_LISTS).map(([key, list]) => (
+                  <button
+                    key={key}
+                    className={`list-btn ${activePreset === key ? 'active' : ''}`}
+                    onClick={() => loadPrepopulatedList(key)}
+                    disabled={loading === key}
+                  >
+                    {loading === key && <span className="spinner-mini" />}
+                    <span>{list.label}</span>
+                    <span className="list-btn-count">({(list.cardData || list.cards).length} cards)</span>
+                  </button>
+                ))}
+              </div>
+              <div className="source-explanation">
+                These lists are pre-cached — all card data is stored in the app, so they load instantly with no API call.
+              </div>
+            </>
           )}
 
           {cardSource === 'custom' && (
-            <CustomListInput
-              value={customListText}
-              onChange={setCustomListText}
-              onLoad={loadCustomList}
-              loading={loading === 'customList'}
-              notFound={customListNotFound}
-            />
+            <>
+              <CustomListInput
+                value={customListText}
+                onChange={setCustomListText}
+                onLoad={loadCustomList}
+                loading={loading === 'customList'}
+                notFound={customListNotFound}
+              />
+              <div className="source-explanation">
+                Card data is fetched from Scryfall when you click Load. Longer lists take longer to load. Double-faced card names (Front // Back) are automatically handled.
+              </div>
+            </>
           )}
 
           {cardPool && (
             <>
-              <div className="question-mode-selector">
-                <label className="mode-label">Question Mode:</label>
-                <label className={`mode-option ${questionMode === 'single' ? 'active' : ''}`}>
-                  <input
-                    type="radio"
-                    name="questionMode"
-                    value="single"
-                    checked={questionMode === 'single'}
-                    onChange={() => setQuestionMode('single')}
-                  />
-                  <span>Single Type</span>
-                </label>
-                <label className={`mode-option ${questionMode === 'multiple' ? 'active' : ''}`}>
-                  <input
-                    type="radio"
-                    name="questionMode"
-                    value="multiple"
-                    checked={questionMode === 'multiple'}
-                    onChange={() => setQuestionMode('multiple')}
-                  />
-                  <span>Multiple Types</span>
-                </label>
-              </div>
+              <div className="section-divider" />
+              <div className="section-header">Question Generation</div>
 
               <ConfigPanel
                 config={quizConfig}
                 onConfigChange={setQuizConfig}
                 cardPool={cardPool}
-                questionMode={questionMode}
                 onFieldToggle={handleFieldToggle}
-                displayMode={displayMode}
-                onDisplayModeChange={setDisplayMode}
+                numShowFields={numShowFields}
+                onNumShowChange={setNumShowFields}
+                numAskFields={numAskFields}
+                onNumAskChange={setNumAskFields}
               />
 
               {askedQuestions.size > 0 && (
@@ -4602,7 +4607,7 @@
                   nextQuestion();
                 }}
                 liveShownFields={quizConfig.shownFields}
-                displayMode={displayMode}
+                numShowFields={numShowFields}
               />
             </div>
           )}
