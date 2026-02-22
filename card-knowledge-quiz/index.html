@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Card Knowledge Quiz - Custom Mode</title>
+  <link rel="stylesheet" href="https://mana.andrewgioia.com/css/mana.css">
   <style>
     /* ===== Base / Reset ===== */
     *,
@@ -1037,6 +1038,48 @@
       color: #aaa;
     }
 
+    .mana-inline {
+      display: inline;
+      white-space: normal;
+    }
+
+    .mana-inline .ms {
+      margin: 0 0.05em;
+      vertical-align: -0.08em;
+    }
+
+    .mana-oracle-inline .ms-cost,
+    .mana-history-inline .ms-cost,
+    .mana-answer-inline .ms-cost {
+      font-size: 0.95em;
+    }
+
+    .mana-symbol {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.125em;
+    }
+
+    .mana-symbol .ms {
+      display: none;
+      font-size: inherit;
+      line-height: 1;
+    }
+
+    .mana-symbol .mana-symbol-fallback {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-size: 0.85em;
+      color: #1c1c1c;
+    }
+
+    .mana-font-loaded .mana-symbol .ms {
+      display: inline-block;
+    }
+
+    .mana-font-loaded .mana-symbol .mana-symbol-fallback {
+      display: none;
+    }
+
     .scryfall-art {
       width: 100%;
       border-radius: 8px;
@@ -1708,10 +1751,15 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.19.2
-     * Last Updated: 2026-02-22 20:23:21 UTC
+     * Version: 2.19.3
+     * Last Updated: 2026-02-22 22:42:03 UTC
      *
      * CHANGELOG:
+     * v2.19.3-local (2026-02-22) - Render mana symbols using mana-font
+     *   - UI: Added mana-font stylesheet integration for MTG symbol glyphs
+     *   - UI: Added renderer for `{...}` mana tokens and applied it to casting cost, oracle text, answers, and history values
+     *   - FILE: LOCAL ONLY update to index-custom-only.html
+     *   - Signed: Codex @ 2026-02-22 22:42:03 UTC
      * v2.19.2-local (2026-02-22) - Improve double-faced normalization across all fields
      *   - FIX: normalizeCard now merges/sources DFC/split face data for mana cost, colors, type line, oracle text, image URIs, and P/T
      *   - FIX: P/T fallback now checks any face with defined values (not only face 0)
@@ -3037,6 +3085,114 @@
       return text.replace(pattern, '[REDACTED]');
     }
 
+    function manaTokenToClass(token) {
+      if (!token) return '';
+      return String(token)
+        .trim()
+        .toLowerCase()
+        .replace(/∞/g, 'infinity')
+        .replace(/½/g, 'half')
+        .replace(/\//g, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function renderManaText(text, keyPrefix = 'mana') {
+      const source = text == null ? '' : String(text);
+      const lines = source.split('\n');
+      const nodes = [];
+
+      lines.forEach((line, lineIdx) => {
+        const tokenPattern = /\{([^}]+)\}/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = tokenPattern.exec(line)) !== null) {
+          if (match.index > lastIndex) {
+            nodes.push(line.slice(lastIndex, match.index));
+          }
+
+          const rawToken = match[1];
+          const manaClass = manaTokenToClass(rawToken);
+          if (manaClass) {
+            nodes.push(
+              <span
+                key={`${keyPrefix}-${lineIdx}-${match.index}`}
+                className="mana-symbol"
+                title={`{${rawToken}}`}
+                aria-label={`{${rawToken}}`}
+              >
+                <i className={`ms ms-cost ms-${manaClass}`} aria-hidden="true" />
+                <span className="mana-symbol-fallback">{`{${rawToken}}`}</span>
+              </span>
+            );
+          } else {
+            nodes.push(match[0]);
+          }
+
+          lastIndex = tokenPattern.lastIndex;
+        }
+
+        if (lastIndex < line.length) {
+          nodes.push(line.slice(lastIndex));
+        }
+
+        if (lineIdx < lines.length - 1) {
+          nodes.push(<br key={`${keyPrefix}-br-${lineIdx}`} />);
+        }
+      });
+
+      return nodes;
+    }
+
+    function renderWithManaSymbols(text, { className = 'mana-inline', keyPrefix = 'mana' } = {}) {
+      const source = text == null ? '' : String(text);
+      if (!source.includes('{') && !source.includes('\n')) return source;
+      return <span className={className}>{renderManaText(source, keyPrefix)}</span>;
+    }
+
+    const MANA_FONT_LINK_SELECTOR = 'link[href*=\"mana.andrewgioia.com/css/mana.css\"]';
+    const MANA_FONT_CLASS = 'mana-font-loaded';
+
+    function markManaFontLoaded() {
+      document.documentElement.classList.add(MANA_FONT_CLASS);
+    }
+
+    function isManaLinkLoaded(link) {
+      try {
+        return Boolean(link.sheet);
+      } catch {
+        return false;
+      }
+    }
+
+    function setupManaFontDetection() {
+      const manaLink = document.querySelector(MANA_FONT_LINK_SELECTOR);
+      if (!manaLink) return;
+
+      if (isManaLinkLoaded(manaLink)) {
+        markManaFontLoaded();
+        return;
+      }
+
+      const onLoad = () => markManaFontLoaded();
+      manaLink.addEventListener('load', onLoad, { once: true });
+      manaLink.addEventListener('error', () => {
+        manaLink.dataset.manaFontError = 'true';
+      }, { once: true });
+      // In case the stylesheet loads before the listener is attached
+      setTimeout(() => {
+        if (isManaLinkLoaded(manaLink)) {
+          markManaFontLoaded();
+        }
+      }, 0);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupManaFontDetection);
+    } else {
+      setupManaFontDetection();
+    }
+
     // ===================================================================
     // SCRYFALL API CLIENT
     // ===================================================================
@@ -4348,7 +4504,7 @@
             </div>
             {shouldShowCastingCost && (
               <div className="scryfall-mana-cost">
-                {card.manaCost || '{0}'}
+                {renderWithManaSymbols(card.manaCost || '{0}', { className: 'mana-inline mana-cost-inline', keyPrefix: `cost-${card.name}` })}
               </div>
             )}
           </div>
@@ -4371,7 +4527,7 @@
 
           {shouldShowText && (
             <div className="scryfall-oracle">
-              {displayText}
+              {renderWithManaSymbols(displayText, { className: 'mana-inline mana-oracle-inline', keyPrefix: `oracle-${card.name}` })}
             </div>
           )}
 
@@ -4444,7 +4600,7 @@
                     {question.askField === 'cardArt' ? (
                       <img src={choice} alt={`Option ${idx + 1}`} className="answer-art" />
                     ) : (
-                      choice
+                      renderWithManaSymbols(choice, { className: 'mana-inline mana-answer-inline', keyPrefix: `choice-${idx}` })
                     )}
                   </button>
                 );
@@ -4480,7 +4636,7 @@
                     <div>
                       <strong>Incorrect</strong>
                       <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                        Correct answer: <strong>{question.correctAnswer}</strong>
+                        Correct answer: <strong>{renderWithManaSymbols(question.correctAnswer, { className: 'mana-inline mana-answer-inline', keyPrefix: 'mc-correct' })}</strong>
                       </div>
                     </div>
                   )}
@@ -4547,7 +4703,7 @@
                     <div>
                       <strong>Incorrect</strong>
                       <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                        Correct answer: <strong>{question.correctAnswer}</strong>
+                        Correct answer: <strong>{renderWithManaSymbols(question.correctAnswer, { className: 'mana-inline mana-answer-inline', keyPrefix: 'text-correct' })}</strong>
                       </div>
                     </div>
                   )}
@@ -4626,8 +4782,12 @@
                       </a>
                     </td>
                     <td>{entry.askField || entry.type}</td>
-                    <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.userAnswer}</td>
-                    <td>{entry.correct ? '—' : entry.correctAnswer}</td>
+                    <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {renderWithManaSymbols(entry.userAnswer, { className: 'mana-inline mana-history-inline', keyPrefix: `hist-user-${idx}` })}
+                    </td>
+                    <td>
+                      {entry.correct ? '—' : renderWithManaSymbols(entry.correctAnswer, { className: 'mana-inline mana-history-inline', keyPrefix: `hist-correct-${idx}` })}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -5432,7 +5592,7 @@
             <div className="banner-content">
               <h1>MTG Card Knowledge Quiz</h1>
               <p>
-                Lovingly vibe coded with Claude Code and Codex • <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics/tree/main/card-knowledge-quiz" target="_blank" rel="noopener noreferrer">View source on GitHub</a> • Version 2.19.2 • Last updated 2026-02-22 20:23:21 UTC
+                Lovingly vibe coded with Claude Code and Codex • <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics/tree/main/card-knowledge-quiz" target="_blank" rel="noopener noreferrer">View source on GitHub</a> • Version 2.19.3 • Last updated 2026-02-22 22:42:03 UTC
                 <br />
                 Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Interactive Color Wheel of ECL draft archetypes</a>, <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer">normalized review comparison</a>, or my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">17Lands draft data quiz</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
               </p>
