@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Card Knowledge Quiz - GOV.UK Strict (Local)</title>
+  <link rel="stylesheet" href="https://mana.andrewgioia.com/css/mana.css">
   <style>
     /* ===== Base / Reset ===== */
     *,
@@ -1035,6 +1036,46 @@
       font-size: 1rem;
       font-family: 'Courier New', monospace;
       color: #aaa;
+    }
+
+    .mana-inline {
+      display: inline;
+      white-space: normal;
+    }
+
+    .mana-inline .ms {
+      margin: 0 0.05em;
+      vertical-align: -0.08em;
+    }
+
+    .mana-oracle-inline .ms-cost,
+    .mana-history-inline .ms-cost,
+    .mana-answer-inline .ms-cost {
+      font-size: 0.95em;
+    }
+
+    .mana-symbol {
+      display: inline;
+    }
+
+    .mana-symbol .ms {
+      display: none;
+      font-size: inherit;
+      line-height: 1;
+    }
+
+    .mana-symbol .mana-symbol-fallback {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-size: 0.85em;
+      color: inherit;
+    }
+
+    .mana-font-loaded .mana-symbol .ms {
+      display: inline-block;
+    }
+
+    .mana-font-loaded .mana-symbol .mana-symbol-fallback {
+      display: none;
     }
 
     .scryfall-art {
@@ -3044,10 +3085,30 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.22.15-govuk-strict
-     * Last Updated: 2026-02-22 20:23:21 UTC
+     * Version: 2.22.19-govuk-strict
+     * Last Updated: 2026-02-22 23:37:13 UTC
      *
      * CHANGELOG:
+     * v2.22.19-govuk-strict-local (2026-02-22) - Fix special mana symbol class mapping for text-box rendering
+     *   - FIX: Map `{T}`/`{Q}`/`{TK}`/`{A}`/`{CHAOS}` tokens to mana-font classes (`tap`, `untap`, `ticket`, `acorn`, `chaos`)
+     *   - UI: Restore normal fallback visibility behavior and use inline mana wrapper for better baseline alignment
+     *   - FILE: LOCAL ONLY update to index-mockup-govuk-strict.html
+     *   - Signed: Codex @ 2026-02-22 23:37:13 UTC
+     * v2.22.18-govuk-strict-local (2026-02-22) - Make mana fallback text always visible to prevent blank outputs
+     *   - FIX: Keep `{...}` fallback text visible even when mana font is marked loaded
+     *   - FIX: Prevent blank casting cost/question answers in environments with partial/failed glyph rendering
+     *   - FILE: LOCAL ONLY update to index-mockup-govuk-strict.html
+     *   - Signed: Codex @ 2026-02-22 23:32:28 UTC
+     * v2.22.17-govuk-strict-local (2026-02-22) - Fix mana-symbol fallback visibility when font fails
+     *   - FIX: Fallback mana token text now inherits surrounding text color (visible on dark and light themes)
+     *   - FIX: mana-font loaded state now checks real `Mana` font availability via `document.fonts.check`, not stylesheet presence
+     *   - FILE: LOCAL ONLY update to index-mockup-govuk-strict.html
+     *   - Signed: Codex @ 2026-02-22 23:26:57 UTC
+     * v2.22.16-govuk-strict-local (2026-02-22) - Render mana symbols using mana-font
+     *   - UI: Added mana-font stylesheet integration for MTG symbol glyphs
+     *   - UI: Added renderer for `{...}` mana tokens and applied it to casting cost, oracle text, answers, and history values
+     *   - FILE: LOCAL ONLY update to index-mockup-govuk-strict.html
+     *   - Signed: Codex @ 2026-02-22 22:42:03 UTC
      * v2.22.15-govuk-strict-local (2026-02-22) - Improve double-faced normalization across all fields
      *   - FIX: normalizeCard now merges/sources DFC/split face data for mana cost, colors, type line, oracle text, image URIs, and P/T
      *   - FIX: P/T fallback now checks any face with defined values (not only face 0)
@@ -4494,6 +4555,124 @@
       return text.replace(pattern, '[REDACTED]');
     }
 
+    function manaTokenToClass(token) {
+      if (!token) return '';
+      const raw = String(token).trim();
+      const upper = raw.toUpperCase();
+      const specialMap = {
+        T: 'tap',
+        Q: 'untap',
+        CHAOS: 'chaos',
+        TK: 'ticket',
+        A: 'acorn',
+      };
+      if (specialMap[upper]) return specialMap[upper];
+
+      return raw
+        .toLowerCase()
+        .replace(/∞/g, 'infinity')
+        .replace(/½/g, 'half')
+        .replace(/\//g, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function renderManaText(text, keyPrefix = 'mana') {
+      const source = text == null ? '' : String(text);
+      const lines = source.split('\n');
+      const nodes = [];
+
+      lines.forEach((line, lineIdx) => {
+        const tokenPattern = /\{([^}]+)\}/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = tokenPattern.exec(line)) !== null) {
+          if (match.index > lastIndex) {
+            nodes.push(line.slice(lastIndex, match.index));
+          }
+
+          const rawToken = match[1];
+          const manaClass = manaTokenToClass(rawToken);
+          if (manaClass) {
+            nodes.push(
+              <span
+                key={`${keyPrefix}-${lineIdx}-${match.index}`}
+                className="mana-symbol"
+                title={`{${rawToken}}`}
+                aria-label={`{${rawToken}}`}
+              >
+                <i className={`ms ms-cost ms-${manaClass}`} aria-hidden="true" />
+                <span className="mana-symbol-fallback">{`{${rawToken}}`}</span>
+              </span>
+            );
+          } else {
+            nodes.push(match[0]);
+          }
+
+          lastIndex = tokenPattern.lastIndex;
+        }
+
+        if (lastIndex < line.length) {
+          nodes.push(line.slice(lastIndex));
+        }
+
+        if (lineIdx < lines.length - 1) {
+          nodes.push(<br key={`${keyPrefix}-br-${lineIdx}`} />);
+        }
+      });
+
+      return nodes;
+    }
+
+    function renderWithManaSymbols(text, { className = 'mana-inline', keyPrefix = 'mana' } = {}) {
+      const source = text == null ? '' : String(text);
+      if (!source.includes('{') && !source.includes('\n')) return source;
+      return <span className={className}>{renderManaText(source, keyPrefix)}</span>;
+    }
+
+    const MANA_FONT_LINK_SELECTOR = 'link[href*=\"mana.andrewgioia.com/css/mana.css\"]';
+    const MANA_FONT_FACE_CHECK = '16px \"Mana\"';
+    const MANA_FONT_CLASS = 'mana-font-loaded';
+
+    function markManaFontLoaded() {
+      document.documentElement.classList.add(MANA_FONT_CLASS);
+    }
+
+    function isManaFontLoaded() {
+      if (!document.fonts || typeof document.fonts.check !== 'function') return false;
+      return document.fonts.check(MANA_FONT_FACE_CHECK);
+    }
+
+    function tryMarkManaFontLoaded() {
+      if (isManaFontLoaded()) {
+        markManaFontLoaded();
+      }
+    }
+
+    function setupManaFontDetection() {
+      const manaLink = document.querySelector(MANA_FONT_LINK_SELECTOR);
+      tryMarkManaFontLoaded();
+
+      if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
+        document.fonts.ready.then(tryMarkManaFontLoaded).catch(() => {});
+      }
+
+      if (manaLink) {
+        manaLink.addEventListener('load', () => {
+          setTimeout(tryMarkManaFontLoaded, 0);
+        }, { once: true });
+        manaLink.addEventListener('error', () => {
+          manaLink.dataset.manaFontError = 'true';
+        }, { once: true });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupManaFontDetection);
+    } else {
+      setupManaFontDetection();
+    }
+
     // ===================================================================
     // SCRYFALL API CLIENT
     // ===================================================================
@@ -5805,7 +5984,7 @@
             </div>
             {shouldShowCastingCost && (
               <div className="scryfall-mana-cost">
-                {card.manaCost || '{0}'}
+                {renderWithManaSymbols(card.manaCost || '{0}', { className: 'mana-inline mana-cost-inline', keyPrefix: `cost-${card.name}` })}
               </div>
             )}
           </div>
@@ -5828,7 +6007,7 @@
 
           {shouldShowText && (
             <div className="scryfall-oracle">
-              {displayText}
+              {renderWithManaSymbols(displayText, { className: 'mana-inline mana-oracle-inline', keyPrefix: `oracle-${card.name}` })}
             </div>
           )}
 
@@ -5901,7 +6080,7 @@
                     {question.askField === 'cardArt' ? (
                       <img src={choice} alt={`Option ${idx + 1}`} className="answer-art" />
                     ) : (
-                      choice
+                      renderWithManaSymbols(choice, { className: 'mana-inline mana-answer-inline', keyPrefix: `choice-${idx}` })
                     )}
                   </button>
                 );
@@ -5937,7 +6116,7 @@
                     <div>
                       <strong>Incorrect</strong>
                       <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                        Correct answer: <strong>{question.correctAnswer}</strong>
+                        Correct answer: <strong>{renderWithManaSymbols(question.correctAnswer, { className: 'mana-inline mana-answer-inline', keyPrefix: 'mc-correct' })}</strong>
                       </div>
                     </div>
                   )}
@@ -6004,7 +6183,7 @@
                     <div>
                       <strong>Incorrect</strong>
                       <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                        Correct answer: <strong>{question.correctAnswer}</strong>
+                        Correct answer: <strong>{renderWithManaSymbols(question.correctAnswer, { className: 'mana-inline mana-answer-inline', keyPrefix: 'text-correct' })}</strong>
                       </div>
                     </div>
                   )}
@@ -6082,8 +6261,12 @@
                       </a>
                     </td>
                     <td>{entry.askField || entry.type}</td>
-                    <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.userAnswer}</td>
-                    <td>{entry.correct ? '—' : entry.correctAnswer}</td>
+                    <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {renderWithManaSymbols(entry.userAnswer, { className: 'mana-inline mana-history-inline', keyPrefix: `hist-user-${idx}` })}
+                    </td>
+                    <td>
+                      {entry.correct ? '—' : renderWithManaSymbols(entry.correctAnswer, { className: 'mana-inline mana-history-inline', keyPrefix: `hist-correct-${idx}` })}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -6919,7 +7102,7 @@
                   </div>
                   <div className="govuk-page-meta-row">
                     <dt>Last updated:</dt>
-                    <dd>February 22, 2026 (20:23 UTC)</dd>
+                    <dd>February 22, 2026 (23:37 UTC)</dd>
                   </div>
                 </dl>
               </div>
@@ -7138,8 +7321,8 @@
                 <li><a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> and <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a></li>
                 <li>Card data and images via <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall API</a> • <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support Scryfall</a></li>
               </ul>
-              <p className="govuk-related-content-meta">Version 2.22.15-govuk-strict</p>
-              <p className="govuk-related-content-meta">Last updated 2026-02-22 20:23:21 UTC</p>
+              <p className="govuk-related-content-meta">Version 2.22.19-govuk-strict</p>
+              <p className="govuk-related-content-meta">Last updated 2026-02-22 23:37:13 UTC</p>
               <p className="govuk-related-content-meta">Lovingly vibe coded with Claude Code and Codex.</p>
             </aside>
           </div>
