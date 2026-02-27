@@ -866,19 +866,19 @@
                 // Load consolidated master ratings file (includes all 320 cards with pre-calculated z-scores)
                 // This eliminates the need for data merging and on-the-fly z-score calculations
                 const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV] = await Promise.all([
-                    fetch('../../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv').then(r => {
+                    fetch('../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv').then(r => {
                         if (!r.ok) throw new Error(`Failed to load expert ratings: ${r.status}`);
                         return r.text();
                     }),
-                    fetch('../../shared-data/17lands%20exports/card-ratings-2026-02-27.csv').then(r => {
+                    fetch('../shared-data/17lands%20exports/card-ratings-2026-02-27.csv').then(r => {
                         if (!r.ok) throw new Error(`Failed to load 17 Lands data: ${r.status}`);
                         return r.text();
                     }),
-                    fetch('../../shared-data/data/scryfall/scryfall_reference.json').then(r => {
+                    fetch('../shared-data/data/scryfall/scryfall_reference.json').then(r => {
                         if (!r.ok) throw new Error(`Failed to load Scryfall cache: ${r.status}`);
                         return r.json();
                     }),
-                    fetch('../../shared-data/data/ecl/ecl-complete-data.csv').then(r => {
+                    fetch('../shared-data/data/ecl/ecl-complete-data.csv').then(r => {
                         if (!r.ok) throw new Error(`Failed to load card metadata: ${r.status}`);
                         return r.text();
                     })
