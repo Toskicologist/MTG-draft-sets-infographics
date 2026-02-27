@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECL - Most Underrated & Overrated Cards</title>
+    <meta property="og:title" content="ECL - Most Underrated & Overrated Cards">
+    <meta property="og:description" content="Discover which Lorwyn Eclipsed cards experts got wrong - comparing predicted ratings vs actual 17 Lands performance data">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ECL - Most Underrated & Overrated Cards">
+    <meta name="twitter:description" content="Which cards did the experts get wrong? Actual match data reveals the surprises">
+
+    <!--
+    Changelog:
+    - v1.4.0 (2026-02-13) Major feature update: Letter grades, header improvements, grid view enhancements
+      - Add letter grades to all z-score displays using 17 Lands system (A+ through F, 0.33σ steps)
+      - Update header with standardized banner style matching quiz page
+      - Add expert site links (TCGPlayer, Draftsim, Card Game Base, Limited Level-Ups)
+      - Add link to 17 Lands data and normalized ratings table
+      - Add "Include special guest cards" toggle to grid view (off by default)
+      - Add "Separate hybrid/multicolor" toggle to grid view (changes color column behavior)
+      - Add 2-color archetype table below grid view (WU, BR, GW, UR, BG)
+      - Full List page: Move discrepancy to first column, bold and color-code by value
+      - Full List page: Shrink rarity/colors/type/mana columns to match ratings table
+    - v1.3.1 (2026-02-12) Update to latest 17 Lands data (Feb 12, 2026 18:37 EST)
+      - All discrepancies recalculated with fresh match data (2 weeks more games)
+      - Outlier analysis reveals: CGB is the outlier expert 62.5% of the time when deviation > 0.5σ
+    - v1.3.0 (2026-02-12) Add Full List tab with interactive sortable/filterable table
+      - All cards with: Name, Rarity, Colors, Type, Mana, Avg Expert σ, Controversy, GIH WR, Actual σ, Discrepancy
+      - Controls: search, sort by any column, rarity/color filters, image toggle, rarity colors, type display toggle
+      - Card name links to Scryfall, hover tooltip shows card image
+      - Score conditional formatting (green/blue/yellow/red) and discrepancy colour coding
+      - Loads ecl-complete-data.csv for Type and Mana Cost metadata
+    - v1.0.0 (2026-01-27) Initial release: Compare expert predictions vs actual 17 Lands performance data
+      - Data sources: ECL expert ratings (Card Game Base, Draftsim, Limited Resources, Limited Level-Ups, Channel Fireball) vs 17 Lands GIH WR (Jan 27, 2026)
+      - Views: By Rarity, By Color, Trending table
+      - Export: Shareable social media graphics
+      - Uses Scryfall cache for card images (125KB JSON, avoids 200+ API calls)
+    -->
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        header {
+            position: relative;
+            background-image: url('../../assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%);
+            z-index: 1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            padding: 30px;
+            color: white;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .data-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+        }
+
+        .data-info strong {
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-info a {
+            color: white;
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        .data-info a:hover {
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card-grid {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .rarity-section, .color-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #1e3c72;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .cards-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .column-label {
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .underrated-label {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .overrated-label {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .card-display {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-display:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-image-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .card-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #1e3c72;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: #f0f4f8;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .discrepancy {
+            grid-column: 1 / -1;
+            font-size: 1.3em;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .discrepancy.positive {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .discrepancy.negative {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        .rarity-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        /* Okabe-Ito color scheme for rarities */
+        .rarity-C { background: #909090; }
+        .rarity-U { background: #56B4E9; }
+        .rarity-R { background: #E69F00; }
+        .rarity-M { background: #CC79A7; }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #1e3c72;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: #2a5298;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .export-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .export-button {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+
+        .export-button:hover {
+            background: #2a5298;
+            transform: translateY(-2px);
+        }
+
+        /* Grid View Styles */
+        .grid-view {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-top: 20px;
+            table-layout: fixed;
+            box-sizing: border-box;
+        }
+
+        .grid-table th {
+            background: #1e3c72;
+            color: white;
+            padding: 10px 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+            border: 2px solid white;
+            width: calc((100% - 60px) / 5);
+            vertical-align: middle;
+            box-sizing: border-box;
+        }
+
+        .grid-table th.rarity-header {
+            background: #2a5298;
+            border: 2px solid white;
+            padding: 10px 10px;
+            width: 60px;
+            vertical-align: middle;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            font-size: 1.1em;
+            box-sizing: border-box;
+        }
+
+        .grid-table td {
+            padding: 0;
+            vertical-align: top;
+            width: calc((100% - 60px) / 5);
+            border: 2px solid white;
+            background: #fafafa;
+            box-sizing: border-box;
+        }
+
+        .grid-table td.row-label {
+            width: 60px;
+            border: 2px solid white;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            white-space: nowrap;
+            transform: rotate(180deg);
+            font-size: 0.95em;
+            font-weight: 600;
+            box-sizing: border-box;
+        }
+
+        .grid-card {
+            background: white;
+            border-radius: 0;
+            padding: 0;
+            height: 100%;
+            box-shadow: inset 0 0 0 1px #e8e8e8;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin: 0;
+        }
+
+        .grid-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            position: relative;
+        }
+
+        .grid-card.underrated {
+            border: 2px solid #10b981;
+        }
+
+        .grid-card.overrated {
+            border: 2px solid #ef4444;
+        }
+
+        .grid-card-image-container {
+            width: 100%;
+            height: 0;
+            padding-bottom: 139.5%;
+            position: relative;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .grid-card-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .grid-card-content {
+            padding: 0;
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            text-align: center;
+        }
+
+
+        .grid-card-stats-line {
+            font-size: 0.7em;
+            color: #666;
+            line-height: 1.4;
+            word-wrap: break-word;
+            padding: 4px 6px;
+            border-radius: 3px;
+        }
+
+        .grid-card.underrated .grid-card-stats-line {
+            background: #d1fae5;
+        }
+
+        .grid-card.overrated .grid-card-stats-line {
+            background: #fee2e2;
+        }
+
+        .grid-card-stats-line .stat-separator {
+            display: inline-block;
+            margin: 0 4px;
+            color: #ccc;
+        }
+
+        .grid-card-stats-line .difference {
+            font-weight: bold;
+        }
+
+        .grid-card-stats-line .difference.positive {
+            color: #065f46;
+        }
+
+        .grid-card-stats-line .difference.negative {
+            color: #991b1b;
+        }
+
+        .row-label {
+            background: #f0f4f8;
+            color: #1e3c72;
+            font-weight: bold;
+            padding: 15px;
+            text-align: center;
+            border-radius: 6px;
+            vertical-align: middle;
+        }
+
+        /* Rarity cells with rowspan="2" - proper vertical centering */
+        .row-label[data-rarity] {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 15px;
+            line-height: 1.2;
+            min-height: 160px;
+        }
+
+        /* Rarity color coding for row labels (cells with rowspan="2") */
+        .row-label[data-rarity="C"] {
+            background-color: #909090;
+            color: white;
+        }
+
+        .row-label[data-rarity="U"] {
+            background-color: #56B4E9;
+            color: white;
+        }
+
+        .row-label[data-rarity="R"] {
+            background-color: #E69F00;
+            color: #1a1a1a;
+        }
+
+        .row-label[data-rarity="M"] {
+            background-color: #CC79A7;
+            color: white;
+        }
+
+        .row-label[data-rarity="All"] {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        .row-label.underrated-row {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .row-label.overrated-row {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        /* === Full List Tab === */
+        .fl-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .fl-controls {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .fl-controls label { font-weight: 600; color: #333; }
+        .fl-controls select, .fl-controls input[type="text"] {
+            padding: 6px 10px; border: 1px solid #ddd; border-radius: 5px;
+            font-size: 0.9em; background: white;
+        }
+        .fl-controls select:hover, .fl-controls input:hover { border-color: #1e3c72; }
+
+        .fl-group { display: flex; gap: 6px; align-items: center; }
+        .fl-toggle { display: flex; gap: 5px; align-items: center; font-weight: 600; color: #333; }
+        .fl-toggle input[type="checkbox"] { margin: 0; }
+        .fl-sep { width: 1px; height: 22px; background: #ccc; margin: 0 4px; }
+
+        .fl-filter { display: flex; gap: 6px; align-items: center; }
+        .fl-filter label { display: inline-flex; gap: 3px; align-items: center; font-weight: 600; }
+        .fl-filter input[type="checkbox"] { margin: 0; }
+        .fl-filter-btn {
+            padding: 3px 7px; border: 1px solid #bbb; border-radius: 4px;
+            background: #fff; font-size: 0.8em; cursor: pointer;
+        }
+        .fl-filter-btn:hover { border-color: #1e3c72; }
+
+        .fl-table-wrap { overflow-x: auto; padding: 0; }
+
+        #flTable {
+            width: 100%; border-collapse: collapse; font-size: 0.88em;
+        }
+
+        #flTable th {
+            background: #1e3c72; color: white; padding: 8px 6px; text-align: center;
+            font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap;
+            position: sticky; top: 0; z-index: 3; line-height: 1.2;
+        }
+        #flTable th:hover { background: #2a5298; }
+        #flTable th .fl-sort { margin-left: 4px; font-size: 0.75em; opacity: 0.4; }
+        #flTable th.fl-sorted .fl-sort { opacity: 1; }
+
+        #flTable th:first-child {
+            text-align: left; position: sticky; left: 0; z-index: 4;
+        }
+
+        #flTable td {
+            padding: 5px 6px; border-bottom: 1px solid #eee; text-align: center; line-height: 1.2;
+        }
+        #flTable tr:hover { background: #f8f9fa; }
+        #flTable tr:nth-child(even) { background: #fafbfc; }
+        #flTable tr:nth-child(even):hover { background: #f0f2f5; }
+
+        #flTable td:first-child {
+            font-weight: 600; color: #1e3c72; text-align: left;
+            position: sticky; left: 0; background: inherit; z-index: 2;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
+        }
+        #flTable td:first-child a {
+            color: #1e3c72; text-decoration: none; border-bottom: 2px solid transparent;
+        }
+        #flTable td:first-child a:hover { border-bottom-color: #1e3c72; }
+
+        .fl-card-img { display: none; margin-top: 4px; }
+        .fl-card-img img { width: 100%; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        body.fl-show-images .fl-card-img { display: block; }
+
+        /* Score formatting */
+        .fl-excellent { background-color: #d4edda; color: #155724; font-weight: 600; }
+        .fl-good { background-color: #d1ecf1; color: #0c5460; }
+        .fl-neutral { background-color: #fff3cd; color: #856404; }
+        .fl-poor { background-color: #f8d7da; color: #721c24; }
+        .fl-very-poor { background-color: #e74c3c; color: white; font-weight: 600; }
+
+        .fl-cont-low { background-color: #d4edda; color: #155724; }
+        .fl-cont-med { background-color: #fff3cd; color: #856404; }
+        .fl-cont-high { background-color: #f8d7da; color: #721c24; }
+
+        /* Rarity colour rows */
+        body.fl-rarity-colors #flTable tr[data-rarity="C"] { background-color: rgba(144,144,144,0.15) !important; }
+        body.fl-rarity-colors #flTable tr[data-rarity="U"] { background-color: rgba(86,180,233,0.2) !important; }
+        body.fl-rarity-colors #flTable tr[data-rarity="R"] { background-color: rgba(230,159,0,0.2) !important; }
+        body.fl-rarity-colors #flTable tr[data-rarity="M"] { background-color: rgba(204,121,167,0.2) !important; }
+
+        /* Card tooltip */
+        .fl-tooltip {
+            position: fixed; display: none; background: white; border: 2px solid #1e3c72;
+            border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000;
+            padding: 6px; max-width: 280px; pointer-events: none;
+        }
+        .fl-tooltip img { max-width: 100%; height: auto; border-radius: 5px; max-height: 380px; }
+
+        /* Grid card tooltip (hover images) */
+        .grid-card-tooltip {
+            position: fixed; display: none; background: white; border: 2px solid #1e3c72;
+            border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000;
+            padding: 4px; pointer-events: auto; cursor: pointer;
+        }
+        .grid-card-tooltip img {
+            max-width: 100%; height: auto; border-radius: 5px; max-height: 420px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                min-width: auto;
+            }
+
+            .grid-view {
+                padding: 15px;
+            }
+
+            .grid-table {
+                font-size: 0.85em;
+            }
+
+            .grid-card-content {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>ECL - Most Underrated & Overrated Cards</h1>
+                <div class="subtitle">Which cards did the experts get wrong?</div>
+                <div class="data-info">
+                    <strong>Expert Predictions:</strong> Expert rating derived from a normalized average of ratings from the following expert reviewers. <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer">Full table here</a>:
+                    <a href="https://www.tcgplayer.com/search/articles?q=Lorwyn+Eclipsed+Magic:+The+Gathering+Limited+Set+Review&productLineName=magic" target="_blank" rel="noopener noreferrer">TCGPlayer</a>,
+                    <a href="https://draftsim.com/mtg-ecl-limited-set-review/" target="_blank" rel="noopener noreferrer">Draftsim</a>,
+                    <a href="https://cardgamebase.com/lorwyn-eclipsed-draft-tier-list/" target="_blank" rel="noopener noreferrer">Card Game Base</a>,
+                    <a href="https://lrcast.com/limited-resources-836-lorwyn-eclipsed-set-review-commons-and-uncommons/" target="_blank" rel="noopener noreferrer">Limited Resources</a>,
+                    <a href="https://limitedlevelups.libsyn.com/" target="_blank" rel="noopener noreferrer">Limited Level-Ups</a><br>
+                    <strong>Actual Performance:</strong> <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands GIH WR</a> (Premier Draft) - Updated Feb 12, 2026 18:37 EST<br>
+                    <strong>Set:</strong> Lorwyn Eclipsed (ECL) | <strong>Version:</strong> 1.4.0<br>
+                    <div style="margin-top: 12px; font-size: 0.85em; line-height: 1.5;">
+                        Scores and data are from <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands ECL Premier Draft</a>. <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer">Support them on Patreon</a><br>
+                        Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a><br>
+                        <div style="margin-top: 8px;">
+                            Also see: <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">ECL Draft Quiz</a> |
+                            <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Draft Archetypes Color Wheel</a><br>
+                            Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab" data-tab="grid">Grid View</button>
+            <button class="tab active" data-tab="grid2">Grid View 2</button>
+            <button class="tab" data-tab="rarity">By Rarity</button>
+            <button class="tab" data-tab="color">By Color</button>
+            <button class="tab" data-tab="trending">Trending</button>
+            <button class="tab" data-tab="fulllist">Full List</button>
+            <button class="tab" data-tab="export">Export</button>
+        </div>
+
+        <div id="loading" class="loading">Loading card data...</div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="grid-tab" class="tab-content"></div>
+        <div id="grid2-tab" class="tab-content active"></div>
+        <div id="rarity-tab" class="tab-content"></div>
+        <div id="color-tab" class="tab-content"></div>
+        <div id="trending-tab" class="tab-content"></div>
+        <div id="fulllist-tab" class="tab-content"></div>
+        <div id="export-tab" class="tab-content"></div>
+    </div>
+    <div id="flTooltip" class="fl-tooltip"></div>
+
+    <script>
+        // Global data storage
+        let expertRatings = [];
+        let actualData = [];
+        let cardMetadata = [];
+        let scryfallCache = {};
+        let processedCards = [];
+
+        // Full List tab state
+        const flSortState = { key: 'discrepancy', direction: 'desc' };
+
+        // Grid view state
+        const gridViewState = {
+            includeSpecialGuests: false,
+            separateHybridMulticolor: false
+        };
+
+        // Known special guest cards (not in ECL but appear in limited format)
+        const specialGuestCards = new Set([
+            'Bitterblossom', 'Devoted Druid', 'Dolmen Gate', 'Door of Destinies',
+            'Exclusion Mage', 'Faerie Macabre', 'Goblin Chieftain', 'Goblin Sharpshooter',
+            'Gravedigger', 'Heat Shimmer', 'Helix Pinnacle', 'Idyllic Tutor',
+            'Kinsbaile Cavalier', 'Leaf-Crowned Visionary', 'Manamorphose', 'Manalith',
+            'Mistbind Clique', 'Pacifism', 'Painter\'s Servant', 'Reclamation Sage',
+            'Regal Force', 'Risen Reef', 'Cancel', 'Shatter', 'Slippery Bogle',
+            'Spirited Companion', 'Thousand-Year Elixir', 'Wanderwine Prophets'
+        ]);
+
+        // Exact 17Lands grade algorithm (extracted from 17lands JS bundle)
+        // Formula: index = Math.floor(3 * (zscore + GRADE_OFFSET))
+        // Each grade band = 1/3 SD, centered at C (zscore=0)
+        const GRADE_LABELS = ["F","D-","D","D+","C-","C","C+","B-","B","B+","A-","A","A+"];
+        const GRADE_OFFSET = 2 - 1/6;  // 11/6 ≈ 1.8333
+
+        function zScoreToGrade(zScore) {
+            const index = Math.floor(3 * (zScore + GRADE_OFFSET));
+            if (index < 0) return 'F';
+            if (index >= GRADE_LABELS.length) return 'A+';
+            return GRADE_LABELS[index];
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupTabs();
+            await loadData();
+        });
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Update active content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        async function loadData() {
+            try {
+                // Load consolidated master ratings file (includes all 320 cards with pre-calculated z-scores)
+                // This eliminates the need for data merging and on-the-fly z-score calculations
+                const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV] = await Promise.all([
+                    fetch('../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv').then(r => {
+                        if (!r.ok) throw new Error(`Failed to load expert ratings: ${r.status}`);
+                        return r.text();
+                    }),
+                    fetch('../shared-data/17lands%20exports/card-ratings-2026-02-12.csv').then(r => {
+                        if (!r.ok) throw new Error(`Failed to load 17 Lands data: ${r.status}`);
+                        return r.text();
+                    }),
+                    fetch('../shared-data/data/scryfall/scryfall_reference.json').then(r => {
+                        if (!r.ok) throw new Error(`Failed to load Scryfall cache: ${r.status}`);
+                        return r.json();
+                    }),
+                    fetch('../shared-data/data/ecl/ecl-complete-data.csv').then(r => {
+                        if (!r.ok) throw new Error(`Failed to load card metadata: ${r.status}`);
+                        return r.text();
+                    })
+                ]);
+
+                expertRatings = parseCSV(masterRatingsCSV);
+                actualData = parseCSV(actualCSV);
+                scryfallCache = scryfallJSON;
+                cardMetadata = parseCSV(metadataCSV);
+
+                // Process and calculate discrepancies
+                processedCards = calculateDiscrepancies();
+
+                // Render all views
+                renderGridView();
+                renderGridView2();
+                renderRarityView();
+                renderColorView();
+                renderTrendingView();
+                renderFullListView();
+                renderExportView();
+
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('error').textContent = `Error loading data: ${error.message}`;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+            return lines.slice(1).map(line => {
+                const values = parseCSVLine(line);
+                const row = {};
+                headers.forEach((header, i) => {
+                    row[header] = values[i] || '';
+                });
+                return row;
+            });
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+
+            return result;
+        }
+
+        function calculateZScore(values) {
+            const nums = values.filter(v => !isNaN(v) && v !== '');
+            if (nums.length === 0) return { mean: 0, stdDev: 0 };
+
+            const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+            const variance = nums.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / nums.length;
+            const stdDev = Math.sqrt(variance);
+
+            return { mean, stdDev };
+        }
+
+
+        function calculateDiscrepancies() {
+            const cards = [];
+
+            // Create a map of 17 Lands data by card name (includes rarity, color, and GIH WR)
+            const actualMap = new Map();
+            actualData.forEach(row => {
+                const name = row.Name?.replace(/^"|"$/g, '').trim();
+                const gihwr = parseFloat(row['GIH WR']?.replace('%', ''));
+                const rarity = row.Rarity?.trim().toUpperCase();
+                const color = row.Color?.trim();
+                if (name && !isNaN(gihwr)) {
+                    actualMap.set(name, { gihwr, rarity, color });
+                }
+            });
+
+            // Create a map of card metadata (type, mana cost) from ecl-complete-data.csv
+            const metaMap = new Map();
+            cardMetadata.forEach(row => {
+                const name = row.Card_Name?.replace(/^"|"$/g, '').trim();
+                if (name) {
+                    metaMap.set(name, {
+                        type: row.Type || '',
+                        manaCost: row.Mana_Cost || ''
+                    });
+                }
+            });
+
+            // Create a map of Scryfall URLs
+            const scryfallMap = new Map();
+            if (scryfallCache.cards) {
+                scryfallCache.cards.forEach(c => {
+                    if (c.quiz_name) scryfallMap.set(c.quiz_name, c.scryfall_uri || '');
+                    if (c.scryfall_name && c.scryfall_name !== c.quiz_name) {
+                        scryfallMap.set(c.scryfall_name, c.scryfall_uri || '');
+                    }
+                });
+            }
+
+            // Calculate z-scores for 17 Lands GIH WR (for converting actual performance to z-scores)
+            const gihValues = Array.from(actualMap.values()).map(v => v.gihwr);
+            const gihStats = calculateZScore(gihValues);
+
+            // Process each card from expert ratings (master file has all 320 cards with pre-calculated z-scores)
+            expertRatings.forEach(row => {
+                const cardName = row.card_name?.trim();
+                if (!cardName) return;
+
+                // Get actual performance from 17 Lands
+                const actual = actualMap.get(cardName);
+                // Fix: Use explicit null check instead of falsy check (0 is valid)
+                if (!actual || actual.gihwr == null || isNaN(actual.gihwr)) return;
+
+                const actualGIHWR = actual.gihwr;
+
+                // Calculate actual z-score from 17 Lands GIH WR
+                const actualZScore = gihStats.stdDev === 0 ? 0 : (actualGIHWR - gihStats.mean) / gihStats.stdDev;
+
+                // Get expert z-score from master ratings file (pre-calculated)
+                const expertZScore = parseFloat(row.average_zscore) || 0;
+
+                // Calculate discrepancy
+                const discrepancy = actualZScore - expertZScore;
+
+                // Calculate controversy (std dev of individual expert z-scores)
+                const expertScores = [
+                    parseFloat(row.tcgplayer_zscore),
+                    parseFloat(row.draftsim_zscore),
+                    parseFloat(row.cgb_zscore),
+                    parseFloat(row.llu_zscore)
+                ].filter(v => Number.isFinite(v));
+                let controversy = NaN;
+                if (expertScores.length >= 2) {
+                    const mean = expertScores.reduce((a, b) => a + b, 0) / expertScores.length;
+                    const variance = expertScores.reduce((a, b) => a + (b - mean) ** 2, 0) / expertScores.length;
+                    controversy = Math.sqrt(variance);
+                }
+
+                // Get metadata
+                const meta = metaMap.get(cardName) || {};
+
+                cards.push({
+                    name: cardName,
+                    rarity: actual.rarity,
+                    colors: row.colors || actual.color || 'C',
+                    type: meta.type || '',
+                    manaCost: meta.manaCost || '',
+                    expertZScore: expertZScore,
+                    actualZScore: actualZScore,
+                    actualGIHWR: actualGIHWR,
+                    discrepancy: discrepancy,
+                    controversy: controversy,
+                    scryfallUrl: scryfallMap.get(cardName) || ''
+                });
+            });
+
+            return cards;
+        }
+
+        function getCardImage(cardName) {
+            // Check Scryfall cache first
+            const cachedCard = scryfallCache.cards?.find(c =>
+                c.quiz_name === cardName || c.scryfall_name === cardName
+            );
+
+            if (cachedCard && cachedCard.image_url) {
+                return cachedCard.image_url;
+            }
+
+            // Fallback: Check if this is a special guest card and fetch from SPG set
+            if (specialGuestCards.has(cardName)) {
+                return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=spg&format=image`;
+            }
+
+            // Regular ECL cards not in cache
+            return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=ecl&format=image`;
+        }
+
+        function renderCard(card, isUnderrated) {
+            const discrepancyClass = isUnderrated ? 'positive' : 'negative';
+            const discrepancyLabel = isUnderrated ? 'Underrated by' : 'Overrated by';
+            const discrepancyValue = Math.abs(card.discrepancy).toFixed(2);
+
+            return `
+                <div class="card-display">
+                    <div class="card-image-container">
+                        <img src="${getCardImage(card.name)}" alt="${card.name}" class="card-image" loading="lazy">
+                    </div>
+                    <div class="card-name">
+                        ${card.name}
+                        <span class="rarity-indicator rarity-${card.rarity}"></span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat-box">
+                            <div class="stat-label">Expert Prediction</div>
+                            <div class="stat-value">${card.expertZScore.toFixed(2)}σ (${zScoreToGrade(card.expertZScore)})</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Actual Performance</div>
+                            <div class="stat-value">${card.actualZScore.toFixed(2)}σ (${zScoreToGrade(card.actualZScore)})</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">GIH Win Rate</div>
+                            <div class="stat-value">${card.actualGIHWR.toFixed(1)}%</div>
+                        </div>
+                        <div class="discrepancy ${discrepancyClass}">
+                            ${discrepancyLabel} ${discrepancyValue}σ
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGridView() {
+            const colors = ['W', 'U', 'B', 'R', 'G'];
+            const colorNames = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+            const rarities = ['C', 'U', 'R', 'M'];  // Complete data includes all rarities
+            const rarityNames = { C: 'Common', U: 'Uncommon', R: 'Rare', M: 'Mythic' };
+
+            let html = `
+                <div class="grid-view">
+                    <h2 style="color: #1e3c72; margin-bottom: 10px;">Grid View: Under/Overrated by Color & Rarity</h2>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Top discrepancy for each color-rarity combination. Rows alternate between underrated (↑) and overrated (↓).
+                    </p>
+                    <div style="margin-bottom: 20px; padding: 12px; background: #f5f5f5; border-radius: 4px;">
+                        <label style="display: inline-flex; align-items: center; margin-right: 20px; cursor: pointer;">
+                            <input type="checkbox" id="include-special-guests" ${gridViewState.includeSpecialGuests ? 'checked' : ''} style="margin-right: 6px;" onchange="handleGridViewToggle('includeSpecialGuests')">
+                            Include Special Guest Cards
+                        </label>
+                        <label style="display: inline-flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="separate-hybrid-multicolor" ${gridViewState.separateHybridMulticolor ? 'checked' : ''} style="margin-right: 6px;" onchange="handleGridViewToggle('separateHybridMulticolor')">
+                            Separate Hybrid/Multicolor
+                        </label>
+                    </div>
+                    <table class="grid-table">
+                        <thead>
+                            <tr>
+                                <th class="rarity-header"></th>
+                                <th class="rarity-header"></th>
+                                ${colors.map(color => `<th><a href="https://scryfall.com/search?q=set:ecl c:${color.toLowerCase()}" target="_blank" style="color: inherit; text-decoration: none; cursor: pointer; display: block;">${colorNames[color]}</a></th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // For each rarity, create two rows: underrated and overrated
+            rarities.forEach(rarity => {
+                // Underrated row
+                html += `<tr>`;
+                html += `<td class="row-label" data-rarity="${rarity}" rowspan="2" style="text-align: center; vertical-align: middle; font-weight: bold;">${rarityNames[rarity]}</td>`;
+                html += `<td class="row-label underrated-row" style="text-align: center; font-weight: 600; padding: 8px;">↑ Underrated</td>`;
+
+                colors.forEach(color => {
+                    const colorCards = processedCards.filter(c => {
+                        // Check rarity match
+                        if (c.rarity !== rarity) return false;
+
+                        // Filter special guests if toggle is off
+                        if (!gridViewState.includeSpecialGuests && specialGuestCards.has(c.name)) return false;
+
+                        // Color matching
+                        const colorMatch = c.colors === color || (c.colors && c.colors.includes(color));
+                        if (!colorMatch) return false;
+
+                        // If separating hybrid/multicolor, only show single-color cards in single-color columns
+                        if (gridViewState.separateHybridMulticolor && c.colors !== color) return false;
+
+                        return true;
+                    });
+
+                    const topUnderrated = colorCards.length > 0
+                        ? colorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                        : null;
+
+                    html += `<td>`;
+                    if (topUnderrated) {
+                        html += `
+                            <div class="grid-card underrated" title="${topUnderrated.name}">
+                                <div class="grid-card-image-container">
+                                    <img src="${getCardImage(topUnderrated.name)}" alt="${topUnderrated.name}" class="grid-card-image" loading="lazy">
+                                </div>
+                                <div class="grid-card-content">
+                                    <div class="grid-card-stats-line">
+                                        Expert ${topUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.expertZScore)})
+                                        <span class="stat-separator">|</span>
+                                        Actual ${topUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.actualZScore)})
+                                        <span class="stat-separator">|</span>
+                                        GIH WR ${topUnderrated.actualGIHWR.toFixed(1)}%
+                                        <span class="stat-separator">|</span>
+                                        <span class="difference positive">Difference +${topUnderrated.discrepancy.toFixed(2)}σ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</td>`;
+                });
+                html += `</tr>`;
+
+                // Overrated row (rarity cell already merged from above)
+                html += `<tr>`;
+                html += `<td class="row-label overrated-row" style="text-align: center; font-weight: 600; padding: 8px;">↓ Overrated</td>`;
+
+                colors.forEach(color => {
+                    const colorCards = processedCards.filter(c => {
+                        // Check rarity match
+                        if (c.rarity !== rarity) return false;
+
+                        // Filter special guests if toggle is off
+                        if (!gridViewState.includeSpecialGuests && specialGuestCards.has(c.name)) return false;
+
+                        // Color matching
+                        const colorMatch = c.colors === color || (c.colors && c.colors.includes(color));
+                        if (!colorMatch) return false;
+
+                        // If separating hybrid/multicolor, only show single-color cards in single-color columns
+                        if (gridViewState.separateHybridMulticolor && c.colors !== color) return false;
+
+                        return true;
+                    });
+
+                    const topOverrated = colorCards.length > 0
+                        ? colorCards.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                        : null;
+
+                    html += `<td>`;
+                    if (topOverrated) {
+                        html += `
+                            <div class="grid-card overrated" title="${topOverrated.name}">
+                                <div class="grid-card-image-container">
+                                    <img src="${getCardImage(topOverrated.name)}" alt="${topOverrated.name}" class="grid-card-image" loading="lazy">
+                                </div>
+                                <div class="grid-card-content">
+                                    <div class="grid-card-stats-line">
+                                        Expert ${topOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.expertZScore)})
+                                        <span class="stat-separator">|</span>
+                                        Actual ${topOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.actualZScore)})
+                                        <span class="stat-separator">|</span>
+                                        GIH WR ${topOverrated.actualGIHWR.toFixed(1)}%
+                                        <span class="stat-separator">|</span>
+                                        <span class="difference negative">Difference ${topOverrated.discrepancy.toFixed(2)}σ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+
+                    <h2 style="color: #1e3c72; margin: 40px 0 20px 0;">2-Color Archetypes</h2>
+                    <table class="grid-table">
+                        <thead>
+                            <tr>
+                                <th class="rarity-header"></th>
+                                <th>WU</th>
+                                <th>WB</th>
+                                <th>WR</th>
+                                <th>WG</th>
+                                <th>UB</th>
+                                <th>UR</th>
+                                <th>UG</th>
+                                <th>BR</th>
+                                <th>BG</th>
+                                <th>RG</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            const twoColorCombos = ['WU', 'WB', 'WR', 'WG', 'UB', 'UR', 'UG', 'BR', 'BG', 'RG'];
+
+            // Underrated row
+            html += `<tr>`;
+            html += `<td class="row-label underrated-row">↑ Underrated</td>`;
+
+            twoColorCombos.forEach(combo => {
+                const colorCards = processedCards.filter(c => {
+                    if (c.colors && c.colors.length === 2) {
+                        const sorted = [c.colors[0], c.colors[1]].sort().join('');
+                        const combSorted = [combo[0], combo[1]].sort().join('');
+                        return sorted === combSorted;
+                    }
+                    return false;
+                });
+
+                const topUnderrated = colorCards.length > 0
+                    ? colorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                    : null;
+
+                html += `<td>`;
+                if (topUnderrated) {
+                    html += `
+                        <div class="grid-card underrated" title="${topUnderrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topUnderrated.name)}" alt="${topUnderrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Disc. +${topUnderrated.discrepancy.toFixed(2)}σ
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+            });
+            html += `</tr>`;
+
+            // Overrated row
+            html += `<tr>`;
+            html += `<td class="row-label overrated-row">↓ Overrated</td>`;
+
+            twoColorCombos.forEach(combo => {
+                const colorCards = processedCards.filter(c => {
+                    if (c.colors && c.colors.length === 2) {
+                        const sorted = [c.colors[0], c.colors[1]].sort().join('');
+                        const combSorted = [combo[0], combo[1]].sort().join('');
+                        return sorted === combSorted;
+                    }
+                    return false;
+                });
+
+                const topOverrated = colorCards.length > 0
+                    ? colorCards.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                    : null;
+
+                html += `<td>`;
+                if (topOverrated) {
+                    html += `
+                        <div class="grid-card overrated" title="${topOverrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topOverrated.name)}" alt="${topOverrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Disc. ${topOverrated.discrepancy.toFixed(2)}σ
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+            });
+            html += `</tr>`;
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('grid-tab').innerHTML = html;
+            attachGridCardHoverListeners();
+        }
+
+        function renderGridView2() {
+            const colors = ['W', 'U', 'B', 'R', 'G'];
+            const colorNames = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+            const rarities = ['C', 'U', 'R', 'M'];
+            const rarityNames = { C: 'Common', U: 'Uncommon', R: 'Rare', M: 'Mythic' };
+
+            let html = `
+                <div class="grid-view">
+                    <h2 style="color: #1e3c72; margin-bottom: 10px;">Grid View 2: Monocolor + Multicolor/Colorless</h2>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Grid organized by monocolor, multicolor, and colorless. Single-color columns show only monocolor cards.
+                    </p>
+                    <table class="grid-table">
+                        <thead>
+                            <tr>
+                                <th class="rarity-header"></th>
+                                <th class="rarity-header"></th>
+                                ${colors.map(color => `<th><a href="https://scryfall.com/search?q=set:ecl c:${color.toLowerCase()}" target="_blank" style="color: inherit; text-decoration: none; cursor: pointer; display: block;">${colorNames[color]}</a></th>`).join('')}
+                                <th><a href="https://scryfall.com/search?q=set:ecl c>=2" target="_blank" style="color: inherit; text-decoration: none; cursor: pointer; display: block;">Multi</a></th>
+                                <th><a href="https://scryfall.com/search?q=set:ecl c:0" target="_blank" style="color: inherit; text-decoration: none; cursor: pointer; display: block;">Colorless</a></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Add Overall row first (across all rarities)
+            html += `<tr>`;
+            html += `<td class="row-label" data-rarity="All" rowspan="2" style="text-align: center; vertical-align: middle; font-weight: bold;">All</td>`;
+            html += `<td class="row-label underrated-row" style="text-align: center; font-weight: 600; padding: 8px;">↑ Underrated</td>`;
+
+            // Overall underrated for each color (monocolor only)
+            colors.forEach(color => {
+                const colorCards = processedCards.filter(c => c.colors === color);
+                const topUnderrated = colorCards.length > 0
+                    ? colorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                    : null;
+
+                html += `<td>`;
+                if (topUnderrated) {
+                    html += `
+                        <div class="grid-card underrated" title="${topUnderrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topUnderrated.name)}" alt="${topUnderrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Actual ${topUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.actualZScore)})
+                                    <span class="stat-separator">|</span>
+                                    GIH WR ${topUnderrated.actualGIHWR.toFixed(1)}%
+                                    <span class="stat-separator">|</span>
+                                    <span class="difference positive">Difference +${topUnderrated.discrepancy.toFixed(2)}σ</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+            });
+
+            // Overall underrated for multicolor
+            const allMultiUnderrated = processedCards.filter(c =>
+                c.colors && c.colors.length > 1
+            );
+            const topMultiUnderrated = allMultiUnderrated.length > 0
+                ? allMultiUnderrated.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                : null;
+            html += `<td>`;
+            if (topMultiUnderrated) {
+                html += `
+                    <div class="grid-card underrated" title="${topMultiUnderrated.name}">
+                        <div class="grid-card-image-container">
+                            <img src="${getCardImage(topMultiUnderrated.name)}" alt="${topMultiUnderrated.name}" class="grid-card-image" loading="lazy">
+                        </div>
+                        <div class="grid-card-content">
+                            <div class="grid-card-stats-line">
+                                Expert ${topMultiUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topMultiUnderrated.expertZScore)})
+                                <span class="stat-separator">|</span>
+                                Actual ${topMultiUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topMultiUnderrated.actualZScore)})
+                                <span class="stat-separator">|</span>
+                                GIH WR ${topMultiUnderrated.actualGIHWR.toFixed(1)}%
+                                <span class="stat-separator">|</span>
+                                <span class="difference positive">Difference +${topMultiUnderrated.discrepancy.toFixed(2)}σ</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += `</td>`;
+
+            // Overall underrated for colorless
+            const allColorlessUnderrated = processedCards.filter(c =>
+                !c.colors || c.colors === 'C'
+            );
+            const topColorlessUnderrated = allColorlessUnderrated.length > 0
+                ? allColorlessUnderrated.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                : null;
+            html += `<td>`;
+            if (topColorlessUnderrated) {
+                html += `
+                    <div class="grid-card underrated" title="${topColorlessUnderrated.name}">
+                        <div class="grid-card-image-container">
+                            <img src="${getCardImage(topColorlessUnderrated.name)}" alt="${topColorlessUnderrated.name}" class="grid-card-image" loading="lazy">
+                        </div>
+                        <div class="grid-card-content">
+                            <div class="grid-card-stats-line">
+                                Expert ${topColorlessUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessUnderrated.expertZScore)})
+                                <span class="stat-separator">|</span>
+                                Actual ${topColorlessUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessUnderrated.actualZScore)})
+                                <span class="stat-separator">|</span>
+                                GIH WR ${topColorlessUnderrated.actualGIHWR.toFixed(1)}%
+                                <span class="stat-separator">|</span>
+                                <span class="difference positive">Difference +${topColorlessUnderrated.discrepancy.toFixed(2)}σ</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += `</td>`;
+
+            html += `</tr>`;
+
+            // Overall overrated row (All cell already merged from above)
+            html += `<tr>`;
+            html += `<td class="row-label overrated-row" style="text-align: center; font-weight: 600; padding: 8px;">↓ Overrated</td>`;
+
+            // Overall overrated for each color (monocolor only)
+            colors.forEach(color => {
+                const colorCards = processedCards.filter(c => c.colors === color);
+                const topOverrated = colorCards.length > 0
+                    ? colorCards.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                    : null;
+
+                html += `<td>`;
+                if (topOverrated) {
+                    html += `
+                        <div class="grid-card overrated" title="${topOverrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topOverrated.name)}" alt="${topOverrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Actual ${topOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.actualZScore)})
+                                    <span class="stat-separator">|</span>
+                                    GIH WR ${topOverrated.actualGIHWR.toFixed(1)}%
+                                    <span class="stat-separator">|</span>
+                                    <span class="difference negative">Difference ${topOverrated.discrepancy.toFixed(2)}σ</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+            });
+
+            // Overall overrated for multicolor
+            const allMultiOverrated = processedCards.filter(c =>
+                c.colors && c.colors.length > 1
+            );
+            const topMultiOverrated = allMultiOverrated.length > 0
+                ? allMultiOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                : null;
+            html += `<td>`;
+            if (topMultiOverrated) {
+                html += `
+                    <div class="grid-card overrated" title="${topMultiOverrated.name}">
+                        <div class="grid-card-image-container">
+                            <img src="${getCardImage(topMultiOverrated.name)}" alt="${topMultiOverrated.name}" class="grid-card-image" loading="lazy">
+                        </div>
+                        <div class="grid-card-content">
+                            <div class="grid-card-stats-line">
+                                Expert ${topMultiOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topMultiOverrated.expertZScore)})
+                                <span class="stat-separator">|</span>
+                                Actual ${topMultiOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topMultiOverrated.actualZScore)})
+                                <span class="stat-separator">|</span>
+                                GIH WR ${topMultiOverrated.actualGIHWR.toFixed(1)}%
+                                <span class="stat-separator">|</span>
+                                <span class="difference negative">Difference ${topMultiOverrated.discrepancy.toFixed(2)}σ</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += `</td>`;
+
+            // Overall overrated for colorless
+            const allColorlessOverrated = processedCards.filter(c =>
+                !c.colors || c.colors === 'C'
+            );
+            const topColorlessOverrated = allColorlessOverrated.length > 0
+                ? allColorlessOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                : null;
+            html += `<td>`;
+            if (topColorlessOverrated) {
+                html += `
+                    <div class="grid-card overrated" title="${topColorlessOverrated.name}">
+                        <div class="grid-card-image-container">
+                            <img src="${getCardImage(topColorlessOverrated.name)}" alt="${topColorlessOverrated.name}" class="grid-card-image" loading="lazy">
+                        </div>
+                        <div class="grid-card-content">
+                            <div class="grid-card-stats-line">
+                                Expert ${topColorlessOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessOverrated.expertZScore)})
+                                <span class="stat-separator">|</span>
+                                Actual ${topColorlessOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessOverrated.actualZScore)})
+                                <span class="stat-separator">|</span>
+                                GIH WR ${topColorlessOverrated.actualGIHWR.toFixed(1)}%
+                                <span class="stat-separator">|</span>
+                                <span class="difference negative">Difference ${topColorlessOverrated.discrepancy.toFixed(2)}σ</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += `</td>`;
+
+            html += `</tr>`;
+
+            // For each rarity, create two rows: underrated and overrated
+            rarities.forEach(rarity => {
+                // Underrated row
+                html += `<tr>`;
+                html += `<td class="row-label" data-rarity="${rarity}" rowspan="2" style="text-align: center; vertical-align: middle; font-weight: bold;">${rarityNames[rarity]}</td>`;
+                html += `<td class="row-label underrated-row" style="text-align: center; font-weight: 600; padding: 8px;">↑ Underrated</td>`;
+
+                colors.forEach(color => {
+                    // Monocolor cards only
+                    const colorCards = processedCards.filter(c =>
+                        c.rarity === rarity && c.colors === color
+                    );
+
+                    const topUnderrated = colorCards.length > 0
+                        ? colorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                        : null;
+
+                    html += `<td>`;
+                    if (topUnderrated) {
+                        html += `
+                            <div class="grid-card underrated" title="${topUnderrated.name}">
+                                <div class="grid-card-image-container">
+                                    <img src="${getCardImage(topUnderrated.name)}" alt="${topUnderrated.name}" class="grid-card-image" loading="lazy">
+                                </div>
+                                <div class="grid-card-content">
+                                    <div class="grid-card-stats-line">
+                                        Expert ${topUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.expertZScore)})
+                                        <span class="stat-separator">|</span>
+                                        Actual ${topUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topUnderrated.actualZScore)})
+                                        <span class="stat-separator">|</span>
+                                        GIH WR ${topUnderrated.actualGIHWR.toFixed(1)}%
+                                        <span class="stat-separator">|</span>
+                                        <span class="difference positive">Difference +${topUnderrated.discrepancy.toFixed(2)}σ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</td>`;
+                });
+
+                // Multicolor column
+                const multicolorCards = processedCards.filter(c =>
+                    c.rarity === rarity && c.colors && c.colors.length > 1
+                );
+                const topMultiUnderrated = multicolorCards.length > 0
+                    ? multicolorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                    : null;
+                html += `<td>`;
+                if (topMultiUnderrated) {
+                    html += `
+                        <div class="grid-card underrated" title="${topMultiUnderrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topMultiUnderrated.name)}" alt="${topMultiUnderrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topMultiUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topMultiUnderrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Actual ${topMultiUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topMultiUnderrated.actualZScore)})
+                                    <span class="stat-separator">|</span>
+                                    GIH WR ${topMultiUnderrated.actualGIHWR.toFixed(1)}%
+                                    <span class="stat-separator">|</span>
+                                    <span class="difference positive">Difference +${topMultiUnderrated.discrepancy.toFixed(2)}σ</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+
+                // Colorless column
+                const colorlessCards = processedCards.filter(c =>
+                    c.rarity === rarity && (!c.colors || c.colors === 'C')
+                );
+                const topColorlessUnderrated = colorlessCards.length > 0
+                    ? colorlessCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
+                    : null;
+                html += `<td>`;
+                if (topColorlessUnderrated) {
+                    html += `
+                        <div class="grid-card underrated" title="${topColorlessUnderrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topColorlessUnderrated.name)}" alt="${topColorlessUnderrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topColorlessUnderrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessUnderrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Actual ${topColorlessUnderrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessUnderrated.actualZScore)})
+                                    <span class="stat-separator">|</span>
+                                    GIH WR ${topColorlessUnderrated.actualGIHWR.toFixed(1)}%
+                                    <span class="stat-separator">|</span>
+                                    <span class="difference positive">Difference +${topColorlessUnderrated.discrepancy.toFixed(2)}σ</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+
+                html += `</tr>`;
+
+                // Overrated row (rarity cell already merged from above)
+                html += `<tr>`;
+                html += `<td class="row-label overrated-row" style="text-align: center; font-weight: 600; padding: 8px;">↓ Overrated</td>`;
+
+                colors.forEach(color => {
+                    // Monocolor cards only
+                    const colorCards = processedCards.filter(c =>
+                        c.rarity === rarity && c.colors === color
+                    );
+
+                    const topOverrated = colorCards.length > 0
+                        ? colorCards.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                        : null;
+
+                    html += `<td>`;
+                    if (topOverrated) {
+                        html += `
+                            <div class="grid-card overrated" title="${topOverrated.name}">
+                                <div class="grid-card-image-container">
+                                    <img src="${getCardImage(topOverrated.name)}" alt="${topOverrated.name}" class="grid-card-image" loading="lazy">
+                                </div>
+                                <div class="grid-card-content">
+                                    <div class="grid-card-stats-line">
+                                        Expert ${topOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.expertZScore)})
+                                        <span class="stat-separator">|</span>
+                                        Actual ${topOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topOverrated.actualZScore)})
+                                        <span class="stat-separator">|</span>
+                                        GIH WR ${topOverrated.actualGIHWR.toFixed(1)}%
+                                        <span class="stat-separator">|</span>
+                                        <span class="difference negative">Difference ${topOverrated.discrepancy.toFixed(2)}σ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</td>`;
+                });
+
+                // Multicolor column
+                const multicolorCardsOverrated = processedCards.filter(c =>
+                    c.rarity === rarity && c.colors && c.colors.length > 1
+                );
+                const topMultiOverrated = multicolorCardsOverrated.length > 0
+                    ? multicolorCardsOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                    : null;
+                html += `<td>`;
+                if (topMultiOverrated) {
+                    html += `
+                        <div class="grid-card overrated" title="${topMultiOverrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topMultiOverrated.name)}" alt="${topMultiOverrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topMultiOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topMultiOverrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Actual ${topMultiOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topMultiOverrated.actualZScore)})
+                                    <span class="stat-separator">|</span>
+                                    GIH WR ${topMultiOverrated.actualGIHWR.toFixed(1)}%
+                                    <span class="stat-separator">|</span>
+                                    <span class="difference negative">Difference ${topMultiOverrated.discrepancy.toFixed(2)}σ</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+
+                // Colorless column
+                const colorlessCardsOverrated = processedCards.filter(c =>
+                    c.rarity === rarity && (!c.colors || c.colors === 'C')
+                );
+                const topColorlessOverrated = colorlessCardsOverrated.length > 0
+                    ? colorlessCardsOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
+                    : null;
+                html += `<td>`;
+                if (topColorlessOverrated) {
+                    html += `
+                        <div class="grid-card overrated" title="${topColorlessOverrated.name}">
+                            <div class="grid-card-image-container">
+                                <img src="${getCardImage(topColorlessOverrated.name)}" alt="${topColorlessOverrated.name}" class="grid-card-image" loading="lazy">
+                            </div>
+                            <div class="grid-card-content">
+                                <div class="grid-card-stats-line">
+                                    Expert ${topColorlessOverrated.expertZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessOverrated.expertZScore)})
+                                    <span class="stat-separator">|</span>
+                                    Actual ${topColorlessOverrated.actualZScore.toFixed(2)}σ (${zScoreToGrade(topColorlessOverrated.actualZScore)})
+                                    <span class="stat-separator">|</span>
+                                    GIH WR ${topColorlessOverrated.actualGIHWR.toFixed(1)}%
+                                    <span class="stat-separator">|</span>
+                                    <span class="difference negative">Difference ${topColorlessOverrated.discrepancy.toFixed(2)}σ</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</td>`;
+
+                html += `</tr>`;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('grid2-tab').innerHTML = html;
+            attachGridCardHoverListeners();
+        }
+
+        function renderRarityView() {
+            const rarities = ['C', 'U', 'R', 'M'];
+            const rarityNames = { C: 'Commons', U: 'Uncommons', R: 'Rares', M: 'Mythics' };
+
+            let html = '<div class="card-grid">';
+
+            rarities.forEach(rarity => {
+                const rarityCards = processedCards.filter(c => c.rarity === rarity);
+
+                // Get top underrated and overrated
+                const underrated = [...rarityCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 4);
+                const overrated = [...rarityCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 4);
+
+                if (underrated.length === 0 && overrated.length === 0) return;
+
+                html += `
+                    <div class="rarity-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                ${rarityNames[rarity]}
+                                <span class="rarity-indicator rarity-${rarity}"></span>
+                            </div>
+                        </div>
+                        <div class="cards-container">
+                            <div class="cards-column">
+                                <div class="column-label underrated-label">Most Underrated</div>
+                                ${underrated.map(card => renderCard(card, true)).join('')}
+                            </div>
+                            <div class="cards-column">
+                                <div class="column-label overrated-label">Most Overrated</div>
+                                ${overrated.map(card => renderCard(card, false)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            document.getElementById('rarity-tab').innerHTML = html;
+        }
+
+        function renderColorView() {
+            const colors = ['W', 'U', 'B', 'R', 'G', 'C'];
+            const colorNames = {
+                W: 'White',
+                U: 'Blue',
+                B: 'Black',
+                R: 'Red',
+                G: 'Green',
+                C: 'Colorless'
+            };
+
+            let html = '<div class="card-grid">';
+
+            colors.forEach(color => {
+                const colorCards = processedCards.filter(c => {
+                    if (color === 'C') {
+                        return c.colors === 'C' || c.colors === '';
+                    }
+                    return c.colors.includes(color) && c.colors.length <= 2;
+                });
+
+                const underrated = [...colorCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 3);
+                const overrated = [...colorCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 3);
+
+                if (underrated.length === 0 && overrated.length === 0) return;
+
+                html += `
+                    <div class="color-section">
+                        <div class="section-header">
+                            <div class="section-title">${colorNames[color]}</div>
+                        </div>
+                        <div class="cards-container">
+                            <div class="cards-column">
+                                <div class="column-label underrated-label">Most Underrated</div>
+                                ${underrated.map(card => renderCard(card, true)).join('')}
+                            </div>
+                            <div class="cards-column">
+                                <div class="column-label overrated-label">Most Overrated</div>
+                                ${overrated.map(card => renderCard(card, false)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Add multicolor section
+            const multicolor = processedCards.filter(c => c.colors.length > 2);
+            if (multicolor.length > 0) {
+                const underrated = [...multicolor].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 3);
+                const overrated = [...multicolor].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 3);
+
+                html += `
+                    <div class="color-section">
+                        <div class="section-header">
+                            <div class="section-title">Multicolor</div>
+                        </div>
+                        <div class="cards-container">
+                            <div class="cards-column">
+                                <div class="column-label underrated-label">Most Underrated</div>
+                                ${underrated.map(card => renderCard(card, true)).join('')}
+                            </div>
+                            <div class="cards-column">
+                                <div class="column-label overrated-label">Most Overrated</div>
+                                ${overrated.map(card => renderCard(card, false)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            document.getElementById('color-tab').innerHTML = html;
+        }
+
+        function renderTrendingView() {
+            const topUnderrated = [...processedCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 10);
+            const topOverrated = [...processedCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 10);
+
+            const html = `
+                <div class="card-grid">
+                    <h2 style="color: #1e3c72; margin-bottom: 20px;">Top 10 Most Underrated</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Card Name</th>
+                                <th>Rarity</th>
+                                <th>Colors</th>
+                                <th>Expert (σ)</th>
+                                <th>Actual (σ)</th>
+                                <th>GIH WR</th>
+                                <th>Discrepancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${topUnderrated.map((card, i) => `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td><strong>${card.name}</strong></td>
+                                    <td><span class="rarity-indicator rarity-${card.rarity}"></span> ${card.rarity}</td>
+                                    <td>${card.colors}</td>
+                                    <td>${card.expertZScore.toFixed(2)} (${zScoreToGrade(card.expertZScore)})</td>
+                                    <td>${card.actualZScore.toFixed(2)} (${zScoreToGrade(card.actualZScore)})</td>
+                                    <td>${card.actualGIHWR.toFixed(1)}%</td>
+                                    <td style="color: #059669; font-weight: bold;">+${card.discrepancy.toFixed(2)}σ</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <h2 style="color: #1e3c72; margin: 40px 0 20px 0;">Top 10 Most Overrated</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Card Name</th>
+                                <th>Rarity</th>
+                                <th>Colors</th>
+                                <th>Expert (σ)</th>
+                                <th>Actual (σ)</th>
+                                <th>GIH WR</th>
+                                <th>Discrepancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${topOverrated.map((card, i) => `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td><strong>${card.name}</strong></td>
+                                    <td><span class="rarity-indicator rarity-${card.rarity}"></span> ${card.rarity}</td>
+                                    <td>${card.colors}</td>
+                                    <td>${card.expertZScore.toFixed(2)} (${zScoreToGrade(card.expertZScore)})</td>
+                                    <td>${card.actualZScore.toFixed(2)} (${zScoreToGrade(card.actualZScore)})</td>
+                                    <td>${card.actualGIHWR.toFixed(1)}%</td>
+                                    <td style="color: #dc2626; font-weight: bold;">${card.discrepancy.toFixed(2)}σ</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('trending-tab').innerHTML = html;
+        }
+
+        function renderExportView() {
+            const html = `
+                <div class="export-section">
+                    <h2 style="color: #1e3c72; margin-bottom: 20px;">Export Social Media Graphics</h2>
+                    <p style="margin-bottom: 20px; color: #555;">
+                        Generate shareable graphics for Twitter and other social media platforms.
+                        Right-click the generated image and select "Save image as..." to download.
+                    </p>
+                    <button class="export-button" onclick="generateUnderratedGraphic()">
+                        Generate "Most Underrated" Graphic
+                    </button>
+                    <button class="export-button" onclick="generateOverratedGraphic()">
+                        Generate "Most Overrated" Graphic
+                    </button>
+                    <div id="export-canvas-container" style="margin-top: 30px;"></div>
+                </div>
+            `;
+
+            document.getElementById('export-tab').innerHTML = html;
+        }
+
+        function generateUnderratedGraphic() {
+            const topCards = [...processedCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 5);
+            generateGraphic(topCards, 'Most Underrated Cards', '#10b981');
+        }
+
+        function generateOverratedGraphic() {
+            const topCards = [...processedCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 5);
+            generateGraphic(topCards, 'Most Overrated Cards', '#ef4444');
+        }
+
+        function generateGraphic(cards, title, color) {
+            const container = document.getElementById('export-canvas-container');
+
+            let html = `
+                <div style="background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%); padding: 30px; border-radius: 12px; color: white; max-width: 800px; margin: 0 auto;">
+                    <h2 style="text-align: center; margin-bottom: 20px; font-size: 2em;">${title}</h2>
+                    <h3 style="text-align: center; margin-bottom: 30px; opacity: 0.9;">Lorwyn Eclipsed (ECL)</h3>
+            `;
+
+            cards.forEach((card, i) => {
+                html += `
+                    <div style="background: rgba(255, 255, 255, 0.95); color: #333; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px;">
+                                    ${i + 1}. ${card.name}
+                                </div>
+                                <div style="font-size: 0.9em; color: #666;">
+                                    Expert: ${card.expertZScore.toFixed(2)}σ (${zScoreToGrade(card.expertZScore)}) | Actual: ${card.actualZScore.toFixed(2)}σ (${zScoreToGrade(card.actualZScore)}) | GIH WR: ${card.actualGIHWR.toFixed(1)}%
+                                </div>
+                            </div>
+                            <div style="font-size: 1.5em; font-weight: bold; color: ${color};">
+                                ${card.discrepancy > 0 ? '+' : ''}${card.discrepancy.toFixed(2)}σ
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div style="text-align: center; margin-top: 30px; opacity: 0.8; font-size: 0.9em;">
+                        Data: Expert ratings vs 17 Lands (Feb 12, 2026)
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+        // === Full List Tab ===
+
+        function getTypeCode(fullType) {
+            if (!fullType) return '-';
+            const t = fullType.toLowerCase();
+            if (t.includes('creature')) return 'C';
+            if (t.includes('instant')) return 'I';
+            if (t.includes('sorcery')) return 'S';
+            if (t.includes('artifact')) return 'A';
+            if (t.includes('enchantment')) return 'E';
+            if (t.includes('land')) return 'L';
+            if (t.includes('planeswalker')) return 'P';
+            return '?';
+        }
+
+        function flScoreClass(v) {
+            if (!Number.isFinite(v)) return '';
+            if (v >= 1.5) return 'fl-excellent';
+            if (v >= 0.5) return 'fl-good';
+            if (v > -0.5) return 'fl-neutral';
+            if (v >= -1.5) return 'fl-poor';
+            return 'fl-very-poor';
+        }
+
+        function flContClass(v) {
+            if (!Number.isFinite(v)) return '';
+            if (v < 0.5) return 'fl-cont-low';
+            if (v < 1.0) return 'fl-cont-med';
+            return 'fl-cont-high';
+        }
+
+        function flFmt(v, plus) {
+            if (!Number.isFinite(v)) return '-';
+            return (plus && v >= 0 ? '+' : '') + v.toFixed(2);
+        }
+
+        function handleGridViewToggle(toggleName) {
+            const checkbox = document.getElementById(toggleName === 'includeSpecialGuests' ? 'include-special-guests' : 'separate-hybrid-multicolor');
+            gridViewState[toggleName] = checkbox.checked;
+            renderGridView();
+        }
+
+        function attachGridCardHoverListeners() {
+            document.querySelectorAll('.grid-card').forEach(card => {
+                const cardName = card.title || card.getAttribute('data-card-name');
+                if (cardName) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('mouseover', (e) => showGridCardTooltip(cardName, e));
+                    card.addEventListener('mouseout', hideGridCardTooltip);
+                }
+            });
+        }
+
+        const RARITY_RANK = { C: 1, U: 2, R: 3, M: 4 };
+
+        function renderFullListView() {
+            const html = `
+            <div class="fl-wrapper">
+                <div class="fl-controls">
+                    <div class="fl-group">
+                        <label for="flSort">Sort:</label>
+                        <select id="flSort">
+                            <option value="discrepancy">Discrepancy</option>
+                            <option value="name">Card Name</option>
+                            <option value="rarity">Rarity</option>
+                            <option value="colors">Colors</option>
+                            <option value="type">Type</option>
+                            <option value="manaCost">Mana</option>
+                            <option value="expertZScore">Avg Expert σ</option>
+                            <option value="controversy">Controversy</option>
+                            <option value="actualGIHWR">GIH WR</option>
+                            <option value="actualZScore">Actual σ</option>
+                        </select>
+                    </div>
+                    <div class="fl-group">
+                        <label for="flDir">Dir:</label>
+                        <select id="flDir">
+                            <option value="desc">Desc</option>
+                            <option value="asc">Asc</option>
+                        </select>
+                    </div>
+                    <div class="fl-group">
+                        <input type="text" id="flSearch" placeholder="Search cards...">
+                    </div>
+                    <div class="fl-toggle">
+                        <input type="checkbox" id="flImages"><label for="flImages">Images</label>
+                    </div>
+                    <div class="fl-toggle">
+                        <input type="checkbox" id="flRarityColors"><label for="flRarityColors">Rarity colors</label>
+                    </div>
+                    <div class="fl-toggle">
+                        <input type="checkbox" id="flTypeToggle"><label for="flTypeToggle">Full typeline</label>
+                    </div>
+                    <div class="fl-sep"></div>
+                    <div class="fl-filter" id="flRarityFilter">
+                        <span>Rarity:</span>
+                        <label><input type="checkbox" data-r="C" checked> C</label>
+                        <label><input type="checkbox" data-r="U" checked> U</label>
+                        <label><input type="checkbox" data-r="R" checked> R</label>
+                        <label><input type="checkbox" data-r="M" checked> M</label>
+                        <button class="fl-filter-btn" data-a="all">All</button>
+                        <button class="fl-filter-btn" data-a="none">None</button>
+                    </div>
+                    <div class="fl-sep"></div>
+                    <div class="fl-filter" id="flColorFilter">
+                        <span>Colors:</span>
+                        <label><input type="checkbox" data-c="W" checked> W</label>
+                        <label><input type="checkbox" data-c="U" checked> U</label>
+                        <label><input type="checkbox" data-c="B" checked> B</label>
+                        <label><input type="checkbox" data-c="R" checked> R</label>
+                        <label><input type="checkbox" data-c="G" checked> G</label>
+                        <label><input type="checkbox" data-c="C" checked> C</label>
+                        <button class="fl-filter-btn" data-a="all">All</button>
+                        <button class="fl-filter-btn" data-a="none">None</button>
+                    </div>
+                </div>
+                <div class="fl-table-wrap">
+                    <table id="flTable">
+                        <thead>
+                            <tr>
+                                <th data-sk="name">Card Name<span class="fl-sort">▲</span></th>
+                                <th data-sk="rarity" style="width:3.5ch;">R<span class="fl-sort">▲</span></th>
+                                <th data-sk="colors" style="width:4ch;">Col<span class="fl-sort">▲</span></th>
+                                <th data-sk="type" style="width:3ch;">T<span class="fl-sort">▲</span></th>
+                                <th data-sk="manaCost" style="width:5ch;">Mana<span class="fl-sort">▲</span></th>
+                                <th data-sk="discrepancy" style="font-weight:700;">Discrep.<span class="fl-sort">▼</span></th>
+                                <th data-sk="expertZScore">Avg Expert<span class="fl-sort">▲</span></th>
+                                <th data-sk="controversy">Controv.<span class="fl-sort">▲</span></th>
+                                <th data-sk="actualGIHWR">GIH WR<span class="fl-sort">▲</span></th>
+                                <th data-sk="actualZScore">Actual σ<span class="fl-sort">▲</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="flBody"></tbody>
+                    </table>
+                </div>
+            </div>`;
+
+            document.getElementById('fulllist-tab').innerHTML = html;
+
+            // Populate table rows
+            const tbody = document.getElementById('flBody');
+            processedCards.forEach(card => {
+                const row = document.createElement('tr');
+                row.dataset.name = card.name;
+                row.dataset.rarity = card.rarity || '';
+                row.dataset.colors = card.colors || '';
+                row.dataset.type = card.type || '';
+                row.dataset.manaCost = card.manaCost || '';
+                row.dataset.rarityRank = RARITY_RANK[card.rarity] || 0;
+                row.dataset.expertZScore = Number.isFinite(card.expertZScore) ? card.expertZScore : '';
+                row.dataset.controversy = Number.isFinite(card.controversy) ? card.controversy : '';
+                row.dataset.actualGIHWR = Number.isFinite(card.actualGIHWR) ? card.actualGIHWR : '';
+                row.dataset.actualZScore = Number.isFinite(card.actualZScore) ? card.actualZScore : '';
+                row.dataset.discrepancy = Number.isFinite(card.discrepancy) ? card.discrepancy : '';
+
+                const typeCode = getTypeCode(card.type);
+                const link = card.scryfallUrl
+                    ? `<a href="${card.scryfallUrl}" target="_blank" title="View on Scryfall">${card.name}</a>`
+                    : card.name;
+
+                row.innerHTML = `
+                    <td>${link}<div class="fl-card-img"></div></td>
+                    <td>${card.rarity || '-'}</td>
+                    <td>${card.colors || '-'}</td>
+                    <td class="fl-type-cell compact" data-full="${card.type}" title="${card.type}">${typeCode}</td>
+                    <td style="font-size:0.85em">${card.manaCost || '-'}</td>
+                    <td class="${flScoreClass(card.discrepancy)}">${(card.discrepancy >= 0 ? '+' : '') + card.discrepancy.toFixed(2)}σ</td>
+                    <td class="${flScoreClass(card.expertZScore)}">${flFmt(card.expertZScore, true)} (${Number.isFinite(card.expertZScore) ? zScoreToGrade(card.expertZScore) : '-'})</td>
+                    <td class="${flContClass(card.controversy)}">${Number.isFinite(card.controversy) ? card.controversy.toFixed(2) : '-'}</td>
+                    <td>${Number.isFinite(card.actualGIHWR) ? card.actualGIHWR.toFixed(1) + '%' : '-'}</td>
+                    <td class="${flScoreClass(card.actualZScore)}">${flFmt(card.actualZScore, true)} (${Number.isFinite(card.actualZScore) ? zScoreToGrade(card.actualZScore) : '-'})</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Wire up controls
+            setupFullListControls();
+            flSortTable();
+        }
+
+        function setupFullListControls() {
+            // Sort dropdown
+            document.getElementById('flSort').addEventListener('change', e => {
+                flSortState.key = e.target.value;
+                flSortTable();
+            });
+            document.getElementById('flDir').addEventListener('change', e => {
+                flSortState.direction = e.target.value;
+                flSortTable();
+            });
+
+            // Column header sort
+            document.querySelectorAll('#flTable th[data-sk]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.dataset.sk;
+                    if (flSortState.key === key) {
+                        flSortState.direction = flSortState.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        flSortState.key = key;
+                        flSortState.direction = 'desc';
+                    }
+                    document.getElementById('flSort').value = key;
+                    document.getElementById('flDir').value = flSortState.direction;
+                    flSortTable();
+                });
+            });
+
+            // Search
+            document.getElementById('flSearch').addEventListener('input', flApplyFilters);
+
+            // Image toggle
+            document.getElementById('flImages').addEventListener('change', e => {
+                document.body.classList.toggle('fl-show-images', e.target.checked);
+                if (e.target.checked) flLoadVisibleImages();
+            });
+
+            // Rarity colors toggle
+            document.getElementById('flRarityColors').addEventListener('change', e => {
+                document.body.classList.toggle('fl-rarity-colors', e.target.checked);
+            });
+
+            // Type display toggle
+            document.getElementById('flTypeToggle').addEventListener('change', e => {
+                const expanded = e.target.checked;
+                document.querySelectorAll('.fl-type-cell').forEach(td => {
+                    if (expanded) {
+                        td.classList.remove('compact');
+                        td.textContent = td.dataset.full || '-';
+                    } else {
+                        td.classList.add('compact');
+                        td.textContent = getTypeCode(td.dataset.full);
+                    }
+                });
+            });
+
+            // Rarity filter
+            document.querySelectorAll('#flRarityFilter input[data-r]').forEach(cb => {
+                cb.addEventListener('change', flApplyFilters);
+            });
+            document.querySelectorAll('#flRarityFilter .fl-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const on = btn.dataset.a === 'all';
+                    document.querySelectorAll('#flRarityFilter input[data-r]').forEach(cb => cb.checked = on);
+                    flApplyFilters();
+                });
+            });
+
+            // Color filter
+            document.querySelectorAll('#flColorFilter input[data-c]').forEach(cb => {
+                cb.addEventListener('change', flApplyFilters);
+            });
+            document.querySelectorAll('#flColorFilter .fl-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const on = btn.dataset.a === 'all';
+                    document.querySelectorAll('#flColorFilter input[data-c]').forEach(cb => cb.checked = on);
+                    flApplyFilters();
+                });
+            });
+
+            // Hover tooltips on card names
+            document.querySelectorAll('#flTable td:first-child a').forEach(link => {
+                link.addEventListener('mouseenter', flShowTooltip);
+                link.addEventListener('mouseleave', flHideTooltip);
+                link.addEventListener('mousemove', flMoveTooltip);
+            });
+        }
+
+        function flSortTable() {
+            const tbody = document.getElementById('flBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const key = flSortState.key;
+            const dir = flSortState.direction;
+
+            const stringKeys = new Set(['name', 'colors', 'type', 'manaCost']);
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+                if (key === 'name') {
+                    aVal = a.dataset.name.toLowerCase();
+                    bVal = b.dataset.name.toLowerCase();
+                } else if (key === 'rarity') {
+                    aVal = parseFloat(a.dataset.rarityRank) || 0;
+                    bVal = parseFloat(b.dataset.rarityRank) || 0;
+                } else if (stringKeys.has(key)) {
+                    aVal = (a.dataset[key] || '').toLowerCase();
+                    bVal = (b.dataset[key] || '').toLowerCase();
+                } else {
+                    const INF = dir === 'asc' ? Infinity : -Infinity;
+                    aVal = a.dataset[key] !== '' ? parseFloat(a.dataset[key]) : INF;
+                    bVal = b.dataset[key] !== '' ? parseFloat(b.dataset[key]) : INF;
+                }
+
+                if (aVal < bVal) return dir === 'asc' ? -1 : 1;
+                if (aVal > bVal) return dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(r => tbody.appendChild(r));
+            flUpdateSortIndicators();
+            if (document.getElementById('flImages')?.checked) flLoadVisibleImages();
+        }
+
+        function flUpdateSortIndicators() {
+            document.querySelectorAll('#flTable th[data-sk]').forEach(th => {
+                const ind = th.querySelector('.fl-sort');
+                if (th.dataset.sk === flSortState.key) {
+                    th.classList.add('fl-sorted');
+                    ind.textContent = flSortState.direction === 'asc' ? '▲' : '▼';
+                } else {
+                    th.classList.remove('fl-sorted');
+                    ind.textContent = '▲';
+                }
+            });
+        }
+
+        function flApplyFilters() {
+            const search = (document.getElementById('flSearch')?.value || '').toLowerCase();
+
+            const selRarities = new Set();
+            document.querySelectorAll('#flRarityFilter input[data-r]:checked').forEach(cb => {
+                selRarities.add(cb.dataset.r);
+            });
+
+            const selColors = new Set();
+            document.querySelectorAll('#flColorFilter input[data-c]:checked').forEach(cb => {
+                selColors.add(cb.dataset.c);
+            });
+
+            document.querySelectorAll('#flBody tr').forEach(row => {
+                const name = row.dataset.name.toLowerCase();
+                const rarity = row.dataset.rarity;
+                const colors = row.dataset.colors || '';
+
+                const matchName = name.includes(search);
+                const matchRarity = selRarities.has(rarity);
+
+                let matchColor;
+                if (colors.length === 0) {
+                    matchColor = selColors.has('C');
+                } else {
+                    matchColor = Array.from(colors).some(c => selColors.has(c));
+                }
+
+                row.style.display = matchName && matchRarity && matchColor ? '' : 'none';
+            });
+
+            if (document.getElementById('flImages')?.checked) flLoadVisibleImages();
+        }
+
+        function flLoadVisibleImages() {
+            document.querySelectorAll('#flBody tr').forEach(row => {
+                if (row.style.display === 'none') return;
+                const container = row.querySelector('.fl-card-img');
+                if (!container || container.dataset.loaded) return;
+                container.dataset.loaded = '1';
+
+                const cardName = row.dataset.name;
+                const imgUrl = getCardImage(cardName);
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = cardName;
+                img.loading = 'lazy';
+                container.appendChild(img);
+            });
+        }
+
+        // Tooltip
+        let flActiveLink = null;
+
+        function flShowTooltip(e) {
+            const link = e.currentTarget;
+            flActiveLink = link;
+            const cardName = link.textContent;
+            const tooltip = document.getElementById('flTooltip');
+            const imgUrl = getCardImage(cardName);
+
+            tooltip.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = imgUrl;
+            img.alt = cardName;
+            img.onload = () => flPositionTooltip(e);
+            tooltip.appendChild(img);
+            tooltip.style.display = 'block';
+            flPositionTooltip(e);
+        }
+
+        function flHideTooltip() {
+            flActiveLink = null;
+            document.getElementById('flTooltip').style.display = 'none';
+        }
+
+        function flMoveTooltip(e) {
+            if (flActiveLink) flPositionTooltip(e);
+        }
+
+        function flPositionTooltip(e) {
+            const tooltip = document.getElementById('flTooltip');
+            if (tooltip.style.display !== 'block') return;
+            const margin = 12;
+            let left = e.clientX + margin;
+            let top = e.clientY + margin;
+            if (left + tooltip.offsetWidth > window.innerWidth - margin) {
+                left = e.clientX - tooltip.offsetWidth - margin;
+            }
+            if (top + tooltip.offsetHeight > window.innerHeight - margin) {
+                top = e.clientY - tooltip.offsetHeight - margin;
+            }
+            tooltip.style.left = Math.max(margin, left) + 'px';
+            tooltip.style.top = Math.max(margin, top) + 'px';
+        }
+
+        // Grid card tooltip management
+        const gridCardTooltip = document.createElement('div');
+        gridCardTooltip.className = 'grid-card-tooltip';
+        document.body.appendChild(gridCardTooltip);
+
+        function showGridCardTooltip(cardName, e) {
+            const cardUrl = `https://scryfall.com/search?q="${cardName.replace(/"/g, '\\"')}" set:ecl`;
+            gridCardTooltip.innerHTML = `<img src="${getCardImage(cardName)}" alt="${cardName}" title="Click to view on Scryfall">`;
+            gridCardTooltip.onclick = () => window.open(cardUrl, '_blank');
+            gridCardTooltip.style.display = 'block';
+            positionGridCardTooltip(e);
+        }
+
+        function hideGridCardTooltip() {
+            gridCardTooltip.style.display = 'none';
+        }
+
+        function positionGridCardTooltip(e) {
+            const margin = 12;
+            let left = e.clientX + margin;
+            let top = e.clientY + margin;
+            if (left + gridCardTooltip.offsetWidth > window.innerWidth - margin) {
+                left = e.clientX - gridCardTooltip.offsetWidth - margin;
+            }
+            if (top + gridCardTooltip.offsetHeight > window.innerHeight - margin) {
+                top = e.clientY - gridCardTooltip.offsetHeight - margin;
+            }
+            gridCardTooltip.style.left = Math.max(margin, left) + 'px';
+            gridCardTooltip.style.top = Math.max(margin, top) + 'px';
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (gridCardTooltip.style.display === 'block') {
+                positionGridCardTooltip(e);
+            }
+        });
+    </script>
+</body>
+</html>
