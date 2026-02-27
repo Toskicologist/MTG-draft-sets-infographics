@@ -757,7 +757,7 @@
                     <a href="https://cardgamebase.com/lorwyn-eclipsed-draft-tier-list/" target="_blank" rel="noopener noreferrer">Card Game Base</a>,
                     <a href="https://lrcast.com/limited-resources-836-lorwyn-eclipsed-set-review-commons-and-uncommons/" target="_blank" rel="noopener noreferrer">Limited Resources</a>,
                     <a href="https://limitedlevelups.libsyn.com/" target="_blank" rel="noopener noreferrer">Limited Level-Ups</a><br>
-                    <strong>Actual Performance:</strong> <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands GIH WR</a> (Premier Draft) - Updated Feb 12, 2026 18:37 EST<br>
+                    <strong>Actual Performance:</strong> <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands GIH WR</a> (Premier Draft) - Updated Feb 27, 2026 UTC<br>
                     <strong>Set:</strong> Lorwyn Eclipsed (ECL) | <strong>Version:</strong> 1.4.0<br>
                     <div style="margin-top: 12px; font-size: 0.85em; line-height: 1.5;">
                         Scores and data are from <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands ECL Premier Draft</a>. <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer">Support them on Patreon</a><br>
@@ -866,19 +866,19 @@
                 // Load consolidated master ratings file (includes all 320 cards with pre-calculated z-scores)
                 // This eliminates the need for data merging and on-the-fly z-score calculations
                 const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV] = await Promise.all([
-                    fetch('../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv').then(r => {
+                    fetch('../../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv').then(r => {
                         if (!r.ok) throw new Error(`Failed to load expert ratings: ${r.status}`);
                         return r.text();
                     }),
-                    fetch('../shared-data/17lands%20exports/card-ratings-2026-02-12.csv').then(r => {
+                    fetch('../../shared-data/17lands%20exports/card-ratings-2026-02-27.csv').then(r => {
                         if (!r.ok) throw new Error(`Failed to load 17 Lands data: ${r.status}`);
                         return r.text();
                     }),
-                    fetch('../shared-data/data/scryfall/scryfall_reference.json').then(r => {
+                    fetch('../../shared-data/data/scryfall/scryfall_reference.json').then(r => {
                         if (!r.ok) throw new Error(`Failed to load Scryfall cache: ${r.status}`);
                         return r.json();
                     }),
-                    fetch('../shared-data/data/ecl/ecl-complete-data.csv').then(r => {
+                    fetch('../../shared-data/data/ecl/ecl-complete-data.csv').then(r => {
                         if (!r.ok) throw new Error(`Failed to load card metadata: ${r.status}`);
                         return r.text();
                     })
