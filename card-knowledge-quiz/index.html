@@ -1749,10 +1749,17 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.20.1
+     * Version: 2.20.2
      * Last Updated: 2026-02-27 UTC
      *
      * CHANGELOG:
+     * v2.20.2-local (2026-02-27) - Fix mana font detection using document.fonts.load() Promise
+     *   - FIX: Replace flawed check()/canvas/link-event approach with document.fonts.load('16px "Mana"')
+     *   - FIX: document.fonts.load() resolves only after the font actually downloads — no timing race
+     *   - FIX: loaded.length === 0 correctly means font unavailable; keep fallback text visible
+     *   - FIX: Eliminates risk of document.fonts.ready resolving before Babel transpilation completes
+     *   - FILE: LOCAL ONLY update to index-custom-only.html
+     *   - Signed: Claude Sonnet 4.6 @ 2026-02-27 UTC
      * v2.20.1-local (2026-02-27) - Use APP_VERSION constant to prevent hardcoded version leaking -local suffix
      *   - FIX: Footer version now reads from APP_VERSION constant with automatic -local strip
      *   - FIX: APP_LAST_UPDATED constant replaces hardcoded date in footer
@@ -2309,7 +2316,7 @@
 
     // Single source of truth for version display. Strip '-local' suffix automatically
     // so the same constant works in both the local source and the deployed public file.
-    const APP_VERSION = '2.20.1-local'.replace(/-local$/, '');
+    const APP_VERSION = '2.20.2-local'.replace(/-local$/, '');
     const APP_LAST_UPDATED = '2026-02-27';
 
     const SCRYFALL_API_BASE = 'https://api.scryfall.com';
@@ -3191,77 +3198,23 @@
       return <span className={className}>{renderManaText(source, keyPrefix)}</span>;
     }
 
-    const MANA_FONT_LINK_SELECTOR = 'link[href*=\"mana-font\"], link[href*=\"mana.andrewgioia.com\"]';
-    const MANA_FONT_FACE_CHECK = '16px \"Mana\"';
     const MANA_FONT_CLASS = 'mana-font-loaded';
 
-    function markManaFontLoaded() {
-      document.documentElement.classList.add(MANA_FONT_CLASS);
-    }
-
-    // Check if 'Mana' font is loaded AND renders visible glyphs (not empty PUA codepoints)
-    function isManaFontLoaded() {
-      if (!document.fonts || typeof document.fonts.check !== 'function') return false;
-      if (!document.fonts.check(MANA_FONT_FACE_CHECK)) return false;
-
-      // Canvas glyph check: render a known mana PUA codepoint with 'Mana' font,
-      // compare pixel data vs a fallback font. If they differ, glyphs are rendering.
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 20;
-        canvas.height = 20;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return true; // Can't verify, assume loaded
-
-        const testChar = '\ue601'; // Blue mana glyph in mana-font PUA
-        ctx.font = '16px "Mana"';
-        ctx.fillText(testChar, 2, 16);
-        const manaData = ctx.getImageData(0, 0, 20, 20).data;
-
-        ctx.clearRect(0, 0, 20, 20);
-        ctx.font = '16px serif';
-        ctx.fillText(testChar, 2, 16);
-        const fallbackData = ctx.getImageData(0, 0, 20, 20).data;
-
-        // If pixel data differs, mana font is rendering something unique
-        for (let i = 0; i < manaData.length; i += 4) {
-          if (manaData[i] !== fallbackData[i] || manaData[i+1] !== fallbackData[i+1] || manaData[i+2] !== fallbackData[i+2]) {
-            return true;
+    // document.fonts.load() is the correct API: it returns a Promise that resolves
+    // only after the named font has actually downloaded and is ready to render.
+    // This avoids all the timing issues with .check(), link 'load' events, and
+    // document.fonts.ready (which may already have resolved before Babel finishes).
+    if (document.fonts && typeof document.fonts.load === 'function') {
+      document.fonts.load('16px "Mana"')
+        .then((loaded) => {
+          if (loaded.length > 0) {
+            document.documentElement.classList.add(MANA_FONT_CLASS);
           }
-        }
-        return false; // Mana font not rendering visible glyphs
-      } catch (e) {
-        return true; // Canvas check failed, assume font is OK
-      }
-    }
-
-    function tryMarkManaFontLoaded() {
-      if (isManaFontLoaded()) {
-        markManaFontLoaded();
-      }
-    }
-
-    function setupManaFontDetection() {
-      const manaLink = document.querySelector(MANA_FONT_LINK_SELECTOR);
-
-      if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
-        document.fonts.ready.then(tryMarkManaFontLoaded).catch(() => {});
-      }
-
-      if (manaLink) {
-        manaLink.addEventListener('load', () => {
-          setTimeout(tryMarkManaFontLoaded, 100);
-        }, { once: true });
-        manaLink.addEventListener('error', () => {
-          manaLink.dataset.manaFontError = 'true';
-        }, { once: true });
-      }
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupManaFontDetection);
-    } else {
-      setupManaFontDetection();
+          // loaded.length === 0 means the font was not found / failed — keep fallback text
+        })
+        .catch(() => {
+          // Network error or font unavailable — keep fallback text
+        });
     }
 
     // ===================================================================
