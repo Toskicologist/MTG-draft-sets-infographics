@@ -16,7 +16,3 @@ Interactive Magic: The Gathering draft analytics, quizzes, and visualization too
 - **[Pauper Card List](https://toskicologist.github.io/MTG-draft-sets-infographics/pauper-card-list.html)** — Searchable Pauper format card reference
 - **[ECL Cheatsheet](https://toskicologist.github.io/MTG-draft-sets-infographics/ECL-CHEATSHEET.html)** — Quick reference guide for Lorwyn Eclipsed
 
-## 📦 Archive
-
-Historical versions of the color wheel are available in the [archive folder](https://toskicologist.github.io/MTG-draft-sets-infographics/archive/) (v11 through v12.23).
-
