@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMNT - Normalized Draft Card Ratings</title>
+    <meta property="og:title" content="TMNT - Normalized Draft Card Ratings">
+    <meta property="og:description" content="Z-score normalized ratings for Teenage Mutant Ninja Turtles (TMT) draft, combining CardGameBase and Draftsim expert pre-release reviews.">
+    <meta property="og:type" content="website">
+    <!--
+    Changelog:
+    - v2.1.0 (2026-02-28) [Claude Sonnet 4.6] - Card images, Controversy column, Type/Mana columns
+        Card image tooltip on hover; toggle to show images inline in table
+        Controversy column = |CGB Z - DS Z| (higher = sources disagree more)
+        Type and Mana Cost columns fetched from Scryfall API on first render
+        Fixed th column label contrast (pale bg was conflicting with dark header)
+    - v2.0.0 (2026-02-28) [Claude Sonnet 4.6] - Full rebuild with dual-source z-score normalization
+        Two sources: CardGameBase (letter grades A+ to F) + Draftsim (numeric 0-10)
+        CGB grades converted to 0-10 numeric scale, then both z-score normalized
+        Averaged normalized score shown as primary ranking
+        Raw scores for both sources displayed in table
+        Cards missing from one source still shown (single-source normalized)
+    - v1.0.0 (2026-02-27) [Claude Sonnet 4.6] - Initial build, CardGameBase only
+    -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%);
+            color: white;
+            padding: 28px 30px;
+            text-align: center;
+        }
+        header h1 { font-size: 1.9rem; margin-bottom: 6px; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); }
+        header p { font-size: 0.95rem; opacity: 0.92; margin-bottom: 4px; }
+        header .sub { font-size: 0.82rem; opacity: 0.8; }
+        .info-banner {
+            background: #f0fff4;
+            padding: 12px 24px;
+            border-bottom: 2px solid #2d6a4f;
+            font-size: 0.88em;
+            color: #444;
+            line-height: 1.6;
+        }
+        .info-banner strong { color: #1a472a; }
+        .info-banner a { color: #2d6a4f; }
+        .warning-banner {
+            background: #fff8e1;
+            border-bottom: 2px solid #f59e0b;
+            padding: 8px 24px;
+            font-size: 0.85em;
+            color: #78350f;
+        }
+        .controls {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .controls label { font-weight: 600; color: #333; font-size: 0.88em; }
+        select, input[type="text"] {
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.88em;
+            background: white;
+        }
+        select:hover, input[type="text"]:hover { border-color: #2d6a4f; }
+        .filter-group { display: flex; gap: 5px; align-items: center; }
+        .separator { width: 1px; height: 22px; background: #ccc; margin: 0 3px; }
+        .color-btn, .rarity-btn {
+            padding: 2px 8px;
+            border-radius: 3px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-size: 0.78em;
+            font-weight: 700;
+            transition: all 0.12s;
+        }
+        .color-btn.active, .rarity-btn.active { border-color: #333 !important; }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.83em;
+        }
+        th {
+            background: #2d6a4f;
+            color: white;
+            padding: 7px 8px;
+            text-align: center;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 2;
+        }
+        th.name-col { text-align: left; }
+        th:hover { background: #1a472a; }
+        th .sort-indicator { margin-left: 3px; opacity: 0.4; font-size: 0.8em; }
+        th.sorted-asc .sort-indicator::after { content: '▲'; opacity: 1; }
+        th.sorted-desc .sort-indicator::after { content: '▼'; opacity: 1; }
+        th .sort-indicator::after { content: '↕'; opacity: 0.4; }
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            vertical-align: middle;
+        }
+        td.name-col { text-align: left; }
+        tr:hover { background: #f0fff4 !important; }
+        tr:nth-child(even) { background: #fafcfb; }
+        /* Normalized score bar */
+        .norm-bar-cell { min-width: 90px; }
+        .norm-bar-wrap { display: flex; align-items: center; gap: 4px; }
+        .norm-bar-bg { flex: 1; height: 10px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+        .norm-bar-fill { height: 100%; border-radius: 3px; transition: width 0.2s; }
+        .norm-val { font-size: 0.8em; font-weight: 700; min-width: 34px; text-align: right; }
+        /* Color indicators */
+        .color-W { background: #f5f5dc; color: #333; border: 1px solid #ccc; }
+        .color-U { background: #1a56db; color: white; }
+        .color-B { background: #1a1a2e; color: white; }
+        .color-R { background: #dc2626; color: white; }
+        .color-G { background: #16a34a; color: white; }
+        .color-M { background: linear-gradient(135deg, #d97706, #7c3aed); color: white; }
+        .color-C { background: #6b7280; color: white; }
+        .color-L { background: #92400e; color: white; }
+        .color-badge {
+            display: inline-block; padding: 1px 5px; border-radius: 2px;
+            font-size: 0.78em; font-weight: 600;
+        }
+        /* Rarity */
+        .rarity-C { color: #4b5563; font-weight: 600; }
+        .rarity-U { color: #1d4ed8; font-weight: 600; }
+        .rarity-R { color: #b45309; font-weight: 600; }
+        .rarity-M { color: #7c3aed; font-weight: 600; }
+        /* CGB grade colors */
+        .cgb-Aplus  { color: #166534; font-weight: 700; }
+        .cgb-A      { color: #166534; font-weight: 700; }
+        .cgb-Aminus { color: #166534; font-weight: 700; }
+        .cgb-Bplus  { color: #854d0e; font-weight: 700; }
+        .cgb-B      { color: #854d0e; font-weight: 700; }
+        .cgb-Bminus { color: #854d0e; font-weight: 700; }
+        .cgb-Cplus  { color: #9a3412; font-weight: 700; }
+        .cgb-C      { color: #9a3412; font-weight: 700; }
+        .cgb-Cminus { color: #9a3412; font-weight: 700; }
+        .cgb-Dplus  { color: #6d28d9; font-weight: 700; }
+        .cgb-D      { color: #6d28d9; font-weight: 700; }
+        .cgb-Dminus { color: #6d28d9; font-weight: 700; }
+        .cgb-F      { color: #6b7280; font-weight: 700; }
+        /* Draftsim score heat */
+        .ds-score { font-weight: 700; }
+        .name-link { color: #1a472a; text-decoration: none; font-weight: 600; }
+        .name-link:hover { text-decoration: underline; }
+        .missing { color: #9ca3af; font-style: italic; font-size: 0.8em; }
+        .stats-bar {
+            padding: 8px 20px;
+            background: #f0fff4;
+            border-top: 1px solid #ddd;
+            font-size: 0.82em;
+            color: #555;
+        }
+        .no-results { text-align: center; padding: 40px; color: #888; }
+        .nav-link {
+            display: inline-block; padding: 5px 12px;
+            background: rgba(255,255,255,0.2); color: white;
+            text-decoration: none; border-radius: 4px;
+            font-size: 0.82rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.4); margin-top: 8px;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.35); }
+        .group-header { background: #e8f5e9; font-weight: 700; font-size: 0.8em; color: #2d6a4f; }
+        .source-group { border-left: 3px solid #2d6a4f; padding-left: 4px; }
+        /* Column group tints — only on data rows, not sticky headers */
+        td.col-cgb { background: rgba(16,185,129,0.07); }
+        td.col-ds  { background: rgba(37,99,235,0.07); }
+        td.col-avg { background: rgba(245,158,11,0.1); }
+        td.col-controversy { background: rgba(239,68,68,0.06); }
+        /* Card image tooltip */
+        .card-tooltip {
+            position: fixed;
+            display: none;
+            background: white;
+            border: 2px solid #2d6a4f;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+            z-index: 10000;
+            padding: 6px;
+            pointer-events: none;
+            max-width: 230px;
+        }
+        .card-tooltip img { width: 220px; height: auto; border-radius: 4px; display: block; }
+        /* Inline image toggle */
+        .card-image { display: none; margin-top: 4px; }
+        .card-image img { width: 100px; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: block; }
+        body.show-images .card-image { display: block; }
+        /* Controversy badge */
+        .controversy-low  { color: #16a34a; font-weight: 700; }
+        .controversy-mid  { color: #d97706; font-weight: 700; }
+        .controversy-high { color: #dc2626; font-weight: 700; }
+        /* Mana/type cells */
+        .type-cell { font-size: 0.78em; color: #555; text-align: left; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mana-cell { font-size: 0.78em; color: #333; white-space: nowrap; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🐢 TMNT Draft Card Ratings</h1>
+        <p>Teenage Mutant Ninja Turtles (TMT) · Z-Score Normalized Expert Ratings</p>
+        <p class="sub">Sources: <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer" style="color:#a7f3d0">CardGameBase</a> (grades A+–F) + <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style="color:#a7f3d0">Draftsim</a> (0–10) · Set releases 2026-03-06</p>
+        <a href="color-wheel.html" class="nav-link">← Color Wheel</a>
+    </header>
+
+    <div class="warning-banner">
+        ⚠️ <strong>Pre-release data only.</strong> 17Lands play-data will be available ~1 week after March 6, 2026. Expert pre-release evaluations sometimes differ significantly from play data.
+    </div>
+
+    <div class="info-banner">
+        <strong>How normalization works:</strong> Each source is independently z-score normalized (mean=0, SD=1) across the cards it covers, so differences in scale don't distort the combined ranking.
+        CardGameBase letter grades (A+ to F) are first converted to a numeric 0–10 scale (A+=10, A=9, A-=8.5, B+=7.5, B=6.5, B-=5.5, C+=4.5, C=3.5, C-=2.5, D+=1.5, D=1, D-=0.5, F=0), then z-scored.
+        Draftsim uses 0–10 directly, then z-scored.
+        The <strong>Avg Z</strong> column is the mean of available normalized scores — higher = stronger consensus pick.
+        Cards rated by only one source are marked <span class="missing">single-source</span>.
+    </div>
+
+    <div class="controls">
+        <div class="filter-group">
+            <label>Search:</label>
+            <input type="text" id="searchInput" placeholder="Card name..." style="width:160px" oninput="applyFilters()">
+        </div>
+        <div class="separator"></div>
+        <div class="filter-group">
+            <label>Color:</label>
+            <button class="color-btn active" data-color="W" onclick="toggleColor(this)" style="background:#f5f5dc;color:#333;border:1px solid #aaa;">W</button>
+            <button class="color-btn active" data-color="U" onclick="toggleColor(this)" style="background:#1a56db;color:white;">U</button>
+            <button class="color-btn active" data-color="B" onclick="toggleColor(this)" style="background:#1a1a2e;color:white;">B</button>
+            <button class="color-btn active" data-color="R" onclick="toggleColor(this)" style="background:#dc2626;color:white;">R</button>
+            <button class="color-btn active" data-color="G" onclick="toggleColor(this)" style="background:#16a34a;color:white;">G</button>
+            <button class="color-btn active" data-color="M" onclick="toggleColor(this)" style="background:#d97706;color:white;">Multi</button>
+            <button class="color-btn active" data-color="C" onclick="toggleColor(this)" style="background:#6b7280;color:white;">Art</button>
+            <button class="color-btn active" data-color="L" onclick="toggleColor(this)" style="background:#92400e;color:white;">Land</button>
+            <button onclick="allColors(true)" style="padding:2px 6px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:0.75em;cursor:pointer;">All</button>
+            <button onclick="allColors(false)" style="padding:2px 6px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:0.75em;cursor:pointer;">None</button>
+        </div>
+        <div class="separator"></div>
+        <div class="filter-group">
+            <label>Rarity:</label>
+            <button class="rarity-btn active" data-rarity="M" onclick="toggleRarity(this)" style="color:#7c3aed;background:#f3f0ff;border:1px solid #c4b5fd;">M</button>
+            <button class="rarity-btn active" data-rarity="R" onclick="toggleRarity(this)" style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;">R</button>
+            <button class="rarity-btn active" data-rarity="U" onclick="toggleRarity(this)" style="color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;">U</button>
+            <button class="rarity-btn active" data-rarity="C" onclick="toggleRarity(this)" style="color:#374151;background:#f9fafb;border:1px solid #d1d5db;">C</button>
+            <button class="rarity-btn active" data-rarity="L" onclick="toggleRarity(this)" style="color:#92400e;background:#fef3c7;border:1px solid #fcd34d;">L</button>
+        </div>
+        <div class="separator"></div>
+        <div class="filter-group">
+            <label>Sort:</label>
+            <select id="sortSelect" onchange="applyFilters()">
+                <option value="avg_z">Avg Z-Score (best first)</option>
+                <option value="cgb_raw">CGB Grade</option>
+                <option value="ds_raw">Draftsim Score</option>
+                <option value="controversy">Controversy (most disagreement)</option>
+                <option value="name">Name (A–Z)</option>
+                <option value="color">Color</option>
+                <option value="rarity">Rarity</option>
+                <option value="type">Type</option>
+                <option value="mana">Mana Cost</option>
+            </select>
+        </div>
+        <button onclick="resetFilters()" style="padding:5px 10px;border:1px solid #bbb;border-radius:4px;background:#fff;font-size:0.82em;cursor:pointer;">Reset</button>
+        <div class="separator"></div>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.82em;cursor:pointer;font-weight:600;">
+            <input type="checkbox" id="toggleImages" onchange="toggleInlineImages(this.checked)"> Show card images
+        </label>
+    </div>
+    <div class="card-tooltip" id="cardTooltip"></div>
+
+    <div class="table-wrapper">
+        <table id="ratingsTable">
+            <thead>
+                <tr>
+                    <th class="name-col" onclick="sortBy('name')">Card Name<span class="sort-indicator"></span></th>
+                    <th onclick="sortBy('color')" style="width:48px">Color<span class="sort-indicator"></span></th>
+                    <th onclick="sortBy('rarity')" style="width:38px">Rar<span class="sort-indicator"></span></th>
+                    <th onclick="sortBy('type')" style="width:100px;text-align:left" title="Card type line (fetched from Scryfall)">Type<span class="sort-indicator"></span></th>
+                    <th onclick="sortBy('mana')" style="width:60px" title="Mana cost (fetched from Scryfall)">Mana<span class="sort-indicator"></span></th>
+                    <th class="col-cgb" onclick="sortBy('cgb_raw')" style="width:52px" title="CardGameBase letter grade">CGB<span class="sort-indicator"></span></th>
+                    <th class="col-cgb" onclick="sortBy('cgb_z')" style="width:52px" title="CardGameBase z-score">CGB Z<span class="sort-indicator"></span></th>
+                    <th class="col-ds" onclick="sortBy('ds_raw')" style="width:52px" title="Draftsim score /10">DS<span class="sort-indicator"></span></th>
+                    <th class="col-ds" onclick="sortBy('ds_z')" style="width:52px" title="Draftsim z-score">DS Z<span class="sort-indicator"></span></th>
+                    <th class="col-avg norm-bar-cell" onclick="sortBy('avg_z')" title="Average of available z-scores">Avg Z<span class="sort-indicator"></span></th>
+                    <th class="col-controversy" onclick="sortBy('controversy')" style="width:70px" title="Controversy: how much the two sources disagree (higher = more disagreement). |CGB Z − DS Z|">Disagree<span class="sort-indicator"></span></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div id="noResults" class="no-results" style="display:none;">No cards match current filters.</div>
+    </div>
+    <div class="stats-bar" id="statsBar">Loading...</div>
+</div>
+
+<script>
+// ── Raw data ──────────────────────────────────────────────────────────────────
+
+// CardGameBase grades. Format: [name, color, rarity, grade]
+// Colors: W U B R G M=Multi C=Artifact/Colorless L=Land
+// Rarity: C U R M L
+const CGB_DATA = [
+    ["Sally Pride, Lioness Leader","W","R","A+"],
+    ["Triceraton Commander","R","R","A+"],
+    ["Krang, Master Mind","U","M","A+"],
+    ["Armaggon, Future Shark","B","R","A+"],
+    ["Mutagen Man, Living Ooze","G","R","A+"],
+    ["The Last Ronin","M","M","A+"],
+    ["Krang & Shredder","M","M","A+"],
+    ["North Wind Avatar","U","R","A+"],
+    ["Raph & Mikey, Troublemakers","M","R","A+"],
+    ["Umezawa's Jitte","C","M","A+"],
+    ["Leader's Talent","W","U","A-"],
+    ["Turncoat Kunoichi","B","U","A-"],
+    ["The Cloning of Shredder","B","R","A-"],
+    ["Agent Bishop, Man in Black","W","R","B+"],
+    ["Mighty Mutanimals","G","U","B+"],
+    ["April O'Neil, Hacktivist","U","R","B+"],
+    ["Does Machines","U","U","B+"],
+    ["Renet, Temporal Apprentice","W","R","B+"],
+    ["Rat King, Verminister","B","R","B+"],
+    ["Savanti Romero, Time's Exile","R","R","B+"],
+    ["Groundchuck & Dirtbag","G","R","B+"],
+    ["Brilliance Unleashed","U","U","B+"],
+    ["Karai's Technique","B","U","B+"],
+    ["Shadowspear","C","M","B+"],
+    ["Dimensional Exile","W","U","B"],
+    ["Leonardo, Sewer Samurai","W","R","B"],
+    ["Metalhead","C","U","B"],
+    ["Shark Shredder, Killer Clone","U","R","B"],
+    ["Super Shredder","B","M","B"],
+    ["General Traag, Heart of Stone","R","R","B"],
+    ["Ravenous Robots","C","U","B"],
+    ["Slash, Reptile Rampager","G","U","B"],
+    ["Spicy Oatmeal Pizza","C","U","B"],
+    ["Courier of Comestibles","W","C","B"],
+    ["Leatherhead, Swamp Stalker","G","R","B"],
+    ["Michelangelo, Improviser","R","U","B"],
+    ["Michelangelo, Weirdness to 11","G","R","B"],
+    ["The Ooze","G","R","B"],
+    ["Turtle Van","C","R","B"],
+    ["Baxter Stockman","U","U","B"],
+    ["Go Ninja, Go!","B","U","B"],
+    ["Karai, Future of the Foot","B","R","B"],
+    ["Mikey & Leo, Chaos & Order","M","R","B"],
+    ["Pizza Face, Gastromancer","W","R","B"],
+    ["Leonardo, Cutting Edge","W","U","B-"],
+    ["Lita, Little Orphan Amphibian","G","U","B-"],
+    ["Ray Fillet, Man Ray","U","U","B-"],
+    ["Shredder's Technique","B","U","B-"],
+    ["Splinter, Hamato Yoshi","W","M","B-"],
+    ["Casey Jones, Vigilante","R","U","B-"],
+    ["Improvised Arsenal","C","U","B-"],
+    ["Raphael, the Nightwatcher","R","R","B-"],
+    ["Novel Nunchaku","C","U","B-"],
+    ["Chrome Dome","C","R","B-"],
+    ["Henchbots","C","C","B-"],
+    ["Dark Leo & Shredder","M","R","B-"],
+    ["Don & Leo, Problem Solvers","M","U","B-"],
+    ["Genghis Frog","G","U","B-"],
+    ["Tainted Treats","B","U","B-"],
+    ["The Last Ronin's Technique","B","U","C+"],
+    ["Buzz Bots","C","C","C+"],
+    ["Donatello, Mutant Mechanic","U","U","C+"],
+    ["Donatello, Turtle Techie","U","R","C+"],
+    ["Mondo Gecko","G","C","C+"],
+    ["Return to the Sewers","G","U","C+"],
+    ["Anchovy & Banana Pizza","C","C","C+"],
+    ["Death in the Family","B","U","C+"],
+    ["Lord Dregg, Insect Invader","R","R","C+"],
+    ["Ninja Teen","B","C","C+"],
+    ["Stomped by the Foot","W","C","C+"],
+    ["Casey Jones, Jury-Rig Justiciar","R","U","C+"],
+    ["Manhole Missile","R","C","C+"],
+    ["Michelangelo, Mutant BFF","G","U","C+"],
+    ["Primordial Pachyderm","G","U","C+"],
+    ["West Wind Avatar","W","U","C+"],
+    ["Technodrome","C","R","C+"],
+    ["Weather Maker","U","U","C+"],
+    ["Lessons from Life","W","U","C+"],
+    ["Mikey & Don, Party Planners","M","U","C+"],
+    ["Dimension X","L","R","C+"],
+    ["Escape Tunnel","L","C","C+"],
+    ["Foot Headquarters","L","U","C+"],
+    ["Illegitimate Business","B","C","C+"],
+    ["Mutant Town","L","U","C+"],
+    ["TCRI Building","L","U","C+"],
+    ["Sword of Sinew and Steel","C","M","C+"],
+    ["April O'Neil, Kunoichi Trainee","W","U","C"],
+    ["Leonardo, Big Brother","W","U","C"],
+    ["Leonardo, Leader in Blue","W","R","C"],
+    ["Uneasy Alliance","U","C","C"],
+    ["Bespoke Bō","C","U","C"],
+    ["Donatello, Gadget Master","U","U","C"],
+    ["Donatello's Technique","U","C","C"],
+    ["Fugitive Droid","C","C","C"],
+    ["Ooze Spill","G","C","C"],
+    ["Retro-Mutation","G","C","C"],
+    ["Bot Bashing Time","R","C","C"],
+    ["Mouser Foundry","C","U","C"],
+    ["Foot Mystic","B","C","C"],
+    ["Madame Null, Power Broker","B","R","C"],
+    ["Paramecia Coloniex","G","U","C"],
+    ["Krang, Utrom Warlord","U","U","C"],
+    ["Turtle Blimp","C","U","C"],
+    ["Frog Butler","G","C","C"],
+    ["Guac & Marshmallow Pizza","C","C","C"],
+    ["Party Dude","G","C","C"],
+    ["Ragamuffin Raptor","G","C","C"],
+    ["Tenderize","R","C","C"],
+    ["Turtle Lair","L","U","C"],
+    ["Bebop & Rocksteady","R","R","C"],
+    ["Don & Raph, Hard Science","M","U","C"],
+    ["Foot Ninjas","B","C","C"],
+    ["The Neutrinos","U","R","C"],
+    ["Raph & Leo, Sibling Rivals","M","U","C"],
+    ["Splinter, Radical Rat","W","U","C"],
+    ["Tokka & Rahzar, Terrible Twos","M","U","C"],
+    ["Cytoplast Manipulator","U","R","C"],
+    ["Featherbrained Filcher","B","C","C-"],
+    ["Jennika, Bad Apple Big Sister","W","R","C-"],
+    ["Koya, Death from Above","B","R","C-"],
+    ["Make Your Move","R","C","C-"],
+    ["Sewer-veillance Cam","C","C","C-"],
+    ["Dream Beavers","U","R","C-"],
+    ["Oroku Saki, Shredder Rising","B","U","C-"],
+    ["South Wind Avatar","G","U","C-"],
+    ["Squirrelanoids","G","C","C-"],
+    ["Old Hob, Alleycat Blues","B","U","C-"],
+    ["Purple Dragon Punks","R","C","C-"],
+    ["Wingnut, Bat on the Belfry","W","U","C-"],
+    ["Cowabunga!","R","C","C-"],
+    ["Turtle Power!","W","C","C-"],
+    ["Mechanized Ninja Cavalry","W","R","C-"],
+    ["Slithering Cryptid","B","C","C-"],
+    ["Brainstorm","U","M","C-"],
+    ["Ashcoat of the Shadow Swarm","B","M","C-"],
+    ["Metallic Mimic","C","R","C-"],
+    ["Action News Crew","W","C","D+"],
+    ["Grounded for Life","W","C","D+"],
+    ["High-Flying Ace","U","C","D+"],
+    ["Leonardo's Technique","W","C","D+"],
+    ["Prehistoric Pet","G","C","D+"],
+    ["Quintessential Katana","C","U","D+"],
+    ["April, Reporter of the Weird","W","U","D+"],
+    ["Crustacean Commando","U","C","D+"],
+    ["Kitsune, Dragon's Daughter","W","R","D+"],
+    ["Mind Transfer Protocol","U","U","D+"],
+    ["Utrom Scientists","U","C","D+"],
+    ["Cool but Rude","R","C","D+"],
+    ["Jennika's Technique","W","C","D+"],
+    ["Mouser Attack!","C","C","D+"],
+    ["Mutant Town Musicians","G","C","D+"],
+    ["Null Group Biological Assets","W","U","D+"],
+    ["Raphael, Most Attitude","R","U","D+"],
+    ["Raphael, Ninja Destroyer","R","R","D+"],
+    ["Raphael, Tough Turtle","R","U","D+"],
+    ["Insectoid Exterminator","B","C","D+"],
+    ["Pain 101","R","C","D+"],
+    ["Shredder, Unrelenting","B","M","D+"],
+    ["Shredder's Revenge","R","U","D+"],
+    ["Tunnel Rats","B","C","D+"],
+    ["Michelangelo, Game Master","G","U","D+"],
+    ["Saved by the Shell","W","C","D+"],
+    ["Transdimensional Bovine","W","C","D+"],
+    ["Venus, Torn Between Worlds","U","R","D+"],
+    ["Zoo Escapees","G","C","D+"],
+    ["Everything Pizza","C","U","D+"],
+    ["Omni-Cheese Pizza","C","C","D+"],
+    ["Skateboard","C","U","D+"],
+    ["Foot Elite","B","C","D+"],
+    ["Ice Cream Kitty","W","C","D+"],
+    ["Mouser Mark III","C","C","D+"],
+    ["Nobody","B","U","D+"],
+    ["Punk Frogs","G","C","D+"],
+    ["Putrid Pals","B","C","D+"],
+    ["Northampton Farm","L","C","D+"],
+    ["East Wind Avatar","R","U","D"],
+    ["Hamato Guardian Stance","W","C","D"],
+    ["Donatello, Way with Machines","U","U","D"],
+    ["Stockman, Mad Fly-entist","U","R","D"],
+    ["Shredder's Armor","C","R","D"],
+    ["Splinter's Technique","W","C","D"],
+    ["Hard-Won Jitte","C","U","D"],
+    ["Zog, Triceraton Castaway","R","U","D"],
+    ["Mona Lisa, Science Geek","G","R","D"],
+    ["Mutant Chain Reaction","G","U","D"],
+    ["New Generation's Technique","G","C","D"],
+    ["Rocksteady, Crash Courser","R","U","D"],
+    ["Teleportation Circle","W","R","D"],
+    ["Negate","U","C","D"],
+    ["Trouble in Pairs","U","C","D"],
+    ["Conqueror's Flail","C","R","D"],
+    ["Rhythm of the Wild","M","R","D"],
+    ["EPF Point Squad","W","C","D"],
+    ["Bebop, Warthog Warrior","R","R","D-"],
+    ["Rock Soldiers","R","C","D-"],
+    ["Michelangelo's Technique","G","C","D-"],
+    ["All Will Be One","R","M","D-"],
+    ["Silverclad Ferocidons","R","R","D-"],
+    ["Undercity Sewers","L","C","D-"],
+    ["Turtles Forever","M","M","F"],
+    ["Kitsune's Technique","W","C","F"],
+    ["Turtles in Time","U","M","F"],
+    ["Broadcast Takeover","U","R","F"],
+    ["Raphael's Technique","R","C","F"],
+    ["Underworld Breach","B","M","F"],
+    ["Plague of Vermin","B","R","F"],
+    ["Doubling Season","G","M","F"],
+    ["Waves of Aggression","R","R","F"],
+    // Bonus sheet/reprints not in CGB list (will be DS-only)
+    ["Path to Exile","W","R",null],
+    ["Arcbound Ravager","C","M",null],
+];
+
+// Draftsim scores (0-10, extracted from saved review page)
+const DS_SCORES = {
+    "Action News Crew": 3,
+    "Agent Bishop, Man in Black": 10,
+    "April O'Neil, Kunoichi Trainee": 4,
+    "Dimensional Exile": 7,
+    "East Wind Avatar": 3,
+    "Featherbrained Filcher": 5,
+    "Grounded for Life": 4,
+    "Hamato Guardian Stance": 1,
+    "High-Flying Ace": 4,
+    "Jennika, Bad Apple Big Sister": 3,
+    "Koya, Death from Above": 7,
+    "The Last Ronin's Technique": 5,
+    "Leader's Talent": 6,
+    "Leonardo, Big Brother": 2,
+    "Leonardo, Cutting Edge": 7,
+    "Leonardo, Leader in Blue": 7,
+    "Leonardo, Sewer Samurai": 9,
+    "Leonardo's Technique": 2,
+    "Lita, Little Orphan Amphibian": 6,
+    "Make Your Move": 2,
+    "Mighty Mutanimals": 6,
+    "Prehistoric Pet": 4,
+    "Quintessential Katana": 3,
+    "Sally Pride, Lioness Leader": 10,
+    "Triceraton Commander": 9,
+    "Turncoat Kunoichi": 10,
+    "Turtles Forever": 2,
+    "Uneasy Alliance": 5,
+    "April O'Neil, Hacktivist": 8,
+    "April, Reporter of the Weird": 5,
+    "Bespoke Bō": 5,
+    "Buzz Bots": 4,
+    "Crustacean Commando": 2,
+    "Does Machines": 8,
+    "Donatello, Gadget Master": 6,
+    "Donatello, Mutant Mechanic": 7,
+    "Donatello, Turtle Techie": 4,
+    "Donatello, Way with Machines": 5,
+    "Donatello's Technique": 6,
+    "Fugitive Droid": 6,
+    "Kitsune, Dragon's Daughter": 9,
+    "Kitsune's Technique": 0,
+    "Krang, Master Mind": 10,
+    "Metalhead": 7,
+    "Mind Transfer Protocol": 5,
+    "Mondo Gecko": 4,
+    "Negate": 1,
+    "Ooze Spill": 1,
+    "Ray Fillet, Man Ray": 6,
+    "Renet, Temporal Apprentice": 5,
+    "Retro-Mutation": 4,
+    "Return to the Sewers": 4,
+    "Sewer-veillance Cam": 1,
+    "Stockman, Mad Fly-entist": 2,
+    "Turtles in Time": 8,
+    "Utrom Scientists": 5,
+    "Anchovy & Banana Pizza": 6,
+    "Armaggon, Future Shark": 8,
+    "Bebop, Warthog Warrior": 2,
+    "The Cloning of Shredder": 8,
+    "Death in the Family": 5,
+    "Dream Beavers": 7,
+    "Foot Mystic": 3,
+    "Insectoid Exterminator": 2,
+    "Lord Dregg, Insect Invader": 7,
+    "Madame Null, Power Broker": 7,
+    "Ninja Teen": 6,
+    "Oroku Saki, Shredder Rising": 4,
+    "Pain 101": 2,
+    "Paramecia Coloniex": 3,
+    "Rat King, Verminister": 8,
+    "Savanti Romero, Time's Exile": 8,
+    "Shark Shredder, Killer Clone": 9,
+    "Shredder, Unrelenting": 6,
+    "Shredder's Armor": 5,
+    "Shredder's Revenge": 1,
+    "Shredder's Technique": 6,
+    "South Wind Avatar": 5,
+    "Splinter, Hamato Yoshi": 7,
+    "Splinter's Technique": 1,
+    "Squirrelanoids": 4,
+    "Stomped by the Foot": 6,
+    "Super Shredder": 6,
+    "Tunnel Rats": 1,
+    "Bot Bashing Time": 5,
+    "Broadcast Takeover": 0,
+    "Casey Jones, Jury-Rig Justiciar": 5,
+    "Casey Jones, Vigilante": 1,
+    "Cool but Rude": 0,
+    "General Traag, Heart of Stone": 7,
+    "Hard-Won Jitte": 1,
+    "Improvised Arsenal": 7,
+    "Jennika's Technique": 2,
+    "Manhole Missile": 6,
+    "Mouser Attack!": 2,
+    "Mouser Foundry": 3,
+    "Mutant Town Musicians": 3,
+    "Null Group Biological Assets": 2,
+    "Old Hob, Alleycat Blues": 6,
+    "Purple Dragon Punks": 4,
+    "Raphael, Most Attitude": 4,
+    "Raphael, Ninja Destroyer": 4,
+    "Raphael, the Nightwatcher": 6,
+    "Raphael, Tough Turtle": 3,
+    "Raphael's Technique": 1,
+    "Ravenous Robots": 6,
+    "Rock Soldiers": 3,
+    "Slash, Reptile Rampager": 7,
+    "Spicy Oatmeal Pizza": 7,
+    "Wingnut, Bat on the Belfry": 4,
+    "Zog, Triceraton Castaway": 3,
+    "Courier of Comestibles": 6,
+    "Cowabunga!": 2,
+    "Frog Butler": 5,
+    "Groundchuck & Dirtbag": 3,
+    "Guac & Marshmallow Pizza": 2,
+    "Leatherhead, Swamp Stalker": 7,
+    "Michelangelo, Game Master": 4,
+    "Michelangelo, Improviser": 4,
+    "Michelangelo, Mutant BFF": 6,
+    "Michelangelo, Weirdness to 11": 8,
+    "Michelangelo's Technique": 4,
+    "Mona Lisa, Science Geek": 3,
+    "Mutagen Man, Living Ooze": 7,
+    "Mutant Chain Reaction": 1,
+    "New Generation's Technique": 5,
+    "Novel Nunchaku": 6,
+    "Party Dude": 1,
+    "Primordial Pachyderm": 3,
+    "Ragamuffin Raptor": 6,
+    "Rocksteady, Crash Courser": 3,
+    "Saved by the Shell": 4,
+    "Tenderize": 6,
+    "Transdimensional Bovine": 6,
+    "Turtle Power!": 3,
+    "Venus, Torn Between Worlds": 4,
+    "West Wind Avatar": 6,
+    "Zoo Escapees": 3,
+    "Baxter Stockman": 5,
+    "Bebop & Rocksteady": 6,
+    "Brilliance Unleashed": 7,
+    "Dark Leo & Shredder": 8,
+    "Don & Leo, Problem Solvers": 4,
+    "Don & Raph, Hard Science": 4,
+    "EPF Point Squad": 3,
+    "Foot Elite": 2,
+    "Foot Ninjas": 3,
+    "Genghis Frog": 6,
+    "Go Ninja, Go!": 6,
+    "Ice Cream Kitty": 4,
+    "Karai, Future of the Foot": 7,
+    "Karai's Technique": 8,
+    "Krang & Shredder": 9,
+    "The Last Ronin": 10,
+    "Lessons from Life": 6,
+    "Mechanized Ninja Cavalry": 5,
+    "Mikey & Don, Party Planners": 5,
+    "Mikey & Leo, Chaos & Order": 7,
+    "Mouser Mark III": 3,
+    "The Neutrinos": 7,
+    "Nobody": 3,
+    "North Wind Avatar": 9,
+    "Pizza Face, Gastromancer": 7,
+    "Punk Frogs": 1,
+    "Putrid Pals": 3,
+    "Raph & Leo, Sibling Rivals": 7,
+    "Raph & Mikey, Troublemakers": 9,
+    "Slithering Cryptid": 3,
+    "Splinter, Radical Rat": 6,
+    "Tainted Treats": 7,
+    "Tokka & Rahzar, Terrible Twos": 4,
+    "Chrome Dome": 4,
+    "Everything Pizza": 3,
+    "Henchbots": 6,
+    "Krang, Utrom Warlord": 1,
+    "Omni-Cheese Pizza": 3,
+    "The Ooze": 7,
+    "Skateboard": 1,
+    "Technodrome": 6,
+    "Turtle Blimp": 5,
+    "Turtle Van": 7,
+    "Weather Maker": 4,
+    "TCRI Building": 4,
+    "Escape Tunnel": 4,
+    "Northampton Farm": 1,
+    "Turtle Lair": 5,
+    "Path to Exile": 8,
+    "Brainstorm": 3,
+    "Cytoplast Manipulator": 7,
+    "Arcbound Ravager": 7,
+    "Conqueror's Flail": 5,
+    "Metallic Mimic": 6,
+    "Shadowspear": 7,
+    "Sword of Sinew and Steel": 7,
+    "Umezawa's Jitte": 11,
+    "Undercity Sewers": 4,
+    // DS-only (not in CGB)
+    "All Will Be One": 1,        // CGB D-
+    "Ashcoat of the Shadow Swarm": 2, // CGB C-
+    "Bebop & Rocksteady": 6,
+    "Doubling Season": 1,
+    "Plague of Vermin": 2,
+    "Rhythm of the Wild": 3,
+    "Silverclad Ferocidons": 2,
+    "Teleportation Circle": 3,
+    "Trouble in Pairs": 2,
+    "Underworld Breach": 1,
+    "Waves of Aggression": 2,
+};
+
+// ── Grade → numeric conversion ────────────────────────────────────────────────
+const GRADE_TO_NUM = {
+    'A+': 10, 'A': 9, 'A-': 8.5,
+    'B+': 7.5, 'B': 6.5, 'B-': 5.5,
+    'C+': 4.5, 'C': 3.5, 'C-': 2.5,
+    'D+': 1.5, 'D': 1.0, 'D-': 0.5,
+    'F': 0
+};
+
+// ── Build unified card list ───────────────────────────────────────────────────
+function buildCards() {
+    const map = {};
+
+    // Load CGB data
+    CGB_DATA.forEach(([name, color, rarity, grade]) => {
+        map[name] = { name, color, rarity, cgb_grade: grade, cgb_num: grade ? GRADE_TO_NUM[grade] : null, ds_raw: null };
+    });
+
+    // Load Draftsim data — merge or add
+    Object.entries(DS_SCORES).forEach(([name, score]) => {
+        if (!map[name]) {
+            // DS-only card — need color/rarity from CGB or guess unknown
+            map[name] = { name, color: '?', rarity: '?', cgb_grade: null, cgb_num: null, ds_raw: score };
+        } else {
+            map[name].ds_raw = score;
+        }
+    });
+
+    // Also patch missing CGB entries for DS-only cards with known metadata
+    const DS_META = {
+        "All Will Be One": ["R","M"],
+        "Ashcoat of the Shadow Swarm": ["B","M"],
+        "Doubling Season": ["G","M"],
+        "Plague of Vermin": ["B","R"],
+        "Rhythm of the Wild": ["M","R"],
+        "Silverclad Ferocidons": ["R","R"],
+        "Teleportation Circle": ["W","R"],
+        "Trouble in Pairs": ["U","C"],
+        "Underworld Breach": ["B","M"],
+        "Waves of Aggression": ["R","R"],
+        "Path to Exile": ["W","R"],
+        "Arcbound Ravager": ["C","M"],
+    };
+    Object.entries(DS_META).forEach(([name, [color, rarity]]) => {
+        if (map[name]) { map[name].color = color; map[name].rarity = rarity; }
+    });
+
+    return Object.values(map);
+}
+
+// ── Z-score normalization ─────────────────────────────────────────────────────
+function zScore(vals) {
+    const valid = vals.filter(v => v !== null && v !== undefined);
+    if (valid.length < 2) return vals.map(() => null);
+    const mean = valid.reduce((a, b) => a + b, 0) / valid.length;
+    const sd = Math.sqrt(valid.reduce((a, b) => a + (b - mean) ** 2, 0) / valid.length);
+    if (sd === 0) return vals.map(v => v === null ? null : 0);
+    return vals.map(v => v === null ? null : (v - mean) / sd);
+}
+
+const RAW_CARDS = buildCards();
+
+// Compute CGB z-scores
+const cgb_nums = RAW_CARDS.map(c => c.cgb_num);
+const cgb_zs = zScore(cgb_nums);
+
+// Compute DS z-scores
+const ds_raws = RAW_CARDS.map(c => c.ds_raw);
+const ds_zs = zScore(ds_raws);
+
+// Attach and compute avg + controversy
+const CARDS = RAW_CARDS.map((c, i) => {
+    const cgb_z = cgb_zs[i];
+    const ds_z = ds_zs[i];
+    const available = [cgb_z, ds_z].filter(v => v !== null);
+    const avg_z = available.length > 0 ? available.reduce((a, b) => a + b, 0) / available.length : null;
+    // Controversy = absolute difference between the two z-scores (only when both present)
+    const controversy = (cgb_z !== null && ds_z !== null) ? Math.abs(cgb_z - ds_z) : null;
+    return { ...c, cgb_z, ds_z, avg_z, controversy, sources: available.length, type: null, mana: null };
+});
+
+// ── Filter/sort state ─────────────────────────────────────────────────────────
+const COLOR_ORDER = { 'W':0,'U':1,'B':2,'R':3,'G':4,'M':5,'C':6,'L':7,'?':8 };
+const RARITY_ORDER = { 'M':0,'R':1,'U':2,'C':3,'L':4,'?':5 };
+const GRADE_ORDER = { 'A+':0,'A':1,'A-':2,'B+':3,'B':4,'B-':5,'C+':6,'C':7,'C-':8,'D+':9,'D':10,'D-':11,'F':12 };
+
+let activeColors = new Set(['W','U','B','R','G','M','C','L','?']);
+let activeRarities = new Set(['M','R','U','C','L','?']);
+let currentSort = 'avg_z';
+let sortAsc = false;
+let currentSearch = '';
+
+// ── Scryfall card data cache ──────────────────────────────────────────────────
+const scryfallCache = new Map(); // name → {imageUrl, type, mana_cost}
+
+function fetchCardData(name) {
+    if (scryfallCache.has(name)) return Promise.resolve(scryfallCache.get(name));
+    return fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(card => {
+            if (!card) { scryfallCache.set(name, null); return null; }
+            // Handle double-faced cards (image in card_faces)
+            let imageUrl = null;
+            if (card.image_uris) {
+                imageUrl = card.image_uris.normal || card.image_uris.large || null;
+            } else if (card.card_faces && card.card_faces[0].image_uris) {
+                imageUrl = card.card_faces[0].image_uris.normal || null;
+            }
+            const typeLine = card.type_line || null;
+            const manaCost = card.mana_cost || (card.card_faces && card.card_faces[0].mana_cost) || null;
+            const data = { imageUrl, type: typeLine, mana: manaCost };
+            scryfallCache.set(name, data);
+            return data;
+        })
+        .catch(() => { scryfallCache.set(name, null); return null; });
+}
+
+// Prefetch all card data in background (rate-limited to ~80ms apart)
+function prefetchAll() {
+    let idx = 0;
+    function next() {
+        if (idx >= CARDS.length) return;
+        const card = CARDS[idx++];
+        fetchCardData(card.name).then(data => {
+            if (data) {
+                card.type = data.type;
+                card.mana = data.mana;
+            }
+        });
+        setTimeout(next, 80);
+    }
+    setTimeout(next, 300);
+}
+
+// ── Card image tooltip ────────────────────────────────────────────────────────
+let activeHoverName = null;
+
+function showCardTooltip(e) {
+    const name = e.currentTarget.dataset.name;
+    if (!name) return;
+    activeHoverName = name;
+    const tooltip = document.getElementById('cardTooltip');
+    fetchCardData(name).then(data => {
+        if (activeHoverName !== name || !data || !data.imageUrl) return;
+        tooltip.innerHTML = `<img src="${data.imageUrl}" alt="${name}" loading="lazy">`;
+        tooltip.style.display = 'block';
+        positionTooltip(e.currentTarget);
+    });
+}
+
+function hideCardTooltip() {
+    activeHoverName = null;
+    document.getElementById('cardTooltip').style.display = 'none';
+}
+
+function positionTooltip(anchor) {
+    const tooltip = document.getElementById('cardTooltip');
+    if (tooltip.style.display === 'none') return;
+    const rect = anchor.getBoundingClientRect();
+    const margin = 10;
+    const tw = tooltip.offsetWidth || 230;
+    const th = tooltip.offsetHeight || 320;
+    let left = rect.left;
+    if (left + tw > window.innerWidth - margin) left = window.innerWidth - margin - tw;
+    if (left < margin) left = margin;
+    let top = rect.top - th - margin;
+    if (top < margin) top = rect.bottom + margin;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+}
+
+// ── Inline image toggle ───────────────────────────────────────────────────────
+function toggleInlineImages(on) {
+    if (on) {
+        document.body.classList.add('show-images');
+        ensureAllRowImages();
+    } else {
+        document.body.classList.remove('show-images');
+    }
+}
+
+function ensureAllRowImages() {
+    document.querySelectorAll('#tableBody tr').forEach(row => {
+        const name = row.dataset.name;
+        if (!name) return;
+        const cell = row.querySelector('td.name-col');
+        if (!cell) return;
+        let imgDiv = cell.querySelector('.card-image');
+        if (!imgDiv) {
+            imgDiv = document.createElement('div');
+            imgDiv.className = 'card-image';
+            cell.appendChild(imgDiv);
+        }
+        if (imgDiv.dataset.loaded === 'true') return;
+        imgDiv.dataset.loaded = 'pending';
+        fetchCardData(name).then(data => {
+            if (!data || !data.imageUrl) return;
+            imgDiv.innerHTML = `<img src="${data.imageUrl}" alt="${name}" loading="lazy">`;
+            imgDiv.dataset.loaded = 'true';
+        });
+    });
+}
+
+// ── Rendering helpers ─────────────────────────────────────────────────────────
+function fmtZ(z) {
+    if (z === null || z === undefined) return '<span class="missing">—</span>';
+    return (z >= 0 ? '+' : '') + z.toFixed(2);
+}
+
+function barColor(z) {
+    if (z === null) return '#e5e7eb';
+    if (z >= 1.5) return '#16a34a';
+    if (z >= 0.5) return '#65a30d';
+    if (z >= 0) return '#ca8a04';
+    if (z >= -0.5) return '#ea580c';
+    return '#dc2626';
+}
+
+function barWidth(z) {
+    if (z === null) return 0;
+    return Math.max(0, Math.min(100, ((z + 3) / 6) * 100));
+}
+
+function colorBadge(color) {
+    const labels = { W:'W',U:'U',B:'B',R:'R',G:'G',M:'Multi',C:'Art',L:'Land','?':'?' };
+    return `<span class="color-badge color-${color}">${labels[color]||color}</span>`;
+}
+
+function rarityDisplay(r) {
+    return `<span class="rarity-${r}">${r}</span>`;
+}
+
+function cgbClass(grade) {
+    if (!grade) return '';
+    return 'cgb-' + grade.replace('+','plus').replace('-','minus');
+}
+
+function dsColor(score) {
+    if (score === null) return '#9ca3af';
+    if (score >= 9) return '#166534';
+    if (score >= 7) return '#2d6a4f';
+    if (score >= 5) return '#854d0e';
+    if (score >= 3) return '#9a3412';
+    return '#6b7280';
+}
+
+function controversyClass(v) {
+    if (v === null) return '';
+    if (v < 0.75) return 'controversy-low';
+    if (v < 1.5) return 'controversy-mid';
+    return 'controversy-high';
+}
+
+function scryfallUrl(name) {
+    return `https://scryfall.com/search?q=${encodeURIComponent('"' + name + '" set:tmt')}`;
+}
+
+// Abbreviate type line for compact display
+function abbrevType(t) {
+    if (!t) return '…';
+    return t
+        .replace('Legendary ', 'L. ')
+        .replace('Artifact Creature', 'Art. Creature')
+        .replace('Enchantment Creature', 'Enc. Creature')
+        .replace('Planeswalker', 'PW')
+        .replace('Instant', 'Inst')
+        .replace('Sorcery', 'Sorc')
+        .replace('Artifact', 'Art')
+        .replace('Enchantment', 'Ench')
+        .replace('Land', 'Land');
+}
+
+// Render mana cost string as colored text shorthand
+function fmtMana(m) {
+    if (!m) return '<span class="missing">…</span>';
+    // Convert {2}{W}{U} etc. to a compact display
+    return m.replace(/\{([^}]+)\}/g, (_, sym) => {
+        const s = sym.toUpperCase();
+        const colorMap = { W:'#c8aa6e', U:'#5080a0', B:'#333', R:'#d43f1c', G:'#2d6a4f' };
+        const col = colorMap[s];
+        if (col) return `<span style="font-weight:700;color:${col}">${sym}</span>`;
+        return `<span style="color:#555">${sym}</span>`;
+    });
+}
+
+function renderTable() {
+    let data = CARDS.filter(c => {
+        if (!activeColors.has(c.color)) return false;
+        if (!activeRarities.has(c.rarity)) return false;
+        if (currentSearch && !c.name.toLowerCase().includes(currentSearch.toLowerCase())) return false;
+        return true;
+    });
+
+    data.sort((a, b) => {
+        let diff = 0;
+        if (currentSort === 'avg_z') {
+            diff = (a.avg_z ?? -999) - (b.avg_z ?? -999);
+        } else if (currentSort === 'cgb_raw') {
+            const ag = a.cgb_grade ? GRADE_ORDER[a.cgb_grade] ?? 99 : 99;
+            const bg = b.cgb_grade ? GRADE_ORDER[b.cgb_grade] ?? 99 : 99;
+            diff = ag - bg;
+        } else if (currentSort === 'cgb_z') {
+            diff = (a.cgb_z ?? -999) - (b.cgb_z ?? -999);
+        } else if (currentSort === 'ds_raw') {
+            diff = (a.ds_raw ?? -1) - (b.ds_raw ?? -1);
+        } else if (currentSort === 'ds_z') {
+            diff = (a.ds_z ?? -999) - (b.ds_z ?? -999);
+        } else if (currentSort === 'controversy') {
+            diff = (a.controversy ?? -1) - (b.controversy ?? -1);
+        } else if (currentSort === 'name') {
+            diff = a.name.localeCompare(b.name);
+        } else if (currentSort === 'color') {
+            diff = (COLOR_ORDER[a.color]??99) - (COLOR_ORDER[b.color]??99);
+        } else if (currentSort === 'rarity') {
+            diff = (RARITY_ORDER[a.rarity]??99) - (RARITY_ORDER[b.rarity]??99);
+        } else if (currentSort === 'type') {
+            diff = (a.type||'zzz').localeCompare(b.type||'zzz');
+        } else if (currentSort === 'mana') {
+            diff = (a.mana||'zzz').localeCompare(b.mana||'zzz');
+        }
+        if (diff === 0) diff = (b.avg_z ?? -999) - (a.avg_z ?? -999);
+        return sortAsc ? diff : -diff;
+    });
+
+    const tbody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const table = document.getElementById('ratingsTable');
+    const statsBar = document.getElementById('statsBar');
+    const showImages = document.body.classList.contains('show-images');
+
+    if (data.length === 0) {
+        tbody.innerHTML = '';
+        noResults.style.display = 'block';
+        table.style.display = 'none';
+    } else {
+        noResults.style.display = 'none';
+        table.style.display = '';
+
+        tbody.innerHTML = data.map(c => {
+            const cgbCell = c.cgb_grade
+                ? `<span class="${cgbClass(c.cgb_grade)}">${c.cgb_grade}</span>`
+                : '<span class="missing">—</span>';
+            const cgbZCell = fmtZ(c.cgb_z);
+            const dsCell = c.ds_raw !== null
+                ? `<span class="ds-score" style="color:${dsColor(c.ds_raw)}">${c.ds_raw}/10</span>`
+                : '<span class="missing">—</span>';
+            const dsZCell = fmtZ(c.ds_z);
+            const singleSrc = c.sources === 1 ? ' <span class="missing" title="Only one source rated this card">(1 src)</span>' : '';
+
+            const avgZ = c.avg_z;
+            const barHtml = `<div class="norm-bar-wrap">
+                <div class="norm-bar-bg"><div class="norm-bar-fill" style="width:${barWidth(avgZ)}%;background:${barColor(avgZ)}"></div></div>
+                <span class="norm-val" style="color:${barColor(avgZ)}">${fmtZ(avgZ)}</span>
+                ${singleSrc}
+            </div>`;
+
+            const contCell = c.controversy !== null
+                ? `<span class="${controversyClass(c.controversy)}">${c.controversy.toFixed(2)}</span>`
+                : '<span class="missing">—</span>';
+
+            // Inline image div (lazy — populated when toggle is on)
+            const imgDiv = showImages && scryfallCache.has(c.name) && scryfallCache.get(c.name)
+                ? `<div class="card-image" data-loaded="true"><img src="${scryfallCache.get(c.name).imageUrl}" alt="${c.name}" loading="lazy"></div>`
+                : `<div class="card-image" data-loaded="false"></div>`;
+
+            return `<tr data-color="${c.color}" data-rarity="${c.rarity}" data-name="${c.name.replace(/"/g,'&quot;')}">
+                <td class="name-col"><a class="name-link" href="${scryfallUrl(c.name)}" target="_blank" rel="noopener noreferrer" data-name="${c.name.replace(/"/g,'&quot;')}">${c.name}</a>${imgDiv}</td>
+                <td>${colorBadge(c.color)}</td>
+                <td>${rarityDisplay(c.rarity)}</td>
+                <td class="type-cell" title="${c.type||'Loading…'}">${abbrevType(c.type)}</td>
+                <td class="mana-cell">${fmtMana(c.mana)}</td>
+                <td class="col-cgb">${cgbCell}</td>
+                <td class="col-cgb">${cgbZCell}</td>
+                <td class="col-ds">${dsCell}</td>
+                <td class="col-ds">${dsZCell}</td>
+                <td class="col-avg norm-bar-cell">${barHtml}</td>
+                <td class="col-controversy">${contCell}</td>
+            </tr>`;
+        }).join('');
+
+        // Attach hover listeners after DOM update
+        tbody.querySelectorAll('a.name-link').forEach(a => {
+            a.addEventListener('mouseenter', showCardTooltip);
+            a.addEventListener('mouseleave', hideCardTooltip);
+        });
+
+        // If show-images is on, load missing inline images
+        if (showImages) ensureAllRowImages();
+    }
+
+    statsBar.textContent = `Showing ${data.length} of ${CARDS.length} cards · ` +
+        `${CARDS.filter(c => c.sources === 2).length} rated by both sources · ` +
+        `${CARDS.filter(c => c.sources === 1).length} single-source`;
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+function toggleColor(btn) {
+    const c = btn.dataset.color;
+    if (activeColors.has(c)) { activeColors.delete(c); btn.classList.remove('active'); }
+    else { activeColors.add(c); btn.classList.add('active'); }
+    renderTable();
+}
+
+function allColors(on) {
+    activeColors = on ? new Set(['W','U','B','R','G','M','C','L','?']) : new Set();
+    document.querySelectorAll('.color-btn').forEach(b => {
+        if (on) b.classList.add('active'); else b.classList.remove('active');
+    });
+    renderTable();
+}
+
+function toggleRarity(btn) {
+    const r = btn.dataset.rarity;
+    if (activeRarities.has(r)) { activeRarities.delete(r); btn.classList.remove('active'); }
+    else { activeRarities.add(r); btn.classList.add('active'); }
+    renderTable();
+}
+
+function sortBy(col) {
+    if (currentSort === col) {
+        sortAsc = !sortAsc;
+    } else {
+        currentSort = col;
+        sortAsc = (col === 'name' || col === 'color' || col === 'rarity' || col === 'cgb_raw' || col === 'type' || col === 'mana');
+    }
+    // Sync dropdown only for known options
+    const sel = document.getElementById('sortSelect');
+    if ([...sel.options].some(o => o.value === col)) sel.value = col;
+    renderTable();
+}
+
+function applyFilters() {
+    currentSort = document.getElementById('sortSelect').value;
+    currentSearch = document.getElementById('searchInput').value;
+    renderTable();
+}
+
+function resetFilters() {
+    activeColors = new Set(['W','U','B','R','G','M','C','L','?']);
+    activeRarities = new Set(['M','R','U','C','L','?']);
+    currentSort = 'avg_z';
+    sortAsc = false;
+    currentSearch = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('sortSelect').value = 'avg_z';
+    document.querySelectorAll('.color-btn, .rarity-btn').forEach(b => b.classList.add('active'));
+    renderTable();
+}
+
+// Initial render + prefetch
+renderTable();
+prefetchAll();
+</script>
+</body>
+</html>
