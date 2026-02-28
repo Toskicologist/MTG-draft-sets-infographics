@@ -7,6 +7,7 @@ Interactive Magic: The Gathering draft analytics, quizzes, and visualization too
 - **[Color Wheel Visualization](https://toskicologist.github.io/MTG-draft-sets-infographics/)** — Interactive archetype color wheel for Lorwyn Eclipsed
 - **[ECL Ratings Viewer](https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html)** — Expert and 17 Lands card ratings with sorting and filtering
 - **[Card Knowledge Quiz](https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/)** — Learn card evaluation with instant feedback (v2.20.2)
+- **[Card Knowledge Quiz (Gov.UK Mockup)](https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/mockup-govuk-strict.html)** — Gov.UK style variant
 
 ## 📊 Analysis Tools
 
