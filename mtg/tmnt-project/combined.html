@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.1.0)
+    TMNT Draft Analytics Combined Page (v2.2.0)
     Color wheel (v1.0.4) + Normalized ratings table (v3.0.0)
+    v2.2.0 - Inline section toggles; archetype-to-table color filter bridge
     v2.1.0 - Merge all headers into unified page-header; remove wheel sub-header
     v2.0.0 - Portal-based rendering: each section in its own DOM container for toggle control
     v1.0.0 - Initial combined page (single root, toggles broken)
@@ -82,59 +83,45 @@
             text-decoration: underline;
         }
 
-        /* -- Collapsible Sections -- */
-        .section-toggle {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
+        /* -- Section Headers with Inline Toggles -- */
+        .section-header {
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
             align-items: center;
-            font-size: 0.9em;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: #2d6a4f;
+            color: white;
             border-radius: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .toggle-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
+        .section-header:hover { background: #1a472a; }
 
-        .toggle-group label {
+        .section-header h3 {
+            font-size: 0.95rem;
             font-weight: 600;
-            color: #333;
             margin: 0;
         }
 
-        .toggle-btn {
-            padding: 4px 10px;
-            border: 2px solid #2d6a4f;
-            background: white;
-            color: #2d6a4f;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85em;
-            transition: all 0.2s;
-        }
-
-        .toggle-btn.active {
-            background: #2d6a4f;
-            color: white;
-        }
-
-        .toggle-btn:hover {
+        .section-header .collapse-icon {
+            font-size: 0.8rem;
             opacity: 0.8;
+            transition: transform 0.2s;
+        }
+
+        .section-header.collapsed .collapse-icon {
+            transform: rotate(-90deg);
         }
 
         .collapsible-section {
-            display: none;
+            display: block;
+            transition: max-height 0.3s ease;
         }
 
-        .collapsible-section.visible {
-            display: block;
+        .collapsible-section.collapsed {
+            display: none;
         }
 
         /* -- Ratings Section -- */
@@ -364,48 +351,56 @@
     </div>
 
     <div class="main-container">
-        <!-- Section Toggle Controls -->
-        <div class="section-toggle">
-            <div class="toggle-group">
-                <label>View:</label>
-                <button class="toggle-btn active" data-section="wheel" onclick="toggleSection('wheel', this)">Color Wheel</button>
-                <button class="toggle-btn active" data-section="colors" onclick="toggleSection('colors', this)">Colors</button>
-                <button class="toggle-btn active" data-section="primary" onclick="toggleSection('primary', this)">Primary Archetypes</button>
-                <button class="toggle-btn active" data-section="splash" onclick="toggleSection('splash', this)">Off-Arch Splashes</button>
-                <button class="toggle-btn active" data-section="ratings" onclick="toggleSection('ratings', this)">Card Ratings</button>
-            </div>
+        <!-- Color Wheel -->
+        <div class="section-header" onclick="toggleSection('wheel', this)">
+            <h3>Color Wheel</h3>
+            <span class="collapse-icon">&#x25BC;</span>
         </div>
-
-        <!-- Color Wheel SVG + controls -->
-        <div class="collapsible-section visible" id="wheel-section">
+        <div class="collapsible-section" id="wheel-section">
             <div class="wheel-section">
                 <div id="wheel-root"></div>
             </div>
         </div>
 
-        <!-- Color Grid (5 boxes) -->
-        <div class="collapsible-section visible" id="colors-section">
+        <!-- Color Grid -->
+        <div class="section-header" onclick="toggleSection('colors', this)">
+            <h3>Colors</h3>
+            <span class="collapse-icon">&#x25BC;</span>
+        </div>
+        <div class="collapsible-section" id="colors-section">
             <div class="wheel-section">
                 <div id="color-grid-root"></div>
             </div>
         </div>
 
         <!-- Primary Archetypes -->
-        <div class="collapsible-section visible" id="primary-section">
+        <div class="section-header" onclick="toggleSection('primary', this)">
+            <h3>Primary Archetypes (Enemy Color Pairs)</h3>
+            <span class="collapse-icon">&#x25BC;</span>
+        </div>
+        <div class="collapsible-section" id="primary-section">
             <div class="wheel-section">
                 <div id="primary-archetypes-root"></div>
             </div>
         </div>
 
         <!-- Off-Arch Splashes -->
-        <div class="collapsible-section visible" id="splash-section">
+        <div class="section-header" onclick="toggleSection('splash', this)">
+            <h3>Off-Arch Splashes (Allied Color Pairs)</h3>
+            <span class="collapse-icon">&#x25BC;</span>
+        </div>
+        <div class="collapsible-section" id="splash-section">
             <div class="wheel-section">
                 <div id="secondary-archetypes-root"></div>
             </div>
         </div>
 
         <!-- Ratings Table -->
-        <div class="collapsible-section visible" id="ratings-section">
+        <div class="section-header" onclick="toggleSection('ratings', this)">
+            <h3>Card Ratings</h3>
+            <span class="collapse-icon">&#x25BC;</span>
+        </div>
+        <div class="collapsible-section" id="ratings-section">
         <div class="ratings-section">
 
             <div class="warning-banner">
@@ -500,17 +495,44 @@
 
     <div class="card-tooltip" id="cardTooltip"></div>
 
-    <!-- Toggle Script -->
+    <!-- Toggle + Filter Bridge Script -->
     <script>
-    function toggleSection(sectionId, btn) {
+    function toggleSection(sectionId, headerEl) {
         const targetEl = document.getElementById(sectionId + '-section');
-        if (btn.classList.contains('active')) {
-            btn.classList.remove('active');
-            if (targetEl) targetEl.classList.remove('visible');
+        if (!targetEl) return;
+        const isCollapsed = targetEl.classList.contains('collapsed');
+        if (isCollapsed) {
+            targetEl.classList.remove('collapsed');
+            headerEl.classList.remove('collapsed');
         } else {
-            btn.classList.add('active');
-            if (targetEl) targetEl.classList.add('visible');
+            targetEl.classList.add('collapsed');
+            headerEl.classList.add('collapsed');
         }
+    }
+
+    // Bridge: filter ratings table to show only cards matching a color pair
+    // Called from archetype cards. Shows the two mono-colors + multicolor.
+    function filterToColors(c1, c2) {
+        // Ensure ratings section is visible
+        var ratingsEl = document.getElementById('ratings-section');
+        var ratingsHeader = ratingsEl ? ratingsEl.previousElementSibling : null;
+        if (ratingsEl && ratingsEl.classList.contains('collapsed')) {
+            ratingsEl.classList.remove('collapsed');
+            if (ratingsHeader) ratingsHeader.classList.remove('collapsed');
+        }
+        // Set color filters - uses the ratings script's global activeColors + UI buttons
+        if (typeof activeColors !== 'undefined') {
+            var wantColors = new Set([c1, c2, 'M']);
+            activeColors.clear();
+            wantColors.forEach(function(c) { activeColors.add(c); });
+            document.querySelectorAll('.color-btn').forEach(function(b) {
+                if (wantColors.has(b.dataset.color)) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+            if (typeof renderTable === 'function') renderTable();
+        }
+        // Scroll to ratings section
+        if (ratingsEl) ratingsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     </script>
 
@@ -1276,9 +1298,6 @@ function TMNTColorWheel() {
       {/* Portal: Primary Archetypes */}
       {document.getElementById('primary-archetypes-root') && ReactDOM.createPortal(
         <div style={{ width: '100%' }}>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '16px', paddingBottom: '8px', borderBottom: '2px solid #10B981' }}>
-            \u2605 Primary Archetypes (Enemy Color Pairs)
-          </h2>
           <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px' }}>
             {primaryPairs.map(([pair, data]) => {
               const { bg, fg } = getLabelColors(pair[0], pair[1]);
@@ -1294,13 +1313,15 @@ function TMNTColorWheel() {
                       Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
                     </div>
                   )}
-                  <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                      {pair[0]}&amp;{pair[1]}
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                    <button onClick={() => window.filterToColors(pair[0], pair[1])} style={{ padding: '4px 10px', backgroundColor: fg, color: bg, border: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600', cursor: 'pointer' }}>
+                      View cards
+                    </button>
+                    <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600', opacity: 0.8 }}>
+                      Scryfall {pair[0]}&amp;{pair[1]}
                     </a>
-                    <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                      {pair[0]}\u222A{pair[1]}
+                    <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600', opacity: 0.8 }}>
+                      Scryfall {pair[0]}\u222A{pair[1]}
                     </a>
                   </div>
                 </div>
@@ -1314,9 +1335,6 @@ function TMNTColorWheel() {
       {/* Portal: Secondary Archetypes */}
       {document.getElementById('secondary-archetypes-root') && ReactDOM.createPortal(
         <div style={{ width: '100%' }}>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px', paddingBottom: '8px', borderBottom: '2px solid #9CA3AF' }}>
-            Off-Arch Splashes (Allied Color Pairs)
-          </h2>
           <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
             These 5 allied color pairs have no dedicated archetype in TMT. See splash guidance below.
           </p>
@@ -1335,13 +1353,15 @@ function TMNTColorWheel() {
                       Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
                     </div>
                   )}
-                  <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                      {pair[0]}&amp;{pair[1]}
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                    <button onClick={() => window.filterToColors(pair[0], pair[1])} style={{ padding: '4px 10px', backgroundColor: fg, color: bg, border: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600', cursor: 'pointer' }}>
+                      View cards
+                    </button>
+                    <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600', opacity: 0.8 }}>
+                      Scryfall {pair[0]}&amp;{pair[1]}
                     </a>
-                    <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                      {pair[0]}\u222A{pair[1]}
+                    <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600', opacity: 0.8 }}>
+                      Scryfall {pair[0]}\u222A{pair[1]}
                     </a>
                   </div>
                 </div>
