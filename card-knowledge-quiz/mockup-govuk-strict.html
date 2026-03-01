@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Card Knowledge Quiz - GOV.UK Strict (Local)</title>
-  <link rel="stylesheet" href="https://mana.andrewgioia.com/css/mana.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.css">
   <style>
     /* ===== Base / Reset ===== */
     *,
@@ -3085,10 +3085,16 @@
     // ===================================================================
     /*
      * MTG Card Knowledge Quiz - Custom Mode Only
-     * Version: 2.22.19-govuk-strict
-     * Last Updated: 2026-02-22 23:37:13 UTC
+     * Version: 2.22.20-govuk-strict
+     * Last Updated: 2026-03-01 UTC
      *
      * CHANGELOG:
+     * v2.22.20-govuk-strict-local (2026-03-01) - Fix mana font CDN and detection; add APP_VERSION constant
+     *   - FIX: Switch CDN from mana.andrewgioia.com (404) to cdn.jsdelivr.net/npm/mana-font@latest
+     *   - FIX: Replace flawed check()/ready/link-event detection with document.fonts.load() Promise
+     *   - FIX: Add APP_VERSION / APP_LAST_UPDATED constants; footer no longer hardcodes -local suffix
+     *   - FILE: LOCAL ONLY update to index-mockup-govuk-strict.html
+     *   - Signed: Claude Sonnet 4.6 @ 2026-03-01 UTC
      * v2.22.19-govuk-strict-local (2026-02-22) - Fix special mana symbol class mapping for text-box rendering
      *   - FIX: Map `{T}`/`{Q}`/`{TK}`/`{A}`/`{CHAOS}` tokens to mana-font classes (`tap`, `untap`, `ticket`, `acorn`, `chaos`)
      *   - UI: Restore normal fallback visibility behavior and use inline mana wrapper for better baseline alignment
@@ -3750,6 +3756,9 @@
     // ===================================================================
     // CONSTANTS
     // ===================================================================
+
+    const APP_VERSION = '2.22.20-govuk-strict-local'.replace(/-local$/, '');
+    const APP_LAST_UPDATED = '2026-03-01';
 
     const SCRYFALL_API_BASE = 'https://api.scryfall.com';
     const SCRYFALL_DELAY = 100;
@@ -4630,47 +4639,16 @@
       return <span className={className}>{renderManaText(source, keyPrefix)}</span>;
     }
 
-    const MANA_FONT_LINK_SELECTOR = 'link[href*=\"mana.andrewgioia.com/css/mana.css\"]';
-    const MANA_FONT_FACE_CHECK = '16px \"Mana\"';
     const MANA_FONT_CLASS = 'mana-font-loaded';
 
-    function markManaFontLoaded() {
-      document.documentElement.classList.add(MANA_FONT_CLASS);
-    }
-
-    function isManaFontLoaded() {
-      if (!document.fonts || typeof document.fonts.check !== 'function') return false;
-      return document.fonts.check(MANA_FONT_FACE_CHECK);
-    }
-
-    function tryMarkManaFontLoaded() {
-      if (isManaFontLoaded()) {
-        markManaFontLoaded();
-      }
-    }
-
-    function setupManaFontDetection() {
-      const manaLink = document.querySelector(MANA_FONT_LINK_SELECTOR);
-      tryMarkManaFontLoaded();
-
-      if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
-        document.fonts.ready.then(tryMarkManaFontLoaded).catch(() => {});
-      }
-
-      if (manaLink) {
-        manaLink.addEventListener('load', () => {
-          setTimeout(tryMarkManaFontLoaded, 0);
-        }, { once: true });
-        manaLink.addEventListener('error', () => {
-          manaLink.dataset.manaFontError = 'true';
-        }, { once: true });
-      }
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupManaFontDetection);
-    } else {
-      setupManaFontDetection();
+    if (document.fonts && typeof document.fonts.load === 'function') {
+      document.fonts.load('16px "Mana"')
+        .then((loaded) => {
+          if (loaded.length > 0) {
+            document.documentElement.classList.add(MANA_FONT_CLASS);
+          }
+        })
+        .catch(() => {});
     }
 
     // ===================================================================
@@ -7321,8 +7299,8 @@
                 <li><a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> and <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a></li>
                 <li>Card data and images via <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall API</a> • <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support Scryfall</a></li>
               </ul>
-              <p className="govuk-related-content-meta">Version 2.22.19-govuk-strict</p>
-              <p className="govuk-related-content-meta">Last updated 2026-02-22 23:37:13 UTC</p>
+              <p className="govuk-related-content-meta">Version {APP_VERSION}</p>
+              <p className="govuk-related-content-meta">Last updated {APP_LAST_UPDATED}</p>
               <p className="govuk-related-content-meta">Lovingly vibe coded with Claude Code and Codex.</p>
             </aside>
           </div>
