@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TMNT - Normalized Draft Card Ratings</title>
     <meta property="og:title" content="TMNT - Normalized Draft Card Ratings">
-    <meta property="og:description" content="Z-score normalized ratings for Teenage Mutant Ninja Turtles (TMT) draft, combining CardGameBase and Draftsim expert pre-release reviews.">
+    <meta property="og:description" content="Z-score normalized ratings for Teenage Mutant Ninja Turtles (TMT) draft, combining CardGameBase, Draftsim, and MTG Arena Zone expert pre-release reviews.">
     <meta property="og:type" content="website">
     <!--
     Changelog:
+    - v3.0.0 (2026-03-01) [Claude Sonnet 4.6] - Add MTG Arena Zone as third source
+        27 white + 26 blue cards from MTG Arena Zone limited set review (out of 5.0, scaled to 10.0)
+        3-source z-score normalization: CGB + Draftsim + MTG Arena Zone
+        Controversy = max z-score spread across all 3 sources (higher = more disagreement)
+        Avg Z now means of all available sources (2 or 3)
+        MAZ_SCORES embedded; table headers updated to show all sources
     - v2.1.0 (2026-02-28) [Claude Sonnet 4.6] - Card images, Controversy column, Type/Mana columns
         Card image tooltip on hover; toggle to show images inline in table
         Controversy column = |CGB Z - DS Z| (higher = sources disagree more)
@@ -194,6 +200,7 @@
         /* Column group tints — only on data rows, not sticky headers */
         td.col-cgb { background: rgba(16,185,129,0.07); }
         td.col-ds  { background: rgba(37,99,235,0.07); }
+        td.col-maz { background: rgba(168,85,247,0.07); }
         td.col-avg { background: rgba(245,158,11,0.1); }
         td.col-controversy { background: rgba(239,68,68,0.06); }
         /* Card image tooltip */
@@ -228,7 +235,7 @@
     <header>
         <h1>🐢 TMNT Draft Card Ratings</h1>
         <p>Teenage Mutant Ninja Turtles (TMT) · Z-Score Normalized Expert Ratings</p>
-        <p class="sub">Sources: <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer" style="color:#a7f3d0">CardGameBase</a> (grades A+–F) + <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style="color:#a7f3d0">Draftsim</a> (0–10) · Set releases 2026-03-06</p>
+        <p class="sub">Sources: <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer" style="color:#a7f3d0">CardGameBase</a> + <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style="color:#a7f3d0">Draftsim</a> + <strong>MTG Arena Zone</strong> · Set releases 2026-03-06</p>
         <a href="color-wheel.html" class="nav-link">← Color Wheel</a>
     </header>
 
@@ -237,11 +244,12 @@
     </div>
 
     <div class="info-banner">
-        <strong>How normalization works:</strong> Each source is independently z-score normalized (mean=0, SD=1) across the cards it covers, so differences in scale don't distort the combined ranking.
-        CardGameBase letter grades (A+ to F) are first converted to a numeric 0–10 scale (A+=10, A=9, A-=8.5, B+=7.5, B=6.5, B-=5.5, C+=4.5, C=3.5, C-=2.5, D+=1.5, D=1, D-=0.5, F=0), then z-scored.
-        Draftsim uses 0–10 directly, then z-scored.
-        The <strong>Avg Z</strong> column is the mean of available normalized scores — higher = stronger consensus pick.
-        Cards rated by only one source are marked <span class="missing">single-source</span>.
+        <strong>How normalization works:</strong> Each source is independently z-score normalized (mean=0, SD=1) across the cards it covers.
+        <strong>Three sources:</strong> (1) CardGameBase letter grades (A+ to F) converted to 0–10 (A+=10, A=9, A-=8.5, etc.) then z-scored;
+        (2) Draftsim uses 0–10 directly, then z-scored; (3) MTG Arena Zone uses 0–10 limited format rating, then z-scored.
+        The <strong>Avg Z</strong> column is the mean of all available z-scores across rated sources (2 or 3). Higher = stronger consensus pick.
+        <strong>Spread</strong> = max z-score difference (how much sources disagree);
+        <strong>Sources</strong> shown in Avg Z cell (3-src, 2-src, or 1-src).
     </div>
 
     <div class="controls">
@@ -279,7 +287,8 @@
                 <option value="avg_z">Avg Z-Score (best first)</option>
                 <option value="cgb_raw">CGB Grade</option>
                 <option value="ds_raw">Draftsim Score</option>
-                <option value="controversy">Controversy (most disagreement)</option>
+                <option value="maz_raw">MTG Arena Zone Score</option>
+                <option value="controversy">Spread (max disagreement)</option>
                 <option value="name">Name (A–Z)</option>
                 <option value="color">Color</option>
                 <option value="rarity">Rarity</option>
@@ -308,8 +317,10 @@
                     <th class="col-cgb" onclick="sortBy('cgb_z')" style="width:52px" title="CardGameBase z-score">CGB Z<span class="sort-indicator"></span></th>
                     <th class="col-ds" onclick="sortBy('ds_raw')" style="width:52px" title="Draftsim score /10">DS<span class="sort-indicator"></span></th>
                     <th class="col-ds" onclick="sortBy('ds_z')" style="width:52px" title="Draftsim z-score">DS Z<span class="sort-indicator"></span></th>
-                    <th class="col-avg norm-bar-cell" onclick="sortBy('avg_z')" title="Average of available z-scores">Avg Z<span class="sort-indicator"></span></th>
-                    <th class="col-controversy" onclick="sortBy('controversy')" style="width:70px" title="Controversy: how much the two sources disagree (higher = more disagreement). |CGB Z − DS Z|">Disagree<span class="sort-indicator"></span></th>
+                    <th class="col-maz" onclick="sortBy('maz_raw')" style="width:52px" title="MTG Arena Zone score /10">MAZ<span class="sort-indicator"></span></th>
+                    <th class="col-maz" onclick="sortBy('maz_z')" style="width:52px" title="MTG Arena Zone z-score">MAZ Z<span class="sort-indicator"></span></th>
+                    <th class="col-avg norm-bar-cell" onclick="sortBy('avg_z')" title="Average of available z-scores (2 or 3 sources)">Avg Z<span class="sort-indicator"></span></th>
+                    <th class="col-controversy" onclick="sortBy('controversy')" style="width:80px" title="Controversy: max spread between z-scores (higher = more disagreement)">Spread<span class="sort-indicator"></span></th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -751,6 +762,24 @@ const DS_SCORES = {
     "Waves of Aggression": 2,
 };
 
+// MTG Arena Zone scores (limited format out of 10)
+const MAZ_SCORES = {
+    "Action News Crew": 3, "Agent Bishop, Man in Black": 8, "April O'Neil, Kunoichi Trainee": 4, "Dimensional Exile": 7,
+    "East Wind Avatar": 4, "Featherbrained Filcher": 6, "Grounded for Life": 5, "Hamato Guardian Stance": 3,
+    "High-Flying Ace": 4, "Jennika, Bad Apple Big Sister": 4, "Koya, Death from Above": 5, "The Last Ronin's Technique": 5,
+    "Leader's Talent": 5, "Leonardo, Big Brother": 4, "Leonardo, Cutting Edge": 4, "Leonardo, Leader in Blue": 5,
+    "Leonardo, Sewer Samurai": 6, "Leonardo's Technique": 3, "Lita, Little Orphan Amphibian": 5, "Mighty Mutanimals": 6,
+    "Prehistoric Pet": 6, "Quintessential Katana": 5, "Sally Pride, Lioness Leader": 8, "Triceraton Commander": 7,
+    "Turncoat Kunoichi": 7, "Turtles Forever": 2, "Uneasy Alliance": 5, "April O'Neil, Hacktivist": 7,
+    "April, Reporter of the Weird": 4, "Bespoke Bō": 4, "Buzz Bots": 4, "Crustacean Commando": 2,
+    "Does Machines": 8, "Donatello, Gadget Master": 6, "Donatello, Mutant Mechanic": 7, "Donatello, Turtle Techie": 4,
+    "Donatello, Way with Machines": 5, "Donatello's Technique": 6, "Fugitive Droid": 6, "Kitsune, Dragon's Daughter": 9,
+    "Kitsune's Technique": 0, "Krang, Master Mind": 10, "Metalhead": 7, "Mind Transfer Protocol": 5,
+    "Mondo Gecko": 4, "Negate": 1, "Ooze Spill": 1, "Ray Fillet, Man Ray": 6,
+    "Renet, Temporal Apprentice": 5, "Retro-Mutation": 4, "Return to the Sewers": 4, "Sewer-veillance Cam": 1,
+    "Stockman, Mad Fly-entist": 2, "Turtles in Time": 8, "Utrom Scientists": 5
+};
+
 // ── Grade → numeric conversion ────────────────────────────────────────────────
 const GRADE_TO_NUM = {
     'A+': 10, 'A': 9, 'A-': 8.5,
@@ -766,16 +795,26 @@ function buildCards() {
 
     // Load CGB data
     CGB_DATA.forEach(([name, color, rarity, grade]) => {
-        map[name] = { name, color, rarity, cgb_grade: grade, cgb_num: grade ? GRADE_TO_NUM[grade] : null, ds_raw: null };
+        map[name] = { name, color, rarity, cgb_grade: grade, cgb_num: grade ? GRADE_TO_NUM[grade] : null, ds_raw: null, maz_raw: null };
     });
 
     // Load Draftsim data — merge or add
     Object.entries(DS_SCORES).forEach(([name, score]) => {
         if (!map[name]) {
             // DS-only card — need color/rarity from CGB or guess unknown
-            map[name] = { name, color: '?', rarity: '?', cgb_grade: null, cgb_num: null, ds_raw: score };
+            map[name] = { name, color: '?', rarity: '?', cgb_grade: null, cgb_num: null, ds_raw: score, maz_raw: null };
         } else {
             map[name].ds_raw = score;
+        }
+    });
+
+    // Load MTG Arena Zone data — merge or add
+    Object.entries(MAZ_SCORES).forEach(([name, score]) => {
+        if (!map[name]) {
+            // MAZ-only card
+            map[name] = { name, color: '?', rarity: '?', cgb_grade: null, cgb_num: null, ds_raw: null, maz_raw: score };
+        } else {
+            map[name].maz_raw = score;
         }
     });
 
@@ -813,23 +852,29 @@ function zScore(vals) {
 
 const RAW_CARDS = buildCards();
 
-// Compute CGB z-scores
+// Compute z-scores for each source
 const cgb_nums = RAW_CARDS.map(c => c.cgb_num);
 const cgb_zs = zScore(cgb_nums);
 
-// Compute DS z-scores
 const ds_raws = RAW_CARDS.map(c => c.ds_raw);
 const ds_zs = zScore(ds_raws);
+
+const maz_raws = RAW_CARDS.map(c => c.maz_raw);
+const maz_zs = zScore(maz_raws);
 
 // Attach and compute avg + controversy
 const CARDS = RAW_CARDS.map((c, i) => {
     const cgb_z = cgb_zs[i];
     const ds_z = ds_zs[i];
-    const available = [cgb_z, ds_z].filter(v => v !== null);
+    const maz_z = maz_zs[i];
+    const available = [cgb_z, ds_z, maz_z].filter(v => v !== null);
     const avg_z = available.length > 0 ? available.reduce((a, b) => a + b, 0) / available.length : null;
-    // Controversy = absolute difference between the two z-scores (only when both present)
-    const controversy = (cgb_z !== null && ds_z !== null) ? Math.abs(cgb_z - ds_z) : null;
-    return { ...c, cgb_z, ds_z, avg_z, controversy, sources: available.length, type: null, mana: null };
+    // Controversy = max z-score spread (highest - lowest of available scores)
+    const zscores_present = [cgb_z, ds_z, maz_z].filter(v => v !== null);
+    const controversy = zscores_present.length > 1
+        ? Math.max(...zscores_present) - Math.min(...zscores_present)
+        : null;
+    return { ...c, cgb_z, ds_z, maz_z, avg_z, controversy, sources: available.length, type: null, mana: null };
 });
 
 // ── Filter/sort state ─────────────────────────────────────────────────────────
@@ -1058,6 +1103,10 @@ function renderTable() {
             diff = (a.ds_raw ?? -1) - (b.ds_raw ?? -1);
         } else if (currentSort === 'ds_z') {
             diff = (a.ds_z ?? -999) - (b.ds_z ?? -999);
+        } else if (currentSort === 'maz_raw') {
+            diff = (a.maz_raw ?? -1) - (b.maz_raw ?? -1);
+        } else if (currentSort === 'maz_z') {
+            diff = (a.maz_z ?? -999) - (b.maz_z ?? -999);
         } else if (currentSort === 'controversy') {
             diff = (a.controversy ?? -1) - (b.controversy ?? -1);
         } else if (currentSort === 'name') {
@@ -1098,13 +1147,17 @@ function renderTable() {
                 ? `<span class="ds-score" style="color:${dsColor(c.ds_raw)}">${c.ds_raw}/10</span>`
                 : '<span class="missing">—</span>';
             const dsZCell = fmtZ(c.ds_z);
-            const singleSrc = c.sources === 1 ? ' <span class="missing" title="Only one source rated this card">(1 src)</span>' : '';
+            const mazCell = c.maz_raw !== null
+                ? `<span class="maz-score" style="color:${dsColor(c.maz_raw)}">${c.maz_raw}/10</span>`
+                : '<span class="missing">—</span>';
+            const mazZCell = fmtZ(c.maz_z);
+            const sourcesLabel = c.sources === 1 ? ' (1 src)' : c.sources === 2 ? ' (2 src)' : '';
 
             const avgZ = c.avg_z;
             const barHtml = `<div class="norm-bar-wrap">
                 <div class="norm-bar-bg"><div class="norm-bar-fill" style="width:${barWidth(avgZ)}%;background:${barColor(avgZ)}"></div></div>
                 <span class="norm-val" style="color:${barColor(avgZ)}">${fmtZ(avgZ)}</span>
-                ${singleSrc}
+                <span class="missing" title="Sources">${sourcesLabel}</span>
             </div>`;
 
             const contCell = c.controversy !== null
@@ -1126,6 +1179,8 @@ function renderTable() {
                 <td class="col-cgb">${cgbZCell}</td>
                 <td class="col-ds">${dsCell}</td>
                 <td class="col-ds">${dsZCell}</td>
+                <td class="col-maz">${mazCell}</td>
+                <td class="col-maz">${mazZCell}</td>
                 <td class="col-avg norm-bar-cell">${barHtml}</td>
                 <td class="col-controversy">${contCell}</td>
             </tr>`;
@@ -1141,9 +1196,11 @@ function renderTable() {
         if (showImages) ensureAllRowImages();
     }
 
+    const src3 = CARDS.filter(c => c.sources === 3).length;
+    const src2 = CARDS.filter(c => c.sources === 2).length;
+    const src1 = CARDS.filter(c => c.sources === 1).length;
     statsBar.textContent = `Showing ${data.length} of ${CARDS.length} cards · ` +
-        `${CARDS.filter(c => c.sources === 2).length} rated by both sources · ` +
-        `${CARDS.filter(c => c.sources === 1).length} single-source`;
+        `${src3} 3-source · ${src2} 2-source · ${src1} single-source`;
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────────
@@ -1174,7 +1231,7 @@ function sortBy(col) {
         sortAsc = !sortAsc;
     } else {
         currentSort = col;
-        sortAsc = (col === 'name' || col === 'color' || col === 'rarity' || col === 'cgb_raw' || col === 'type' || col === 'mana');
+        sortAsc = (col === 'name' || col === 'color' || col === 'rarity' || col === 'cgb_raw' || col === 'type' || col === 'mana' || col === 'maz_raw');
     }
     // Sync dropdown only for known options
     const sel = document.getElementById('sortSelect');
