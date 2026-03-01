@@ -58,6 +58,103 @@
             margin-bottom: 8px;
         }
 
+        /* ── Unified Header ── */
+        .page-header {
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%);
+            color: white;
+            padding: 32px 30px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .page-header p {
+            font-size: 1rem;
+            opacity: 0.95;
+            margin-bottom: 12px;
+        }
+
+        .page-header .sources {
+            font-size: 0.85rem;
+            opacity: 0.88;
+        }
+
+        .page-header a {
+            color: #a7f3d0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .page-header a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Collapsible Sections ── */
+        .section-toggle {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .toggle-group label {
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .toggle-btn {
+            padding: 4px 10px;
+            border: 2px solid #2d6a4f;
+            background: white;
+            color: #2d6a4f;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: #2d6a4f;
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            opacity: 0.8;
+        }
+
+        .section-divider {
+            width: 1px;
+            height: 24px;
+            background: #ccc;
+        }
+
+        .collapsible-section {
+            display: none;
+        }
+
+        .collapsible-section.visible {
+            display: block;
+        }
+
         #color-wheel-root {
             display: flex;
             justify-content: center;
@@ -267,28 +364,48 @@
     </style>
 </head>
 <body>
+    <!-- Unified Header -->
+    <div class="page-header">
+        <h1>🐢 TMNT Draft Analytics</h1>
+        <p><strong>Teenage Mutant Ninja Turtles (TMT)</strong> Limited Format · Archetypes & Card Ratings</p>
+        <p class="sources">
+            Sources: <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer">CardGameBase</a> ·
+            <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer">Draftsim</a> ·
+            <a href="https://mtgazone.com/" target="_blank" rel="noopener noreferrer">MTG Arena Zone</a> ·
+            <a href="https://scryfall.com/search?q=e%3Atmt" target="_blank" rel="noopener noreferrer">Scryfall</a> ·
+            <a href="https://www.wizards.com/" target="_blank" rel="noopener noreferrer">WotC</a>
+        </p>
+    </div>
+
     <div class="main-container">
-        <!-- Color Wheel -->
-        <div class="wheel-section">
-            <div class="wheel-header">
-                <h1>🐢 TMNT Draft Archetypes</h1>
-                <p><strong>Teenage Mutant Ninja Turtles (TMT)</strong> Limited Format · 5 Enemy-Color-Pair Archetypes</p>
-                <p style="font-size: 0.85rem; color: #888;">
-                    Sources: <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer" style="color: #2d6a4f;">CardGameBase</a> ·
-                    <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style="color: #2d6a4f;">Draftsim</a> ·
-                    <a href="https://scryfall.com/search?q=e%3Atmt" target="_blank" rel="noopener noreferrer" style="color: #2d6a4f;">Scryfall</a>
-                </p>
+        <!-- Section Toggle Controls -->
+        <div class="section-toggle">
+            <div class="toggle-group">
+                <label>View:</label>
+                <button class="toggle-btn active" data-section="wheel" onclick="toggleSection('wheel', this)">Color Wheel</button>
+                <button class="toggle-btn active" data-section="primary" onclick="toggleSection('primary', this)">Primary Archetypes</button>
+                <button class="toggle-btn active" data-section="splash" onclick="toggleSection('splash', this)">Off-Arch Splashes</button>
+                <button class="toggle-btn active" data-section="ratings" onclick="toggleSection('ratings', this)">Card Ratings</button>
             </div>
-            <div id="color-wheel-root"></div>
         </div>
 
-        <!-- Ratings Table -->
-        <div class="ratings-section">
-            <div class="ratings-header">
-                <h2>Card Ratings & Analysis</h2>
-                <p>Teenage Mutant Ninja Turtles (TMT) · Z-Score Normalized Expert Ratings</p>
-                <p style="font-size: 0.85rem; opacity: 0.9;">Three sources: CardGameBase + Draftsim + MTG Arena Zone</p>
+        <!-- Color Wheel Section -->
+        <div class="collapsible-section visible" id="wheel-section" style="margin-top: 24px;">
+            <div class="wheel-section">
+                <div class="wheel-header">
+                    <h2 style="font-size: 1.4rem; color: #1a472a; margin-bottom: 12px;">Draft Archetypes</h2>
+                    <p style="font-size: 0.85rem; color: #888;">5 Enemy-Color-Pair archetypes · Interactive visualization</p>
+                </div>
+                <div id="color-wheel-root"></div>
             </div>
+        </div>
+
+        <!-- Color Grids Section (Primary & Splash) - will be inserted by React -->
+        <div class="collapsible-section visible" id="archetype-tables-section" style="margin-top: 24px;"></div>
+
+        <!-- Ratings Table Section -->
+        <div class="collapsible-section visible" id="ratings-section" style="margin-top: 24px;">
+        <div class="ratings-section">
 
             <div class="warning-banner">
                 ⚠️ <strong>Pre-release data only.</strong> 17Lands play-data will be available ~1 week after March 6, 2026.
@@ -361,10 +478,39 @@
                 <div id="noResults" class="no-results" style="display:none;">No cards match current filters.</div>
             </div>
             <div class="stats-bar" id="statsBar">Loading...</div>
+            </div>
         </div>
     </div>
 
     <div class="card-tooltip" id="cardTooltip"></div>
+
+    <!-- Toggle Script -->
+    <script>
+    function toggleSection(sectionId, btn) {
+        const sections = {
+            'wheel': 'wheel-section',
+            'primary': 'archetype-tables-section',
+            'splash': 'archetype-tables-section',
+            'ratings': 'ratings-section'
+        };
+
+        const targetId = sections[sectionId];
+        const targetEl = document.getElementById(targetId);
+
+        if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            if (targetEl) targetEl.classList.remove('visible');
+        } else {
+            btn.classList.add('active');
+            if (targetEl) targetEl.classList.add('visible');
+        }
+    }
+
+    // Initialize visibility on load
+    document.addEventListener('DOMContentLoaded', () => {
+        // All sections start visible (buttons all have .active class)
+    });
+    </script>
 
     <!-- Color Wheel (React) -->
     <script type="text/babel">
