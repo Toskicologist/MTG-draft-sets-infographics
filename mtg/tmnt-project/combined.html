@@ -12,8 +12,11 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v1.0.0)
+    TMNT Draft Analytics Combined Page (v2.1.0)
     Color wheel (v1.0.4) + Normalized ratings table (v3.0.0)
+    v2.1.0 - Merge all headers into unified page-header; remove wheel sub-header
+    v2.0.0 - Portal-based rendering: each section in its own DOM container for toggle control
+    v1.0.0 - Initial combined page (single root, toggles broken)
     Created 2026-03-01
     -->
     <style>
@@ -32,7 +35,7 @@
             padding: 16px;
         }
 
-        /* ── Color Wheel Section ── */
+        /* -- Color Wheel Section -- */
         .wheel-section {
             background: white;
             border-radius: 12px;
@@ -41,24 +44,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
-        .wheel-header {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .wheel-header h1 {
-            font-size: 1.8rem;
-            color: #1a472a;
-            margin-bottom: 4px;
-        }
-
-        .wheel-header p {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        /* ── Unified Header ── */
+        /* -- Unified Header -- */
         .page-header {
             background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%);
             color: white;
@@ -96,7 +82,7 @@
             text-decoration: underline;
         }
 
-        /* ── Collapsible Sections ── */
+        /* -- Collapsible Sections -- */
         .section-toggle {
             padding: 12px 20px;
             background: #f8f9fa;
@@ -106,6 +92,8 @@
             flex-wrap: wrap;
             align-items: center;
             font-size: 0.9em;
+            border-radius: 8px;
+            margin-bottom: 16px;
         }
 
         .toggle-group {
@@ -141,12 +129,6 @@
             opacity: 0.8;
         }
 
-        .section-divider {
-            width: 1px;
-            height: 24px;
-            background: #ccc;
-        }
-
         .collapsible-section {
             display: none;
         }
@@ -155,13 +137,7 @@
             display: block;
         }
 
-        #color-wheel-root {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        /* ── Ratings Section ── */
+        /* -- Ratings Section -- */
         .ratings-section {
             background: white;
             border-radius: 12px;
@@ -271,9 +247,9 @@
         th.name-col { text-align: left; }
         th:hover { background: #1a472a; }
         th .sort-indicator { margin-left: 3px; opacity: 0.4; font-size: 0.8em; }
-        th.sorted-asc .sort-indicator::after { content: '▲'; opacity: 1; }
-        th.sorted-desc .sort-indicator::after { content: '▼'; opacity: 1; }
-        th .sort-indicator::after { content: '↕'; opacity: 0.4; }
+        th.sorted-asc .sort-indicator::after { content: '\25B2'; opacity: 1; }
+        th.sorted-desc .sort-indicator::after { content: '\25BC'; opacity: 1; }
+        th .sort-indicator::after { content: '\2195'; opacity: 0.4; }
 
         td {
             padding: 4px 8px;
@@ -360,20 +336,30 @@
             table { font-size: 0.75em; }
             th, td { padding: 3px 6px; }
             .color-wheel-svg { max-height: none !important; max-width: 100% !important; width: 100% !important; }
+            .archetype-grid { grid-template-columns: 1fr !important; }
+            .color-grid { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; }
         }
     </style>
 </head>
 <body>
     <!-- Unified Header -->
     <div class="page-header">
-        <h1>🐢 TMNT Draft Analytics</h1>
-        <p><strong>Teenage Mutant Ninja Turtles (TMT)</strong> Limited Format · Archetypes & Card Ratings</p>
+        <h1>&#x1F422; TMNT Draft Analytics</h1>
+        <p><strong>Teenage Mutant Ninja Turtles (TMT)</strong> Limited Format &middot; 5 Enemy-Color-Pair Archetypes &amp; Card Ratings</p>
         <p class="sources">
-            Sources: <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer">CardGameBase</a> ·
-            <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer">Draftsim</a> ·
-            <a href="https://mtgazone.com/" target="_blank" rel="noopener noreferrer">MTG Arena Zone</a> ·
-            <a href="https://scryfall.com/search?q=e%3Atmt" target="_blank" rel="noopener noreferrer">Scryfall</a> ·
-            <a href="https://www.wizards.com/" target="_blank" rel="noopener noreferrer">WotC</a>
+            Set code: TMT &middot; Releases March 6, 2026 &middot;
+            <a href="https://magic.wizards.com/en/products/teenage-mutant-ninja-turtles" target="_blank" rel="noopener noreferrer">TMNT Product Page</a> &middot;
+            <a href="https://scryfall.com/sets/tmt" target="_blank" rel="noopener noreferrer">Full Set on Scryfall</a>
+        </p>
+        <p class="sources">
+            Rating sources:
+            <a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer">CardGameBase</a> &middot;
+            <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer">Draftsim</a> &middot;
+            <a href="https://mtgazone.com/" target="_blank" rel="noopener noreferrer">MTG Arena Zone</a>
+            | Archetype sources:
+            <a href="https://www.wizards.com/" target="_blank" rel="noopener noreferrer">WotC</a> &middot;
+            <a href="https://www.thegamer.com/magic-the-gathering-teenage-mutant-ninja-turtles-best-draft-archetypes/" target="_blank" rel="noopener noreferrer">TheGamer</a> &middot;
+            <a href="https://gamedaily.com/games/mtg-teenage-mutant-ninja-turtles-prerelease-guide-all-limited-archetypes-explained/" target="_blank" rel="noopener noreferrer">GameDaily</a>
         </p>
     </div>
 
@@ -383,37 +369,52 @@
             <div class="toggle-group">
                 <label>View:</label>
                 <button class="toggle-btn active" data-section="wheel" onclick="toggleSection('wheel', this)">Color Wheel</button>
+                <button class="toggle-btn active" data-section="colors" onclick="toggleSection('colors', this)">Colors</button>
                 <button class="toggle-btn active" data-section="primary" onclick="toggleSection('primary', this)">Primary Archetypes</button>
                 <button class="toggle-btn active" data-section="splash" onclick="toggleSection('splash', this)">Off-Arch Splashes</button>
                 <button class="toggle-btn active" data-section="ratings" onclick="toggleSection('ratings', this)">Card Ratings</button>
             </div>
         </div>
 
-        <!-- Color Wheel Section -->
-        <div class="collapsible-section visible" id="wheel-section" style="margin-top: 24px;">
+        <!-- Color Wheel SVG + controls -->
+        <div class="collapsible-section visible" id="wheel-section">
             <div class="wheel-section">
-                <div class="wheel-header">
-                    <h2 style="font-size: 1.4rem; color: #1a472a; margin-bottom: 12px;">Draft Archetypes</h2>
-                    <p style="font-size: 0.85rem; color: #888;">5 Enemy-Color-Pair archetypes · Interactive visualization</p>
-                </div>
-                <div id="color-wheel-root"></div>
+                <div id="wheel-root"></div>
             </div>
         </div>
 
-        <!-- Color Grids Section (Primary & Splash) - will be inserted by React -->
-        <div class="collapsible-section visible" id="archetype-tables-section" style="margin-top: 24px;"></div>
+        <!-- Color Grid (5 boxes) -->
+        <div class="collapsible-section visible" id="colors-section">
+            <div class="wheel-section">
+                <div id="color-grid-root"></div>
+            </div>
+        </div>
 
-        <!-- Ratings Table Section -->
-        <div class="collapsible-section visible" id="ratings-section" style="margin-top: 24px;">
+        <!-- Primary Archetypes -->
+        <div class="collapsible-section visible" id="primary-section">
+            <div class="wheel-section">
+                <div id="primary-archetypes-root"></div>
+            </div>
+        </div>
+
+        <!-- Off-Arch Splashes -->
+        <div class="collapsible-section visible" id="splash-section">
+            <div class="wheel-section">
+                <div id="secondary-archetypes-root"></div>
+            </div>
+        </div>
+
+        <!-- Ratings Table -->
+        <div class="collapsible-section visible" id="ratings-section">
         <div class="ratings-section">
 
             <div class="warning-banner">
-                ⚠️ <strong>Pre-release data only.</strong> 17Lands play-data will be available ~1 week after March 6, 2026.
+                &#x26A0;&#xFE0F; <strong>Pre-release data only.</strong> 17Lands play-data will be available ~1 week after March 6, 2026.
             </div>
 
             <div class="info-banner">
                 <strong>How this works:</strong> Each source independently z-score normalized (mean=0, SD=1).
-                <strong>Three sources:</strong> (1) CardGameBase letter grades → 0–10 scale; (2) Draftsim 0–10; (3) MTG Arena Zone 0–10 limited format.
+                <strong>Three sources:</strong> (1) CardGameBase letter grades &rarr; 0&ndash;10 scale; (2) Draftsim 0&ndash;10; (3) MTG Arena Zone 0&ndash;10 limited format.
                 <strong>Avg Z</strong> = mean of all available z-scores (2 or 3 sources). <strong>Spread</strong> = max z-score difference.
                 <strong>Sources</strong> shown in Avg Z cell: (3-src), (2-src), or (1-src).
             </div>
@@ -439,6 +440,15 @@
                 </div>
                 <div class="separator"></div>
                 <div class="filter-group">
+                    <label>Rarity:</label>
+                    <button class="rarity-btn active" data-rarity="M" onclick="toggleRarity(this)" style="color:#7c3aed;background:#f3f0ff;border:1px solid #c4b5fd;">M</button>
+                    <button class="rarity-btn active" data-rarity="R" onclick="toggleRarity(this)" style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;">R</button>
+                    <button class="rarity-btn active" data-rarity="U" onclick="toggleRarity(this)" style="color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;">U</button>
+                    <button class="rarity-btn active" data-rarity="C" onclick="toggleRarity(this)" style="color:#374151;background:#f9fafb;border:1px solid #d1d5db;">C</button>
+                    <button class="rarity-btn active" data-rarity="L" onclick="toggleRarity(this)" style="color:#92400e;background:#fef3c7;border:1px solid #fcd34d;">L</button>
+                </div>
+                <div class="separator"></div>
+                <div class="filter-group">
                     <label>Sort:</label>
                     <select id="sortSelect" onchange="applyFilters()">
                         <option value="avg_z">Avg Z-Score (best first)</option>
@@ -446,7 +456,11 @@
                         <option value="ds_raw">Draftsim Score</option>
                         <option value="maz_raw">MTG Arena Zone Score</option>
                         <option value="controversy">Spread (max disagreement)</option>
-                        <option value="name">Name (A–Z)</option>
+                        <option value="name">Name (A&ndash;Z)</option>
+                        <option value="color">Color</option>
+                        <option value="rarity">Rarity</option>
+                        <option value="type">Type</option>
+                        <option value="mana">Mana Cost</option>
                     </select>
                 </div>
                 <button onclick="resetFilters()" style="padding:5px 10px;border:1px solid #bbb;border-radius:4px;background:#fff;font-size:0.82em;cursor:pointer;">Reset</button>
@@ -463,6 +477,8 @@
                             <th class="name-col" onclick="sortBy('name')">Card Name<span class="sort-indicator"></span></th>
                             <th onclick="sortBy('color')" style="width:48px">Color<span class="sort-indicator"></span></th>
                             <th onclick="sortBy('rarity')" style="width:38px">Rar<span class="sort-indicator"></span></th>
+                            <th onclick="sortBy('type')" style="width:100px;text-align:left" title="Card type line (fetched from Scryfall)">Type<span class="sort-indicator"></span></th>
+                            <th onclick="sortBy('mana')" style="width:60px" title="Mana cost (fetched from Scryfall)">Mana<span class="sort-indicator"></span></th>
                             <th class="col-cgb" onclick="sortBy('cgb_raw')" style="width:52px" title="CardGameBase">CGB<span class="sort-indicator"></span></th>
                             <th class="col-cgb" onclick="sortBy('cgb_z')" style="width:52px" title="CardGameBase z-score">CGB Z<span class="sort-indicator"></span></th>
                             <th class="col-ds" onclick="sortBy('ds_raw')" style="width:52px" title="Draftsim score /10">DS<span class="sort-indicator"></span></th>
@@ -487,16 +503,7 @@
     <!-- Toggle Script -->
     <script>
     function toggleSection(sectionId, btn) {
-        const sections = {
-            'wheel': 'wheel-section',
-            'primary': 'archetype-tables-section',
-            'splash': 'archetype-tables-section',
-            'ratings': 'ratings-section'
-        };
-
-        const targetId = sections[sectionId];
-        const targetEl = document.getElementById(targetId);
-
+        const targetEl = document.getElementById(sectionId + '-section');
         if (btn.classList.contains('active')) {
             btn.classList.remove('active');
             if (targetEl) targetEl.classList.remove('visible');
@@ -505,14 +512,9 @@
             if (targetEl) targetEl.classList.add('visible');
         }
     }
-
-    // Initialize visibility on load
-    document.addEventListener('DOMContentLoaded', () => {
-        // All sections start visible (buttons all have .active class)
-    });
     </script>
 
-    <!-- Color Wheel (React) -->
+    <!-- Color Wheel (React with Portals) -->
     <script type="text/babel">
 
 /**
@@ -1196,189 +1198,169 @@ function TMNTColorWheel() {
   const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
 
   return (
-    <div className="main-container" style={{
-      minHeight: '100vh',
-      backgroundColor: '#FFFFFF',
-      padding: '24px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      position: 'relative',
-    }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
-          🐢 Teenage Mutant Ninja Turtles
-        </h1>
-        <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (1.0.0 Interactive)
-        </p>
-        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Set code: TMT · Releases: March 6, 2026 · Last updated: 2026-02-27 UTC
-        </p>
-        <div style={{ display: 'inline-block', margin: '4px 0 8px', padding: '4px 12px', borderRadius: '999px', background: '#10B981', color: 'white', fontSize: '0.75rem', fontWeight: '600' }}>
-          ★ 5 enemy-color-pair archetypes
+    <>
+      {/* Controls + SVG render in #wheel-root */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* Controls */}
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
+            <input type="checkbox" checked={isSimple} onChange={(e) => setIsSimple(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+            B&amp;W
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
+            Text Size:
+            <input type="range" min="0.5" max="2.0" step="0.1" value={textSize} onChange={(e) => setTextSize(parseFloat(e.target.value))} style={{ width: '80px', cursor: 'pointer' }} />
+            <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>{Math.round(textSize * 100)}%</span>
+          </label>
         </div>
-        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '4px 0 8px 0' }}>
-          <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Off-Arch Splashes</a>
-        </p>
-        <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: '0 0 0 0', lineHeight: '1.6' }}>
-          New to this set? See the <a href="https://magic.wizards.com/en/products/teenage-mutant-ninja-turtles" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>TMNT Product Page</a> or browse the <a href="https://scryfall.com/sets/tmt" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>full set on Scryfall</a>.<br />
-          Want full ratings? See <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Draftsim set review</a>, <a href="https://www.thegamer.com/magic-the-gathering-teenage-mutant-ninja-turtles-best-draft-archetypes/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>TheGamer archetypes guide</a>, <a href="https://gamedaily.com/games/mtg-teenage-mutant-ninja-turtles-prerelease-guide-all-limited-archetypes-explained/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>GameDaily prerelease guide</a>, or <a href="ratings.html" style={{ color: '#2563EB', textDecoration: 'underline' }}>our Ratings Viewer</a>.
-        </p>
-      </div>
 
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
-          <input type="checkbox" checked={isSimple} onChange={(e) => setIsSimple(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-          B&amp;W
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
-          Text Size:
-          <input type="range" min="0.5" max="2.0" step="0.1" value={textSize} onChange={(e) => setTextSize(parseFloat(e.target.value))} style={{ width: '80px', cursor: 'pointer' }} />
-          <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>{Math.round(textSize * 100)}%</span>
-        </label>
-      </div>
-
-      {/* SVG Color Wheel */}
-      <svg
-        className="color-wheel-svg"
-        viewBox={isMobile() ? "160 140 380 400" : "120 100 460 480"}
-        style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
-      >
-        {edges.map((edge, i) => {
-          const pairCode = edge.u + edge.v;
-          const isHighlighted = activePair === pairCode;
-          const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
-          return (
-            <EdgeLine key={`edge-${i}`} edge={edge} isHighlighted={isHighlighted} isDimmed={isDimmed} isSimple={isSimple} config={config} />
-          );
-        })}
-
-        {labelPositions.map((group, i) => {
-          const pairCode = group.u + group.v;
-          const isHighlighted = activePair === pairCode;
-          const isDimmed = activeColors.length > 0 && !activeColors.includes(group.u) && !activeColors.includes(group.v);
-          return (
-            <LabelBox
-              key={`label-${i}`}
-              group={group}
-              isHighlighted={isHighlighted}
-              isDimmed={isDimmed}
-              onHover={() => handlePairHover(pairCode)}
-              onLeave={handlePairLeave}
-              isSimple={isSimple}
-              config={config}
-            />
-          );
-        })}
-
-        {colorOrder.map((color, index) => {
-          const isHighlighted = hoveredNode === color || activeColors.includes(color);
-          const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
-          return (
-            <ColorNode
-              key={`node-${color}`}
-              color={color}
-              index={index}
-              isHighlighted={isHighlighted}
-              isDimmed={isDimmed}
-              onHover={() => setHoveredNode(color)}
-              onLeave={() => setHoveredNode(null)}
-              isSimple={isSimple}
-              config={config}
-            />
-          );
-        })}
-      </svg>
-
-      {/* Color Grid */}
-      <ColorGrid hoveredColor={hoveredColor} onColorHover={handleColorHover} onColorLeave={handleColorLeave} />
-
-      {/* Primary Archetypes */}
-      <div id="primary-archetypes" style={{ width: '100%', marginTop: '32px' }}>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '16px', paddingBottom: '8px', borderBottom: '2px solid #10B981' }}>
-          ★ Primary Archetypes (Enemy Color Pairs)
-        </h2>
-        <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
-          {primaryPairs.map(([pair, data]) => {
-            const { bg, fg } = getLabelColors(pair[0], pair[1]);
-            const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
-            const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+        {/* SVG Color Wheel */}
+        <svg
+          className="color-wheel-svg"
+          viewBox={isMobile() ? "160 140 380 400" : "120 100 460 480"}
+          style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
+        >
+          {edges.map((edge, i) => {
+            const pairCode = edge.u + edge.v;
+            const isHighlighted = activePair === pairCode;
+            const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
             return (
-              <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px', border: `2px solid ${blend(pair[0], pair[1])}` }}>
-                <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub}</div>
-                <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
-                {data.sourceText && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                    Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                  </div>
-                )}
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}&amp;{pair[1]}
-                  </a>
-                  <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}∪{pair[1]}
-                  </a>
-                </div>
-              </div>
+              <EdgeLine key={`edge-${i}`} edge={edge} isHighlighted={isHighlighted} isDimmed={isDimmed} isSimple={isSimple} config={config} />
             );
           })}
-        </div>
-      </div>
 
-      {/* Secondary Archetypes */}
-      <div id="secondary-archetypes" style={{ width: '100%', marginTop: '32px', marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px', paddingBottom: '8px', borderBottom: '2px solid #9CA3AF' }}>
-          Off-Arch Splashes (Allied Color Pairs)
-        </h2>
-        <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-          These 5 allied color pairs have no dedicated archetype in TMT. See splash guidance below.
-        </p>
-        <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
-          {secondaryPairs.map(([pair, data]) => {
-            const { bg, fg } = getLabelColors(pair[0], pair[1]);
-            const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
-            const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+          {labelPositions.map((group, i) => {
+            const pairCode = group.u + group.v;
+            const isHighlighted = activePair === pairCode;
+            const isDimmed = activeColors.length > 0 && !activeColors.includes(group.u) && !activeColors.includes(group.v);
             return (
-              <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px', border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
-                <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub}</div>
-                <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
-                {data.sourceText && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                    Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                  </div>
-                )}
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}&amp;{pair[1]}
-                  </a>
-                  <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}∪{pair[1]}
-                  </a>
-                </div>
-              </div>
+              <LabelBox
+                key={`label-${i}`}
+                group={group}
+                isHighlighted={isHighlighted}
+                isDimmed={isDimmed}
+                onHover={() => handlePairHover(pairCode)}
+                onLeave={handlePairLeave}
+                isSimple={isSimple}
+                config={config}
+              />
             );
           })}
-        </div>
+
+          {colorOrder.map((color, index) => {
+            const isHighlighted = hoveredNode === color || activeColors.includes(color);
+            const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
+            return (
+              <ColorNode
+                key={`node-${color}`}
+                color={color}
+                index={index}
+                isHighlighted={isHighlighted}
+                isDimmed={isDimmed}
+                onHover={() => setHoveredNode(color)}
+                onLeave={() => setHoveredNode(null)}
+                isSimple={isSimple}
+                config={config}
+              />
+            );
+          })}
+        </svg>
       </div>
 
-      {/* Hover Info Panel — triggered by SVG wheel only */}
+      {/* Portal: Color Grid into separate container */}
+      {document.getElementById('color-grid-root') && ReactDOM.createPortal(
+        <ColorGrid hoveredColor={hoveredColor} onColorHover={handleColorHover} onColorLeave={handleColorLeave} />,
+        document.getElementById('color-grid-root')
+      )}
+
+      {/* Portal: Primary Archetypes */}
+      {document.getElementById('primary-archetypes-root') && ReactDOM.createPortal(
+        <div style={{ width: '100%' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '16px', paddingBottom: '8px', borderBottom: '2px solid #10B981' }}>
+            \u2605 Primary Archetypes (Enemy Color Pairs)
+          </h2>
+          <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px' }}>
+            {primaryPairs.map(([pair, data]) => {
+              const { bg, fg } = getLabelColors(pair[0], pair[1]);
+              const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
+              const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+              return (
+                <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px', border: `2px solid ${blend(pair[0], pair[1])}` }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
+                  <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub}</div>
+                  <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
+                  {data.sourceText && (
+                    <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
+                      Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
+                    </div>
+                  )}
+                  <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                      {pair[0]}&amp;{pair[1]}
+                    </a>
+                    <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                      {pair[0]}\u222A{pair[1]}
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>,
+        document.getElementById('primary-archetypes-root')
+      )}
+
+      {/* Portal: Secondary Archetypes */}
+      {document.getElementById('secondary-archetypes-root') && ReactDOM.createPortal(
+        <div style={{ width: '100%' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px', paddingBottom: '8px', borderBottom: '2px solid #9CA3AF' }}>
+            Off-Arch Splashes (Allied Color Pairs)
+          </h2>
+          <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
+            These 5 allied color pairs have no dedicated archetype in TMT. See splash guidance below.
+          </p>
+          <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px' }}>
+            {secondaryPairs.map(([pair, data]) => {
+              const { bg, fg } = getLabelColors(pair[0], pair[1]);
+              const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
+              const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+              return (
+                <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px', border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
+                  <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub}</div>
+                  <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
+                  {data.sourceText && (
+                    <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
+                      Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
+                    </div>
+                  )}
+                  <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                      {pair[0]}&amp;{pair[1]}
+                    </a>
+                    <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                      {pair[0]}\u222A{pair[1]}
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>,
+        document.getElementById('secondary-archetypes-root')
+      )}
+
+      {/* InfoPanel stays fixed positioned */}
       <InfoPanel pair={activePair} onHover={() => { if (pairTimeoutRef.current) { clearTimeout(pairTimeoutRef.current); pairTimeoutRef.current = null; } }} onLeave={handlePairLeave} />
-    </div>
+    </>
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('color-wheel-root'));
+const root = ReactDOM.createRoot(document.getElementById('wheel-root'));
 root.render(<TMNTColorWheel />);
-  
+
     </script>
 
     <!-- Ratings Table (Vanilla JS) -->
