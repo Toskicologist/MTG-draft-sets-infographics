@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.7.0)
+    TMNT Draft Analytics Combined Page (v2.8.0)
     Color wheel (v1.0.6) + Normalized ratings table (v3.2.0)
+    v2.8.0 - ColorPanel: color node hover shows color description box; click filters table to that color
     v2.7.0 - Avg Z+Spread first cols; source header links; rarity checkboxes; InfoPanel on node hover + click-to-filter
     v2.6.0 - Fix color pair filtering: only show cards with both colors, not all multicolor
     v2.5.0 - Click color pair labels on wheel to filter ratings table
@@ -540,6 +541,26 @@
             if (typeof renderTable === 'function') renderTable();
         }
         // Scroll to ratings section
+        if (ratingsEl) ratingsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Bridge: filter ratings table to a single color
+    // Called from ColorPanel (color node hover popup)
+    function filterToColor(color) {
+        var ratingsEl = document.getElementById('ratings-section');
+        var ratingsHeader = ratingsEl ? ratingsEl.previousElementSibling : null;
+        if (ratingsEl && ratingsEl.classList.contains('collapsed')) {
+            ratingsEl.classList.remove('collapsed');
+            if (ratingsHeader) ratingsHeader.classList.remove('collapsed');
+        }
+        if (typeof filteredColorPair !== 'undefined') {
+            filteredColorPair = null; // clear pair filter
+            // Check only this color's checkbox (and Multi for multi-color cards that include it)
+            document.querySelectorAll('.color-filter-toggle').forEach(function(toggle) {
+                toggle.checked = (toggle.dataset.color === color);
+            });
+            if (typeof renderTable === 'function') renderTable();
+        }
         if (ratingsEl) ratingsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     </script>
@@ -1100,6 +1121,50 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
   );
 };
 
+const ColorPanel = ({ color, onHover, onLeave, onClick }) => {
+  if (!color) return null;
+  const colorData = colorDescriptions[color];
+  const bg = baseHex[color];
+  const fg = color === 'W' ? '#000000' : '#FFFFFF';
+  const border = color === 'W' ? '#bbb' : bg;
+  return (
+    <div
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      onClick={onClick ? () => onClick(color) : undefined}
+      title={onClick ? "Click to filter table to " + colorData.name + " cards" : undefined}
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: bg,
+        color: fg,
+        padding: '14px 22px',
+        borderRadius: '8px',
+        border: `2px solid ${border}`,
+        maxWidth: '400px',
+        textAlign: 'center',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        transition: 'all 0.2s ease',
+        zIndex: 1000,
+        cursor: onClick ? 'pointer' : 'default',
+      }}>
+      <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>
+        {color}: {colorData.name}
+      </div>
+      <div style={{ fontSize: '0.82rem', lineHeight: '1.4', opacity: 0.92 }}>
+        {colorData.description}
+      </div>
+      {onClick && (
+        <div style={{ fontSize: '0.7rem', marginTop: '8px', opacity: 0.75, fontStyle: 'italic' }}>
+          Click to filter table to {colorData.name} cards
+        </div>
+      )}
+    </div>
+  );
+};
+
 const InfoPanel = ({ pair, onHover, onLeave, onClick }) => {
   if (!pair) return null;
 
@@ -1228,8 +1293,8 @@ function TMNTColorWheel() {
   }, []);
 
   const activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : (hoveredNode ? [hoveredNode] : []);
-  // Show InfoPanel for pair hover; fall back to first pair containing the hovered node
-  const activePair = hoveredPair || (hoveredNode ? (Object.keys(labels).find(p => p[0] === hoveredNode || p[1] === hoveredNode) || null) : null);
+  // InfoPanel shows only on pair hover; ColorPanel shows only on node hover
+  const activePair = hoveredPair;
 
   const primaryPairs = Object.entries(labels).filter(([pair]) => primaryArchetypes.includes(pair));
   const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
@@ -1388,8 +1453,11 @@ function TMNTColorWheel() {
         document.getElementById('secondary-archetypes-root')
       )}
 
-      {/* InfoPanel stays fixed positioned — clicking the popup filters the table */}
+      {/* InfoPanel: fixed popup for pair label hover (clicking filters to that pair) */}
       <InfoPanel pair={activePair} onHover={() => { if (pairTimeoutRef.current) { clearTimeout(pairTimeoutRef.current); pairTimeoutRef.current = null; } }} onLeave={handlePairLeave} onClick={(pair) => { if (pair && typeof window.filterToColors === 'function') window.filterToColors(pair[0], pair[1]); }} />
+
+      {/* ColorPanel: fixed popup for color node hover (clicking filters to that single color) */}
+      {!activePair && <ColorPanel color={hoveredNode} onHover={() => { if (colorTimeoutRef.current) { clearTimeout(colorTimeoutRef.current); colorTimeoutRef.current = null; } }} onLeave={handleColorLeave} onClick={(color) => { if (color && typeof window.filterToColor === 'function') window.filterToColor(color); }} />}
     </>
   );
 }
