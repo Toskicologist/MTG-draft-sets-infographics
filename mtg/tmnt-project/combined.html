@@ -526,9 +526,14 @@
             ratingsEl.classList.remove('collapsed');
             if (ratingsHeader) ratingsHeader.classList.remove('collapsed');
         }
-        // Set color pair filter
+        // Set color pair filter and update checkboxes to match
         if (typeof filteredColorPair !== 'undefined') {
             filteredColorPair = {c1: c1, c2: c2};
+            // Update checkboxes: check only the two mono colors and Multi
+            document.querySelectorAll('.color-filter-toggle').forEach(function(toggle) {
+                var color = toggle.dataset.color;
+                toggle.checked = (color === c1 || color === c2 || color === 'M');
+            });
             if (typeof renderTable === 'function') renderTable();
         }
         // Scroll to ratings section
