@@ -2267,13 +2267,10 @@ function renderTable() {
                 ? `<span class="maz-score" style="color:${dsColor(c.maz_raw)}">${c.maz_raw}/10</span>`
                 : '<span class="missing">—</span>';
             const mazZCell = fmtZ(c.maz_z);
-            const sourcesLabel = c.sources === 1 ? ' (1 src)' : c.sources === 2 ? ' (2 src)' : '';
-
             const avgZ = c.avg_z;
             const barHtml = `<div class="norm-bar-wrap">
                 <div class="norm-bar-bg"><div class="norm-bar-fill" style="width:${barWidth(avgZ)}%;background:${barColor(avgZ)}"></div></div>
                 <span class="norm-val" style="color:${barColor(avgZ)}">${fmtZ(avgZ)}</span>
-                <span class="missing" title="Sources">${sourcesLabel}</span>
             </div>`;
 
             const contCell = c.controversy !== null
