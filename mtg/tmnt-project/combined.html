@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.3.0)
+    TMNT Draft Analytics Combined Page (v2.4.0)
     Color wheel (v1.0.5) + Normalized ratings table (v3.1.0)
+    v2.4.0 - Checkbox color filters (ECL style); fix prefetch re-render; filterToColors uses checkboxes
     v2.3.0 - Scryfall color_identity in table; Art→Colorless; View cards in InfoPanel
     v2.2.0 - Inline section toggles; archetype-to-table color filter bridge
     v2.1.0 - Merge all headers into unified page-header; remove wheel sub-header
@@ -198,7 +199,13 @@
 
         .separator { width: 1px; height: 22px; background: #ccc; margin: 0 3px; }
 
-        .color-btn, .rarity-btn {
+        .color-filter { display: flex; gap: 8px; align-items: center; }
+        .color-filter label { display: inline-flex; gap: 4px; align-items: center; font-weight: 600; color: #333; cursor: pointer; font-size: 0.85em; }
+        .color-filter input[type="checkbox"] { margin: 0; width: 14px; height: 14px; cursor: pointer; }
+        .color-filter-action { padding: 4px 8px; border: 1px solid #bbb; border-radius: 4px; background: #fff; font-size: 0.82em; cursor: pointer; }
+        .color-filter-action:hover { border-color: #2d6a4f; }
+
+        .rarity-btn {
             padding: 2px 8px;
             border-radius: 3px;
             border: 2px solid transparent;
@@ -208,7 +215,7 @@
             transition: all 0.12s;
         }
 
-        .color-btn.active, .rarity-btn.active { border-color: #333 !important; }
+        .rarity-btn.active { border-color: #333 !important; }
 
         .table-wrapper { overflow-x: auto; }
 
@@ -421,18 +428,18 @@
                     <input type="text" id="searchInput" placeholder="Card name..." style="width:160px" oninput="applyFilters()">
                 </div>
                 <div class="separator"></div>
-                <div class="filter-group">
-                    <label>Color:</label>
-                    <button class="color-btn active" data-color="W" onclick="toggleColor(this)" style="background:#f5f5dc;color:#333;border:1px solid #aaa;">W</button>
-                    <button class="color-btn active" data-color="U" onclick="toggleColor(this)" style="background:#1a56db;color:white;">U</button>
-                    <button class="color-btn active" data-color="B" onclick="toggleColor(this)" style="background:#1a1a2e;color:white;">B</button>
-                    <button class="color-btn active" data-color="R" onclick="toggleColor(this)" style="background:#dc2626;color:white;">R</button>
-                    <button class="color-btn active" data-color="G" onclick="toggleColor(this)" style="background:#16a34a;color:white;">G</button>
-                    <button class="color-btn active" data-color="M" onclick="toggleColor(this)" style="background:#d97706;color:white;">Multi</button>
-                    <button class="color-btn active" data-color="C" onclick="toggleColor(this)" style="background:#6b7280;color:white;">C</button>
-                    <button class="color-btn active" data-color="L" onclick="toggleColor(this)" style="background:#92400e;color:white;">Land</button>
-                    <button onclick="allColors(true)" style="padding:2px 6px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:0.75em;cursor:pointer;">All</button>
-                    <button onclick="allColors(false)" style="padding:2px 6px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:0.75em;cursor:pointer;">None</button>
+                <div class="color-filter">
+                    <label>Colors:</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="W" checked onchange="applyColorFilters()"> W</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="U" checked onchange="applyColorFilters()"> U</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="B" checked onchange="applyColorFilters()"> B</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="R" checked onchange="applyColorFilters()"> R</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="G" checked onchange="applyColorFilters()"> G</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="M" checked onchange="applyColorFilters()"> Multi</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="C" checked onchange="applyColorFilters()"> C</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="L" checked onchange="applyColorFilters()"> Land</label>
+                    <button type="button" class="color-filter-action" onclick="setColorFilters(true)">All</button>
+                    <button type="button" class="color-filter-action" onclick="setColorFilters(false)">None</button>
                 </div>
                 <div class="separator"></div>
                 <div class="filter-group">
@@ -521,16 +528,13 @@
             ratingsEl.classList.remove('collapsed');
             if (ratingsHeader) ratingsHeader.classList.remove('collapsed');
         }
-        // Set color filters - uses the ratings script's global activeColors + UI buttons
+        // Set color filters via checkboxes
         if (typeof activeColors !== 'undefined') {
             var wantColors = new Set([c1, c2, 'M']);
-            activeColors.clear();
-            wantColors.forEach(function(c) { activeColors.add(c); });
-            document.querySelectorAll('.color-btn').forEach(function(b) {
-                if (wantColors.has(b.dataset.color)) b.classList.add('active');
-                else b.classList.remove('active');
+            document.querySelectorAll('.color-filter-toggle').forEach(function(t) {
+                t.checked = wantColors.has(t.dataset.color);
             });
-            if (typeof renderTable === 'function') renderTable();
+            if (typeof applyColorFilters === 'function') applyColorFilters();
         }
         // Scroll to ratings section
         if (ratingsEl) ratingsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1976,8 +1980,13 @@ function fetchCardData(name) {
 // Prefetch all card data in background (rate-limited to ~80ms apart)
 function prefetchAll() {
     let idx = 0;
+    let updated = 0;
     function next() {
-        if (idx >= CARDS.length) return;
+        if (idx >= CARDS.length) {
+            // All cards fetched — re-render table with updated Scryfall data
+            if (updated > 0) renderTable();
+            return;
+        }
         const card = CARDS[idx++];
         fetchCardData(card.name).then(data => {
             if (data) {
@@ -1995,6 +2004,7 @@ function prefetchAll() {
                         card.color = data.colorIdentity.sort((a,b) => order.indexOf(a) - order.indexOf(b)).join('');
                     }
                 }
+                updated++;
             }
         });
         setTimeout(next, 80);
@@ -2298,19 +2308,19 @@ function renderTable() {
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────────
-function toggleColor(btn) {
-    const c = btn.dataset.color;
-    if (activeColors.has(c)) { activeColors.delete(c); btn.classList.remove('active'); }
-    else { activeColors.add(c); btn.classList.add('active'); }
+function applyColorFilters() {
+    activeColors = new Set();
+    document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+        if (toggle.checked) activeColors.add(toggle.dataset.color);
+    });
     renderTable();
 }
 
-function allColors(on) {
-    activeColors = on ? new Set(['W','U','B','R','G','M','C','L','?']) : new Set();
-    document.querySelectorAll('.color-btn').forEach(b => {
-        if (on) b.classList.add('active'); else b.classList.remove('active');
+function setColorFilters(on) {
+    document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+        toggle.checked = on;
     });
-    renderTable();
+    applyColorFilters();
 }
 
 function toggleRarity(btn) {
@@ -2347,7 +2357,8 @@ function resetFilters() {
     currentSearch = '';
     document.getElementById('searchInput').value = '';
     document.getElementById('sortSelect').value = 'avg_z';
-    document.querySelectorAll('.color-btn, .rarity-btn').forEach(b => b.classList.add('active'));
+    document.querySelectorAll('.color-filter-toggle').forEach(t => { t.checked = true; });
+    document.querySelectorAll('.rarity-btn').forEach(b => b.classList.add('active'));
     renderTable();
 }
 
