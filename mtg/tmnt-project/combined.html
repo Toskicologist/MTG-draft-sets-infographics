@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.4.0)
-    Color wheel (v1.0.5) + Normalized ratings table (v3.1.0)
+    TMNT Draft Analytics Combined Page (v2.5.0)
+    Color wheel (v1.0.6) + Normalized ratings table (v3.1.0)
+    v2.5.0 - Click color pair labels on wheel to filter ratings table
     v2.4.0 - Checkbox color filters (ECL style); fix prefetch re-render; filterToColors uses checkboxes
     v2.3.0 - Scryfall color_identity in table; Art→Colorless; View cards in InfoPanel
     v2.2.0 - Inline section toggles; archetype-to-table color filter bridge
@@ -920,7 +921,7 @@ const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) =
   );
 };
 
-const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
+const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, isSimple = false, config }) => {
   const groupRef = useRef(null);
   const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
 
@@ -972,6 +973,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple =
       ref={groupRef}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
+      onClick={onClick}
       style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
       opacity={isDimmed ? 0.15 : (isPrimary ? 1 : 0.5)}
       transform={isHighlighted ? `translate(${group.cx}, ${group.cy}) scale(1.08) translate(${-group.cx}, ${-group.cy})` : undefined}
@@ -1270,6 +1272,7 @@ function TMNTColorWheel() {
                 isDimmed={isDimmed}
                 onHover={() => handlePairHover(pairCode)}
                 onLeave={handlePairLeave}
+                onClick={() => { if (typeof window.filterToColors === 'function') window.filterToColors(pairCode[0], pairCode[1]); }}
                 isSimple={isSimple}
                 config={config}
               />
