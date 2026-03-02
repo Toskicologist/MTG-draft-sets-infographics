@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.5.0)
-    Color wheel (v1.0.6) + Normalized ratings table (v3.1.0)
+    TMNT Draft Analytics Combined Page (v2.6.0)
+    Color wheel (v1.0.6) + Normalized ratings table (v3.2.0)
+    v2.6.0 - Fix color pair filtering: only show cards with both colors, not all multicolor
     v2.5.0 - Click color pair labels on wheel to filter ratings table
     v2.4.0 - Checkbox color filters (ECL style); fix prefetch re-render; filterToColors uses checkboxes
     v2.3.0 - Scryfall color_identity in table; Art→Colorless; View cards in InfoPanel
@@ -520,7 +521,7 @@
     }
 
     // Bridge: filter ratings table to show only cards matching a color pair
-    // Called from archetype cards. Shows the two mono-colors + multicolor.
+    // Called from archetype cards. Shows only cards with those exact colors.
     function filterToColors(c1, c2) {
         // Ensure ratings section is visible
         var ratingsEl = document.getElementById('ratings-section');
@@ -529,13 +530,10 @@
             ratingsEl.classList.remove('collapsed');
             if (ratingsHeader) ratingsHeader.classList.remove('collapsed');
         }
-        // Set color filters via checkboxes
-        if (typeof activeColors !== 'undefined') {
-            var wantColors = new Set([c1, c2, 'M']);
-            document.querySelectorAll('.color-filter-toggle').forEach(function(t) {
-                t.checked = wantColors.has(t.dataset.color);
-            });
-            if (typeof applyColorFilters === 'function') applyColorFilters();
+        // Set color pair filter
+        if (typeof filteredColorPair !== 'undefined') {
+            filteredColorPair = {c1: c1, c2: c2};
+            if (typeof renderTable === 'function') renderTable();
         }
         // Scroll to ratings section
         if (ratingsEl) ratingsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1949,6 +1947,7 @@ const GRADE_ORDER = { 'A+':0,'A':1,'A-':2,'B+':3,'B':4,'B-':5,'C+':6,'C':7,'C-':
 
 let activeColors = new Set(['W','U','B','R','G','M','C','L','?']);
 let activeRarities = new Set(['M','R','U','C','L','?']);
+let filteredColorPair = null; // When set to {c1, c2}, only show cards matching that pair
 let currentSort = 'avg_z';
 let sortAsc = false;
 let currentSearch = '';
@@ -2171,10 +2170,20 @@ function fmtMana(m) {
 }
 
 function colorMatchesFilter(cardColor) {
-    // Single-char colors: direct check
+    // If filtering to a specific color pair (from clicking wheel), use strict matching
+    if (filteredColorPair) {
+        const {c1, c2} = filteredColorPair;
+        // Single-char colors: match if it's one of the pair colors
+        if (cardColor.length <= 1) {
+            return cardColor === c1 || cardColor === c2;
+        }
+        // Multicolor: must contain BOTH pair colors (e.g., "WB" matches WB filter but not "WG")
+        return cardColor.includes(c1) && cardColor.includes(c2);
+    }
+
+    // Default checkbox filter mode
     if (cardColor.length <= 1) return activeColors.has(cardColor);
-    // Multicolor (e.g. "WB", "UR"): passes if "M" is active OR any component color is active
-    if (activeColors.has('M')) return true;
+    // Multicolor: passes if at least one color component is in activeColors
     for (const ch of cardColor) {
         if (activeColors.has(ch)) return true;
     }
@@ -2312,6 +2321,7 @@ function renderTable() {
 
 // ── Controls ──────────────────────────────────────────────────────────────────
 function applyColorFilters() {
+    filteredColorPair = null; // Clear pair filter when checkboxes change
     activeColors = new Set();
     document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
         if (toggle.checked) activeColors.add(toggle.dataset.color);
@@ -2353,6 +2363,7 @@ function applyFilters() {
 }
 
 function resetFilters() {
+    filteredColorPair = null; // Clear pair filter
     activeColors = new Set(['W','U','B','R','G','M','C','L','?']);
     activeRarities = new Set(['M','R','U','C','L','?']);
     currentSort = 'avg_z';
