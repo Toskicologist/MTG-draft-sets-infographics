@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.2.0)
-    Color wheel (v1.0.4) + Normalized ratings table (v3.0.0)
+    TMNT Draft Analytics Combined Page (v2.3.0)
+    Color wheel (v1.0.5) + Normalized ratings table (v3.1.0)
+    v2.3.0 - Scryfall color_identity in table; Art→Colorless; View cards in InfoPanel
     v2.2.0 - Inline section toggles; archetype-to-table color filter bridge
     v2.1.0 - Merge all headers into unified page-header; remove wheel sub-header
     v2.0.0 - Portal-based rendering: each section in its own DOM container for toggle control
@@ -428,7 +429,7 @@
                     <button class="color-btn active" data-color="R" onclick="toggleColor(this)" style="background:#dc2626;color:white;">R</button>
                     <button class="color-btn active" data-color="G" onclick="toggleColor(this)" style="background:#16a34a;color:white;">G</button>
                     <button class="color-btn active" data-color="M" onclick="toggleColor(this)" style="background:#d97706;color:white;">Multi</button>
-                    <button class="color-btn active" data-color="C" onclick="toggleColor(this)" style="background:#6b7280;color:white;">Art</button>
+                    <button class="color-btn active" data-color="C" onclick="toggleColor(this)" style="background:#6b7280;color:white;">C</button>
                     <button class="color-btn active" data-color="L" onclick="toggleColor(this)" style="background:#92400e;color:white;">Land</button>
                     <button onclick="allColors(true)" style="padding:2px 6px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:0.75em;cursor:pointer;">All</button>
                     <button onclick="allColors(false)" style="padding:2px 6px;border:1px solid #bbb;border-radius:3px;background:#fff;font-size:0.75em;cursor:pointer;">None</button>
@@ -1137,17 +1138,19 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
           {' · Pre-release expert consensus; no 17Lands data yet'}
         </div>
       )}
-      <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '8px', fontWeight: '600' }}>
-        Scryfall search:
-      </div>
       <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>
-          {pair[0]}&amp;{pair[1]}
+        {typeof window.filterToColors === 'function' && (
+          <button onClick={() => window.filterToColors(pair[0], pair[1])} style={{ padding: '6px 14px', backgroundColor: fg, color: bg, border: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer' }}>
+            View cards
+          </button>
+        )}
+        <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', opacity: 0.8 }}>
+          Scryfall {pair[0]}&amp;{pair[1]}
         </a>
-        <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>
-          {pair[0]}∪{pair[1]}
+        <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', opacity: 0.8 }}>
+          Scryfall {pair[0]}∪{pair[1]}
         </a>
-        <a href={scrySetUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>
+        <a href={scrySetUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', opacity: 0.8 }}>
           Full TMT Set
         </a>
       </div>
@@ -1389,7 +1392,7 @@ root.render(<TMNTColorWheel />);
 // ── Raw data ──────────────────────────────────────────────────────────────────
 
 // CardGameBase grades. Format: [name, color, rarity, grade]
-// Colors: W U B R G M=Multi C=Artifact/Colorless L=Land
+// Colors: W U B R G M=Multi(initial) C=Colorless L=Land — Scryfall overrides to real color_identity
 // Rarity: C U R M L
 const CGB_DATA = [
     ["Sally Pride, Lioness Leader","W","R","A+"],
@@ -1961,7 +1964,9 @@ function fetchCardData(name) {
             }
             const typeLine = card.type_line || null;
             const manaCost = card.mana_cost || (card.card_faces && card.card_faces[0].mana_cost) || null;
-            const data = { imageUrl, type: typeLine, mana: manaCost };
+            // color_identity: e.g. ["W","B"] for multicolor, [] for colorless
+            const colorIdentity = card.color_identity || [];
+            const data = { imageUrl, type: typeLine, mana: manaCost, colorIdentity };
             scryfallCache.set(name, data);
             return data;
         })
@@ -1978,6 +1983,18 @@ function prefetchAll() {
             if (data) {
                 card.type = data.type;
                 card.mana = data.mana;
+                // Override color with Scryfall color_identity
+                if (data.colorIdentity) {
+                    if (data.colorIdentity.length === 0) {
+                        card.color = 'C'; // Colorless
+                    } else if (data.colorIdentity.length === 1) {
+                        card.color = data.colorIdentity[0]; // Mono
+                    } else {
+                        // Multi: join in WUBRG order
+                        const order = 'WUBRG';
+                        card.color = data.colorIdentity.sort((a,b) => order.indexOf(a) - order.indexOf(b)).join('');
+                    }
+                }
             }
         });
         setTimeout(next, 80);
@@ -2075,7 +2092,11 @@ function barWidth(z) {
 }
 
 function colorBadge(color) {
-    const labels = { W:'W',U:'U',B:'B',R:'R',G:'G',M:'Multi',C:'Art',L:'Land','?':'?' };
+    const labels = { W:'W',U:'U',B:'B',R:'R',G:'G',C:'C',L:'Land','?':'?' };
+    // For multicolor (2+ chars like "WB", "UR"), show the pair with gradient badge
+    if (color.length >= 2 && !labels[color]) {
+        return `<span class="color-badge color-M" title="${color}">${color}</span>`;
+    }
     return `<span class="color-badge color-${color}">${labels[color]||color}</span>`;
 }
 
@@ -2136,9 +2157,20 @@ function fmtMana(m) {
     });
 }
 
+function colorMatchesFilter(cardColor) {
+    // Single-char colors: direct check
+    if (cardColor.length <= 1) return activeColors.has(cardColor);
+    // Multicolor (e.g. "WB", "UR"): passes if "M" is active OR any component color is active
+    if (activeColors.has('M')) return true;
+    for (const ch of cardColor) {
+        if (activeColors.has(ch)) return true;
+    }
+    return false;
+}
+
 function renderTable() {
     let data = CARDS.filter(c => {
-        if (!activeColors.has(c.color)) return false;
+        if (!colorMatchesFilter(c.color)) return false;
         if (!activeRarities.has(c.rarity)) return false;
         if (currentSearch && !c.name.toLowerCase().includes(currentSearch.toLowerCase())) return false;
         return true;
@@ -2167,7 +2199,14 @@ function renderTable() {
         } else if (currentSort === 'name') {
             diff = a.name.localeCompare(b.name);
         } else if (currentSort === 'color') {
-            diff = (COLOR_ORDER[a.color]??99) - (COLOR_ORDER[b.color]??99);
+            // Sort: mono colors first (WUBRG order), then multi (by first color), then C, L
+            const colorSortKey = (c) => {
+                if (c.length === 1) return COLOR_ORDER[c] ?? 99;
+                // Multi: after mono colors (index 5+), then alphabetical
+                return 5 + (c.charCodeAt(0) / 1000);
+            };
+            diff = colorSortKey(a.color) - colorSortKey(b.color);
+            if (diff === 0) diff = a.color.localeCompare(b.color);
         } else if (currentSort === 'rarity') {
             diff = (RARITY_ORDER[a.rarity]??99) - (RARITY_ORDER[b.rarity]??99);
         } else if (currentSort === 'type') {
