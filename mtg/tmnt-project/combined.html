@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.6.0)
+    TMNT Draft Analytics Combined Page (v2.7.0)
     Color wheel (v1.0.6) + Normalized ratings table (v3.2.0)
+    v2.7.0 - Avg Z+Spread first cols; source header links; rarity checkboxes; InfoPanel on node hover + click-to-filter
     v2.6.0 - Fix color pair filtering: only show cards with both colors, not all multicolor
     v2.5.0 - Click color pair labels on wheel to filter ratings table
     v2.4.0 - Checkbox color filters (ECL style); fix prefetch re-render; filterToColors uses checkboxes
@@ -316,7 +317,7 @@
         .card-tooltip img { width: 220px; height: auto; border-radius: 4px; display: block; }
 
         .card-image { display: none; margin-top: 6px; }
-        .card-image img { width: 180px; height: auto; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: block; }
+        .card-image img { width: 100%; max-width: 300px; height: auto; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: block; }
         body.show-images .card-image { display: block; }
 
         .controversy-low { color: #16a34a; font-weight: 700; }
@@ -440,13 +441,15 @@
                     <button type="button" class="color-filter-action" onclick="setColorFilters(false)">None</button>
                 </div>
                 <div class="separator"></div>
-                <div class="filter-group">
+                <div class="color-filter">
                     <label>Rarity:</label>
-                    <button class="rarity-btn active" data-rarity="M" onclick="toggleRarity(this)" style="color:#7c3aed;background:#f3f0ff;border:1px solid #c4b5fd;">M</button>
-                    <button class="rarity-btn active" data-rarity="R" onclick="toggleRarity(this)" style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;">R</button>
-                    <button class="rarity-btn active" data-rarity="U" onclick="toggleRarity(this)" style="color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;">U</button>
-                    <button class="rarity-btn active" data-rarity="C" onclick="toggleRarity(this)" style="color:#374151;background:#f9fafb;border:1px solid #d1d5db;">C</button>
-                    <button class="rarity-btn active" data-rarity="L" onclick="toggleRarity(this)" style="color:#92400e;background:#fef3c7;border:1px solid #fcd34d;">L</button>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="M" checked onchange="applyRarityFilters()"> M</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="R" checked onchange="applyRarityFilters()"> R</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="U" checked onchange="applyRarityFilters()"> U</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="C" checked onchange="applyRarityFilters()"> C</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="L" checked onchange="applyRarityFilters()"> L</label>
+                    <button type="button" class="color-filter-action" onclick="setRarityFilters(true)">All</button>
+                    <button type="button" class="color-filter-action" onclick="setRarityFilters(false)">None</button>
                 </div>
                 <div class="separator"></div>
                 <div class="filter-group">
@@ -476,18 +479,18 @@
                     <thead>
                         <tr>
                             <th class="name-col" onclick="sortBy('name')">Card Name<span class="sort-indicator"></span></th>
+                            <th class="col-avg norm-bar-cell" onclick="sortBy('avg_z')" title="Average of available z-scores — primary ranking">Avg Z<span class="sort-indicator"></span></th>
+                            <th class="col-controversy" onclick="sortBy('controversy')" style="width:80px;border-right:2px solid #52b788;" title="Max z-score spread between sources">Spread<span class="sort-indicator"></span></th>
                             <th onclick="sortBy('color')" style="width:48px">Color<span class="sort-indicator"></span></th>
                             <th onclick="sortBy('rarity')" style="width:38px">Rar<span class="sort-indicator"></span></th>
                             <th onclick="sortBy('type')" style="width:100px;text-align:left" title="Card type line (fetched from Scryfall)">Type<span class="sort-indicator"></span></th>
                             <th onclick="sortBy('mana')" style="width:60px" title="Mana cost (fetched from Scryfall)">Mana<span class="sort-indicator"></span></th>
-                            <th class="col-cgb" onclick="sortBy('cgb_raw')" style="width:52px" title="CardGameBase">CGB<span class="sort-indicator"></span></th>
+                            <th class="col-cgb" onclick="sortBy('cgb_raw')" style="width:52px" title="CardGameBase"><a href="https://cardgamebase.com/tmnt-draft-tier-list/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CGB</a><span class="sort-indicator"></span></th>
                             <th class="col-cgb" onclick="sortBy('cgb_z')" style="width:52px" title="CardGameBase z-score">CGB Z<span class="sort-indicator"></span></th>
-                            <th class="col-ds" onclick="sortBy('ds_raw')" style="width:52px" title="Draftsim score /10">DS<span class="sort-indicator"></span></th>
+                            <th class="col-ds" onclick="sortBy('ds_raw')" style="width:52px" title="Draftsim score /10"><a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">DS</a><span class="sort-indicator"></span></th>
                             <th class="col-ds" onclick="sortBy('ds_z')" style="width:52px" title="Draftsim z-score">DS Z<span class="sort-indicator"></span></th>
-                            <th class="col-maz" onclick="sortBy('maz_raw')" style="width:52px" title="MTG Arena Zone score /10">MAZ<span class="sort-indicator"></span></th>
+                            <th class="col-maz" onclick="sortBy('maz_raw')" style="width:52px" title="MTG Arena Zone score /10"><a href="https://mtgazone.com/teenage-mutant-ninja-turtles-tmt-limited-set-review-white/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">MAZ</a><span class="sort-indicator"></span></th>
                             <th class="col-maz" onclick="sortBy('maz_z')" style="width:52px" title="MTG Arena Zone z-score">MAZ Z<span class="sort-indicator"></span></th>
-                            <th class="col-avg norm-bar-cell" onclick="sortBy('avg_z')" title="Average of available z-scores">Avg Z<span class="sort-indicator"></span></th>
-                            <th class="col-controversy" onclick="sortBy('controversy')" style="width:80px" title="Max z-score spread">Spread<span class="sort-indicator"></span></th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -1097,7 +1100,7 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
   );
 };
 
-const InfoPanel = ({ pair, onHover, onLeave }) => {
+const InfoPanel = ({ pair, onHover, onLeave, onClick }) => {
   if (!pair) return null;
 
   const labelData = labels[pair];
@@ -1112,11 +1115,14 @@ const InfoPanel = ({ pair, onHover, onLeave }) => {
     <div
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
+      onClick={onClick ? () => onClick(pair) : undefined}
+      title={onClick ? "Click to filter table to this color pair" : undefined}
       style={{
         position: 'fixed',
         bottom: '20px',
         left: '50%',
         transform: 'translateX(-50%)',
+        cursor: onClick ? 'pointer' : 'default',
         backgroundColor: bg,
         color: fg,
         padding: '16px 24px',
@@ -1222,7 +1228,8 @@ function TMNTColorWheel() {
   }, []);
 
   const activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : (hoveredNode ? [hoveredNode] : []);
-  const activePair = hoveredPair;
+  // Show InfoPanel for pair hover; fall back to first pair containing the hovered node
+  const activePair = hoveredPair || (hoveredNode ? (Object.keys(labels).find(p => p[0] === hoveredNode || p[1] === hoveredNode) || null) : null);
 
   const primaryPairs = Object.entries(labels).filter(([pair]) => primaryArchetypes.includes(pair));
   const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
@@ -1288,8 +1295,8 @@ function TMNTColorWheel() {
                 index={index}
                 isHighlighted={isHighlighted}
                 isDimmed={isDimmed}
-                onHover={() => setHoveredNode(color)}
-                onLeave={() => setHoveredNode(null)}
+                onHover={() => { setHoveredNode(color); handleColorHover(color); }}
+                onLeave={() => { setHoveredNode(null); handleColorLeave(); }}
                 isSimple={isSimple}
                 config={config}
               />
@@ -1381,8 +1388,8 @@ function TMNTColorWheel() {
         document.getElementById('secondary-archetypes-root')
       )}
 
-      {/* InfoPanel stays fixed positioned */}
-      <InfoPanel pair={activePair} onHover={() => { if (pairTimeoutRef.current) { clearTimeout(pairTimeoutRef.current); pairTimeoutRef.current = null; } }} onLeave={handlePairLeave} />
+      {/* InfoPanel stays fixed positioned — clicking the popup filters the table */}
+      <InfoPanel pair={activePair} onHover={() => { if (pairTimeoutRef.current) { clearTimeout(pairTimeoutRef.current); pairTimeoutRef.current = null; } }} onLeave={handlePairLeave} onClick={(pair) => { if (pair && typeof window.filterToColors === 'function') window.filterToColors(pair[0], pair[1]); }} />
     </>
   );
 }
@@ -2285,6 +2292,8 @@ function renderTable() {
 
             return `<tr data-color="${c.color}" data-rarity="${c.rarity}" data-name="${c.name.replace(/"/g,'&quot;')}">
                 <td class="name-col"><a class="name-link" href="${scryfallUrl(c.name)}" target="_blank" rel="noopener noreferrer" data-name="${c.name.replace(/"/g,'&quot;')}">${c.name}</a>${imgDiv}</td>
+                <td class="col-avg norm-bar-cell">${barHtml}</td>
+                <td class="col-controversy" style="border-right:2px solid #52b788;">${contCell}</td>
                 <td>${colorBadge(c.color)}</td>
                 <td>${rarityDisplay(c.rarity)}</td>
                 <td class="type-cell" title="${c.type||'Loading…'}">${abbrevType(c.type)}</td>
@@ -2295,8 +2304,6 @@ function renderTable() {
                 <td class="col-ds">${dsZCell}</td>
                 <td class="col-maz">${mazCell}</td>
                 <td class="col-maz">${mazZCell}</td>
-                <td class="col-avg norm-bar-cell">${barHtml}</td>
-                <td class="col-controversy">${contCell}</td>
             </tr>`;
         }).join('');
 
@@ -2318,6 +2325,21 @@ function renderTable() {
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────────
+function applyRarityFilters() {
+    activeRarities = new Set();
+    document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+        if (toggle.checked) activeRarities.add(toggle.dataset.rarity);
+    });
+    renderTable();
+}
+
+function setRarityFilters(on) {
+    document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+        toggle.checked = on;
+    });
+    applyRarityFilters();
+}
+
 function applyColorFilters() {
     filteredColorPair = null; // Clear pair filter when checkboxes change
     activeColors = new Set();
@@ -2370,6 +2392,7 @@ function resetFilters() {
     document.getElementById('searchInput').value = '';
     document.getElementById('sortSelect').value = 'avg_z';
     document.querySelectorAll('.color-filter-toggle').forEach(t => { t.checked = true; });
+    document.querySelectorAll('.rarity-filter-toggle').forEach(t => { t.checked = true; });
     document.querySelectorAll('.rarity-btn').forEach(b => b.classList.add('active'));
     renderTable();
 }
