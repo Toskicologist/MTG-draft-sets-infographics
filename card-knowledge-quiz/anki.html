@@ -1753,6 +1753,10 @@
      * Last Updated: 2026-03-02 UTC
      *
      * CHANGELOG:
+     * v2.1.4-anki-local (2026-03-03) - Add standard site header/banner with cross-links
+     *   - ADD: Banner links to Card Knowledge Quiz, Color Wheel, ECL ratings, 17Lands quiz
+     *   - ADD: GitHub source link, email, Bluesky/Reddit, Scryfall attribution
+     *
      * v2.1.3-anki-local (2026-03-03) - Scroll Next button into view on MC feedback
      *   - ADD: useEffect + ref scrolls Next button into view when MC answer feedback appears
      *
@@ -2341,7 +2345,7 @@
 
     // Single source of truth for version display. Strip '-local' suffix automatically
     // so the same constant works in both the local source and the deployed public file.
-    const APP_VERSION = '2.1.3-anki-local'.replace(/-anki-local$/, '-anki');
+    const APP_VERSION = '2.1.4-anki-local'.replace(/-anki-local$/, '-anki');
     const APP_LAST_UPDATED = '2026-03-02';
 
     const SCRYFALL_API_BASE = 'https://api.scryfall.com';
@@ -5393,7 +5397,23 @@
             <div className="banner">
               <div className="banner-content">
                 <h1>MTG Card Study</h1>
-                <p>Spaced Repetition (Anki-style) • Version {APP_VERSION} • {APP_LAST_UPDATED}</p>
+                <p>
+                  Spaced repetition (Anki-style) flashcards for MTG cards •{' '}
+                  <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> •{' '}
+                  <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics/tree/main/card-knowledge-quiz" target="_blank" rel="noopener noreferrer">View source on GitHub</a> •{' '}
+                  Version {APP_VERSION} • {APP_LAST_UPDATED}
+                </p>
+                <p>
+                  Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>.{' '}
+                  You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Interactive Color Wheel</a>,{' '}
+                  <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer">normalized review comparison</a>, or my{' '}
+                  <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">17Lands draft data quiz</a>.{' '}
+                  For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or{' '}
+                  <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+                </p>
+                <p className="banner-scryfall">
+                  Card info and images use the <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
+                </p>
               </div>
             </div>
 
@@ -5690,7 +5710,12 @@
           <div className="app-container">
             <div className="banner">
               <div className="banner-content">
-                <h1>Session Complete</h1>
+                <h1>MTG Card Study</h1>
+                <p>
+                  <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> •{' '}
+                  <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Color Wheel</a> •{' '}
+                  <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">17Lands Quiz</a>
+                </p>
               </div>
             </div>
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 32, textAlign: 'center' }}>
