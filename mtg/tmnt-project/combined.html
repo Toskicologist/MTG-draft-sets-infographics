@@ -12,8 +12,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
     <!--
-    TMNT Draft Analytics Combined Page (v2.8.0)
+    TMNT Draft Analytics Combined Page (v2.9.0)
     Color wheel (v1.0.6) + Normalized ratings table (v3.2.0)
+    v2.9.0 - Fix color node click-to-filter; popup stays 800ms (matches pair label behavior)
     v2.8.0 - ColorPanel: color node hover shows color description box; click filters table to that color
     v2.7.0 - Avg Z+Spread first cols; source header links; rarity checkboxes; InfoPanel on node hover + click-to-filter
     v2.6.0 - Fix color pair filtering: only show cards with both colors, not all multicolor
@@ -869,7 +870,7 @@ const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
   );
 };
 
-const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
+const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, onClick, isSimple = false, config }) => {
   const nodePositions = getNodePositions(config);
   const pos = nodePositions[index];
   const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
@@ -880,6 +881,7 @@ const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, is
     <g
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
+      onClick={onClick}
       style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
       opacity={isDimmed ? 0.3 : 1}
     >
@@ -1269,7 +1271,7 @@ function TMNTColorWheel() {
   };
 
   const handleColorLeave = () => {
-    colorTimeoutRef.current = setTimeout(() => { setHoveredColor(null); }, 800);
+    colorTimeoutRef.current = setTimeout(() => { setHoveredColor(null); setHoveredNode(null); }, 800);
   };
 
   useEffect(() => {
@@ -1360,8 +1362,9 @@ function TMNTColorWheel() {
                 index={index}
                 isHighlighted={isHighlighted}
                 isDimmed={isDimmed}
-                onHover={() => { setHoveredNode(color); handleColorHover(color); }}
-                onLeave={() => { setHoveredNode(null); handleColorLeave(); }}
+                onHover={() => { if (colorTimeoutRef.current) { clearTimeout(colorTimeoutRef.current); colorTimeoutRef.current = null; } setHoveredNode(color); handleColorHover(color); }}
+                onLeave={handleColorLeave}
+                onClick={() => { if (typeof window.filterToColor === 'function') window.filterToColor(color); }}
                 isSimple={isSimple}
                 config={config}
               />
