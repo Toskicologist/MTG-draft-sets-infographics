@@ -560,7 +560,9 @@
             document.querySelectorAll('.color-filter-toggle').forEach(function(toggle) {
                 toggle.checked = (toggle.dataset.color === color);
             });
-            if (typeof renderTable === 'function') renderTable();
+            // applyColorFilters rebuilds activeColors Set from checkboxes then calls renderTable
+            if (typeof applyColorFilters === 'function') applyColorFilters();
+            else if (typeof renderTable === 'function') renderTable();
         }
         if (ratingsEl) ratingsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
