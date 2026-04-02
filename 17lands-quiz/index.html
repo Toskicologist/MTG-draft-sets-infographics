@@ -3738,7 +3738,8 @@ const fetchCardData = async (cardName, setCode) => {
     const power = data.power || null;
     const toughness = data.toughness || null;
 
-    return imageUrl ? { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name } : null;
+    // Return card data even without imageUrl - allows fallback rendering
+    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name };
   };
 
   const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'];
