@@ -1135,6 +1135,11 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.2.2 (2026-04-02 22:27 UTC - Claude Sonnet 4.6):
+  - PERF: Reduce Scryfall API request buffer from 100ms to 20ms
+  - Faster card loading on questions with API caching in place
+  - Maintains rate limit safety while improving responsiveness
+
   v4.2.1 (2026-04-02 22:26 UTC - Claude Sonnet 4.6):
   - FIX: Disable automatic next question preloading (was causing card flickering)
   - Result popup now stays visible until user clicks Next
@@ -3287,8 +3292,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.2.1';
-const LAST_UPDATE = '2026-04-02 22:26 UTC';
+const QUIZ_VERSION = '4.2.2';
+const LAST_UPDATE = '2026-04-02 22:27 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -3758,7 +3763,7 @@ const SCRYFALL_SET_CODES = {
 // Rate limiting state for Scryfall API
 let scryfallRateLimitReset = 0;
 let lastScryfallRequestTime = 0;
-const MIN_REQUEST_DELAY = 100; // Minimum 100ms between Scryfall requests (more conservative)
+const MIN_REQUEST_DELAY = 20; // Minimum 20ms between Scryfall requests (reduced for faster loading)
 const ORACLE_CACHE_KEY = 'gih_quiz_oracle_cache_v1';
 
 // Load oracle text cache from localStorage
