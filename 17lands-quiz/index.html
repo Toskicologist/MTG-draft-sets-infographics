@@ -898,6 +898,20 @@
     /* ============== GRADING MODE STYLES ============== */
 
     /* Mode toggle buttons */
+    .set-selector {
+      display: flex;
+      gap: 0;
+      flex-wrap: wrap;
+      background: rgba(74, 158, 255, 0.15);
+      border: 1px solid rgba(74, 158, 255, 0.3);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 65ch;
+    }
+
     .mode-toggle {
       display: flex;
       gap: 0;
@@ -4294,7 +4308,17 @@ Play at: ${baseUrl}`,
         <div className="banner-content">
           <h1>{currentSetConfig.shortName} Draft Card Evaluation Quiz</h1>
 
-          <div className="mode-toggle" style={{marginTop: '12px', marginBottom: '8px', justifyContent: 'center'}}>
+          <p style={{fontSize: '11px', color: '#e0e0e0', marginTop: '8px', lineHeight: '1.5', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
+            Lovingly vibe coded with Claude Code • <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>View source on GitHub</a> • Version {QUIZ_VERSION} • Last updated {LAST_UPDATE}
+            <br />
+            Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Interactive Color Wheel of ECL draft archetypes</a> or <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>normalized review comparison</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Reddit</a>.
+          </p>
+        </div>
+      </div>
+
+      {(currentPair || currentCard || filterError) && (
+        <div className="quiz-section">
+          <div className="set-selector">
             {Object.keys(SET_CONFIG).map(code => (
               <button
                 key={code}
@@ -4312,9 +4336,9 @@ Play at: ${baseUrl}`,
                   setRarityFilter('all');
                   setTypeFilter('all');
                 }}
-                style={{fontSize: '14px', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px'}}
+                style={{fontSize: '13px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '4px', flex: '0 1 auto'}}
               >
-                <svg viewBox={SET_ICONS[code].viewBox} style={{width: '16px', height: '16px', fill: 'currentColor', flexShrink: 0}}>
+                <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
                   <path d={SET_ICONS[code].path} />
                 </svg>
                 {SET_CONFIG[code].shortName}
@@ -4322,16 +4346,6 @@ Play at: ${baseUrl}`,
             ))}
           </div>
 
-          <p style={{fontSize: '11px', color: '#e0e0e0', marginTop: '8px', lineHeight: '1.5', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
-            Lovingly vibe coded with Claude Code • <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>View source on GitHub</a> • Version {QUIZ_VERSION} • Last updated {LAST_UPDATE}
-            <br />
-            Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Interactive Color Wheel of ECL draft archetypes</a> or <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>normalized review comparison</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Reddit</a>.
-          </p>
-        </div>
-      </div>
-
-      {(currentPair || currentCard || filterError) && (
-        <div className="quiz-section">
           <div className="mode-toggle">
             <button
               className={`mode-option ${quizMode === 'comparison' ? 'active' : ''}`}
