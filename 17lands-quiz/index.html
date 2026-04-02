@@ -3238,7 +3238,7 @@ const SET_CONFIG = {
   },
   CUBE: {
     name: 'CUBE (Powered Cube)',
-    shortName: 'Cube',
+    shortName: 'Powered Cube',
     data: CUBE_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=CUBE&format=TradDraft',
     dataDate: '2026-04-02',
@@ -4502,7 +4502,9 @@ Play at: ${baseUrl}`,
                 <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
                   <path d={SET_ICONS[code].path} />
                 </svg>
-                {SET_CONFIG[code].shortName}
+                <span style={{fontSize: code === 'CUBE' ? '11px' : '13px', lineHeight: '1'}}>
+                  {SET_CONFIG[code].shortName}
+                </span>
               </button>
             ))}
           </div>
