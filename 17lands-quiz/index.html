@@ -3712,6 +3712,11 @@ const SCRYFALL_SET_CODES = {
   // CUBE uses fuzzy search (special cube set)
 };
 
+// Rate limiting state for Scryfall API
+let scryfallRateLimitReset = 0;
+let lastScryfallRequestTime = 0;
+const MIN_REQUEST_DELAY = 50; // Minimum 50ms between Scryfall requests
+
 const fetchCardData = async (cardName, setCode) => {
   const cacheKey = `${setCode || 'ECL'}:${cardName}`;
   if (scryfallImageCache[cacheKey]) {
@@ -3721,6 +3726,20 @@ const fetchCardData = async (cardName, setCode) => {
   if (scryfallImageCache[cardName]) {
     return scryfallImageCache[cardName];
   }
+
+  // Wait if rate limited or if too little time has passed
+  const now = Date.now();
+  if (scryfallRateLimitReset > now) {
+    const waitTime = scryfallRateLimitReset - now;
+    await new Promise(resolve => setTimeout(resolve, Math.min(waitTime, 500)));
+  } else {
+    // Enforce minimum delay between requests
+    const timeSinceLastRequest = now - lastScryfallRequestTime;
+    if (timeSinceLastRequest < MIN_REQUEST_DELAY) {
+      await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_DELAY - timeSinceLastRequest));
+    }
+  }
+  lastScryfallRequestTime = Date.now();
 
   const getCardData = (data) => {
     if (!data) return null;
@@ -3750,6 +3769,13 @@ const fetchCardData = async (cardName, setCode) => {
       for (const scryfallSet of scryfallSets) {
         try {
           let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:${scryfallSet}`, {timeout: 3000});
+
+          // Handle rate limiting
+          if (response.status === 429) {
+            scryfallRateLimitReset = now + 5000; // Wait 5 seconds
+            continue;
+          }
+
           if (response.ok) {
             const data = await response.json();
             if (data.data && data.data.length > 0) {
@@ -3769,6 +3795,12 @@ const fetchCardData = async (cardName, setCode) => {
 
     // Fallback: fuzzy search (any version) - works for all sets
     let response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`, {timeout: 3000});
+
+    if (response.status === 429) {
+      scryfallRateLimitReset = now + 5000; // Wait 5 seconds
+      return null;
+    }
+
     if (response.ok) {
       const data = await response.json();
       const cardData = getCardData(data);
