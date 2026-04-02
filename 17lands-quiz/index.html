@@ -3945,8 +3945,8 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         className={containerClass}
         onClick={() => !disabled && onSelect(cardNumber)}
       >
-        {/* Always show oracle text first as placeholder/fallback */}
-        {cardInfo && (
+        {/* Show oracle text as placeholder only while image is loading or missing */}
+        {cardInfo && (!imageUrl || imageError) && (
           <div className="card-oracle-fallback">
             <div className="card-fallback-content">
               <div className="card-fallback-name">{cardInfo.name}</div>
@@ -3961,7 +3961,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
           </div>
         )}
 
-        {/* Image loads on top of oracle text */}
+        {/* Image displays once loaded */}
         {imageUrl && !imageError && (
           <img
             src={imageUrl}
