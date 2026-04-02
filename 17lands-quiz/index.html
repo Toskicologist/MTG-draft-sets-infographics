@@ -904,8 +904,9 @@
       flex-wrap: wrap;
       background: rgba(74, 158, 255, 0.15);
       border: 1px solid rgba(74, 158, 255, 0.3);
-      border-radius: 8px;
-      margin-bottom: 16px;
+      border-radius: 4px;
+      padding: 4px 0;
+      margin-bottom: 8px;
       justify-content: center;
       margin-left: auto;
       margin-right: auto;
@@ -917,9 +918,10 @@
       gap: 0;
       background: rgba(74, 158, 255, 0.15);
       border: 1px solid rgba(74, 158, 255, 0.3);
-      border-radius: 8px;
+      border-radius: 4px;
       overflow: hidden;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+      margin-top: 0;
       justify-content: center;
       margin-left: auto;
       margin-right: auto;
@@ -4336,7 +4338,7 @@ Play at: ${baseUrl}`,
                   setRarityFilter('all');
                   setTypeFilter('all');
                 }}
-                style={{fontSize: '13px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '4px', flex: '0 1 auto'}}
+                style={{fontSize: '13px', padding: '5px 8px', display: 'flex', alignItems: 'center', gap: '3px', flex: '0 1 auto'}}
               >
                 <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
                   <path d={SET_ICONS[code].path} />
