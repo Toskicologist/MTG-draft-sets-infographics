@@ -1135,6 +1135,12 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.2.3 (2026-04-02 22:31 UTC - Claude Sonnet 4.6):
+  - PERF: Smart startup preloading strategy for card text
+  - On startup/set change: load text for current set's first 2 cards and first card of each other set
+  - Ensures oracle text is always available as placeholder while images load
+  - Text available immediately when switching sets or starting new question
+
   v4.2.2 (2026-04-02 22:27 UTC - Claude Sonnet 4.6):
   - PERF: Reduce Scryfall API request buffer from 100ms to 20ms
   - Faster card loading on questions with API caching in place
@@ -3292,8 +3298,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.2.2';
-const LAST_UPDATE = '2026-04-02 22:27 UTC';
+const QUIZ_VERSION = '4.2.3';
+const LAST_UPDATE = '2026-04-02 22:31 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -4126,6 +4132,52 @@ const GIHQuiz = () => {
   React.useEffect(() => {
     safeStorage.setItem(STORAGE_KEYS.METRIC, metric);
   }, [metric]);
+
+  // Smart startup preloading: load text for current set's cards and other sets' first cards
+  React.useEffect(() => {
+    const preloadStartupCards = async () => {
+      const cardsToPreload = [];
+
+      // Get current set data
+      const currentSetData = SET_CONFIG[currentSetCode]?.data;
+      if (currentSetData && currentSetData.length > 0) {
+        // Priority 1: First 2 cards of current set (current + next question)
+        for (let i = 0; i < Math.min(2, currentSetData.length); i++) {
+          cardsToPreload.push({
+            cardName: currentSetData[i].name,
+            setCode: currentSetCode,
+            priority: 1
+          });
+        }
+      }
+
+      // Priority 2: First card of each other set (for when user switches sets)
+      Object.keys(SET_CONFIG).forEach(setCode => {
+        if (setCode !== currentSetCode) {
+          const setData = SET_CONFIG[setCode].data;
+          if (setData && setData.length > 0) {
+            cardsToPreload.push({
+              cardName: setData[0].name,
+              setCode: setCode,
+              priority: 2
+            });
+          }
+        }
+      });
+
+      // Sort by priority (lower number = higher priority)
+      cardsToPreload.sort((a, b) => a.priority - b.priority);
+
+      // Fetch all cards to populate oracle cache
+      for (const card of cardsToPreload) {
+        await fetchCardData(card.cardName, card.setCode);
+        // Add small delay to avoid hammering API
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+    };
+
+    preloadStartupCards();
+  }, [currentSetCode]);
 
   // Close share menu when clicking outside
   React.useEffect(() => {
