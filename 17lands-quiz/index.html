@@ -3945,8 +3945,8 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         className={containerClass}
         onClick={() => !disabled && onSelect(cardNumber)}
       >
-        {imageLoading && <div className="card-loading">Loading image...</div>}
-        {(imageError || !imageUrl) && cardInfo && (
+        {/* Always show oracle text first as placeholder/fallback */}
+        {cardInfo && (
           <div className="card-oracle-fallback">
             <div className="card-fallback-content">
               <div className="card-fallback-name">{cardInfo.name}</div>
@@ -3960,15 +3960,22 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
             </div>
           </div>
         )}
-        {imageError && !cardInfo && <div className="card-error">Unable to load card image or text</div>}
-        {imageUrl && (
+
+        {/* Image loads on top of oracle text */}
+        {imageUrl && !imageError && (
           <img
             src={imageUrl}
             alt={`${card.name}. Type: ${cardInfo?.typeLine || 'Unknown'}. ${cardInfo?.oracleText || 'No text.'}`}
             className="card-image"
+            style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
             onError={() => setImageError(true)}
+            title={cardInfo?.oracleText ? `${card.name}\n\n${cardInfo.typeLine}\n\n${cardInfo.oracleText}` : card.name}
           />
         )}
+
+        {/* Show error only if we have no card data at all */}
+        {!cardInfo && <div className="card-error">Unable to load card data</div>}
+
         {showResult && (
           <div className="gih-percentage show">
             <div className="gih-value">
