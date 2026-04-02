@@ -1135,6 +1135,12 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.2.6 (2026-04-02 22:38 UTC - Claude Sonnet 4.6):
+  - FIX: Disable all startup preloading due to Scryfall rate limits
+  - Only fetch card data when user views a question
+  - Use cached oracle text and fallback messages
+  - Prevents 429 errors and CORS issues
+
   v4.2.5 (2026-04-02 22:36 UTC - Claude Sonnet 4.6):
   - FIX: Reduce aggressive startup preloading (was hitting rate limits)
   - Load current question pair first with fast delays (20ms)
@@ -3308,8 +3314,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.2.5';
-const LAST_UPDATE = '2026-04-02 22:36 UTC';
+const QUIZ_VERSION = '4.2.6';
+const LAST_UPDATE = '2026-04-02 22:38 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -4143,43 +4149,8 @@ const GIHQuiz = () => {
     safeStorage.setItem(STORAGE_KEYS.METRIC, metric);
   }, [metric]);
 
-  // Smart startup preloading: prioritize current question, then current set
-  React.useEffect(() => {
-    const preloadStartupCards = async () => {
-      const cardsToPreload = [];
-      const currentSetData = SET_CONFIG[currentSetCode]?.data;
-
-      if (currentSetData && currentSetData.length > 0) {
-        // Priority 1: First 2 cards (current + next question) - ALWAYS load
-        for (let i = 0; i < Math.min(2, currentSetData.length); i++) {
-          cardsToPreload.push({
-            cardName: currentSetData[i].name,
-            setCode: currentSetCode,
-            priority: 1
-          });
-        }
-
-        // Priority 2: Remaining cards of current set - load with longer delays
-        for (let i = 2; i < Math.min(10, currentSetData.length); i++) {
-          cardsToPreload.push({
-            cardName: currentSetData[i].name,
-            setCode: currentSetCode,
-            priority: 2
-          });
-        }
-      }
-
-      // Fetch cards with priority-based delays
-      for (const card of cardsToPreload) {
-        await fetchCardData(card.cardName, card.setCode);
-        // Priority 1 (current Q): 20ms, Priority 2 (current set): 100ms
-        const delay = card.priority === 1 ? 20 : 100;
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    };
-
-    preloadStartupCards();
-  }, [currentSetCode]);
+  // Disabled: startup preloading was causing rate limit issues
+  // Only fetch card data when user explicitly needs it (when viewing a card)
 
   // Close share menu when clicking outside
   React.useEffect(() => {
