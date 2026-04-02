@@ -1135,6 +1135,14 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.2.1 (2026-04-02 16:15 UTC - Claude Sonnet 4.6):
+  - FIX: Disable automatic next question preloading (was causing card flickering)
+  - Result popup now stays visible until user clicks Next
+  - Unified history across all sets with set code display
+  - Oracle text as hover tooltip on card image
+  - Card images use proper contain fitting (no cropping)
+  - Text visible during image load, hidden once image loads
+
   v4.2.0 (2026-04-02 UTC - Claude Sonnet 4.6):
   - PERF: Implement requestIdleCallback-based background preloading of card images
   - Automatically preload cards from non-active sets after current pair loads
@@ -3279,8 +3287,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.2.0';
-const LAST_UPDATE = '2026-04-02 UTC';
+const QUIZ_VERSION = '4.2.1';
+const LAST_UPDATE = '2026-04-02 16:15 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
