@@ -4346,18 +4346,18 @@ const GIHQuiz = () => {
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
     setHistory(loadAllHistory(quizMode));
 
-    // Immediately generate next question (images will preload in background while showing result)
-    setTimeout(() => {
-      generateQuestion();
-    }, 100);
-
-    // Scroll to result
+    // Scroll to result first
     setTimeout(() => {
       const resultPanel = document.querySelector('.result-panel');
       if (resultPanel) {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
+
+    // Generate next question after result is shown (1.5 seconds for user to see result, then start preloading)
+    setTimeout(() => {
+      generateQuestion();
+    }, 1500);
   }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, currentSetCode, generateQuestion]);
 
   // Handle image loaded notification for background preloading
@@ -4450,18 +4450,18 @@ const GIHQuiz = () => {
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
     setHistory(loadAllHistory(quizMode));
 
-    // Immediately generate next question (images will preload in background while showing result)
-    setTimeout(() => {
-      generateQuestion();
-    }, 100);
-
-    // Scroll to result
+    // Scroll to result first
     setTimeout(() => {
       const resultPanel = document.querySelector('.result-panel');
       if (resultPanel) {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
+
+    // Generate next question after result is shown (1.5 seconds for user to see result, then start preloading)
+    setTimeout(() => {
+      generateQuestion();
+    }, 1500);
   }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, currentSetCode, generateQuestion]);
 
   const handleNextQuestion = React.useCallback(() => {
