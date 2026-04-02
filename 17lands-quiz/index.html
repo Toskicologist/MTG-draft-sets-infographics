@@ -4249,10 +4249,10 @@ const GIHQuiz = () => {
         }
       });
 
-      // Start background preloading
-      if (cardsToPreload.length > 0) {
-        startBackgroundPreloading(cardsToPreload);
-      }
+      // Start background preloading (temporarily disabled for debugging)
+      // if (cardsToPreload.length > 0) {
+      //   startBackgroundPreloading(cardsToPreload);
+      // }
     }, 2000);
 
     return () => clearTimeout(preloadTimer);
