@@ -3608,12 +3608,10 @@ const SCRYFALL_SET_CODES = {
   TMT: ['tmt', 'spg'],
   FDN: ['fdn', 'spg'],
   BLB: ['blb', 'spg'],
-  ATLA: ['tla', 'spg'],
-  CUBE: ['pcu1', 'spg'],
   OM1: ['otj', 'spg'],
   EOE: ['eoe', 'spg'],
-  TDM: ['ddt', 'spg'],
-  FIN: ['ffi', 'spg']
+  TDM: ['ddt', 'spg']
+  // ATLA, CUBE, FIN use fuzzy search (not on standard Scryfall)
 };
 
 const fetchCardData = async (cardName, setCode) => {
@@ -3645,26 +3643,33 @@ const fetchCardData = async (cardName, setCode) => {
     return imageUrl ? { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name } : null;
   };
 
-  const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'] || ['ecl', 'spg'];
+  const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'];
 
   try {
-    // Try each set-specific search in priority order
-    for (const scryfallSet of scryfallSets) {
-      let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:${scryfallSet}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data && data.data.length > 0) {
-          const cardData = getCardData(data.data[0]);
-          if (cardData) {
-            scryfallImageCache[cacheKey] = cardData;
-            return cardData;
+    // Try set-specific search only if we have confirmed set codes
+    if (scryfallSets) {
+      for (const scryfallSet of scryfallSets) {
+        try {
+          let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:${scryfallSet}`, {timeout: 3000});
+          if (response.ok) {
+            const data = await response.json();
+            if (data.data && data.data.length > 0) {
+              const cardData = getCardData(data.data[0]);
+              if (cardData) {
+                scryfallImageCache[cacheKey] = cardData;
+                return cardData;
+              }
+            }
           }
+        } catch (e) {
+          // Set-specific search failed, continue to fuzzy search
+          continue;
         }
       }
     }
 
-    // Fallback: fuzzy search (any version)
-    let response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+    // Fallback: fuzzy search (any version) - works for all sets
+    let response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`, {timeout: 3000});
     if (response.ok) {
       const data = await response.json();
       const cardData = getCardData(data);
