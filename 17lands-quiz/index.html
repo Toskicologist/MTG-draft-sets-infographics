@@ -3488,6 +3488,41 @@ const loadHistory = (mode = 'comparison', setCode = 'ECL') => {
   }
 };
 
+// Load history from ALL sets (unified history across all sets)
+const loadAllHistory = (mode = 'comparison') => {
+  try {
+    const allHistory = [];
+    const base = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+
+    // Load history for all sets
+    Object.keys(SET_CONFIG).forEach(setCode => {
+      const data = safeStorage.getItem(storageKey(base, setCode));
+      if (data) {
+        const parsed = JSON.parse(data);
+        allHistory.push(...parsed);
+      }
+    });
+
+    // Fall back to legacy key for ECL backwards compat
+    const legacy = safeStorage.getItem(base);
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
+      // Only add legacy entries that aren't already in the new storage
+      parsed.forEach(entry => {
+        if (!allHistory.some(h => h.timestamp === entry.timestamp)) {
+          allHistory.push(entry);
+        }
+      });
+    }
+
+    // Sort by timestamp descending (newest first)
+    return allHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  } catch (e) {
+    console.error('Error loading all history:', e);
+    return [];
+  }
+};
+
 const saveHistory = (mode = 'comparison', history, setCode = 'ECL') => {
   try {
     const base = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
@@ -4033,16 +4068,17 @@ const GIHQuiz = () => {
   const [questions, setQuestions] = React.useState(savedScore.questions);
 
   const [filterError, setFilterError] = React.useState('');
-  const [history, setHistory] = React.useState(loadHistory(quizMode, currentSetCode));
+  const [history, setHistory] = React.useState(loadAllHistory('comparison'));
   const [showToast, setShowToast] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
 
-  // Update score and history when mode or set changes
+  // Update score when mode or set changes (history is now unified across all sets)
   React.useEffect(() => {
     const score = loadScore(quizMode, currentSetCode);
     setPoints(score.points);
     setQuestions(score.questions);
-    setHistory(loadHistory(quizMode, currentSetCode));
+    // Update history to show entries for current mode
+    setHistory(loadAllHistory(quizMode));
     safeStorage.setItem(STORAGE_KEYS.MODE, quizMode);
     setShowResult(false);
     setSelectedGrade(null);
@@ -4301,7 +4337,7 @@ const GIHQuiz = () => {
       smartSelection: smartSelectionEnabled
     };
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
-    setHistory(loadHistory(quizMode, currentSetCode));
+    setHistory(loadAllHistory(quizMode));
 
     // Immediately generate next question (images will preload in background while showing result)
     setTimeout(() => {
@@ -4405,7 +4441,7 @@ const GIHQuiz = () => {
       filterType: typeFilter
     };
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
-    setHistory(loadHistory(quizMode, currentSetCode));
+    setHistory(loadAllHistory(quizMode));
 
     // Immediately generate next question (images will preload in background while showing result)
     setTimeout(() => {
@@ -5099,7 +5135,8 @@ Play at: ${baseUrl}`,
               <tbody>
                 {history.slice().reverse().map((entry, idx) => {
                   const actualIdx = history.length - idx;
-                  const filterText = `${entry.filterColor === 'all' ? 'All' : entry.filterColor.toUpperCase()} / ${entry.filterRarity === 'all' ? 'All' : entry.filterRarity}${entry.filterType && entry.filterType !== 'all' ? ` / ${entry.filterType}` : ''}`;
+                  const setName = entry.setCode ? SET_CONFIG[entry.setCode]?.shortName || entry.setCode : 'ECL';
+                  const filterText = `${setName} • ${entry.filterColor === 'all' ? 'All' : entry.filterColor.toUpperCase()} / ${entry.filterRarity === 'all' ? 'All' : entry.filterRarity}${entry.filterType && entry.filterType !== 'all' ? ` / ${entry.filterType}` : ''}`;
                   const smartMarker = entry.smartSelection ? ' ✨' : '';
                   const metricMarker = entry.metric === 'alsa' ? ' 🎯' : '';
 
