@@ -3715,7 +3715,26 @@ const SCRYFALL_SET_CODES = {
 // Rate limiting state for Scryfall API
 let scryfallRateLimitReset = 0;
 let lastScryfallRequestTime = 0;
-const MIN_REQUEST_DELAY = 50; // Minimum 50ms between Scryfall requests
+const MIN_REQUEST_DELAY = 100; // Minimum 100ms between Scryfall requests (more conservative)
+const ORACLE_CACHE_KEY = 'gih_quiz_oracle_cache_v1';
+
+// Load oracle text cache from localStorage
+const getOracleCache = () => {
+  try {
+    const cached = safeStorage.getItem(ORACLE_CACHE_KEY);
+    return cached ? JSON.parse(cached) : {};
+  } catch (e) {
+    return {};
+  }
+};
+
+const saveOracleCache = (cache) => {
+  try {
+    safeStorage.setItem(ORACLE_CACHE_KEY, JSON.stringify(cache));
+  } catch (e) {
+    console.warn('Could not save oracle cache:', e);
+  }
+};
 
 const fetchCardData = async (cardName, setCode) => {
   const cacheKey = `${setCode || 'ECL'}:${cardName}`;
@@ -3806,13 +3825,41 @@ const fetchCardData = async (cardName, setCode) => {
       const cardData = getCardData(data);
       if (cardData) {
         scryfallImageCache[cacheKey] = cardData;
+
+        // Cache oracle text in localStorage for future use
+        const oracleCache = getOracleCache();
+        oracleCache[cardName] = {
+          oracleText: cardData.oracleText,
+          typeLine: cardData.typeLine,
+          manaValue: cardData.manaValue,
+          power: cardData.power,
+          toughness: cardData.toughness,
+          name: cardData.name
+        };
+        saveOracleCache(oracleCache);
+
         return cardData;
       }
+    }
+
+    // Check if we have oracle text cached from previous fetches
+    const oracleCache = getOracleCache();
+    if (oracleCache[cardName]) {
+      const cached = oracleCache[cardName];
+      scryfallImageCache[cacheKey] = cached;
+      return cached;
     }
 
     return null;
   } catch (error) {
     console.error(`Error fetching card data for ${cardName}:`, error);
+
+    // Try to return cached oracle text even if fetch failed
+    const oracleCache = getOracleCache();
+    if (oracleCache[cardName]) {
+      return oracleCache[cardName];
+    }
+
     return null;
   }
 };
@@ -3900,7 +3947,13 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
           </div>
         )}
       </div>
-      <a href={cardUrl} target="_blank" rel="noopener noreferrer" className="card-name">
+      <a
+        href={cardUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="card-name"
+        title={cardInfo?.oracleText ? `${card.name}\n\n${cardInfo.typeLine}\n\n${cardInfo.oracleText}` : card.name}
+      >
         {card.name}
       </a>
     </div>
