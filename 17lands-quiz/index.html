@@ -1135,6 +1135,12 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.2.5 (2026-04-02 22:36 UTC - Claude Sonnet 4.6):
+  - FIX: Reduce aggressive startup preloading (was hitting rate limits)
+  - Load current question pair first with fast delays (20ms)
+  - Load first 10 cards of current set with longer delays (100ms)
+  - Avoid preloading other sets to prevent API hammering
+
   v4.2.4 (2026-04-02 22:32 UTC - Claude Sonnet 4.6):
   - FIX: Preload 2 cards from each other set (we show 2 at a time)
   - Better text availability when switching between sets
@@ -3302,8 +3308,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.2.4';
-const LAST_UPDATE = '2026-04-02 22:32 UTC';
+const QUIZ_VERSION = '4.2.5';
+const LAST_UPDATE = '2026-04-02 22:36 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -4137,15 +4143,14 @@ const GIHQuiz = () => {
     safeStorage.setItem(STORAGE_KEYS.METRIC, metric);
   }, [metric]);
 
-  // Smart startup preloading: load text for current set's cards and other sets' first cards
+  // Smart startup preloading: prioritize current question, then current set
   React.useEffect(() => {
     const preloadStartupCards = async () => {
       const cardsToPreload = [];
-
-      // Get current set data
       const currentSetData = SET_CONFIG[currentSetCode]?.data;
+
       if (currentSetData && currentSetData.length > 0) {
-        // Priority 1: First 2 cards of current set (current + next question)
+        // Priority 1: First 2 cards (current + next question) - ALWAYS load
         for (let i = 0; i < Math.min(2, currentSetData.length); i++) {
           cardsToPreload.push({
             cardName: currentSetData[i].name,
@@ -4153,33 +4158,23 @@ const GIHQuiz = () => {
             priority: 1
           });
         }
+
+        // Priority 2: Remaining cards of current set - load with longer delays
+        for (let i = 2; i < Math.min(10, currentSetData.length); i++) {
+          cardsToPreload.push({
+            cardName: currentSetData[i].name,
+            setCode: currentSetCode,
+            priority: 2
+          });
+        }
       }
 
-      // Priority 2: First 2 cards of each other set (for when user switches sets)
-      Object.keys(SET_CONFIG).forEach(setCode => {
-        if (setCode !== currentSetCode) {
-          const setData = SET_CONFIG[setCode].data;
-          if (setData && setData.length > 0) {
-            // Load 2 cards since we show 2 at a time
-            for (let i = 0; i < Math.min(2, setData.length); i++) {
-              cardsToPreload.push({
-                cardName: setData[i].name,
-                setCode: setCode,
-                priority: 2
-              });
-            }
-          }
-        }
-      });
-
-      // Sort by priority (lower number = higher priority)
-      cardsToPreload.sort((a, b) => a.priority - b.priority);
-
-      // Fetch all cards to populate oracle cache
+      // Fetch cards with priority-based delays
       for (const card of cardsToPreload) {
         await fetchCardData(card.cardName, card.setCode);
-        // Add small delay to avoid hammering API
-        await new Promise(resolve => setTimeout(resolve, 20));
+        // Priority 1 (current Q): 20ms, Priority 2 (current set): 100ms
+        const delay = card.priority === 1 ? 20 : 100;
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     };
 
