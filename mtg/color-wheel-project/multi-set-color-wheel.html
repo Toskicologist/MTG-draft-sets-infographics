@@ -31,7 +31,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.0.1 React (STABLE)
+ * 1.0.2 React (STABLE)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -39,6 +39,11 @@
  *   - Teenage Mutant Ninja Turtles (TMT) - v1.0.4 - Mar 2026
  *
  * CHANGELOG:
+ * 1.0.2 (2026-04-02, UTC) - [Claude Sonnet 4.6]
+ *   - Added URL hash navigation (#ecl, #fdn, #tmt)
+ *   - Hash updates when user switches sets (deep linking support)
+ *   - Page load reads hash and navigates to set automatically
+ *
  * 1.0.1 (2026-04-02, UTC) - [Claude Sonnet 4.6]
  *   - Disabled Strixhaven (STX) from set selector
  *   - Added Keyrune set symbols to tab bar buttons
@@ -536,7 +541,10 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 function MultiSetColorWheel() {
-  const [currentSetKey, setCurrentSetKey] = useState('ECL');
+  const [currentSetKey, setCurrentSetKey] = useState(() => {
+    const hash = window.location.hash.slice(1).toUpperCase();
+    return SET_ORDER.includes(hash) ? hash : 'ECL';
+  });
   const [hoveredNode, setHoveredNode] = useState(null);
   const [hoveredPair, setHoveredPair] = useState(null);
   const [hoveredColor, setHoveredColor] = useState(null);
@@ -555,6 +563,11 @@ function MultiSetColorWheel() {
   }, [textSize]);
 
   useEffect(() => { setConfig(getConfig(textSize)); }, [textSize]);
+
+  // Sync URL hash with current set
+  useEffect(() => {
+    window.location.hash = currentSetKey.toLowerCase();
+  }, [currentSetKey]);
 
   // Reset hover state when set changes
   useEffect(() => {
@@ -610,7 +623,7 @@ function MultiSetColorWheel() {
           MTG Draft Archetypes
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: '0 0 12px 0' }}>
-          Multi-Set Color Wheel · v1.0.1 · Select a set below
+          Multi-Set Color Wheel · v1.0.2 · Select a set or use #ecl, #fdn, #tmt
         </p>
       </div>
 
