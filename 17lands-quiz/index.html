@@ -4240,6 +4240,18 @@ const GIHQuiz = () => {
     }
   }, [colorFilter, rarityFilter, typeFilter, quizMode, smartSelectionEnabled, metric, currentSetCode, activeCardData]);
 
+  // Preload images for a pair of cards in the background
+  const preloadCardImages = React.useCallback(async (card1, card2) => {
+    if (!card1 || !card2) return;
+    // Preload both card images without waiting
+    Promise.all([
+      fetchCardData(card1.name, currentSetCode),
+      fetchCardData(card2.name, currentSetCode)
+    ]).catch(() => {
+      // Silent fail - preloading is optional
+    });
+  }, [currentSetCode]);
+
   const handleSelectCard = React.useCallback((cardNum) => {
     if (!currentPair || isAnswering) return;
 
@@ -4291,13 +4303,19 @@ const GIHQuiz = () => {
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
     setHistory(loadHistory(quizMode, currentSetCode));
 
+    // Immediately generate next question (images will preload in background while showing result)
+    setTimeout(() => {
+      generateQuestion();
+    }, 100);
+
+    // Scroll to result
     setTimeout(() => {
       const resultPanel = document.querySelector('.result-panel');
       if (resultPanel) {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, currentSetCode]);
+  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, currentSetCode, generateQuestion]);
 
   // Handle image loaded notification for background preloading
   const handleImageLoaded = React.useCallback((cardNumber) => {
@@ -4389,13 +4407,19 @@ const GIHQuiz = () => {
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
     setHistory(loadHistory(quizMode, currentSetCode));
 
+    // Immediately generate next question (images will preload in background while showing result)
+    setTimeout(() => {
+      generateQuestion();
+    }, 100);
+
+    // Scroll to result
     setTimeout(() => {
       const resultPanel = document.querySelector('.result-panel');
       if (resultPanel) {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, currentSetCode]);
+  }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, currentSetCode, generateQuestion]);
 
   const handleNextQuestion = React.useCallback(() => {
     setIsAnswering(false);
