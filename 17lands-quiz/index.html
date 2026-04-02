@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECL Draft Card Evaluation Quiz</title>
+  <title>Draft Card Evaluation Quiz</title>
 
   <!-- Open Graph / Social Media Preview -->
   <meta property="og:type" content="website">
@@ -1560,13 +1560,512 @@ const CARD_DATA = [
   {name: "Wistfulness", color: "UG", type: "Creature — Elemental Incarnation", rarity: "M", gihWr: 60.7, alsa: 1.62}
 ];
 
+// TMT (Teenage Mutant Turtles) card data - extracted from 17lands exports
+// Downloaded from 17 Lands on 2026-03-30
+const CARD_DATA_TMT = [
+  {name: 'Action News Crew', color: 'W', rarity: 'C', gihWr: 53.6, alsa: 6.15},
+  {name: 'Agent Bishop, Man in Black', color: 'W', rarity: 'R', gihWr: 64, alsa: 1.52},
+  {name: 'Anchovy & Banana Pizza', color: 'B', rarity: 'C', gihWr: 57.1, alsa: 3.61},
+  {name: "April O'Neil, Hacktivist", color: 'U', rarity: 'R', gihWr: 64.4, alsa: 2.3},
+  {name: "April O'Neil, Kunoichi Trainee", color: 'W', rarity: 'C', gihWr: 57.5, alsa: 4.7},
+  {name: 'April, Reporter of the Weird', color: 'U', rarity: 'U', gihWr: 49.7, alsa: 6.41},
+  {name: 'Armaggon, Future Shark', color: 'B', rarity: 'R', gihWr: 64.3, alsa: 2.11},
+  {name: 'Baxter Stockman', color: 'UR', rarity: 'U', gihWr: 59.5, alsa: 4.05},
+  {name: 'Bebop & Rocksteady', color: 'BG', rarity: 'R', gihWr: 56.4, alsa: 3.24},
+  {name: 'Bebop, Warthog Warrior', color: 'B', rarity: 'C', gihWr: 53, alsa: 7.14},
+  {name: 'Bespoke Bō', color: 'U', rarity: 'U', gihWr: 56.3, alsa: 4.44},
+  {name: 'Bot Bashing Time', color: 'R', rarity: 'C', gihWr: 53.2, alsa: 6.34},
+  {name: 'Brilliance Unleashed', color: 'UR', rarity: 'U', gihWr: 62.1, alsa: 3.94},
+  {name: 'Buzz Bots', color: 'U', rarity: 'C', gihWr: 58.7, alsa: 5.24},
+  {name: 'Casey Jones, Jury-Rig Justiciar', color: 'R', rarity: 'U', gihWr: 61.2, alsa: 4.33},
+  {name: 'Casey Jones, Vigilante', color: 'R', rarity: 'R', gihWr: 50.7, alsa: 4.43},
+  {name: 'Chrome Dome', color: '', rarity: 'R', gihWr: 60.9, alsa: 2.14},
+  {name: 'Cool but Rude', color: 'R', rarity: 'R', gihWr: 50, alsa: 3.48},
+  {name: 'Courier of Comestibles', color: 'G', rarity: 'U', gihWr: 62.7, alsa: 3.87},
+  {name: 'Cowabunga!', color: 'G', rarity: 'C', gihWr: 53, alsa: 7.66},
+  {name: 'Crustacean Commando', color: 'U', rarity: 'C', gihWr: 50.9, alsa: 7.36},
+  {name: 'Dark Leo & Shredder', color: 'WB', rarity: 'M', gihWr: 62.7, alsa: 1.92},
+  {name: 'Death in the Family', color: 'B', rarity: 'U', gihWr: 57.8, alsa: 3.25},
+  {name: 'Dimension X', color: '', rarity: 'C', gihWr: 56.4, alsa: 6.54},
+  {name: 'Dimensional Exile', color: 'W', rarity: 'U', gihWr: 58.6, alsa: 2.87},
+  {name: 'Does Machines', color: 'U', rarity: 'R', gihWr: 61.5, alsa: 2.71},
+  {name: 'Don & Leo, Problem Solvers', color: 'WU', rarity: 'R', gihWr: 62.4, alsa: 1.53},
+  {name: 'Don & Raph, Hard Science', color: 'UR', rarity: 'R', gihWr: 52.3, alsa: 3.48},
+  {name: "Donatello's Technique", color: 'U', rarity: 'U', gihWr: 52.5, alsa: 5.55},
+  {name: 'Donatello, Gadget Master', color: 'U', rarity: 'R', gihWr: 57.2, alsa: 2.6},
+  {name: 'Donatello, Mutant Mechanic', color: 'U', rarity: 'M', gihWr: 59.1, alsa: 1.95},
+  {name: 'Donatello, Turtle Techie', color: 'U', rarity: 'C', gihWr: 58.4, alsa: 5.63},
+  {name: 'Donatello, Way with Machines', color: 'U', rarity: 'U', gihWr: 56.3, alsa: 3.7},
+  {name: 'Dream Beavers', color: 'B', rarity: 'U', gihWr: 64.1, alsa: 3.04},
+  {name: 'EPF Point Squad', color: 'WR', rarity: 'C', gihWr: 52.7, alsa: 5.9},
+  {name: 'East Wind Avatar', color: 'W', rarity: 'C', gihWr: 53.5, alsa: 6.67},
+  {name: 'Escape Tunnel', color: '', rarity: 'C', gihWr: 57.3, alsa: 5.1},
+  {name: 'Everything Pizza', color: '', rarity: 'U', gihWr: 63.4, alsa: 4.88},
+  {name: 'Featherbrained Filcher', color: 'W', rarity: 'U', gihWr: 57.2, alsa: 4.64},
+  {name: 'Foot Elite', color: 'WB', rarity: 'C', gihWr: 54.1, alsa: 6.06},
+  {name: 'Foot Headquarters', color: '', rarity: 'C', gihWr: 56.9, alsa: 5.87},
+  {name: 'Foot Mystic', color: 'B', rarity: 'C', gihWr: 50.4, alsa: 7.24},
+  {name: 'Foot Ninjas', color: 'WB', rarity: 'C', gihWr: 55.9, alsa: 5.83},
+  {name: 'Frog Butler', color: 'G', rarity: 'C', gihWr: 61.1, alsa: 3.87},
+  {name: 'Fugitive Droid', color: 'U', rarity: 'U', gihWr: 55.5, alsa: 5.04},
+  {name: 'General Traag, Heart of Stone', color: 'R', rarity: 'U', gihWr: 57.1, alsa: 4.46},
+  {name: 'Genghis Frog', color: 'UG', rarity: 'U', gihWr: 57.8, alsa: 4.31},
+  {name: 'Go Ninja Go', color: 'WR', rarity: 'U', gihWr: 53, alsa: 5.23},
+  {name: 'Groundchuck & Dirtbag', color: 'G', rarity: 'R', gihWr: 57.9, alsa: 2.54},
+  {name: 'Grounded for Life', color: 'W', rarity: 'C', gihWr: 55.8, alsa: 5.11},
+  {name: 'Guac & Marshmallow Pizza', color: 'G', rarity: 'C', gihWr: 54.5, alsa: 6.96},
+  {name: 'Hamato Guardian Stance', color: 'W', rarity: 'C', gihWr: 56, alsa: 7.79},
+  {name: 'Hard-Won Jitte', color: 'R', rarity: 'U', gihWr: 46.3, alsa: 6.36},
+  {name: 'Henchbots', color: '', rarity: 'U', gihWr: 51.1, alsa: 4.73},
+  {name: 'High-Flying Ace', color: 'W', rarity: 'C', gihWr: 54.7, alsa: 6.38},
+  {name: 'Ice Cream Kitty', color: 'BG', rarity: 'C', gihWr: 54.4, alsa: 5.84},
+  {name: 'Illegitimate Business', color: '', rarity: 'C', gihWr: 58.3, alsa: 5.8},
+  {name: 'Improvised Arsenal', color: 'R', rarity: 'R', gihWr: 56.9, alsa: 2.87},
+  {name: 'Insectoid Exterminator', color: 'B', rarity: 'C', gihWr: 51.6, alsa: 7.14},
+  {name: "Jennika's Technique", color: 'R', rarity: 'U', gihWr: 56, alsa: 6.82},
+  {name: 'Jennika, Bad Apple Big Sister', color: 'W', rarity: 'C', gihWr: 56.2, alsa: 6.18},
+  {name: "Karai's Technique", color: 'WB', rarity: 'U', gihWr: 57.4, alsa: 3.74},
+  {name: 'Karai, Future of the Foot', color: 'WB', rarity: 'U', gihWr: 57.5, alsa: 3.46},
+  {name: "Kitsune, Dragon's Daughter", color: 'U', rarity: 'R', gihWr: 61.7, alsa: 2.58},
+  {name: 'Koya, Death from Above', color: 'W', rarity: 'U', gihWr: 58.3, alsa: 3.53},
+  {name: 'Krang & Shredder', color: 'UB', rarity: 'R', gihWr: 56.7, alsa: 1.58},
+  {name: 'Krang, Master Mind', color: 'U', rarity: 'R', gihWr: 58.5, alsa: 2.44},
+  {name: 'Krang, Utrom Warlord', color: '', rarity: 'M', gihWr: 54.4, alsa: 2.32},
+  {name: "Leader's Talent", color: 'W', rarity: 'R', gihWr: 54.9, alsa: 1.81},
+  {name: 'Leatherhead, Swamp Stalker', color: 'G', rarity: 'R', gihWr: 60.8, alsa: 2.08},
+  {name: "Leonardo's Technique", color: 'W', rarity: 'R', gihWr: 51.6, alsa: 3.07},
+  {name: 'Leonardo, Big Brother', color: 'W', rarity: 'C', gihWr: 56.1, alsa: 5.16},
+  {name: 'Leonardo, Cutting Edge', color: 'W', rarity: 'R', gihWr: 56.3, alsa: 2.38},
+  {name: 'Leonardo, Leader in Blue', color: 'W', rarity: 'U', gihWr: 59, alsa: 3.41},
+  {name: 'Leonardo, Sewer Samurai', color: 'W', rarity: 'M', gihWr: 60.3, alsa: 1.86},
+  {name: 'Lessons from Life', color: 'UG', rarity: 'U', gihWr: 60, alsa: 4.33},
+  {name: 'Lita, Little Orphan Amphibian', color: 'W', rarity: 'U', gihWr: 58.9, alsa: 2.83},
+  {name: 'Lord Dregg, Insect Invader', color: 'B', rarity: 'U', gihWr: 56.9, alsa: 3.67},
+  {name: 'Madame Null, Power Broker', color: 'B', rarity: 'R', gihWr: 56.7, alsa: 2.12},
+  {name: 'Make Your Move', color: 'W', rarity: 'C', gihWr: 54.4, alsa: 5.92},
+  {name: 'Manhole Missile', color: 'R', rarity: 'C', gihWr: 59.4, alsa: 4.38},
+  {name: 'Mechanized Ninja Cavalry', color: 'WR', rarity: 'C', gihWr: 58, alsa: 4.26},
+  {name: 'Metalhead', color: 'U', rarity: 'U', gihWr: 62.1, alsa: 3.57},
+  {name: "Michelangelo's Technique", color: 'G', rarity: 'R', gihWr: 55.6, alsa: 3.3},
+  {name: 'Michelangelo, Game Master', color: 'G', rarity: 'C', gihWr: 54.3, alsa: 5.54},
+  {name: 'Michelangelo, Improviser', color: 'G', rarity: 'M', gihWr: 57, alsa: 2.05},
+  {name: 'Michelangelo, Mutant BFF', color: 'G', rarity: 'U', gihWr: 58, alsa: 3.3},
+  {name: 'Michelangelo, Weirdness to 11', color: 'G', rarity: 'R', gihWr: 60.4, alsa: 2.06},
+  {name: 'Mighty Mutanimals', color: 'W', rarity: 'U', gihWr: 64.8, alsa: 2.55},
+  {name: 'Mikey & Don, Party Planners', color: 'UG', rarity: 'R', gihWr: 61.9, alsa: 1.73},
+  {name: 'Mikey & Leo, Chaos & Order', color: 'WG', rarity: 'R', gihWr: 55.9, alsa: 1.99},
+  {name: 'Mind Transfer Protocol', color: 'U', rarity: 'C', gihWr: 56.7, alsa: 7.38},
+  {name: 'Mona Lisa, Science Geek', color: 'G', rarity: 'U', gihWr: 56, alsa: 4.28},
+  {name: 'Mondo Gecko', color: 'U', rarity: 'M', gihWr: 53.7, alsa: 3.02},
+  {name: 'Mouser Attack!', color: 'R', rarity: 'C', gihWr: 49.3, alsa: 7.96},
+  {name: 'Mouser Foundry', color: 'R', rarity: 'C', gihWr: 59.4, alsa: 4.95},
+  {name: 'Mouser Mark III', color: 'UR', rarity: 'C', gihWr: 54.9, alsa: 6.86},
+  {name: 'Mutagen Man, Living Ooze', color: 'G', rarity: 'R', gihWr: 58.9, alsa: 2.03},
+  {name: 'Mutant Chain Reaction', color: 'G', rarity: 'C', gihWr: 50.9, alsa: 7.65},
+  {name: 'Mutant Town', color: '', rarity: 'C', gihWr: 59, alsa: 6.07},
+  {name: 'Mutant Town Musicians', color: 'R', rarity: 'C', gihWr: 52.8, alsa: 8},
+  {name: 'Negate', color: 'U', rarity: 'C', gihWr: 47.3, alsa: 8.35},
+  {name: "New Generation's Technique", color: 'G', rarity: 'U', gihWr: 52.8, alsa: 6.03},
+  {name: 'Ninja Teen', color: 'B', rarity: 'R', gihWr: 59.6, alsa: 2.09},
+  {name: 'Nobody', color: 'UR', rarity: 'C', gihWr: 57.9, alsa: 5.89},
+  {name: 'North Wind Avatar', color: 'UR', rarity: 'M', gihWr: 61.8, alsa: 2.51},
+  {name: 'Northampton Farm', color: '', rarity: 'R', gihWr: 54.7, alsa: 4.62},
+  {name: 'Novel Nunchaku', color: 'G', rarity: 'U', gihWr: 58.5, alsa: 3.69},
+  {name: 'Null Group Biological Assets', color: 'R', rarity: 'C', gihWr: 52.4, alsa: 7.81},
+  {name: 'Old Hob, Alleycat Blues', color: 'R', rarity: 'U', gihWr: 51.8, alsa: 4.93},
+  {name: 'Omni-Cheese Pizza', color: '', rarity: 'C', gihWr: 58.1, alsa: 6},
+  {name: 'Ooze Spill', color: 'U', rarity: 'U', gihWr: 60.4, alsa: 5.54},
+  {name: 'Oroku Saki, Shredder Rising', color: 'B', rarity: 'C', gihWr: 57.6, alsa: 4.95},
+  {name: 'Pain 101', color: 'B', rarity: 'C', gihWr: 52.4, alsa: 7.21},
+  {name: 'Paramecia Coloniex', color: 'B', rarity: 'U', gihWr: 53.6, alsa: 5.96},
+  {name: 'Party Dude', color: 'G', rarity: 'R', gihWr: 50.7, alsa: 3.33},
+  {name: 'Pizza Face, Gastromancer', color: 'BG', rarity: 'U', gihWr: 57, alsa: 3.6},
+  {name: 'Prehistoric Pet', color: 'W', rarity: 'R', gihWr: 57.9, alsa: 2.68},
+  {name: 'Primordial Pachyderm', color: 'G', rarity: 'C', gihWr: 57.8, alsa: 5.92},
+  {name: 'Punk Frogs', color: 'UG', rarity: 'C', gihWr: 50.7, alsa: 8.05},
+  {name: 'Purple Dragon Punks', color: 'R', rarity: 'C', gihWr: 54.1, alsa: 7.63},
+  {name: 'Putrid Pals', color: 'BG', rarity: 'C', gihWr: 48.6, alsa: 6.78},
+  {name: 'Quintessential Katana', color: 'W', rarity: 'U', gihWr: 57, alsa: 4.5},
+  {name: 'Ragamuffin Raptor', color: 'G', rarity: 'C', gihWr: 56.5, alsa: 5.97},
+  {name: 'Raph & Leo, Sibling Rivals', color: 'WR', rarity: 'R', gihWr: 53.7, alsa: 2.14},
+  {name: 'Raph & Mikey, Troublemakers', color: 'RG', rarity: 'R', gihWr: 61.1, alsa: 1.72},
+  {name: 'Raphael, Most Attitude', color: 'R', rarity: 'U', gihWr: 51.2, alsa: 5.09},
+  {name: 'Raphael, Ninja Destroyer', color: 'R', rarity: 'M', gihWr: 50.4, alsa: 2.91},
+  {name: 'Raphael, Tough Turtle', color: 'R', rarity: 'C', gihWr: 53.6, alsa: 6},
+  {name: 'Raphael, the Nightwatcher', color: 'R', rarity: 'R', gihWr: 58.7, alsa: 2.45},
+  {name: 'Rat King, Verminister', color: 'B', rarity: 'R', gihWr: 59.8, alsa: 2.06},
+  {name: 'Ravenous Robots', color: 'R', rarity: 'R', gihWr: 60.9, alsa: 2.34},
+  {name: 'Ray Fillet, Man Ray', color: 'U', rarity: 'U', gihWr: 56.8, alsa: 4.18},
+  {name: 'Renet, Temporal Apprentice', color: 'U', rarity: 'R', gihWr: 51.8, alsa: 3.61},
+  {name: 'Retro-Mutation', color: 'U', rarity: 'C', gihWr: 54.7, alsa: 6.44},
+  {name: 'Return to the Sewers', color: 'U', rarity: 'C', gihWr: 58.9, alsa: 6.36},
+  {name: 'Rock Soldiers', color: 'R', rarity: 'C', gihWr: 50.6, alsa: 7.94},
+  {name: 'Rocksteady, Crash Courser', color: 'G', rarity: 'C', gihWr: 53.5, alsa: 6.66},
+  {name: 'Sally Pride, Lioness Leader', color: 'W', rarity: 'R', gihWr: 70, alsa: 1.62},
+  {name: "Savanti Romero, Time's Exile", color: 'B', rarity: 'R', gihWr: 60.1, alsa: 1.96},
+  {name: 'Saved by the Shell', color: 'G', rarity: 'U', gihWr: 57.7, alsa: 4.67},
+  {name: 'Sewer-veillance Cam', color: 'U', rarity: 'C', gihWr: 59, alsa: 5.72},
+  {name: 'Shark Shredder, Killer Clone', color: 'B', rarity: 'R', gihWr: 58.4, alsa: 1.74},
+  {name: "Shredder's Armor", color: 'B', rarity: 'U', gihWr: 45.9, alsa: 6.99},
+  {name: "Shredder's Revenge", color: 'B', rarity: 'C', gihWr: 55.9, alsa: 7.16},
+  {name: "Shredder's Technique", color: 'B', rarity: 'U', gihWr: 57.3, alsa: 2.93},
+  {name: 'Shredder, Unrelenting', color: 'B', rarity: 'U', gihWr: 56.6, alsa: 4.01},
+  {name: 'Skateboard', color: '', rarity: 'U', gihWr: 51.3, alsa: 6.17},
+  {name: 'Slash, Reptile Rampager', color: 'R', rarity: 'R', gihWr: 55.9, alsa: 2.24},
+  {name: 'Slithering Cryptid', color: 'UG', rarity: 'C', gihWr: 55.3, alsa: 6.13},
+  {name: 'South Wind Avatar', color: 'B', rarity: 'R', gihWr: 55.6, alsa: 2.13},
+  {name: 'Spicy Oatmeal Pizza', color: 'R', rarity: 'U', gihWr: 56.9, alsa: 3.69},
+  {name: "Splinter's Technique", color: 'B', rarity: 'R', gihWr: 49.9, alsa: 4.18},
+  {name: 'Splinter, Hamato Yoshi', color: 'B', rarity: 'U', gihWr: 59.2, alsa: 3.53},
+  {name: 'Splinter, Radical Rat', color: 'WB', rarity: 'R', gihWr: 55.8, alsa: 2.34},
+  {name: 'Squirrelanoids', color: 'B', rarity: 'C', gihWr: 57.4, alsa: 5.08},
+  {name: 'Stockman, Mad Fly-entist', color: 'U', rarity: 'C', gihWr: 53.4, alsa: 7.64},
+  {name: 'Stomped by the Foot', color: 'B', rarity: 'C', gihWr: 57.3, alsa: 4.43},
+  {name: 'Super Shredder', color: 'B', rarity: 'M', gihWr: 59.7, alsa: 1.53},
+  {name: 'TCRI Building', color: '', rarity: 'C', gihWr: 60.2, alsa: 6.27},
+  {name: 'Tainted Treats', color: 'BG', rarity: 'U', gihWr: 60.8, alsa: 3.45},
+  {name: 'Technodrome', color: '', rarity: 'M', gihWr: 59, alsa: 2.15},
+  {name: 'Tenderize', color: 'G', rarity: 'C', gihWr: 57.4, alsa: 4.86},
+  {name: 'The Cloning of Shredder', color: 'B', rarity: 'M', gihWr: 61.4, alsa: 1.75},
+  {name: 'The Last Ronin', color: 'BG', rarity: 'M', gihWr: 69.4, alsa: 1.81},
+  {name: "The Last Ronin's Technique", color: 'W', rarity: 'U', gihWr: 59.4, alsa: 3.32},
+  {name: 'The Neutrinos', color: 'WR', rarity: 'U', gihWr: 53.9, alsa: 4.51},
+  {name: 'The Ooze', color: '', rarity: 'R', gihWr: 58.3, alsa: 1.6},
+  {name: 'Tokka & Rahzar, Terrible Twos', color: 'BR', rarity: 'R', gihWr: 51.2, alsa: 3.47},
+  {name: 'Transdimensional Bovine', color: 'G', rarity: 'R', gihWr: 59.3, alsa: 2.63},
+  {name: 'Triceraton Commander', color: 'W', rarity: 'M', gihWr: 61.6, alsa: 1.78},
+  {name: 'Tunnel Rats', color: 'B', rarity: 'C', gihWr: 54, alsa: 7.04},
+  {name: 'Turncoat Kunoichi', color: 'W', rarity: 'R', gihWr: 61.9, alsa: 2.03},
+  {name: 'Turtle Blimp', color: '', rarity: 'U', gihWr: 59.3, alsa: 5.27},
+  {name: 'Turtle Lair', color: '', rarity: 'U', gihWr: 56.8, alsa: 5.25},
+  {name: 'Turtle Power!', color: 'G', rarity: 'R', gihWr: 44.8, alsa: 4.86},
+  {name: 'Turtle Van', color: '', rarity: 'R', gihWr: 57.9, alsa: 1.68},
+  {name: 'Turtles Forever', color: 'W', rarity: 'R', gihWr: 51.3, alsa: 5.08},
+  {name: 'Uneasy Alliance', color: 'W', rarity: 'C', gihWr: 57.1, alsa: 4.41},
+  {name: 'Utrom Scientists', color: 'U', rarity: 'C', gihWr: 53.6, alsa: 6.7},
+  {name: 'Venus, Torn Between Worlds', color: 'G', rarity: 'U', gihWr: 52.6, alsa: 4.58},
+  {name: 'Weather Maker', color: '', rarity: 'R', gihWr: 60.5, alsa: 2.4},
+  {name: 'West Wind Avatar', color: 'G', rarity: 'U', gihWr: 57.9, alsa: 4.11},
+  {name: 'Wingnut, Bat on the Belfry', color: 'R', rarity: 'U', gihWr: 53.1, alsa: 5.09},
+  {name: 'Zog, Triceraton Castaway', color: 'R', rarity: 'C', gihWr: 51.4, alsa: 7.76},
+  {name: 'Zoo Escapees', color: 'G', rarity: 'C', gihWr: 53.5, alsa: 6.38}
+];
+
+// Foundations (FDN) card data - extracted from 17lands exports
+// Downloaded from 17 Lands on 2026-03-30
+const CARD_DATA_FDN = [
+  {name: 'Embercleave', color: 'R', rarity: 'M', gihWr: 64.2, alsa: 1.79},
+  {name: 'Liliana, Dreadhorde General', color: 'B', rarity: 'M', gihWr: 64.1, alsa: 1.26},
+  {name: 'Zimone, Paradox Sculptor', color: 'UG', rarity: 'M', gihWr: 62.5, alsa: 1.83},
+  {name: 'Sire of Seven Deaths', color: '', rarity: 'M', gihWr: 62.2, alsa: 1.11},
+  {name: 'Curator of Destinies', color: 'U', rarity: 'R', gihWr: 62.2, alsa: 1.96},
+  {name: 'Bloodthirsty Conqueror', color: 'B', rarity: 'M', gihWr: 62.2, alsa: 1.34},
+  {name: 'Celestial Armor', color: 'W', rarity: 'R', gihWr: 62.1, alsa: 1.72},
+  {name: 'Spinner of Souls', color: 'G', rarity: 'R', gihWr: 62, alsa: 1.78},
+  {name: 'Vivien Reid', color: 'G', rarity: 'M', gihWr: 62, alsa: 1.55},
+  {name: 'Sylvan Scavenging', color: 'G', rarity: 'R', gihWr: 62, alsa: 1.82},
+  {name: 'Alesha, Who Laughs at Fate', color: 'BR', rarity: 'R', gihWr: 62, alsa: 2.44},
+  {name: 'Scavenging Ooze', color: 'G', rarity: 'R', gihWr: 61.8, alsa: 1.97},
+  {name: 'Chandra, Flameshaper', color: 'R', rarity: 'M', gihWr: 61.8, alsa: 1.62},
+  {name: 'Dreadwing Scavenger', color: 'UB', rarity: 'U', gihWr: 61.4, alsa: 4.11},
+  {name: 'Elenda, Saint of Dusk', color: 'WB', rarity: 'R', gihWr: 61.2, alsa: 2.1},
+  {name: 'Leyline Axe', color: '', rarity: 'R', gihWr: 61.1, alsa: 1.77},
+  {name: 'Arahbo, the First Fang', color: 'W', rarity: 'R', gihWr: 60.8, alsa: 1.88},
+  {name: 'Twinflame Tyrant', color: 'R', rarity: 'M', gihWr: 60.6, alsa: 1.67},
+  {name: 'Kiora, the Rising Tide', color: 'U', rarity: 'R', gihWr: 60.6, alsa: 1.83},
+  {name: 'Searslicer Goblin', color: 'R', rarity: 'R', gihWr: 60.4, alsa: 2.2},
+  {name: 'Mischievous Mystic', color: 'U', rarity: 'U', gihWr: 60.4, alsa: 2.74},
+  {name: 'Giada, Font of Hope', color: 'W', rarity: 'R', gihWr: 60.3, alsa: 1.97},
+  {name: 'Blasphemous Edict', color: 'B', rarity: 'R', gihWr: 59.4, alsa: 2.34},
+  {name: 'Micromancer', color: 'U', rarity: 'U', gihWr: 59.3, alsa: 4.49},
+  {name: 'Faebloom Trick', color: 'U', rarity: 'U', gihWr: 59.3, alsa: 3.18},
+  {name: 'Day of Judgment', color: 'W', rarity: 'R', gihWr: 59.3, alsa: 2.17},
+  {name: 'Exemplar of Light', color: 'W', rarity: 'R', gihWr: 59.2, alsa: 1.61},
+  {name: 'Kellan, Planar Trailblazer', color: 'R', rarity: 'R', gihWr: 59.2, alsa: 2.3},
+  {name: 'Empyrean Eagle', color: 'WU', rarity: 'U', gihWr: 59.2, alsa: 4.15},
+  {name: 'Felling Blow', color: 'G', rarity: 'U', gihWr: 59.1, alsa: 3.25},
+  {name: 'Skyknight Squire', color: 'W', rarity: 'R', gihWr: 58.9, alsa: 1.68},
+  {name: 'Ashroot Animist', color: 'RG', rarity: 'R', gihWr: 58.9, alsa: 3.07},
+  {name: 'Spectral Sailor', color: 'U', rarity: 'U', gihWr: 58.8, alsa: 3.22},
+  {name: 'Vampire Gourmand', color: 'B', rarity: 'U', gihWr: 58.7, alsa: 3.31},
+  {name: 'Cat Collector', color: 'W', rarity: 'U', gihWr: 58.7, alsa: 2.69},
+  {name: 'High-Society Hunter', color: 'B', rarity: 'R', gihWr: 58.7, alsa: 1.69},
+  {name: 'Sun-Blessed Healer', color: 'W', rarity: 'U', gihWr: 58.6, alsa: 2.6},
+  {name: 'Kaito, Cunning Infiltrator', color: 'U', rarity: 'M', gihWr: 58.6, alsa: 1.61},
+  {name: 'Arbiter of Woe', color: 'B', rarity: 'U', gihWr: 58.5, alsa: 3.63},
+  {name: 'Bake into a Pie', color: 'B', rarity: 'C', gihWr: 58.4, alsa: 3.12},
+  {name: 'Essence Scatter', color: 'U', rarity: 'U', gihWr: 58.3, alsa: 3.81},
+  {name: 'Fiery Annihilation', color: 'R', rarity: 'U', gihWr: 58.3, alsa: 2.97},
+  {name: 'Burst Lightning', color: 'R', rarity: 'C', gihWr: 58.2, alsa: 3.27},
+  {name: 'Tragic Banshee', color: 'B', rarity: 'U', gihWr: 58.2, alsa: 3.28},
+  {name: 'Infernal Vessel', color: 'B', rarity: 'U', gihWr: 58.2, alsa: 3.38},
+  {name: 'Vampire Nighthawk', color: 'B', rarity: 'U', gihWr: 58.1, alsa: 2.29},
+  {name: 'Refute', color: 'U', rarity: 'C', gihWr: 58.1, alsa: 5.34},
+  {name: 'Scrawling Crawler', color: '', rarity: 'R', gihWr: 58.1, alsa: 2.02},
+  {name: 'Ajani, Caller of the Pride', color: 'W', rarity: 'M', gihWr: 57.9, alsa: 1.44},
+  {name: 'Stab', color: 'B', rarity: 'C', gihWr: 57.9, alsa: 3.43},
+  {name: 'Sphinx of Forgotten Lore', color: 'U', rarity: 'M', gihWr: 57.9, alsa: 1.85},
+  {name: 'Battlesong Berserker', color: 'R', rarity: 'U', gihWr: 57.9, alsa: 4.22},
+  {name: 'Dazzling Angel', color: 'W', rarity: 'C', gihWr: 57.8, alsa: 3.16},
+  {name: 'Perforating Artist', color: 'BR', rarity: 'U', gihWr: 57.8, alsa: 4.56},
+  {name: 'Luminous Rebuke', color: 'W', rarity: 'C', gihWr: 57.7, alsa: 3.89},
+  {name: 'Kykar, Zephyr Awakener', color: 'WU', rarity: 'R', gihWr: 57.7, alsa: 2.58},
+  {name: 'Helpful Hunter', color: 'W', rarity: 'C', gihWr: 57.6, alsa: 3.53},
+  {name: 'Bigfin Bouncer', color: 'U', rarity: 'C', gihWr: 57.6, alsa: 4.47},
+  {name: 'Rune-Scarred Demon', color: 'B', rarity: 'R', gihWr: 57.6, alsa: 2.51},
+  {name: 'Banishing Light', color: 'W', rarity: 'C', gihWr: 57.5, alsa: 2.84},
+  {name: 'Herald of Eternal Dawn', color: 'W', rarity: 'M', gihWr: 57.5, alsa: 2},
+  {name: 'Felidar Savior', color: 'W', rarity: 'C', gihWr: 57.4, alsa: 3.72},
+  {name: "Healer's Hawk", color: 'W', rarity: 'C', gihWr: 57.4, alsa: 3.48},
+  {name: 'Abrade', color: 'R', rarity: 'U', gihWr: 57.4, alsa: 3.05},
+  {name: 'Tinybones, Bauble Burglar', color: 'B', rarity: 'R', gihWr: 57.3, alsa: 2.4},
+  {name: "Hero's Downfall", color: 'B', rarity: 'U', gihWr: 57.3, alsa: 2.53},
+  {name: "Valkyrie's Call", color: 'W', rarity: 'M', gihWr: 57.3, alsa: 1.69},
+  {name: 'Heartfire Immolator', color: 'R', rarity: 'U', gihWr: 57.2, alsa: 3.88},
+  {name: 'Soulstone Sanctuary', color: '', rarity: 'R', gihWr: 57.2, alsa: 3.62},
+  {name: 'Koma, World-Eater', color: 'UG', rarity: 'R', gihWr: 57.1, alsa: 2.66},
+  {name: 'Llanowar Elves', color: 'G', rarity: 'C', gihWr: 56.9, alsa: 3.44},
+  {name: 'Drake Hatcher', color: 'U', rarity: 'R', gihWr: 56.9, alsa: 2.48},
+  {name: 'Elvish Regrower', color: 'G', rarity: 'U', gihWr: 56.9, alsa: 3.25},
+  {name: 'Mild-Mannered Librarian', color: 'G', rarity: 'U', gihWr: 56.8, alsa: 4.32},
+  {name: 'Nessian Hornbeetle', color: 'G', rarity: 'U', gihWr: 56.8, alsa: 3.48},
+  {name: 'Think Twice', color: 'U', rarity: 'C', gihWr: 56.8, alsa: 4.78},
+  {name: 'Skyship Buccaneer', color: 'U', rarity: 'U', gihWr: 56.8, alsa: 4.18},
+  {name: 'Dragon Trainer', color: 'R', rarity: 'U', gihWr: 56.7, alsa: 4.05},
+  {name: 'Ruby, Daring Tracker', color: 'RG', rarity: 'U', gihWr: 56.7, alsa: 5.15},
+  {name: 'Infestation Sage', color: 'B', rarity: 'C', gihWr: 56.7, alsa: 5.07},
+  {name: "Seeker's Folly", color: 'B', rarity: 'U', gihWr: 56.7, alsa: 5.09},
+  {name: 'Burglar Rat', color: 'B', rarity: 'C', gihWr: 56.7, alsa: 4.51},
+  {name: 'Solemn Simulacrum', color: '', rarity: 'R', gihWr: 56.6, alsa: 1.77},
+  {name: 'Uncharted Voyage', color: 'U', rarity: 'C', gihWr: 56.6, alsa: 6.17},
+  {name: 'Fleeting Flight', color: 'W', rarity: 'C', gihWr: 56.6, alsa: 5.67},
+  {name: 'Angel of Finality', color: 'W', rarity: 'U', gihWr: 56.6, alsa: 3.82},
+  {name: 'Guarded Heir', color: 'W', rarity: 'U', gihWr: 56.6, alsa: 4.07},
+  {name: 'Gorehorn Raider', color: 'R', rarity: 'C', gihWr: 56.5, alsa: 6.5},
+  {name: 'Dismal Backwater', color: '', rarity: 'C', gihWr: 56.5, alsa: 6.3},
+  {name: "Hidetsugu's Second Rite", color: 'R', rarity: 'U', gihWr: 56.5, alsa: 7.73},
+  {name: 'Joust Through', color: 'W', rarity: 'U', gihWr: 56.4, alsa: 3.64},
+  {name: 'Condemn', color: 'W', rarity: 'U', gihWr: 56.3, alsa: 3.24},
+  {name: 'Youthful Valkyrie', color: 'W', rarity: 'U', gihWr: 56.2, alsa: 3.53},
+  {name: 'Eager Trufflesnout', color: 'G', rarity: 'U', gihWr: 56.2, alsa: 4.36},
+  {name: 'Eaten Alive', color: 'B', rarity: 'C', gihWr: 56.1, alsa: 3.78},
+  {name: 'Slumbering Cerberus', color: 'R', rarity: 'U', gihWr: 56.1, alsa: 4.76},
+  {name: 'Arcane Epiphany', color: 'U', rarity: 'U', gihWr: 56.1, alsa: 4.64},
+  {name: 'Lightshell Duo', color: 'U', rarity: 'C', gihWr: 56, alsa: 6.87},
+  {name: 'Anthem of Champions', color: 'WG', rarity: 'R', gihWr: 56, alsa: 3.32},
+  {name: "Akroma's Memorial", color: '', rarity: 'M', gihWr: 55.9, alsa: 2.08},
+  {name: 'Fake Your Own Death', color: 'B', rarity: 'C', gihWr: 55.8, alsa: 6.14},
+  {name: 'Abyssal Harvester', color: 'B', rarity: 'R', gihWr: 55.8, alsa: 2.14},
+  {name: 'Loot, Exuberant Explorer', color: 'G', rarity: 'R', gihWr: 55.8, alsa: 2.23},
+  {name: 'Bite Down', color: 'G', rarity: 'C', gihWr: 55.8, alsa: 4.06},
+  {name: 'Squad Rallier', color: 'W', rarity: 'C', gihWr: 55.7, alsa: 6.24},
+  {name: 'Involuntary Employment', color: 'R', rarity: 'C', gihWr: 55.7, alsa: 7.23},
+  {name: 'Archmage of Runes', color: 'U', rarity: 'R', gihWr: 55.7, alsa: 2.53},
+  {name: 'Balmor, Battlemage Captain', color: 'UR', rarity: 'U', gihWr: 55.7, alsa: 5.31},
+  {name: 'Tranquil Cove', color: '', rarity: 'C', gihWr: 55.6, alsa: 6.47},
+  {name: 'Pilfer', color: 'B', rarity: 'C', gihWr: 55.6, alsa: 6.88},
+  {name: 'Hungry Ghoul', color: 'B', rarity: 'C', gihWr: 55.6, alsa: 5.03},
+  {name: "Rogue's Passage", color: '', rarity: 'U', gihWr: 55.6, alsa: 6.57},
+  {name: 'Cathar Commando', color: 'W', rarity: 'C', gihWr: 55.6, alsa: 4.88},
+  {name: 'Slagstorm', color: 'R', rarity: 'R', gihWr: 55.6, alsa: 3.7},
+  {name: 'Heroic Reinforcements', color: 'WR', rarity: 'U', gihWr: 55.5, alsa: 4.9},
+  {name: 'Wary Thespian', color: 'G', rarity: 'C', gihWr: 55.5, alsa: 5.47},
+  {name: "Ajani's Pridemate", color: 'W', rarity: 'U', gihWr: 55.5, alsa: 2.98},
+  {name: 'Affectionate Indrik', color: 'G', rarity: 'U', gihWr: 55.4, alsa: 4.45},
+  {name: 'Beast-Kin Ranger', color: 'G', rarity: 'C', gihWr: 55.4, alsa: 5.44},
+  {name: 'Quilled Greatwurm', color: 'G', rarity: 'M', gihWr: 55.4, alsa: 1.68},
+  {name: 'Ghalta, Primal Hunger', color: 'G', rarity: 'R', gihWr: 55.3, alsa: 2.26},
+  {name: 'Ambush Wolf', color: 'G', rarity: 'C', gihWr: 55.3, alsa: 6.27},
+  {name: 'Make Your Move', color: 'W', rarity: 'C', gihWr: 55.3, alsa: 5.51},
+  {name: 'Strongbox Raider', color: 'R', rarity: 'U', gihWr: 55.3, alsa: 4.84},
+  {name: 'Krenko, Mob Boss', color: 'R', rarity: 'R', gihWr: 55.1, alsa: 2.24},
+  {name: 'Fleeting Distraction', color: 'U', rarity: 'C', gihWr: 55.1, alsa: 5.85},
+  {name: 'Strix Lookout', color: 'U', rarity: 'C', gihWr: 55.1, alsa: 5.06},
+  {name: 'Soul-Shackled Zombie', color: 'B', rarity: 'C', gihWr: 55.1, alsa: 6.49},
+  {name: 'High Fae Trickster', color: 'U', rarity: 'R', gihWr: 55, alsa: 2.4},
+  {name: 'Fiendish Panda', color: 'WB', rarity: 'U', gihWr: 55, alsa: 4.03},
+  {name: 'Overrun', color: 'G', rarity: 'U', gihWr: 55, alsa: 4.57},
+  {name: 'Meteor Golem', color: '', rarity: 'U', gihWr: 54.8, alsa: 5.33},
+  {name: 'Serra Angel', color: 'W', rarity: 'U', gihWr: 54.8, alsa: 3.27},
+  {name: 'Evolving Wilds', color: '', rarity: 'C', gihWr: 54.8, alsa: 4.7},
+  {name: 'Bloom Tender', color: 'G', rarity: 'R', gihWr: 54.8, alsa: 2.93},
+  {name: 'Snakeskin Veil', color: 'G', rarity: 'U', gihWr: 54.7, alsa: 4.55},
+  {name: 'Muldrotha, the Gravetide', color: 'UBG', rarity: 'M', gihWr: 54.7, alsa: 3.28},
+  {name: 'Treetop Snarespinner', color: 'G', rarity: 'C', gihWr: 54.7, alsa: 4.92},
+  {name: 'Scoured Barrens', color: '', rarity: 'C', gihWr: 54.7, alsa: 6.05},
+  {name: 'Swiftwater Cliffs', color: '', rarity: 'C', gihWr: 54.7, alsa: 7.18},
+  {name: 'Heraldic Banner', color: '', rarity: 'U', gihWr: 54.7, alsa: 4.79},
+  {name: 'Prideful Parent', color: 'W', rarity: 'C', gihWr: 54.6, alsa: 4.48},
+  {name: 'Self-Reflection', color: 'U', rarity: 'U', gihWr: 54.6, alsa: 6.79},
+  {name: 'Mossborn Hydra', color: 'G', rarity: 'R', gihWr: 54.5, alsa: 2.03},
+  {name: 'Drakuseth, Maw of Flames', color: 'R', rarity: 'R', gihWr: 54.5, alsa: 2.82},
+  {name: 'Bloodfell Caves', color: '', rarity: 'C', gihWr: 54.5, alsa: 6.66},
+  {name: 'Paradise Druid', color: 'G', rarity: 'U', gihWr: 54.5, alsa: 2.95},
+  {name: 'Brineborn Cutthroat', color: 'U', rarity: 'U', gihWr: 54.4, alsa: 4.4},
+  {name: 'Cackling Prowler', color: 'G', rarity: 'C', gihWr: 54.4, alsa: 5.99},
+  {name: 'Diregraf Ghoul', color: 'B', rarity: 'U', gihWr: 54.3, alsa: 5.73},
+  {name: 'Fiend Artisan', color: 'BG', rarity: 'M', gihWr: 54.3, alsa: 1.97},
+  {name: 'Elvish Archdruid', color: 'G', rarity: 'R', gihWr: 54.3, alsa: 3.09},
+  {name: 'Zul Ashur, Lich Lord', color: 'B', rarity: 'R', gihWr: 54.3, alsa: 3.61},
+  {name: 'Vanguard Seraph', color: 'W', rarity: 'C', gihWr: 54.2, alsa: 5.17},
+  {name: 'Phyrexian Arena', color: 'B', rarity: 'R', gihWr: 54.2, alsa: 2.77},
+  {name: 'Sower of Chaos', color: 'R', rarity: 'C', gihWr: 54.1, alsa: 8.08},
+  {name: 'Giant Growth', color: 'G', rarity: 'C', gihWr: 54.1, alsa: 6.75},
+  {name: 'Resolute Reinforcements', color: 'W', rarity: 'U', gihWr: 54.1, alsa: 4.01},
+  {name: 'Thornwood Falls', color: '', rarity: 'C', gihWr: 54.1, alsa: 6.76},
+  {name: 'Rugged Highlands', color: '', rarity: 'C', gihWr: 54.1, alsa: 7.07},
+  {name: 'Temporal Manipulation', color: 'U', rarity: 'M', gihWr: 54, alsa: 2.47},
+  {name: 'Gutless Plunderer', color: 'B', rarity: 'C', gihWr: 53.9, alsa: 6.1},
+  {name: 'Vampire Soulcaller', color: 'B', rarity: 'C', gihWr: 53.9, alsa: 6.31},
+  {name: 'Vengeful Bloodwitch', color: 'B', rarity: 'U', gihWr: 53.9, alsa: 3.89},
+  {name: 'Icewind Elemental', color: 'U', rarity: 'C', gihWr: 53.9, alsa: 6.34},
+  {name: 'Goldvein Pick', color: '', rarity: 'C', gihWr: 53.8, alsa: 5.71},
+  {name: 'Bushwhack', color: 'G', rarity: 'C', gihWr: 53.8, alsa: 4.85},
+  {name: 'Courageous Goblin', color: 'R', rarity: 'C', gihWr: 53.8, alsa: 6.6},
+  {name: 'Wind-Scarred Crag', color: '', rarity: 'C', gihWr: 53.8, alsa: 6.96},
+  {name: 'Claws Out', color: 'W', rarity: 'U', gihWr: 53.7, alsa: 5.57},
+  {name: 'Inspiring Paladin', color: 'W', rarity: 'C', gihWr: 53.7, alsa: 5.32},
+  {name: 'Preposterous Proportions', color: 'G', rarity: 'R', gihWr: 53.6, alsa: 4.61},
+  {name: 'Billowing Shriekmass', color: 'B', rarity: 'U', gihWr: 53.6, alsa: 4.87},
+  {name: 'Rise of the Dark Realms', color: 'B', rarity: 'M', gihWr: 53.6, alsa: 3.9},
+  {name: 'Cephalid Inkmage', color: 'U', rarity: 'U', gihWr: 53.6, alsa: 5.67},
+  {name: 'Goblin Boarders', color: 'R', rarity: 'C', gihWr: 53.5, alsa: 6.61},
+  {name: 'Blossoming Sands', color: '', rarity: 'C', gihWr: 53.5, alsa: 6.72},
+  {name: 'Lunar Insight', color: 'U', rarity: 'R', gihWr: 53.4, alsa: 5.11},
+  {name: 'Inspiration from Beyond', color: 'U', rarity: 'U', gihWr: 53.4, alsa: 6.95},
+  {name: 'Nine-Lives Familiar', color: 'B', rarity: 'R', gihWr: 53.3, alsa: 3.17},
+  {name: 'Zombify', color: 'B', rarity: 'U', gihWr: 53.3, alsa: 5.05},
+  {name: 'Grappling Kraken', color: 'U', rarity: 'U', gihWr: 53.2, alsa: 5.69},
+  {name: 'Needletooth Pack', color: 'G', rarity: 'U', gihWr: 53.2, alsa: 4.13},
+  {name: "Dwynen's Elite", color: 'G', rarity: 'C', gihWr: 53.2, alsa: 5.73},
+  {name: 'Jungle Hollow', color: '', rarity: 'C', gihWr: 53.1, alsa: 6.64},
+  {name: 'Etali, Primal Storm', color: 'R', rarity: 'R', gihWr: 53.1, alsa: 2.23},
+  {name: 'Savannah Lions', color: 'W', rarity: 'U', gihWr: 53.1, alsa: 5.49},
+  {name: 'Dwynen, Gilt-Leaf Daen', color: 'G', rarity: 'U', gihWr: 53.1, alsa: 4.56},
+  {name: 'Sanguine Syphoner', color: 'B', rarity: 'C', gihWr: 53.1, alsa: 6.14},
+  {name: 'Swiftblade Vindicator', color: 'WR', rarity: 'R', gihWr: 52.9, alsa: 4.42},
+  {name: 'Gnarlid Colony', color: 'G', rarity: 'C', gihWr: 52.9, alsa: 5.47},
+  {name: 'Tatyova, Benthic Druid', color: 'UG', rarity: 'U', gihWr: 52.9, alsa: 4.26},
+  {name: 'Blanchwood Armor', color: 'G', rarity: 'U', gihWr: 52.9, alsa: 6.91},
+  {name: 'Witness Protection', color: 'U', rarity: 'C', gihWr: 52.8, alsa: 5.81},
+  {name: 'Elementalist Adept', color: 'U', rarity: 'C', gihWr: 52.7, alsa: 6.59},
+  {name: 'Stromkirk Bloodthief', color: 'B', rarity: 'U', gihWr: 52.6, alsa: 4.9},
+  {name: 'Elfsworn Giant', color: 'G', rarity: 'C', gihWr: 52.5, alsa: 6.13},
+  {name: 'Tolarian Terror', color: 'U', rarity: 'C', gihWr: 52.4, alsa: 5.59},
+  {name: 'Goblin Surprise', color: 'R', rarity: 'C', gihWr: 52.4, alsa: 6.47},
+  {name: 'Incinerating Blast', color: 'R', rarity: 'C', gihWr: 52.4, alsa: 7.08},
+  {name: 'Sure Strike', color: 'R', rarity: 'C', gihWr: 52.4, alsa: 7.56},
+  {name: 'Fanatical Firebrand', color: 'R', rarity: 'C', gihWr: 52.4, alsa: 7.03},
+  {name: 'Quakestrider Ceratops', color: 'G', rarity: 'U', gihWr: 52.4, alsa: 5.98},
+  {name: 'Reassembling Skeleton', color: 'B', rarity: 'U', gihWr: 52.4, alsa: 4.5},
+  {name: 'Marauding Blight-Priest', color: 'B', rarity: 'C', gihWr: 52.3, alsa: 6.31},
+  {name: "Garruk's Uprising", color: 'G', rarity: 'U', gihWr: 52.2, alsa: 4.93},
+  {name: 'Extravagant Replication', color: 'U', rarity: 'R', gihWr: 52.2, alsa: 3.61},
+  {name: 'Brazen Scourge', color: 'R', rarity: 'U', gihWr: 52.1, alsa: 5.38},
+  {name: 'Good-Fortune Unicorn', color: 'WG', rarity: 'U', gihWr: 52.1, alsa: 4.44},
+  {name: 'Macabre Waltz', color: 'B', rarity: 'C', gihWr: 52, alsa: 6.9},
+  {name: 'Consuming Aberration', color: 'UB', rarity: 'R', gihWr: 51.9, alsa: 3.44},
+  {name: 'Flamewake Phoenix', color: 'R', rarity: 'R', gihWr: 51.9, alsa: 2.93},
+  {name: 'Axgard Cavalry', color: 'R', rarity: 'C', gihWr: 51.9, alsa: 7.15},
+  {name: 'Goblin Bushwhacker', color: 'R', rarity: 'C', gihWr: 51.9, alsa: 5.49},
+  {name: 'Authority of the Consuls', color: 'W', rarity: 'R', gihWr: 51.8, alsa: 3.57},
+  {name: 'Firespitter Whelp', color: 'R', rarity: 'U', gihWr: 51.8, alsa: 5.15},
+  {name: 'Rune-Sealed Wall', color: 'U', rarity: 'U', gihWr: 51.7, alsa: 5.99},
+  {name: 'Thrill of Possibility', color: 'R', rarity: 'C', gihWr: 51.7, alsa: 7.39},
+  {name: 'Wardens of the Cycle', color: 'BG', rarity: 'U', gihWr: 51.7, alsa: 5.17},
+  {name: 'Dauntless Veteran', color: 'W', rarity: 'U', gihWr: 51.6, alsa: 4.39},
+  {name: 'Goblin Negotiation', color: 'R', rarity: 'U', gihWr: 51.6, alsa: 6.17},
+  {name: "Sphinx's Tutelage", color: 'U', rarity: 'U', gihWr: 51.6, alsa: 4.79},
+  {name: 'Apothecary Stomper', color: 'G', rarity: 'C', gihWr: 51.5, alsa: 6.91},
+  {name: 'Campus Guide', color: '', rarity: 'C', gihWr: 51.5, alsa: 6.63},
+  {name: 'Run Away Together', color: 'U', rarity: 'C', gihWr: 51.5, alsa: 7.01},
+  {name: 'Frenzied Goblin', color: 'R', rarity: 'U', gihWr: 51.5, alsa: 6.36},
+  {name: 'Shivan Dragon', color: 'R', rarity: 'U', gihWr: 51.5, alsa: 5.51},
+  {name: 'Mischievous Pup', color: 'W', rarity: 'U', gihWr: 51.4, alsa: 5.31},
+  {name: 'Rite of the Dragoncaller', color: 'R', rarity: 'M', gihWr: 51.4, alsa: 3.48},
+  {name: 'Wildwood Scourge', color: 'G', rarity: 'U', gihWr: 51.4, alsa: 4.43},
+  {name: 'Erudite Wizard', color: 'U', rarity: 'C', gihWr: 51.3, alsa: 6.77},
+  {name: 'Ravenous Amulet', color: '', rarity: 'U', gihWr: 51.3, alsa: 7},
+  {name: 'Hare Apparent', color: 'W', rarity: 'C', gihWr: 51.3, alsa: 6.55},
+  {name: 'Homunculus Horde', color: 'U', rarity: 'R', gihWr: 51.2, alsa: 3.3},
+  {name: 'Stroke of Midnight', color: 'W', rarity: 'U', gihWr: 51.1, alsa: 4.82},
+  {name: 'Raise the Past', color: 'W', rarity: 'R', gihWr: 51.1, alsa: 4.64},
+  {name: 'Revenge of the Rats', color: 'B', rarity: 'U', gihWr: 51, alsa: 6.28},
+  {name: 'Quick-Draw Katana', color: '', rarity: 'C', gihWr: 51, alsa: 8.06},
+  {name: 'Electroduplicate', color: 'R', rarity: 'R', gihWr: 50.7, alsa: 5.48},
+  {name: 'Divine Resilience', color: 'W', rarity: 'U', gihWr: 50.6, alsa: 5.78},
+  {name: 'Armasaur Guide', color: 'W', rarity: 'C', gihWr: 50.4, alsa: 7.25},
+  {name: 'Seismic Rupture', color: 'R', rarity: 'U', gihWr: 50.4, alsa: 7.21},
+  {name: 'Crypt Feaster', color: 'B', rarity: 'C', gihWr: 50.2, alsa: 7.81},
+  {name: 'Aetherize', color: 'U', rarity: 'U', gihWr: 50.2, alsa: 5.52},
+  {name: 'Imprisoned in the Moon', color: 'U', rarity: 'U', gihWr: 50, alsa: 5.43},
+  {name: 'Banner of Kinship', color: '', rarity: 'R', gihWr: 50, alsa: 4.7},
+  {name: 'Mocking Sprite', color: 'U', rarity: 'C', gihWr: 49.8, alsa: 6.64},
+  {name: 'Reclamation Sage', color: 'G', rarity: 'U', gihWr: 49.6, alsa: 5.19},
+  {name: 'Firebrand Archer', color: 'R', rarity: 'C', gihWr: 49.5, alsa: 7.22},
+  {name: 'Aegis Turtle', color: 'U', rarity: 'C', gihWr: 49.5, alsa: 8.27},
+  {name: 'Broken Wings', color: 'G', rarity: 'C', gihWr: 49.5, alsa: 7.78},
+  {name: 'Genesis Wave', color: 'G', rarity: 'R', gihWr: 49.2, alsa: 5.26},
+  {name: 'Lathril, Blade of the Elves', color: 'BG', rarity: 'R', gihWr: 49.1, alsa: 3.51},
+  {name: 'Juggernaut', color: '', rarity: 'U', gihWr: 48.9, alsa: 7.04},
+  {name: 'Clinquant Skymage', color: 'U', rarity: 'U', gihWr: 48.6, alsa: 4.85},
+  {name: 'Spitfire Lagac', color: 'R', rarity: 'C', gihWr: 48.4, alsa: 8.38},
+  {name: 'Crackling Cyclops', color: 'R', rarity: 'C', gihWr: 48.3, alsa: 8.63},
+  {name: 'Exsanguinate', color: 'B', rarity: 'U', gihWr: 48.3, alsa: 6.98},
+  {name: 'Burnished Hart', color: '', rarity: 'U', gihWr: 48.2, alsa: 5.56},
+  {name: "An Offer You Can't Refuse", color: 'U', rarity: 'U', gihWr: 48.2, alsa: 7.57},
+  {name: 'Crystal Barricade', color: 'W', rarity: 'R', gihWr: 48.2, alsa: 4.42},
+  {name: 'Grow from the Ashes', color: 'G', rarity: 'C', gihWr: 48.1, alsa: 6.57},
+  {name: 'Midnight Snack', color: 'B', rarity: 'U', gihWr: 48, alsa: 6.73},
+  {name: 'Gleaming Barrier', color: '', rarity: 'C', gihWr: 47.8, alsa: 7.91},
+  {name: 'Bulk Up', color: 'R', rarity: 'U', gihWr: 47.8, alsa: 7.07},
+  {name: 'Time Stop', color: 'U', rarity: 'R', gihWr: 47.5, alsa: 5.12},
+  {name: 'Niv-Mizzet, Visionary', color: 'UR', rarity: 'M', gihWr: 47, alsa: 3.64},
+  {name: 'Adventuring Gear', color: '', rarity: 'U', gihWr: 46.8, alsa: 7.49},
+  {name: 'Twinblade Blessing', color: 'W', rarity: 'U', gihWr: 46.7, alsa: 6.22},
+  {name: 'Secluded Courtyard', color: '', rarity: 'U', gihWr: 46.7, alsa: 7.94},
+  {name: 'Inspiring Call', color: 'G', rarity: 'U', gihWr: 46.5, alsa: 7.06},
+  {name: 'Painful Quandary', color: 'B', rarity: 'R', gihWr: 45, alsa: 4.69},
+  {name: 'Boltwave', color: 'R', rarity: 'U', gihWr: 43.8, alsa: 7.22},
+  {name: 'Swiftfoot Boots', color: '', rarity: 'U', gihWr: 43.6, alsa: 6.43},
+  {name: 'Fishing Pole', color: '', rarity: 'U', gihWr: 43.2, alsa: 7.97},
+  {name: 'Doubling Season', color: 'G', rarity: 'M', gihWr: 39.4, alsa: 3.88},
+  {name: 'Thousand-Year Storm', color: 'UR', rarity: 'R', gihWr: 35.2, alsa: 6.12}
+];
+
+// Set configuration - maps set codes to their data and metadata
+const SET_CONFIG = {
+  ECL: {
+    name: 'ECL (Etchings of Cryptic Lore)',
+    shortName: 'ECL',
+    data: CARD_DATA,
+    ratingsLink: 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20',
+    dataDate: '2026-02-27',
+    dataTimestamp: '2026-02-27 12:01 UTC'
+  },
+  TMT: {
+    name: 'TMT (Teenage Mutant Turtles)',
+    shortName: 'TMT',
+    data: CARD_DATA_TMT,
+    ratingsLink: 'https://www.17lands.com/card_data?expansion=TMT&format=PremierDraft',
+    dataDate: '2026-03-30',
+    dataTimestamp: '2026-03-30 UTC'
+  },
+  FDN: {
+    name: 'FDN (Foundations)',
+    shortName: 'FDN',
+    data: CARD_DATA_FDN,
+    ratingsLink: 'https://www.17lands.com/card_data?expansion=FDN&format=PremierDraft',
+    dataDate: '2026-03-30',
+    dataTimestamp: '2026-03-30 UTC'
+  }
+};
+
 // Version and metadata
-const QUIZ_VERSION = '3.4.0';
-const LAST_UPDATE = '2026-02-27 UTC';
-const DATA_SOURCE_DATE = '2026-02-27';
-const DATA_ACCURACY_TIMESTAMP = '2026-02-27 12:01 UTC'; // When the 17lands data was last accurate
+const QUIZ_VERSION = '3.5.0';
+const LAST_UPDATE = '2026-03-31 UTC';
+const DATA_SOURCE_DATE = '2026-03-31';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
-const RATINGS_LINK = 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20';
 
 // Detect environment
 const IS_LOCAL = window.location.protocol === 'file:';
@@ -1640,6 +2139,7 @@ const STORAGE_KEYS = {
   V2_MIGRATED: 'gih_quiz_v2_migrated',
   SMART_SELECTION: 'gih_quiz_smart_selection',
   METRIC: 'gih_quiz_metric',
+  SET: 'gih_quiz_set',
   // Legacy keys (for migration)
   HISTORY: 'gih_quiz_history',
   SHOWN_PAIRS: 'gih_quiz_shown_pairs',
@@ -1683,10 +2183,18 @@ const migrateStorageToV2 = () => {
 // localStorage utilities (MODE-AWARE)
 // ============================================
 
-const loadHistory = (mode = 'comparison') => {
+// Build a storage key that includes both mode and set code
+const storageKey = (baseKey, setCode = 'ECL') => `${baseKey}_${setCode.toLowerCase()}`;
+
+const loadHistory = (mode = 'comparison', setCode = 'ECL') => {
   try {
-    const key = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
-    const data = safeStorage.getItem(key);
+    const base = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+    const data = safeStorage.getItem(storageKey(base, setCode));
+    // Fall back to legacy key (no set suffix) for ECL backwards compat
+    if (!data && setCode === 'ECL') {
+      const legacy = safeStorage.getItem(base);
+      return legacy ? JSON.parse(legacy) : [];
+    }
     return data ? JSON.parse(data) : [];
   } catch (e) {
     console.error('Error loading history:', e);
@@ -1694,25 +2202,34 @@ const loadHistory = (mode = 'comparison') => {
   }
 };
 
-const saveHistory = (mode = 'comparison', history) => {
+const saveHistory = (mode = 'comparison', history, setCode = 'ECL') => {
   try {
-    const key = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
-    safeStorage.setItem(key, JSON.stringify(history));
+    const base = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+    safeStorage.setItem(storageKey(base, setCode), JSON.stringify(history));
   } catch (e) {
     console.error('Error saving history:', e);
   }
 };
 
-const addHistoryEntry = (mode = 'comparison', entry) => {
-  const history = loadHistory(mode);
-  history.push({...entry, mode}); // Ensure mode is recorded
-  saveHistory(mode, history);
+const addHistoryEntry = (mode = 'comparison', entry, setCode = 'ECL') => {
+  const history = loadHistory(mode, setCode);
+  history.push({...entry, mode});
+  saveHistory(mode, history, setCode);
 };
 
-const clearHistory = (mode = 'comparison') => {
+const clearHistory = (mode = 'comparison', setCode = 'ECL') => {
   try {
     if (mode === 'all') {
-      // Clear both modes
+      // Clear all modes for all sets
+      ['ECL', 'TMT', 'FDN'].forEach(sc => {
+        safeStorage.removeItem(storageKey(STORAGE_KEYS.HISTORY_COMPARISON, sc));
+        safeStorage.removeItem(storageKey(STORAGE_KEYS.HISTORY_GRADING, sc));
+        safeStorage.removeItem(storageKey(STORAGE_KEYS.SHOWN_COMPARISON, sc));
+        safeStorage.removeItem(storageKey(STORAGE_KEYS.SHOWN_GRADING, sc));
+        safeStorage.removeItem(storageKey(STORAGE_KEYS.SCORE_COMPARISON, sc));
+        safeStorage.removeItem(storageKey(STORAGE_KEYS.SCORE_GRADING, sc));
+      });
+      // Also clear legacy keys
       safeStorage.removeItem(STORAGE_KEYS.HISTORY_COMPARISON);
       safeStorage.removeItem(STORAGE_KEYS.HISTORY_GRADING);
       safeStorage.removeItem(STORAGE_KEYS.SHOWN_COMPARISON);
@@ -1720,23 +2237,28 @@ const clearHistory = (mode = 'comparison') => {
       safeStorage.removeItem(STORAGE_KEYS.SCORE_COMPARISON);
       safeStorage.removeItem(STORAGE_KEYS.SCORE_GRADING);
     } else {
-      // Clear specific mode
-      const histKey = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
-      const shownKey = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
-      const scoreKey = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
-      safeStorage.removeItem(histKey);
-      safeStorage.removeItem(shownKey);
-      safeStorage.removeItem(scoreKey);
+      const histBase = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
+      const shownBase = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+      const scoreBase = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
+      safeStorage.removeItem(storageKey(histBase, setCode));
+      safeStorage.removeItem(storageKey(shownBase, setCode));
+      safeStorage.removeItem(storageKey(scoreBase, setCode));
     }
   } catch (e) {
     console.error('Error clearing history:', e);
   }
 };
 
-const loadShownCards = (mode = 'comparison', filterKey) => {
+const loadShownCards = (mode = 'comparison', filterKey, setCode = 'ECL') => {
   try {
-    const key = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
-    const data = safeStorage.getItem(key);
+    const base = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+    const data = safeStorage.getItem(storageKey(base, setCode));
+    // Fall back to legacy key for ECL
+    if (!data && setCode === 'ECL') {
+      const legacy = safeStorage.getItem(base);
+      const allShown = legacy ? JSON.parse(legacy) : {};
+      return allShown[filterKey] || [];
+    }
     const allShown = data ? JSON.parse(data) : {};
     return allShown[filterKey] || [];
   } catch (e) {
@@ -1745,9 +2267,10 @@ const loadShownCards = (mode = 'comparison', filterKey) => {
   }
 };
 
-const saveShownCards = (mode = 'comparison', filterKey, shownCards) => {
+const saveShownCards = (mode = 'comparison', filterKey, shownCards, setCode = 'ECL') => {
   try {
-    const key = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+    const base = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
+    const key = storageKey(base, setCode);
     const data = safeStorage.getItem(key);
     const allShown = data ? JSON.parse(data) : {};
     allShown[filterKey] = shownCards;
@@ -1757,10 +2280,15 @@ const saveShownCards = (mode = 'comparison', filterKey, shownCards) => {
   }
 };
 
-const loadScore = (mode = 'comparison') => {
+const loadScore = (mode = 'comparison', setCode = 'ECL') => {
   try {
-    const key = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
-    const data = safeStorage.getItem(key);
+    const base = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
+    const data = safeStorage.getItem(storageKey(base, setCode));
+    // Fall back to legacy key for ECL
+    if (!data && setCode === 'ECL') {
+      const legacy = safeStorage.getItem(base);
+      return legacy ? JSON.parse(legacy) : { points: 0, questions: 0 };
+    }
     return data ? JSON.parse(data) : { points: 0, questions: 0 };
   } catch (e) {
     console.error('Error loading score:', e);
@@ -1768,22 +2296,22 @@ const loadScore = (mode = 'comparison') => {
   }
 };
 
-const saveScore = (mode = 'comparison', points, questions) => {
+const saveScore = (mode = 'comparison', points, questions, setCode = 'ECL') => {
   try {
-    const key = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
-    safeStorage.setItem(key, JSON.stringify({ points, questions }));
+    const base = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
+    safeStorage.setItem(storageKey(base, setCode), JSON.stringify({ points, questions }));
   } catch (e) {
     console.error('Error saving score:', e);
   }
 };
 
 // Helper function for comparison mode: add a card pair to shown pairs
-const addShownCards = (mode = 'comparison', filterKey, ...cardNames) => {
-  const shownCards = loadShownCards(mode, filterKey);
+const addShownCards = (mode = 'comparison', filterKey, setCode = 'ECL', ...cardNames) => {
+  const shownCards = loadShownCards(mode, filterKey, setCode);
   const cardKey = cardNames.sort().join('|');
   if (!shownCards.includes(cardKey)) {
     shownCards.push(cardKey);
-    saveShownCards(mode, filterKey, shownCards);
+    saveShownCards(mode, filterKey, shownCards, setCode);
   }
 };
 
@@ -1796,20 +2324,41 @@ const addShownCards = (mode = 'comparison', filterKey, ...cardNames) => {
 const GRADE_LABELS = ["F","D-","D","D+","C-","C","C+","B-","B","B+","A-","A","A+"];
 const GRADE_OFFSET = 2 - 1/6;  // 11/6 ≈ 1.8333
 
-// Compute population mean and SD from CARD_DATA
-const gihValues = CARD_DATA.map(c => c.gihWr);
-const GRADE_MEAN = gihValues.reduce((a, b) => a + b, 0) / gihValues.length;
-const GRADE_SD = Math.sqrt(gihValues.reduce((a, b) => a + (b - GRADE_MEAN) ** 2, 0) / gihValues.length);
+// Compute grade stats for a given card data array
+const computeGradeStats = (cardData) => {
+  const gihValues = cardData.map(c => c.gihWr);
+  const mean = gihValues.reduce((a, b) => a + b, 0) / gihValues.length;
+  const sd = Math.sqrt(gihValues.reduce((a, b) => a + (b - mean) ** 2, 0) / gihValues.length);
+  const thresholds = {};
+  GRADE_LABELS.forEach((label, idx) => {
+    const z = idx / 3 - GRADE_OFFSET;
+    thresholds[label] = mean + z * sd;
+  });
+  thresholds.stdDev = sd;
+  return { mean, sd, thresholds };
+};
 
-// Compute GIH WR threshold for each grade index
-const gradeThresholds = {};
-GRADE_LABELS.forEach((label, idx) => {
-  // Threshold = mean + z * sd, where z = idx/3 - GRADE_OFFSET
-  const z = idx / 3 - GRADE_OFFSET;
-  gradeThresholds[label] = GRADE_MEAN + z * GRADE_SD;
+// Pre-compute stats for all sets
+const SET_GRADE_STATS = {};
+Object.keys(SET_CONFIG).forEach(setCode => {
+  SET_GRADE_STATS[setCode] = computeGradeStats(SET_CONFIG[setCode].data);
 });
-// Add SD to thresholds object for smart selection
-gradeThresholds.stdDev = GRADE_SD;
+
+// Current set state - defaults to ECL, will be overridden by component state
+let currentGradeStats = SET_GRADE_STATS.ECL;
+
+// Legacy aliases for compatibility
+let GRADE_MEAN = currentGradeStats.mean;
+let GRADE_SD = currentGradeStats.sd;
+let gradeThresholds = currentGradeStats.thresholds;
+
+// Update grade stats when set changes
+const updateGradeStats = (setCode) => {
+  currentGradeStats = SET_GRADE_STATS[setCode];
+  GRADE_MEAN = currentGradeStats.mean;
+  GRADE_SD = currentGradeStats.sd;
+  gradeThresholds = currentGradeStats.thresholds;
+};
 
 // Get grade for a specific GIH WR value (exact 17lands algorithm)
 const getGrade = (gihWr) => {
@@ -1863,7 +2412,19 @@ const getGradeRange = (grade) => {
   return `${lower.toFixed(1)}-${upper.toFixed(1)}%`;
 };
 
-const fetchCardData = async (cardName) => {
+// Scryfall set codes to search for each quiz set (priority order)
+const SCRYFALL_SET_CODES = {
+  ECL: ['ecl', 'spg'],
+  TMT: ['tmt', 'spg'],
+  FDN: ['fdn', 'spg']
+};
+
+const fetchCardData = async (cardName, setCode) => {
+  const cacheKey = `${setCode || 'ECL'}:${cardName}`;
+  if (scryfallImageCache[cacheKey]) {
+    return scryfallImageCache[cacheKey];
+  }
+  // Also check old cache key format for backwards compat
   if (scryfallImageCache[cardName]) {
     return scryfallImageCache[cardName];
   }
@@ -1887,40 +2448,31 @@ const fetchCardData = async (cardName) => {
     return imageUrl ? { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name } : null;
   };
 
+  const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'] || ['ecl', 'spg'];
+
   try {
-    // Priority 1: Try ECL set (/cards/search for set-specific)
-    let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:ecl`);
-    if (response.ok) {
-      const data = await response.json();
-      if (data.data && data.data.length > 0) {
-        const cardData = getCardData(data.data[0]);
-        if (cardData) {
-          scryfallImageCache[cardName] = cardData;
-          return cardData;
+    // Try each set-specific search in priority order
+    for (const scryfallSet of scryfallSets) {
+      let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:${scryfallSet}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data && data.data.length > 0) {
+          const cardData = getCardData(data.data[0]);
+          if (cardData) {
+            scryfallImageCache[cacheKey] = cardData;
+            return cardData;
+          }
         }
       }
     }
 
-    // Priority 2: Try SPG (Special Guest) set for non-ECL cards
-    response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:spg`);
-    if (response.ok) {
-      const data = await response.json();
-      if (data.data && data.data.length > 0) {
-        const cardData = getCardData(data.data[0]);
-        if (cardData) {
-          scryfallImageCache[cardName] = cardData;
-          return cardData;
-        }
-      }
-    }
-
-    // Priority 3: Fallback to fuzzy search (any version)
-    response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+    // Fallback: fuzzy search (any version)
+    let response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
     if (response.ok) {
       const data = await response.json();
       const cardData = getCardData(data);
       if (cardData) {
-        scryfallImageCache[cardName] = cardData;
+        scryfallImageCache[cacheKey] = cardData;
         return cardData;
       }
     }
@@ -1932,7 +2484,7 @@ const fetchCardData = async (cardName) => {
   }
 };
 
-const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr' }) => {
+const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL' }) => {
   const [imageUrl, setImageUrl] = React.useState(null);
   const [cardInfo, setCardInfo] = React.useState(null);
   const [imageLoading, setImageLoading] = React.useState(true);
@@ -1946,7 +2498,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
     setImageError(false);
 
     const loadCardData = async () => {
-      const cardData = await fetchCardData(card.name);
+      const cardData = await fetchCardData(card.name, setCode);
       if (cardData) {
         setCardInfo(cardData);
         setImageUrl(cardData.imageUrl);
@@ -1956,7 +2508,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
       setImageLoading(false);
     };
     loadCardData();
-  }, [card.name]);
+  }, [card.name, setCode]);
 
   const containerClass = [
     'card-image-container',
@@ -2044,6 +2596,21 @@ const GIHQuiz = () => {
     migrateStorageToV2();
   }, []);
 
+  // Set selection state
+  const [currentSetCode, setCurrentSetCode] = React.useState(() => {
+    const hash = window.location.hash.replace('#', '').toUpperCase();
+    if (hash && SET_CONFIG[hash]) return hash;
+    return safeStorage.getItem(STORAGE_KEYS.SET) || 'ECL';
+  });
+  const currentSetConfig = SET_CONFIG[currentSetCode];
+  const activeCardData = currentSetConfig.data;
+
+  // Update grade stats when set changes
+  React.useEffect(() => {
+    updateGradeStats(currentSetCode);
+    safeStorage.setItem(STORAGE_KEYS.SET, currentSetCode);
+  }, [currentSetCode]);
+
   // Load saved mode preference
   const savedMode = safeStorage.getItem(STORAGE_KEYS.MODE) || 'comparison';
   const [quizMode, setQuizMode] = React.useState(savedMode);
@@ -2067,23 +2634,24 @@ const GIHQuiz = () => {
   const [showResult, setShowResult] = React.useState(false);
   const [selectedCardNum, setSelectedCardNum] = React.useState(null);
   const [isAnswering, setIsAnswering] = React.useState(false);
+  const [shareMenuOpen, setShareMenuOpen] = React.useState(false);
 
-  // Load score from localStorage (mode-specific)
-  const savedScore = loadScore(quizMode);
+  // Load score from localStorage (mode+set-specific)
+  const savedScore = loadScore(quizMode, currentSetCode);
   const [points, setPoints] = React.useState(savedScore.points);
   const [questions, setQuestions] = React.useState(savedScore.questions);
 
   const [filterError, setFilterError] = React.useState('');
-  const [history, setHistory] = React.useState(loadHistory(quizMode));
+  const [history, setHistory] = React.useState(loadHistory(quizMode, currentSetCode));
   const [showToast, setShowToast] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
 
-  // Update score and history when mode changes
+  // Update score and history when mode or set changes
   React.useEffect(() => {
-    const score = loadScore(quizMode);
+    const score = loadScore(quizMode, currentSetCode);
     setPoints(score.points);
     setQuestions(score.questions);
-    setHistory(loadHistory(quizMode));
+    setHistory(loadHistory(quizMode, currentSetCode));
     safeStorage.setItem(STORAGE_KEYS.MODE, quizMode);
     setShowResult(false);
     setSelectedGrade(null);
@@ -2093,7 +2661,7 @@ const GIHQuiz = () => {
     if (quizMode !== 'comparison') {
       setSmartSelectionEnabled(false);
     }
-  }, [quizMode]);
+  }, [quizMode, currentSetCode]);
 
   // Load smart selection preference on mount
   React.useEffect(() => {
@@ -2126,15 +2694,15 @@ const GIHQuiz = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [shareMenuOpen]);
 
-  // Generate new question when filters or mode change
+  // Generate new question when filters, mode, or set change
   React.useEffect(() => {
     generateQuestion();
-  }, [quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, metric, generateQuestion]);
+  }, [quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, metric, currentSetCode, generateQuestion]);
 
   // Generate new question
   const generateQuestion = React.useCallback(() => {
     // Filter cards by color and rarity
-    let filtered = CARD_DATA;
+    let filtered = activeCardData;
 
     if (colorFilter !== 'all') {
       if (colorFilter === 'colorless') {
@@ -2174,13 +2742,13 @@ const GIHQuiz = () => {
     }
 
     const filterKey = `${colorFilter}|${rarityFilter}|${typeFilter}`;
-    const shownCards = loadShownCards(quizMode, filterKey);
+    const shownCards = loadShownCards(quizMode, filterKey, currentSetCode);
 
     if (quizMode === 'grading') {
       // GRADING MODE: Pick single card not shown yet
       if (shownCards.length >= filtered.length) {
         // Reset shown cards for this filter
-        saveShownCards(quizMode, filterKey, []);
+        saveShownCards(quizMode, filterKey, [], currentSetCode);
         setToastMessage('All cards reviewed! Resetting for this filter.');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
@@ -2217,7 +2785,7 @@ const GIHQuiz = () => {
 
       // If we've shown all pairs, reset the shown cards for this filter
       if (shownCards.length >= totalPossiblePairs) {
-        saveShownCards(quizMode, filterKey, []);
+        saveShownCards(quizMode, filterKey, [], currentSetCode);
         setToastMessage('All card pairs shown! Resetting for this filter.');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
@@ -2279,7 +2847,7 @@ const GIHQuiz = () => {
         setCurrentPair(null);
       }
     }
-  }, [colorFilter, rarityFilter, typeFilter, quizMode, smartSelectionEnabled, metric, gradeThresholds, getGrade, setToastMessage, setShowToast]);
+  }, [colorFilter, rarityFilter, typeFilter, quizMode, smartSelectionEnabled, metric, currentSetCode, activeCardData]);
 
   const handleSelectCard = React.useCallback((cardNum) => {
     if (!currentPair || isAnswering) return;
@@ -2302,15 +2870,16 @@ const GIHQuiz = () => {
 
     setQuestions(newQuestions);
     setPoints(newPoints);
-    saveScore(quizMode, newPoints, newQuestions);
+    saveScore(quizMode, newPoints, newQuestions, currentSetCode);
 
     // Mark this pair as shown
     const filterKey = `${colorFilter}|${rarityFilter}|${typeFilter}`;
-    addShownCards(quizMode, filterKey, currentPair[0].name, currentPair[1].name);
+    addShownCards(quizMode, filterKey, currentSetCode, currentPair[0].name, currentPair[1].name);
 
     // Add to history
     const historyEntry = {
       timestamp: new Date().toISOString(),
+      setCode: currentSetCode,
       card1: currentPair[0].name,
       card1GihWr: currentPair[0].gihWr,
       card1Alsa: currentPair[0].alsa,
@@ -2328,8 +2897,8 @@ const GIHQuiz = () => {
       filterType: typeFilter,
       smartSelection: smartSelectionEnabled
     };
-    addHistoryEntry(quizMode, historyEntry);
-    setHistory(loadHistory(quizMode));
+    addHistoryEntry(quizMode, historyEntry, currentSetCode);
+    setHistory(loadHistory(quizMode, currentSetCode));
 
     setTimeout(() => {
       const resultPanel = document.querySelector('.result-panel');
@@ -2337,7 +2906,7 @@ const GIHQuiz = () => {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled]);
+  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, smartSelectionEnabled, currentSetCode]);
 
   const handleGradeSelect = React.useCallback((grade) => {
     if (!currentCard || isAnswering) return;
@@ -2355,17 +2924,18 @@ const GIHQuiz = () => {
 
     setQuestions(newQuestions);
     setPoints(newPoints);
-    saveScore(quizMode, newPoints, newQuestions);
+    saveScore(quizMode, newPoints, newQuestions, currentSetCode);
 
     // Mark card as shown
     const filterKey = `${colorFilter}|${rarityFilter}|${typeFilter}`;
-    const shownCards = loadShownCards(quizMode, filterKey);
+    const shownCards = loadShownCards(quizMode, filterKey, currentSetCode);
     shownCards.push(currentCard.name);
-    saveShownCards(quizMode, filterKey, shownCards);
+    saveShownCards(quizMode, filterKey, shownCards, currentSetCode);
 
     // Add to history
     const historyEntry = {
       timestamp: new Date().toISOString(),
+      setCode: currentSetCode,
       card: currentCard.name,
       cardGihWr: currentCard.gihWr,
       actualGrade,
@@ -2376,8 +2946,8 @@ const GIHQuiz = () => {
       filterRarity: rarityFilter,
       filterType: typeFilter
     };
-    addHistoryEntry(quizMode, historyEntry);
-    setHistory(loadHistory(quizMode));
+    addHistoryEntry(quizMode, historyEntry, currentSetCode);
+    setHistory(loadHistory(quizMode, currentSetCode));
 
     setTimeout(() => {
       const resultPanel = document.querySelector('.result-panel');
@@ -2385,7 +2955,7 @@ const GIHQuiz = () => {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilter]);
+  }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilter, currentSetCode]);
 
   const handleNextQuestion = React.useCallback(() => {
     setIsAnswering(false);
@@ -2421,17 +2991,15 @@ const GIHQuiz = () => {
 
   const handleClearHistory = () => {
     const modeText = quizMode === 'comparison' ? 'Comparison Mode' : 'Grading Mode';
-    if (confirm(`Clear history and score for ${modeText}? (Other mode's data will be preserved)`)) {
-      clearHistory(quizMode);
+    if (confirm(`Clear history and score for ${currentSetConfig.shortName} ${modeText}?`)) {
+      clearHistory(quizMode, currentSetCode);
       setHistory([]);
       setPoints(0);
       setQuestions(0);
-      saveScore(quizMode, 0, 0);
+      saveScore(quizMode, 0, 0, currentSetCode);
       showToastMessage('History cleared successfully!');
     }
   };
-
-  const [shareMenuOpen, setShareMenuOpen] = React.useState(false);
 
   const generateScoreText = () => {
     if (history.length === 0) return null;
@@ -2450,10 +3018,10 @@ const GIHQuiz = () => {
 
     const modeEmoji = quizMode === 'comparison' ? '⚖️' : '📝';
     const modeText = quizMode === 'comparison' ? 'Comparison' : 'Grading';
-    const baseUrl = window.location.href.split('?')[0];
+    const baseUrl = window.location.href.split('?')[0].split('#')[0];
 
     return {
-      text: `ECL Quiz ${modeEmoji} ${modeText} Mode
+      text: `${currentSetConfig.shortName} Quiz ${modeEmoji} ${modeText} Mode
 ${points.toFixed(1)}/${questions} points (${accuracy}%)
 
 Recent 10: ${resultsGrid}
@@ -2550,9 +3118,34 @@ Play at: ${baseUrl}`,
       )}
       <div className="banner">
         <div className="banner-content">
-          <h1>ECL Draft Card Evaluation Quiz</h1>
-        
-          <p style={{fontSize: '11px', color: '#e0e0e0', marginTop: '12px', lineHeight: '1.5', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
+          <h1>{currentSetConfig.shortName} Draft Card Evaluation Quiz</h1>
+
+          <div className="mode-toggle" style={{marginTop: '12px', marginBottom: '8px', justifyContent: 'center'}}>
+            {Object.keys(SET_CONFIG).map(code => (
+              <button
+                key={code}
+                className={`mode-option ${currentSetCode === code ? 'active' : ''}`}
+                onClick={() => {
+                  setCurrentSetCode(code);
+                  window.location.hash = code;
+                  setShowResult(false);
+                  setSelectedCardNum(null);
+                  setSelectedGrade(null);
+                  setIsAnswering(false);
+                  setCurrentPair(null);
+                  setCurrentCard(null);
+                  setColorFilter('all');
+                  setRarityFilter('all');
+                  setTypeFilter('all');
+                }}
+                style={{fontSize: '14px', padding: '6px 16px'}}
+              >
+                {SET_CONFIG[code].shortName}
+              </button>
+            ))}
+          </div>
+
+          <p style={{fontSize: '11px', color: '#e0e0e0', marginTop: '8px', lineHeight: '1.5', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
             Lovingly vibe coded with Claude Code • <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>View source on GitHub</a> • Version {QUIZ_VERSION} • Last updated {LAST_UPDATE}
             <br />
             Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Interactive Color Wheel of ECL draft archetypes</a> or <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>normalized review comparison</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Reddit</a>.
@@ -2584,7 +3177,7 @@ Play at: ${baseUrl}`,
                 <div style={{fontSize: '13px', marginTop: '16px', textAlign: 'left', display: 'inline-block', color: '#bbb'}}>
                   <ul style={{marginLeft: '20px', lineHeight: '1.6'}}>
                     <li>Use the <strong>?</strong> buttons below to learn more about metrics and selection modes.</li>
-                    <li>Scores and data are from <a href={RATINGS_LINK} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands ECL Premier Draft</a> (accurate as of {DATA_ACCURACY_TIMESTAMP}). <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
+                    <li>Scores and data are from <a href={currentSetConfig.ratingsLink} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands {currentSetConfig.shortName} Premier Draft</a> (accurate as of {currentSetConfig.dataTimestamp}). <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
                     <li>Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
                   </ul>
                 </div>
@@ -2596,7 +3189,7 @@ Play at: ${baseUrl}`,
                 Partial credit scoring: exact match = 1.0 point, ±1 grade = 0.5 points, ±2 grades = 0.25 points, ±3+ grades = 0 points.
                 <div style={{fontSize: '14px', marginTop: '20px', textAlign: 'left', display: 'inline-block', color: '#bbb'}}>
                   <ul style={{marginLeft: '20px', lineHeight: '1.6'}}>
-                    <li>Grades and percentages are from <a href={RATINGS_LINK} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands ECL Premier Draft data</a> (accurate as of {DATA_ACCURACY_TIMESTAMP}). <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
+                    <li>Grades and percentages are from <a href={currentSetConfig.ratingsLink} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands {currentSetConfig.shortName} Premier Draft data</a> (accurate as of {currentSetConfig.dataTimestamp}). <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
                     <li>Grades assume a <a href="https://en.wikipedia.org/wiki/Normal_distribution" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>normal distribution</a> centered at C and each letter gradation (e.g. C vs. C+) represents a band of 0.33 <a href="https://en.wikipedia.org/wiki/Standard_deviation" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>standard deviations</a> from the center.</li>
                     <li>Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
                   </ul>
@@ -2635,6 +3228,7 @@ Play at: ${baseUrl}`,
               </select>
             </div>
 
+            {activeCardData.some(c => c.type) && (
             <div className="filter-group">
               <label className="filter-label">Type</label>
               <select value={typeFilter} onChange={handleTypeChange}>
@@ -2662,6 +3256,7 @@ Play at: ${baseUrl}`,
                 </optgroup>
               </select>
             </div>
+            )}
 
           </div>
 
@@ -2856,6 +3451,7 @@ Play at: ${baseUrl}`,
                 isCorrect={showResult && (metric === 'gihWr' ? currentPair[0].gihWr > currentPair[1].gihWr : currentPair[0].alsa < currentPair[1].alsa)}
                 isWinner={showResult && (metric === 'gihWr' ? currentPair[0].gihWr > currentPair[1].gihWr : currentPair[0].alsa < currentPair[1].alsa)}
                 metric={metric}
+                setCode={currentSetCode}
               />
               <CardDisplay
                 card={currentPair[1]}
@@ -2866,6 +3462,7 @@ Play at: ${baseUrl}`,
                 isCorrect={showResult && (metric === 'gihWr' ? currentPair[1].gihWr > currentPair[0].gihWr : currentPair[1].alsa < currentPair[0].alsa)}
                 isWinner={showResult && (metric === 'gihWr' ? currentPair[1].gihWr > currentPair[0].gihWr : currentPair[1].alsa < currentPair[0].alsa)}
                 metric={metric}
+                setCode={currentSetCode}
               />
             </div>
             </>
@@ -2883,6 +3480,7 @@ Play at: ${baseUrl}`,
                   isCorrect={true}
                   isWinner={true}
                   metric={metric}
+                  setCode={currentSetCode}
                 />
               </div>
               <GradeSelector
