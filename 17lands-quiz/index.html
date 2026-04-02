@@ -3608,10 +3608,12 @@ const SCRYFALL_SET_CODES = {
   TMT: ['tmt', 'spg'],
   FDN: ['fdn', 'spg'],
   BLB: ['blb', 'spg'],
+  ATLA: ['tla', 'spg'],
   OM1: ['otj', 'spg'],
   EOE: ['eoe', 'spg'],
-  TDM: ['ddt', 'spg']
-  // ATLA, CUBE, FIN use fuzzy search (not on standard Scryfall)
+  TDM: ['ddt', 'spg'],
+  FIN: ['fin', 'spg']
+  // CUBE uses fuzzy search (special cube set)
 };
 
 const fetchCardData = async (cardName, setCode) => {
