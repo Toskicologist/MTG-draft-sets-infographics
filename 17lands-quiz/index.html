@@ -3967,7 +3967,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
             src={imageUrl}
             alt={`${card.name}. Type: ${cardInfo?.typeLine || 'Unknown'}. ${cardInfo?.oracleText || 'No text.'}`}
             className="card-image"
-            style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+            style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain'}}
             onError={() => setImageError(true)}
             title={cardInfo?.oracleText ? `${card.name}\n\n${cardInfo.typeLine}\n\n${cardInfo.oracleText}` : card.name}
           />
