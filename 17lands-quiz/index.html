@@ -4227,30 +4227,35 @@ const GIHQuiz = () => {
   React.useEffect(() => {
     if (!currentPair || loadedCards.size < 2) return;
 
-    // Generate list of cards to preload from other sets
-    const cardsToPreload = [];
+    // Delay preloading by 2 seconds to avoid interfering with active card loading
+    const preloadTimer = setTimeout(() => {
+      // Generate list of cards to preload from other sets
+      const cardsToPreload = [];
 
-    // Get list of all sets except current one
-    const otherSets = Object.keys(SET_CONFIG).filter(code => code !== currentSetCode);
+      // Get list of all sets except current one
+      const otherSets = Object.keys(SET_CONFIG).filter(code => code !== currentSetCode);
 
-    // For each other set, add the first 3 cards from that set to the preload queue
-    otherSets.forEach(setCode => {
-      const setData = SET_CONFIG[setCode].data;
-      if (setData && setData.length > 0) {
-        // Take first 3 cards from the set (to preload some images)
-        for (let i = 0; i < Math.min(3, setData.length); i++) {
-          cardsToPreload.push({
-            cardName: setData[i].name,
-            setCode: setCode
-          });
+      // For each other set, add the first 2 cards from that set to the preload queue (reduced from 3)
+      otherSets.forEach(setCode => {
+        const setData = SET_CONFIG[setCode].data;
+        if (setData && setData.length > 0) {
+          // Take first 2 cards from the set (reduced to minimize API load)
+          for (let i = 0; i < Math.min(2, setData.length); i++) {
+            cardsToPreload.push({
+              cardName: setData[i].name,
+              setCode: setCode
+            });
+          }
         }
-      }
-    });
+      });
 
-    // Start background preloading
-    if (cardsToPreload.length > 0) {
-      startBackgroundPreloading(cardsToPreload);
-    }
+      // Start background preloading
+      if (cardsToPreload.length > 0) {
+        startBackgroundPreloading(cardsToPreload);
+      }
+    }, 2000);
+
+    return () => clearTimeout(preloadTimer);
   }, [currentPair, loadedCards, currentSetCode]);
 
   // Reset loaded cards when pair changes
