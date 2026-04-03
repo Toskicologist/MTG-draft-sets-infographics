@@ -4933,15 +4933,18 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         // For OM1 with SPM art preference: try fetching SPM version by oracle ID
         if (preferSPM && cardData.oracleId) {
           try {
-            const spmRes = await fetch(`https://api.scryfall.com/cards/spm/${cardData.oracleId}`, {timeout: 3000});
+            const spmRes = await fetch(`https://api.scryfall.com/cards/search?q=set:spm oracle_id:${cardData.oracleId}`, {timeout: 3000});
             if (spmRes.ok) {
-              const spmData = await spmRes.json();
-              const spmUrl = spmData.card_faces?.[0]?.image_uris?.normal || spmData.image_uris?.normal || null;
-              if (spmUrl) {
-                setImageUrl(spmUrl);
-                if (onImageLoaded) onImageLoaded(cardNumber);
-                setImageLoading(false);
-                return;
+              const spmSearchData = await spmRes.json();
+              if (spmSearchData.data && spmSearchData.data.length > 0) {
+                const spmData = spmSearchData.data[0];
+                const spmUrl = spmData.card_faces?.[0]?.image_uris?.normal || spmData.image_uris?.normal || null;
+                if (spmUrl) {
+                  setImageUrl(spmUrl);
+                  if (onImageLoaded) onImageLoaded(cardNumber);
+                  setImageLoading(false);
+                  return;
+                }
               }
             }
           } catch (e) { /* fall back to OM1 art */ }
