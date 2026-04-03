@@ -4933,7 +4933,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         // For OM1 with SPM art preference: try fetching SPM version by oracle ID
         if (preferSPM && cardData.oracleId) {
           try {
-            const spmRes = await fetch(`https://api.scryfall.com/cards/search?q=set:spm oracle_id:${cardData.oracleId}`, {timeout: 3000});
+            const spmRes = await fetch(`https://api.scryfall.com/cards/search?q=set:spm oracleid:${cardData.oracleId}`, {timeout: 3000});
             if (spmRes.ok) {
               const spmSearchData = await spmRes.json();
               if (spmSearchData.data && spmSearchData.data.length > 0) {
