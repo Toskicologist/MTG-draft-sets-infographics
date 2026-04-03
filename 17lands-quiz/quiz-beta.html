@@ -4799,7 +4799,7 @@ const fetchCardData = async (cardName, setCode) => {
     const toughness = data.toughness || null;
 
     // Return card data even without imageUrl - allows fallback rendering
-    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name, collectorNumber: data.collector_number || null };
+    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name, collectorNumber: data.collector_number || null, oracleId: data.oracle_id || null };
   };
 
   const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'];
@@ -4930,10 +4930,10 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
       if (cardData) {
         setCardInfo(cardData);
 
-        // For OM1 with SPM art preference: try fetching SPM version by collector number
-        if (preferSPM && cardData.collectorNumber) {
+        // For OM1 with SPM art preference: try fetching SPM version by oracle ID
+        if (preferSPM && cardData.oracleId) {
           try {
-            const spmRes = await fetch(`https://api.scryfall.com/cards/spm/${cardData.collectorNumber}`, {timeout: 3000});
+            const spmRes = await fetch(`https://api.scryfall.com/cards/spm/${cardData.oracleId}`, {timeout: 3000});
             if (spmRes.ok) {
               const spmData = await spmRes.json();
               const spmUrl = spmData.card_faces?.[0]?.image_uris?.normal || spmData.image_uris?.normal || null;
