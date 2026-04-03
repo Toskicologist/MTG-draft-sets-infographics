@@ -4834,19 +4834,23 @@ const fetchCardData = async (cardName, setCode) => {
       }
     }
 
-    // CUBE: exact name first (avoids fuzzy returning newer split cards e.g. "Wheel of Fortune"),
+    // CUBE & OM1: exact name first (avoids fuzzy returning wrong cards),
     // then search for oldest print as final fallback
-    if (setCode === 'CUBE') {
+    if (setCode === 'CUBE' || setCode === 'OM1') {
+      const scryfallSetsForExact = SCRYFALL_SET_CODES[setCode];
       try {
-        let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`, {timeout: 3000});
-        if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
-        if (exactResponse.ok) {
-          const data = await exactResponse.json();
-          const cardData = getCardData(data);
-          if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+        // Try exact match in each set
+        for (const scryfallSet of scryfallSetsForExact) {
+          let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${scryfallSet}`, {timeout: 3000});
+          if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+          if (exactResponse.ok) {
+            const data = await exactResponse.json();
+            const cardData = getCardData(data);
+            if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+          }
         }
-        // Exact failed — get oldest printing by release date
-        const exactQuery = `!"${cardName}"`;
+        // Exact failed — get oldest printing by release date (within the sets)
+        const exactQuery = `!"${cardName}" (${scryfallSetsForExact.map(s => `set:${s}`).join(' OR ')})`;
         let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
         if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
         if (oldestResponse.ok) {
