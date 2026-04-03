@@ -1135,6 +1135,14 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.3.5 (2026-04-03 UTC - Claude Sonnet 4.6):
+  - FIX: OM1 Scryfall set code corrected from 'otj' to 'om1' (was fetching OTJ art instead of Universes Within art)
+  - FEAT: OM1/SPM art toggle button — when playing OM1, click to switch between OM1 Universes Within art and Marvel Spider-Man art
+    - Uses Scryfall collector number to find matching SPM card (best-effort; falls back to OM1 art if SPM card not found)
+    - Toggle resets automatically when switching sets
+  - FIX (CUBE): Use exact name match first to avoid fuzzy search returning newer split cards (e.g. "Wheel of Fortune" → "Naktamun Lorespinner // Wheel of Fortune")
+    - If exact fails, searches by exact name ordered by oldest release date (gets classic Alpha/Beta versions)
+
   v4.2.6 (2026-04-02 22:38 UTC - Claude Sonnet 4.6):
   - FIX: Disable all startup preloading due to Scryfall rate limits
   - Only fetch card data when user views a question
@@ -4258,8 +4266,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.3.4';
-const LAST_UPDATE = '2026-04-03 12:45 UTC';
+const QUIZ_VERSION = '4.3.5';
+const LAST_UPDATE = '2026-04-03 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -4719,7 +4727,7 @@ const SCRYFALL_SET_CODES = {
   FDN: ['fdn', 'spg'],
   BLB: ['blb', 'spg'],
   TLA: ['tla', 'tle', 'spg'],
-  OM1: ['otj', 'spg'],
+  OM1: ['om1', 'spg'],
   EOE: ['eoe', 'spg'],
   TDM: ['ddt', 'spg'],
   FIN: ['fin', 'fca', 'spg']
@@ -4791,7 +4799,7 @@ const fetchCardData = async (cardName, setCode) => {
     const toughness = data.toughness || null;
 
     // Return card data even without imageUrl - allows fallback rendering
-    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name };
+    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name, collectorNumber: data.collector_number || null };
   };
 
   const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'];
@@ -4824,6 +4832,32 @@ const fetchCardData = async (cardName, setCode) => {
           continue;
         }
       }
+    }
+
+    // CUBE: exact name first (avoids fuzzy returning newer split cards e.g. "Wheel of Fortune"),
+    // then search for oldest print as final fallback
+    if (setCode === 'CUBE') {
+      try {
+        let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`, {timeout: 3000});
+        if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (exactResponse.ok) {
+          const data = await exactResponse.json();
+          const cardData = getCardData(data);
+          if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+        }
+        // Exact failed — get oldest printing by release date
+        const exactQuery = `!"${cardName}"`;
+        let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
+        if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (oldestResponse.ok) {
+          const data = await oldestResponse.json();
+          if (data.data && data.data.length > 0) {
+            const cardData = getCardData(data.data[0]);
+            if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+          }
+        }
+      } catch (e) { /* fall through */ }
+      return null;
     }
 
     // Fallback: fuzzy search (any version) - works for all sets
@@ -4878,7 +4912,7 @@ const fetchCardData = async (cardName, setCode) => {
   }
 };
 
-const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL', onImageLoaded }) => {
+const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL', onImageLoaded, preferSPM = false }) => {
   const [imageUrl, setImageUrl] = React.useState(null);
   const [cardInfo, setCardInfo] = React.useState(null);
   const [imageLoading, setImageLoading] = React.useState(true);
@@ -4895,6 +4929,24 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
       const cardData = await fetchCardData(card.name, setCode);
       if (cardData) {
         setCardInfo(cardData);
+
+        // For OM1 with SPM art preference: try fetching SPM version by collector number
+        if (preferSPM && cardData.collectorNumber) {
+          try {
+            const spmRes = await fetch(`https://api.scryfall.com/cards/spm/${cardData.collectorNumber}`, {timeout: 3000});
+            if (spmRes.ok) {
+              const spmData = await spmRes.json();
+              const spmUrl = spmData.card_faces?.[0]?.image_uris?.normal || spmData.image_uris?.normal || null;
+              if (spmUrl) {
+                setImageUrl(spmUrl);
+                if (onImageLoaded) onImageLoaded(cardNumber);
+                setImageLoading(false);
+                return;
+              }
+            }
+          } catch (e) { /* fall back to OM1 art */ }
+        }
+
         setImageUrl(cardData.imageUrl);
         // Notify parent that image has been loaded/cached
         if (onImageLoaded) {
@@ -4906,7 +4958,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
       setImageLoading(false);
     };
     loadCardData();
-  }, [card.name, setCode, cardNumber, onImageLoaded]);
+  }, [card.name, setCode, cardNumber, onImageLoaded, preferSPM]);
 
   const containerClass = [
     'card-image-container',
@@ -5057,6 +5109,7 @@ const GIHQuiz = () => {
   const [history, setHistory] = React.useState(loadAllHistory('comparison'));
   const [showToast, setShowToast] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
+  const [preferSPM, setPreferSPM] = React.useState(false);
 
   // Update score when mode or set changes (history is now unified across all sets)
   React.useEffect(() => {
@@ -5070,6 +5123,7 @@ const GIHQuiz = () => {
     setSelectedGrade(null);
     setCurrentPair(null);
     setCurrentCard(null);
+    setPreferSPM(false);
     // Smart selection only applies to comparison mode
     if (quizMode !== 'comparison') {
       setSmartSelectionEnabled(false);
@@ -5925,6 +5979,25 @@ Play at: ${baseUrl}`,
                 </div>
               )}
 
+              {currentSetCode === 'OM1' && (
+                <div style={{textAlign: 'center', marginBottom: '8px'}}>
+                  <button
+                    onClick={() => setPreferSPM(!preferSPM)}
+                    style={{
+                      padding: '5px 14px',
+                      background: preferSPM ? '#4a1a7a' : '#2a2a2a',
+                      border: `1px solid ${preferSPM ? '#9b5fd0' : '#555'}`,
+                      color: preferSPM ? '#d8a8ff' : '#aaa',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      borderRadius: '4px'
+                    }}
+                    title={preferSPM ? 'Showing Marvel: Spider-Man art — click for Universes Within art' : 'Showing Universes Within (OM1) art — click for Marvel: Spider-Man art'}
+                  >
+                    {preferSPM ? '🕷 SPM Art' : '🧙 OM1 Art'}
+                  </button>
+                </div>
+              )}
               <div className="card-area">
               <CardDisplay
                 card={currentPair[0]}
@@ -5937,6 +6010,7 @@ Play at: ${baseUrl}`,
                 metric={metric}
                 setCode={currentSetCode}
                 onImageLoaded={handleImageLoaded}
+                preferSPM={preferSPM}
               />
               <CardDisplay
                 card={currentPair[1]}
@@ -5949,6 +6023,7 @@ Play at: ${baseUrl}`,
                 metric={metric}
                 setCode={currentSetCode}
                 onImageLoaded={handleImageLoaded}
+                preferSPM={preferSPM}
               />
             </div>
             </>
@@ -5968,6 +6043,7 @@ Play at: ${baseUrl}`,
                   metric={metric}
                   setCode={currentSetCode}
                   onImageLoaded={handleImageLoaded}
+                  preferSPM={preferSPM}
                 />
               </div>
               <GradeSelector
