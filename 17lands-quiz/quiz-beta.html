@@ -5980,21 +5980,20 @@ Play at: ${baseUrl}`,
               )}
 
               {currentSetCode === 'OM1' && (
-                <div style={{textAlign: 'center', marginBottom: '8px'}}>
+                <div className="mode-toggle" style={{marginBottom: '12px'}}>
                   <button
-                    onClick={() => setPreferSPM(!preferSPM)}
-                    style={{
-                      padding: '5px 14px',
-                      background: preferSPM ? '#4a1a7a' : '#2a2a2a',
-                      border: `1px solid ${preferSPM ? '#9b5fd0' : '#555'}`,
-                      color: preferSPM ? '#d8a8ff' : '#aaa',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      borderRadius: '4px'
-                    }}
-                    title={preferSPM ? 'Showing Marvel: Spider-Man art — click for Universes Within art' : 'Showing Universes Within (OM1) art — click for Marvel: Spider-Man art'}
+                    className={`mode-option ${!preferSPM ? 'active' : ''}`}
+                    onClick={() => setPreferSPM(false)}
+                    title="Show Universes Within (OM1) art"
                   >
-                    {preferSPM ? '🕷 SPM Art' : '🧙 OM1 Art'}
+                    🧙 OM1 Art
+                  </button>
+                  <button
+                    className={`mode-option ${preferSPM ? 'active' : ''}`}
+                    onClick={() => setPreferSPM(true)}
+                    title="Show Marvel: Spider-Man art"
+                  >
+                    🕷 SPM Art
                   </button>
                 </div>
               )}
