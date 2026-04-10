@@ -1138,7 +1138,7 @@
   v4.3.5 (2026-04-03 UTC - Claude Sonnet 4.6):
   - FIX: OM1 Scryfall set code corrected from 'otj' to 'om1' (was fetching OTJ art instead of Universes Within art)
   - FEAT: OM1/SPM art toggle button — when playing OM1, click to switch between OM1 Universes Within art and Marvel Spider-Man art
-    - Uses Scryfall collector number to find matching SPM card (best-effort; falls back to OM1 art if SPM card not found)
+    - Uses Scryfall oracle ID to find matching SPM card (best-effort; falls back to OM1 art if SPM card not found)
     - Toggle resets automatically when switching sets
   - FIX (CUBE): Use exact name match first to avoid fuzzy search returning newer split cards (e.g. "Wheel of Fortune" → "Naktamun Lorespinner // Wheel of Fortune")
     - If exact fails, searches by exact name ordered by oldest release date (gets classic Alpha/Beta versions)
@@ -4486,12 +4486,34 @@ const fetchCardData = async (cardName, setCode) => {
       }
     }
 
-    // CUBE & OM1: exact name first (avoids fuzzy returning wrong cards),
-    // then search for oldest print as final fallback
-    if (setCode === 'CUBE' || setCode === 'OM1') {
+    // CUBE: exact name first (no set filter), then oldest print fallback
+    if (setCode === 'CUBE') {
+      try {
+        let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`, {timeout: 3000});
+        if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (exactResponse.ok) {
+          const data = await exactResponse.json();
+          const cardData = getCardData(data);
+          if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+        }
+        const exactQuery = `!"${cardName}"`;
+        let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
+        if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (oldestResponse.ok) {
+          const data = await oldestResponse.json();
+          if (data.data && data.data.length > 0) {
+            const cardData = getCardData(data.data[0]);
+            if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+          }
+        }
+      } catch (e) { /* fall through */ }
+      return null;
+    }
+
+    // OM1: exact name first within set codes, then oldest print fallback
+    if (setCode === 'OM1') {
       const scryfallSetsForExact = SCRYFALL_SET_CODES[setCode];
       try {
-        // Try exact match in each set
         for (const scryfallSet of scryfallSetsForExact) {
           let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${scryfallSet}`, {timeout: 3000});
           if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
@@ -4501,7 +4523,6 @@ const fetchCardData = async (cardName, setCode) => {
             if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
           }
         }
-        // Exact failed — get oldest printing by release date (within the sets)
         const exactQuery = `!"${cardName}" (${scryfallSetsForExact.map(s => `set:${s}`).join(' OR ')})`;
         let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
         if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
