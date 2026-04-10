@@ -1135,6 +1135,14 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.3.5 (2026-04-03 UTC - Claude Sonnet 4.6):
+  - FIX: OM1 Scryfall set code corrected from 'otj' to 'om1' (was fetching OTJ art instead of Universes Within art)
+  - FEAT: OM1/SPM art toggle button — when playing OM1, click to switch between OM1 Universes Within art and Marvel Spider-Man art
+    - Uses Scryfall oracle ID to find matching SPM card (best-effort; falls back to OM1 art if SPM card not found)
+    - Toggle resets automatically when switching sets
+  - FIX (CUBE): Use exact name match first to avoid fuzzy search returning newer split cards (e.g. "Wheel of Fortune" → "Naktamun Lorespinner // Wheel of Fortune")
+    - If exact fails, searches by exact name ordered by oldest release date (gets classic Alpha/Beta versions)
+
   v4.2.6 (2026-04-02 22:38 UTC - Claude Sonnet 4.6):
   - FIX: Disable all startup preloading due to Scryfall rate limits
   - Only fetch card data when user views a question
@@ -2148,326 +2156,546 @@ const CARD_DATA_FDN = [
 
 // Set configuration - maps set codes to their data and metadata
 // Set symbol SVG paths (from Keyrune icon font - https://keyrune.andrewgioia.com)
-// CUBE - 318 cards
+// Powered Cube PremierDraft - 538 cards
 const CUBE_CARDS = [
-  {name: 'Ajani, Nacatl Pariah', color: 'W', rarity: 'M', alsa: 3.37, gihWr: 65.7},
-  {name: 'Ancestral Recall', color: 'U', rarity: 'M', alsa: null, gihWr: 65.3},
-  {name: 'Tolarian Academy', color: '', rarity: 'M', alsa: 3.63, gihWr: 64.8},
-  {name: 'Time Walk', color: 'U', rarity: 'M', alsa: null, gihWr: 64.8},
-  {name: 'Black Lotus', color: '', rarity: 'M', alsa: null, gihWr: 64.2},
-  {name: 'Mox Sapphire', color: '', rarity: 'M', alsa: null, gihWr: 64.0},
-  {name: 'Orcish Bowmasters', color: 'B', rarity: 'R', alsa: 2.48, gihWr: 64.0},
-  {name: 'Ademi of the Silkchutes', color: 'W', rarity: 'R', alsa: 7.44, gihWr: 63.8},
-  {name: 'Parallax Wave', color: 'W', rarity: 'R', alsa: 4.71, gihWr: 63.6},
-  {name: 'Ocelot Pride', color: 'W', rarity: 'M', alsa: 3.51, gihWr: 63.5},
-  {name: 'Mana Crypt', color: '', rarity: 'M', alsa: null, gihWr: 63.1},
-  {name: 'Figure of Destiny', color: 'WR', rarity: 'R', alsa: 7.49, gihWr: 63.1},
-  {name: 'Broadside Bombardiers', color: 'R', rarity: 'R', alsa: 3.17, gihWr: 62.5},
-  {name: 'Mox Ruby', color: '', rarity: 'R', alsa: null, gihWr: 62.2},
-  {name: 'Phelia, Exuberant Shepherd', color: 'W', rarity: 'R', alsa: 4.22, gihWr: 62.2},
-  {name: 'Strip Mine', color: '', rarity: 'M', alsa: 3.31, gihWr: 62.1},
-  {name: 'Mox Jet', color: '', rarity: 'M', alsa: null, gihWr: 61.9},
-  {name: 'Sage of the Skies', color: 'W', rarity: 'R', alsa: 6.15, gihWr: 61.9},
-  {name: 'Showdown of the Skalds', color: 'WR', rarity: 'R', alsa: 7.91, gihWr: 61.8},
-  {name: 'Brain Freeze', color: 'U', rarity: 'U', alsa: 5.23, gihWr: 61.7},
-  {name: 'Flash', color: 'U', rarity: 'R', alsa: 3.84, gihWr: 61.6},
-  {name: 'Fable of the Mirror-Breaker', color: 'R', rarity: 'R', alsa: 3.16, gihWr: 61.6},
-  {name: 'Mox Emerald', color: '', rarity: 'R', alsa: null, gihWr: 61.4},
-  {name: 'Mana Drain', color: 'U', rarity: 'M', alsa: 2.24, gihWr: 61.4},
-  {name: 'Phlage, Titan of Fire\'s Fury', color: 'WR', rarity: 'M', alsa: 4.49, gihWr: 61.3},
-  {name: 'Badgermole Cub', color: 'G', rarity: 'M', alsa: 4.67, gihWr: 61.2},
-  {name: 'Fury', color: 'R', rarity: 'M', alsa: 3.68, gihWr: 61.2},
-  {name: 'No More Lies', color: 'WU', rarity: 'U', alsa: 6.52, gihWr: 61.0},
-  {name: 'Minsc & Boo, Timeless Heroes', color: 'RG', rarity: 'M', alsa: 2.94, gihWr: 60.9},
-  {name: 'Elspeth, Storm Slayer', color: 'W', rarity: 'M', alsa: 4.67, gihWr: 60.9},
-  {name: 'Sol Ring', color: '', rarity: 'M', alsa: null, gihWr: 60.9},
-  {name: 'Swords to Plowshares', color: 'W', rarity: 'R', alsa: 2.96, gihWr: 60.8},
-  {name: 'Figure of Fable', color: 'WG', rarity: 'R', alsa: 7.14, gihWr: 60.7},
-  {name: 'Laelia, the Blade Reforged', color: 'R', rarity: 'R', alsa: 4.63, gihWr: 60.7},
-  {name: 'Underworld Breach', color: 'R', rarity: 'R', alsa: 5.51, gihWr: 60.6},
-  {name: 'Ivora, Insatiable Heir', color: 'R', rarity: 'U', alsa: 6.94, gihWr: 60.6},
-  {name: 'Wrenn and Six', color: 'RG', rarity: 'M', alsa: 6.34, gihWr: 60.5},
-  {name: 'Fractured Identity', color: 'WU', rarity: 'M', alsa: 3.81, gihWr: 60.4},
-  {name: 'Mother of Runes', color: 'W', rarity: 'U', alsa: 5.49, gihWr: 60.4},
-  {name: 'Cryptic Command', color: 'U', rarity: 'R', alsa: 5.66, gihWr: 60.3},
-  {name: 'Mana Tithe', color: 'W', rarity: 'R', alsa: 7.41, gihWr: 60.3},
-  {name: 'Marsh Flats', color: '', rarity: 'R', alsa: 3.77, gihWr: 60.3},
-  {name: 'Cosmogrand Zenith', color: 'W', rarity: 'M', alsa: 6.42, gihWr: 60.2},
-  {name: 'Pyrogoyf', color: 'R', rarity: 'R', alsa: 3.16, gihWr: 60.1},
-  {name: 'Nia, Skysail Storyteller', color: 'R', rarity: 'M', alsa: 7.95, gihWr: 60.1},
-  {name: 'Glimmer Lens', color: 'W', rarity: 'R', alsa: 7.16, gihWr: 60.1},
-  {name: 'Karakas', color: '', rarity: 'M', alsa: 2.73, gihWr: 60.1},
-  {name: 'Blackcleave Cliffs', color: '', rarity: 'R', alsa: 7.63, gihWr: 60.0},
-  {name: 'Barrowgoyf', color: 'B', rarity: 'R', alsa: 4.04, gihWr: 60.0},
-  {name: 'Dragon\'s Rage Channeler', color: 'R', rarity: 'U', alsa: 7.20, gihWr: 59.9},
-  {name: 'Ragavan, Nimble Pilferer', color: 'R', rarity: 'M', alsa: 2.61, gihWr: 59.9},
-  {name: 'Teferi, Time Raveler', color: 'WU', rarity: 'R', alsa: 4.38, gihWr: 59.9},
-  {name: 'Ouroboroid', color: 'G', rarity: 'M', alsa: 5.37, gihWr: 59.9},
-  {name: 'Teferi, Hero of Dominaria', color: 'WU', rarity: 'M', alsa: 4.95, gihWr: 59.9},
-  {name: 'Skyclave Apparition', color: 'W', rarity: 'R', alsa: 6.80, gihWr: 59.9},
-  {name: 'Oust', color: 'W', rarity: 'U', alsa: 6.25, gihWr: 59.8},
-  {name: 'Adeline, Resplendent Cathar', color: 'W', rarity: 'R', alsa: 6.33, gihWr: 59.8},
-  {name: 'Lion\'s Eye Diamond', color: '', rarity: 'M', alsa: 5.35, gihWr: 59.7},
-  {name: 'Formidable Speaker', color: 'G', rarity: 'R', alsa: 6.21, gihWr: 59.6},
-  {name: 'Giver of Runes', color: 'W', rarity: 'R', alsa: 6.28, gihWr: 59.6},
-  {name: 'Aang, Swift Savior', color: 'WU', rarity: 'R', alsa: 6.94, gihWr: 59.5},
-  {name: 'Abandoned Air Temple', color: '', rarity: 'R', alsa: 7.51, gihWr: 59.5},
-  {name: 'Emperor of Bones', color: 'B', rarity: 'R', alsa: 4.73, gihWr: 59.5},
-  {name: 'Unexpectedly Absent', color: 'W', rarity: 'R', alsa: 8.26, gihWr: 59.4},
-  {name: 'Sheoldred, the Apocalypse', color: 'B', rarity: 'M', alsa: 3.21, gihWr: 59.4},
-  {name: 'Timetwister', color: 'U', rarity: 'M', alsa: 2.97, gihWr: 59.3},
-  {name: 'Elite Spellbinder', color: 'W', rarity: 'R', alsa: 6.78, gihWr: 59.3},
-  {name: 'Psychic Frog', color: 'UB', rarity: 'R', alsa: 2.89, gihWr: 59.3},
-  {name: 'Retrofitter Foundry', color: '', rarity: 'R', alsa: 4.78, gihWr: 59.3},
-  {name: 'Nadu, Winged Wisdom', color: 'UG', rarity: 'R', alsa: 4.47, gihWr: 59.3},
-  {name: 'Mox Pearl', color: '', rarity: 'M', alsa: null, gihWr: 59.3},
-  {name: 'Scrubland', color: '', rarity: 'R', alsa: 6.37, gihWr: 59.1},
-  {name: 'Stock Up', color: 'U', rarity: 'U', alsa: 3.73, gihWr: 59.0},
-  {name: 'Raugrin Triome', color: '', rarity: 'R', alsa: 6.15, gihWr: 58.9},
-  {name: 'Subtlety', color: 'U', rarity: 'M', alsa: 5.19, gihWr: 58.9},
-  {name: 'Lightning Bolt', color: 'R', rarity: 'R', alsa: 3.70, gihWr: 58.9},
-  {name: 'Overlord of the Mistmoors', color: 'W', rarity: 'M', alsa: 6.46, gihWr: 58.9},
-  {name: 'Staff of the Storyteller', color: 'W', rarity: 'R', alsa: 6.29, gihWr: 58.8},
-  {name: 'Reprieve', color: 'W', rarity: 'U', alsa: 5.67, gihWr: 58.8},
-  {name: 'Three Steps Ahead', color: 'U', rarity: 'R', alsa: 5.60, gihWr: 58.8},
-  {name: 'Dismember', color: 'B', rarity: 'M', alsa: 3.36, gihWr: 58.7},
-  {name: 'Floodfarm Verge', color: '', rarity: 'R', alsa: 6.93, gihWr: 58.7},
-  {name: 'Scythecat Cub', color: 'G', rarity: 'R', alsa: 6.07, gihWr: 58.7},
-  {name: 'Thraben Inspector', color: 'W', rarity: 'C', alsa: 7.45, gihWr: 58.7},
-  {name: 'Nova Hellkite', color: 'R', rarity: 'R', alsa: 7.05, gihWr: 58.7},
-  {name: 'Green Sun\'s Zenith', color: 'G', rarity: 'R', alsa: 6.87, gihWr: 58.6},
-  {name: 'Solitude', color: 'W', rarity: 'M', alsa: 4.29, gihWr: 58.6},
-  {name: 'Willowrush Verge', color: '', rarity: 'R', alsa: 7.14, gihWr: 58.5},
-  {name: 'Screaming Nemesis', color: 'R', rarity: 'M', alsa: 5.65, gihWr: 58.5},
-  {name: 'Starting Town', color: '', rarity: 'R', alsa: 5.19, gihWr: 58.5},
-  {name: 'Quantum Riddler', color: 'U', rarity: 'M', alsa: 3.75, gihWr: 58.5},
-  {name: 'Force of Will', color: 'U', rarity: 'M', alsa: 2.49, gihWr: 58.5},
-  {name: 'Generous Plunderer', color: 'R', rarity: 'M', alsa: 5.68, gihWr: 58.4},
-  {name: 'Archon of Cruelty', color: 'B', rarity: 'M', alsa: 3.88, gihWr: 58.4},
-  {name: 'Gut, True Soul Zealot', color: 'R', rarity: 'U', alsa: 4.05, gihWr: 58.3},
-  {name: 'Bloodstained Mire', color: '', rarity: 'R', alsa: 3.63, gihWr: 58.3},
-  {name: 'Force of Negation', color: 'U', rarity: 'R', alsa: 3.77, gihWr: 58.3},
-  {name: 'Inquisition of Kozilek', color: 'B', rarity: 'R', alsa: 5.18, gihWr: 58.2},
-  {name: 'Necromancy', color: 'B', rarity: 'U', alsa: 4.61, gihWr: 58.2},
-  {name: 'Daze', color: 'U', rarity: 'C', alsa: 5.31, gihWr: 58.2},
-  {name: 'Polluted Delta', color: '', rarity: 'R', alsa: 3.03, gihWr: 58.1},
-  {name: 'Plateau', color: '', rarity: 'R', alsa: 5.27, gihWr: 58.1},
-  {name: 'Oko, Thief of Crowns', color: 'UG', rarity: 'M', alsa: 3.41, gihWr: 58.1},
-  {name: 'Galvanic Discharge', color: 'R', rarity: 'C', alsa: 6.21, gihWr: 58.1},
-  {name: 'Animate Dead', color: 'B', rarity: 'U', alsa: 3.87, gihWr: 58.0},
-  {name: 'Mana Leak', color: 'U', rarity: 'C', alsa: 3.49, gihWr: 57.9},
-  {name: 'Sear', color: 'R', rarity: 'U', alsa: 6.14, gihWr: 57.8},
-  {name: 'Riverpyre Verge', color: '', rarity: 'R', alsa: 6.53, gihWr: 57.8},
-  {name: 'Esper Sentinel', color: 'W', rarity: 'R', alsa: 5.34, gihWr: 57.8},
-  {name: 'Containment Priest', color: 'W', rarity: 'R', alsa: 6.87, gihWr: 57.7},
-  {name: 'Sneak Attack', color: 'R', rarity: 'M', alsa: 5.13, gihWr: 57.7},
-  {name: 'Detective\'s Phoenix', color: 'R', rarity: 'R', alsa: 7.83, gihWr: 57.7},
-  {name: 'Misty Rainforest', color: '', rarity: 'R', alsa: 3.17, gihWr: 57.7},
-  {name: 'Pyrokinesis', color: 'R', rarity: 'U', alsa: 6.53, gihWr: 57.6},
-  {name: 'Unholy Heat', color: 'R', rarity: 'C', alsa: 6.58, gihWr: 57.6},
-  {name: 'Lotus Petal', color: '', rarity: 'C', alsa: 4.54, gihWr: 57.6},
-  {name: 'Ugin, Eye of the Storms', color: '', rarity: 'M', alsa: 3.70, gihWr: 57.6},
-  {name: 'Flame Slash', color: 'R', rarity: 'C', alsa: 5.78, gihWr: 57.6},
-  {name: 'Spell Pierce', color: 'U', rarity: 'C', alsa: 5.30, gihWr: 57.6},
-  {name: 'Windswept Heath', color: '', rarity: 'R', alsa: 3.88, gihWr: 57.6},
-  {name: 'Wooded Foothills', color: '', rarity: 'R', alsa: 3.70, gihWr: 57.6},
-  {name: 'Burst Lightning', color: 'R', rarity: 'C', alsa: 6.64, gihWr: 57.5},
-  {name: 'Commercial District', color: '', rarity: 'R', alsa: 7.48, gihWr: 57.5},
-  {name: 'Cori-Steel Cutter', color: 'R', rarity: 'R', alsa: 4.44, gihWr: 57.5},
-  {name: 'The One Ring', color: '', rarity: 'M', alsa: 1.82, gihWr: 57.5},
-  {name: 'Elegant Parlor', color: '', rarity: 'R', alsa: 6.90, gihWr: 57.4},
-  {name: 'Blazemire Verge', color: '', rarity: 'R', alsa: 7.68, gihWr: 57.4},
-  {name: 'Otawara, Soaring City', color: '', rarity: 'R', alsa: 6.44, gihWr: 57.4},
-  {name: 'Delighted Halfling', color: 'G', rarity: 'R', alsa: 5.47, gihWr: 57.4},
-  {name: 'Urza\'s Saga', color: '', rarity: 'R', alsa: 3.44, gihWr: 57.4},
-  {name: 'Noble Hierarch', color: 'G', rarity: 'R', alsa: 5.32, gihWr: 57.4},
-  {name: 'Counterspell', color: 'U', rarity: 'R', alsa: 3.70, gihWr: 57.3},
-  {name: 'Miscalculation', color: 'U', rarity: 'C', alsa: 4.56, gihWr: 57.3},
-  {name: 'Dack Fayden', color: 'UR', rarity: 'M', alsa: 4.59, gihWr: 57.3},
-  {name: 'Sunbillow Verge', color: '', rarity: 'R', alsa: 7.24, gihWr: 57.3},
-  {name: 'Baleful Strix', color: 'UB', rarity: 'R', alsa: 5.31, gihWr: 57.3},
-  {name: 'Bristly Bill, Spine Sower', color: 'G', rarity: 'M', alsa: 5.71, gihWr: 57.3},
-  {name: 'Thundering Falls', color: '', rarity: 'R', alsa: 5.66, gihWr: 57.2},
-  {name: 'Cathar Commando', color: 'W', rarity: 'C', alsa: 8.02, gihWr: 57.2},
-  {name: 'Celestial Colonnade', color: '', rarity: 'R', alsa: 7.09, gihWr: 57.2},
-  {name: 'Sunbaked Canyon', color: '', rarity: 'R', alsa: 7.35, gihWr: 57.2},
-  {name: 'Breeding Pool', color: '', rarity: 'R', alsa: 5.82, gihWr: 57.2},
-  {name: 'Robber of the Rich', color: 'R', rarity: 'M', alsa: 6.43, gihWr: 57.1},
-  {name: 'Talisman of Creativity', color: '', rarity: 'U', alsa: 6.31, gihWr: 57.1},
-  {name: 'Go for the Throat', color: 'B', rarity: 'U', alsa: 5.69, gihWr: 57.1},
-  {name: 'Skullclamp', color: '', rarity: 'U', alsa: 3.73, gihWr: 57.1},
-  {name: 'Urza, Lord High Artificer', color: 'U', rarity: 'M', alsa: 3.54, gihWr: 57.1},
-  {name: 'Mana Vault', color: '', rarity: 'M', alsa: 2.39, gihWr: 57.1},
-  {name: 'Taiga', color: '', rarity: 'R', alsa: 5.99, gihWr: 57.0},
-  {name: 'Fatal Push', color: 'B', rarity: 'U', alsa: 5.73, gihWr: 57.0},
-  {name: 'Scalding Tarn', color: '', rarity: 'R', alsa: 2.93, gihWr: 57.0},
-  {name: 'Sentinel of the Nameless City', color: 'G', rarity: 'R', alsa: 6.87, gihWr: 57.0},
-  {name: 'Pest Infestation', color: 'G', rarity: 'R', alsa: 5.55, gihWr: 57.0},
-  {name: 'Demonic Tutor', color: 'B', rarity: 'M', alsa: 3.07, gihWr: 56.9},
-  {name: 'Arid Mesa', color: '', rarity: 'R', alsa: 3.55, gihWr: 56.9},
-  {name: 'Wan Shi Tong, Librarian', color: 'U', rarity: 'M', alsa: 4.65, gihWr: 56.9},
-  {name: 'Verdant Catacombs', color: '', rarity: 'R', alsa: 3.84, gihWr: 56.9},
-  {name: 'Brazen Borrower', color: 'U', rarity: 'M', alsa: 5.10, gihWr: 56.9},
-  {name: 'Inti, Seneschal of the Sun', color: 'R', rarity: 'R', alsa: 5.40, gihWr: 56.8},
-  {name: 'Fire Covenant', color: 'BR', rarity: 'U', alsa: 6.15, gihWr: 56.8},
-  {name: 'Remand', color: 'U', rarity: 'U', alsa: 4.01, gihWr: 56.8},
-  {name: 'Third Path Iconoclast', color: 'UR', rarity: 'U', alsa: 6.36, gihWr: 56.8},
-  {name: 'Mox Opal', color: '', rarity: 'M', alsa: 4.76, gihWr: 56.8},
-  {name: 'Thalia, Guardian of Thraben', color: 'W', rarity: 'R', alsa: 7.62, gihWr: 56.8},
-  {name: 'Thornspire Verge', color: '', rarity: 'R', alsa: 8.16, gihWr: 56.8},
-  {name: 'Sacred Foundry', color: '', rarity: 'R', alsa: 5.86, gihWr: 56.8},
-  {name: 'Hullbreacher', color: 'U', rarity: 'R', alsa: 2.50, gihWr: 56.8},
-  {name: 'Llanowar Elves', color: 'G', rarity: 'C', alsa: 6.38, gihWr: 56.8},
-  {name: 'Troll of Khazad-dûm', color: 'B', rarity: 'C', alsa: 6.06, gihWr: 56.8},
-  {name: 'Life // Death', color: 'BG', rarity: 'U', alsa: 6.08, gihWr: 56.7},
-  {name: 'Preordain', color: 'U', rarity: 'C', alsa: 5.22, gihWr: 56.7},
-  {name: 'Jace, the Mind Sculptor', color: 'U', rarity: 'M', alsa: 4.80, gihWr: 56.7},
-  {name: 'Prismatic Vista', color: '', rarity: 'M', alsa: 3.74, gihWr: 56.7},
-  {name: 'Ignoble Hierarch', color: 'G', rarity: 'R', alsa: 5.62, gihWr: 56.7},
-  {name: 'Mox Diamond', color: '', rarity: 'R', alsa: 2.82, gihWr: 56.6},
-  {name: 'Birds of Paradise', color: 'G', rarity: 'R', alsa: 4.72, gihWr: 56.6},
-  {name: 'Mind Twist', color: 'B', rarity: 'R', alsa: 5.57, gihWr: 56.5},
-  {name: 'Portable Hole', color: 'W', rarity: 'U', alsa: 7.19, gihWr: 56.5},
-  {name: 'Lightning Helix', color: 'WR', rarity: 'R', alsa: 7.29, gihWr: 56.5},
-  {name: 'Snuff Out', color: 'B', rarity: 'C', alsa: 5.14, gihWr: 56.5},
-  {name: 'Memory Lapse', color: 'U', rarity: 'R', alsa: 4.12, gihWr: 56.5},
-  {name: 'Underground Sea', color: '', rarity: 'R', alsa: 4.28, gihWr: 56.4},
-  {name: 'Tundra', color: '', rarity: 'R', alsa: 4.68, gihWr: 56.4},
-  {name: 'Savannah', color: '', rarity: 'R', alsa: 6.96, gihWr: 56.4},
-  {name: 'Time Warp', color: 'U', rarity: 'M', alsa: 4.87, gihWr: 56.4},
-  {name: 'Once Upon a Time', color: 'G', rarity: 'R', alsa: 6.53, gihWr: 56.4},
-  {name: 'Wheel of Fortune', color: 'R', rarity: 'M', alsa: 4.06, gihWr: 56.4},
-  {name: 'Smuggler\'s Copter', color: '', rarity: 'R', alsa: 5.42, gihWr: 56.3},
-  {name: 'Prismatic Ending', color: 'W', rarity: 'M', alsa: 6.92, gihWr: 56.3},
-  {name: 'Gitaxian Probe', color: 'U', rarity: 'C', alsa: 4.98, gihWr: 56.3},
-  {name: 'Entomb', color: 'B', rarity: 'R', alsa: 5.13, gihWr: 56.2},
-  {name: 'Tezzeret, Cruel Captain', color: '', rarity: 'M', alsa: 5.56, gihWr: 56.2},
-  {name: 'Fear of Missing Out', color: 'R', rarity: 'R', alsa: 6.19, gihWr: 56.2},
-  {name: 'Aether Spellbomb', color: '', rarity: 'C', alsa: 6.35, gihWr: 56.2},
-  {name: 'Titania, Protector of Argoth', color: 'G', rarity: 'M', alsa: 5.64, gihWr: 56.2},
-  {name: 'Echo of Eons', color: 'U', rarity: 'R', alsa: 4.87, gihWr: 56.2},
-  {name: 'Chain Lightning', color: 'R', rarity: 'C', alsa: 5.83, gihWr: 56.1},
-  {name: 'Thoughtseize', color: 'B', rarity: 'R', alsa: 3.48, gihWr: 56.1},
-  {name: 'Fiery Confluence', color: 'R', rarity: 'R', alsa: 5.37, gihWr: 56.1},
-  {name: 'Seasoned Pyromancer', color: 'R', rarity: 'M', alsa: 6.98, gihWr: 56.1},
-  {name: 'Shelldock Isle', color: '', rarity: 'R', alsa: 6.17, gihWr: 56.0},
-  {name: 'Bayou', color: '', rarity: 'R', alsa: 6.08, gihWr: 56.0},
-  {name: 'Dauthi Voidwalker', color: 'B', rarity: 'R', alsa: 6.29, gihWr: 55.9},
-  {name: 'Mystic Confluence', color: 'U', rarity: 'R', alsa: 3.92, gihWr: 55.9},
-  {name: 'Gloomlake Verge', color: '', rarity: 'R', alsa: 6.17, gihWr: 55.9},
-  {name: 'Malevolent Rumble', color: 'G', rarity: 'C', alsa: 6.31, gihWr: 55.8},
-  {name: 'Creeping Tar Pit', color: '', rarity: 'R', alsa: 6.90, gihWr: 55.8},
-  {name: 'Fallen Shinobi', color: 'UB', rarity: 'R', alsa: 6.08, gihWr: 55.7},
-  {name: 'Torsten, Founder of Benalia', color: 'WG', rarity: 'M', alsa: 6.40, gihWr: 55.7},
-  {name: 'Blood Crypt', color: '', rarity: 'R', alsa: 6.08, gihWr: 55.7},
-  {name: 'Tinker', color: 'U', rarity: 'U', alsa: 4.02, gihWr: 55.7},
-  {name: 'Fabled Passage', color: '', rarity: 'R', alsa: 4.95, gihWr: 55.7},
-  {name: 'Lotus Cobra', color: 'G', rarity: 'R', alsa: 6.39, gihWr: 55.7},
-  {name: 'Meticulous Archive', color: '', rarity: 'R', alsa: 6.43, gihWr: 55.6},
-  {name: 'Lingering Souls', color: 'W', rarity: 'U', alsa: 7.93, gihWr: 55.5},
-  {name: 'Vampiric Tutor', color: 'B', rarity: 'M', alsa: 4.17, gihWr: 55.5},
-  {name: 'Vivi Ornitier', color: 'UR', rarity: 'M', alsa: 4.85, gihWr: 55.5},
-  {name: 'Umezawa\'s Jitte', color: '', rarity: 'R', alsa: 4.72, gihWr: 55.5},
-  {name: 'Steam Vents', color: '', rarity: 'R', alsa: 5.04, gihWr: 55.4},
-  {name: 'Tamiyo, Inquisitive Student', color: 'U', rarity: 'M', alsa: 2.64, gihWr: 55.4},
-  {name: 'Sheoldred\'s Edict', color: 'B', rarity: 'U', alsa: 5.82, gihWr: 55.3},
-  {name: 'Jace, Vryn\'s Prodigy', color: 'U', rarity: 'M', alsa: 4.68, gihWr: 55.3},
-  {name: 'Magda, Brazen Outlaw', color: 'R', rarity: 'R', alsa: 6.60, gihWr: 55.3},
-  {name: 'Bone Shards', color: 'B', rarity: 'C', alsa: 6.85, gihWr: 55.3},
-  {name: 'Tersa Lightshatter', color: 'R', rarity: 'R', alsa: 6.55, gihWr: 55.3},
-  {name: 'Tishana\'s Tidebinder', color: 'U', rarity: 'R', alsa: 5.95, gihWr: 55.2},
-  {name: 'Narset, Parter of Veils', color: 'U', rarity: 'U', alsa: 4.33, gihWr: 55.2},
-  {name: 'Crabomination', color: 'B', rarity: 'R', alsa: 5.97, gihWr: 55.2},
-  {name: 'Toxic Deluge', color: 'B', rarity: 'R', alsa: 4.79, gihWr: 55.2},
-  {name: 'Worldspine Wurm', color: 'G', rarity: 'M', alsa: 5.82, gihWr: 55.1},
-  {name: 'Booster Tutor', color: 'B', rarity: 'U', alsa: 3.57, gihWr: 55.1},
-  {name: 'Balance', color: 'W', rarity: 'M', alsa: 4.99, gihWr: 55.1},
-  {name: 'Badlands', color: '', rarity: 'R', alsa: 5.43, gihWr: 55.1},
-  {name: 'Suplex', color: 'R', rarity: 'C', alsa: 6.57, gihWr: 55.0},
-  {name: 'Esika\'s Chariot', color: 'G', rarity: 'R', alsa: 7.13, gihWr: 55.0},
-  {name: 'Multiversal Passage', color: '', rarity: 'R', alsa: 5.01, gihWr: 55.0},
-  {name: 'Brainstorm', color: 'U', rarity: 'R', alsa: 5.47, gihWr: 54.9},
-  {name: 'Spirebluff Canal', color: '', rarity: 'R', alsa: 6.53, gihWr: 54.9},
-  {name: 'Chandra, Torch of Defiance', color: 'R', rarity: 'M', alsa: 6.40, gihWr: 54.8},
-  {name: 'Thundertrap Trainer', color: 'U', rarity: 'R', alsa: 6.17, gihWr: 54.8},
-  {name: 'Grim Monolith', color: '', rarity: 'R', alsa: 4.01, gihWr: 54.8},
-  {name: 'Makdee and Itla, Skysnarers', color: 'WU', rarity: 'R', alsa: 5.62, gihWr: 54.7},
-  {name: 'Urza\'s Bauble', color: '', rarity: 'U', alsa: 5.35, gihWr: 54.7},
-  {name: 'Cut Down', color: 'B', rarity: 'U', alsa: 6.83, gihWr: 54.6},
-  {name: 'Stomping Ground', color: '', rarity: 'R', alsa: 6.75, gihWr: 54.6},
-  {name: 'Expressive Iteration', color: 'UR', rarity: 'U', alsa: 6.35, gihWr: 54.5},
-  {name: 'The Wandering Emperor', color: 'W', rarity: 'M', alsa: 5.89, gihWr: 54.5},
-  {name: 'Loran of the Third Path', color: 'W', rarity: 'R', alsa: 7.31, gihWr: 54.5},
-  {name: 'Deep-Cavern Bat', color: 'B', rarity: 'U', alsa: 5.35, gihWr: 54.5},
-  {name: 'Flooded Strand', color: '', rarity: 'R', alsa: 3.12, gihWr: 54.5},
-  {name: 'Mishra\'s Bauble', color: '', rarity: 'U', alsa: 4.96, gihWr: 54.5},
-  {name: 'Overgrown Tomb', color: '', rarity: 'R', alsa: 6.86, gihWr: 54.4},
-  {name: 'Soul-Guide Lantern', color: '', rarity: 'U', alsa: 6.76, gihWr: 54.3},
-  {name: 'Wasteland', color: '', rarity: 'U', alsa: 4.61, gihWr: 54.3},
-  {name: 'Currency Converter', color: '', rarity: 'R', alsa: 4.82, gihWr: 54.2},
-  {name: 'Hallowed Fountain', color: '', rarity: 'R', alsa: 5.63, gihWr: 54.2},
-  {name: 'Lórien Revealed', color: 'U', rarity: 'C', alsa: 5.11, gihWr: 54.2},
-  {name: 'Consult the Star Charts', color: 'U', rarity: 'R', alsa: 5.30, gihWr: 54.2},
-  {name: 'Snapcaster Mage', color: 'U', rarity: 'M', alsa: 3.82, gihWr: 54.1},
-  {name: 'Oliphaunt', color: 'R', rarity: 'C', alsa: 7.30, gihWr: 54.1},
-  {name: 'Atraxa, Grand Unifier', color: 'WUBG', rarity: 'M', alsa: 4.10, gihWr: 54.0},
-  {name: 'Grief', color: 'B', rarity: 'M', alsa: 5.05, gihWr: 54.0},
-  {name: 'Consider', color: 'U', rarity: 'C', alsa: 6.25, gihWr: 54.0},
-  {name: 'Mystical Tutor', color: 'U', rarity: 'U', alsa: 5.42, gihWr: 54.0},
-  {name: 'Spara\'s Headquarters', color: '', rarity: 'R', alsa: 6.60, gihWr: 53.9},
-  {name: 'Godless Shrine', color: '', rarity: 'R', alsa: 7.13, gihWr: 53.9},
-  {name: 'Watery Grave', color: '', rarity: 'R', alsa: 4.94, gihWr: 53.7},
-  {name: 'Raucous Theater', color: '', rarity: 'R', alsa: 6.85, gihWr: 53.7},
-  {name: 'Savai Triome', color: '', rarity: 'R', alsa: 7.45, gihWr: 53.6},
-  {name: 'Volcanic Island', color: '', rarity: 'R', alsa: 4.13, gihWr: 53.6},
-  {name: 'Chromatic Star', color: '', rarity: 'U', alsa: 6.28, gihWr: 53.6},
-  {name: 'Tropical Island', color: '', rarity: 'R', alsa: 4.80, gihWr: 53.5},
-  {name: 'Malcolm, Alluring Scoundrel', color: 'U', rarity: 'R', alsa: 4.73, gihWr: 53.5},
-  {name: 'Kaito, Bane of Nightmares', color: 'UB', rarity: 'M', alsa: 6.70, gihWr: 53.5},
-  {name: 'Bitter Triumph', color: 'B', rarity: 'U', alsa: 5.24, gihWr: 53.4},
-  {name: 'Faerie Mastermind', color: 'U', rarity: 'R', alsa: 5.64, gihWr: 53.4},
-  {name: 'Six', color: 'G', rarity: 'R', alsa: 6.51, gihWr: 53.3},
-  {name: 'Elvish Mystic', color: 'G', rarity: 'C', alsa: 6.56, gihWr: 53.3},
-  {name: 'Path to Exile', color: 'W', rarity: 'R', alsa: 5.02, gihWr: 53.2},
-  {name: 'Icetill Explorer', color: 'G', rarity: 'R', alsa: 5.21, gihWr: 53.2},
-  {name: 'Library of Alexandria', color: '', rarity: 'M', alsa: 3.84, gihWr: 53.2},
-  {name: 'Stern Scolding', color: 'U', rarity: 'U', alsa: 6.99, gihWr: 53.2},
-  {name: 'Undercity Sewers', color: '', rarity: 'R', alsa: 5.41, gihWr: 53.2},
-  {name: 'Frantic Search', color: 'U', rarity: 'C', alsa: 5.41, gihWr: 53.1},
-  {name: 'Raffine\'s Tower', color: '', rarity: 'R', alsa: 6.41, gihWr: 53.1},
-  {name: 'Abrade', color: 'R', rarity: 'U', alsa: 6.04, gihWr: 53.1},
-  {name: 'Get Lost', color: 'W', rarity: 'R', alsa: 6.33, gihWr: 53.0},
-  {name: 'Bonecrusher Giant', color: 'R', rarity: 'R', alsa: 6.21, gihWr: 52.9},
-  {name: 'Woodfall Primus', color: 'G', rarity: 'R', alsa: 6.15, gihWr: 52.9},
-  {name: 'Ketria Triome', color: '', rarity: 'R', alsa: 6.33, gihWr: 52.7},
-  {name: 'Astrologian\'s Planisphere', color: 'U', rarity: 'R', alsa: 6.60, gihWr: 52.7},
-  {name: 'Springheart Nantuko', color: 'G', rarity: 'R', alsa: 6.29, gihWr: 52.4},
-  {name: 'Zagoth Triome', color: '', rarity: 'R', alsa: 6.23, gihWr: 52.4},
-  {name: 'Saheeli, Sublime Artificer', color: 'UR', rarity: 'U', alsa: 6.18, gihWr: 52.4},
-  {name: 'Chrome Mox', color: '', rarity: 'M', alsa: 3.60, gihWr: 52.3},
-  {name: 'Ponder', color: 'U', rarity: 'C', alsa: 4.95, gihWr: 52.3},
-  {name: 'Reckoner Bankbuster', color: '', rarity: 'R', alsa: 6.71, gihWr: 52.3},
-  {name: 'The Legend of Kuruk', color: 'U', rarity: 'M', alsa: 5.65, gihWr: 52.2},
-  {name: 'Mana Confluence', color: '', rarity: 'R', alsa: 5.67, gihWr: 52.2},
-  {name: 'Pyrite Spellbomb', color: '', rarity: 'C', alsa: 7.33, gihWr: 52.2},
-  {name: 'Sylvan Safekeeper', color: 'G', rarity: 'R', alsa: 7.40, gihWr: 52.1},
-  {name: 'Talisman of Progress', color: '', rarity: 'U', alsa: 6.30, gihWr: 52.0},
-  {name: 'Ancient Tomb', color: '', rarity: 'M', alsa: 3.81, gihWr: 51.9},
-  {name: 'Abhorrent Oculus', color: 'U', rarity: 'M', alsa: 6.57, gihWr: 51.8},
-  {name: 'Chrome Host Seedshark', color: 'U', rarity: 'R', alsa: 6.19, gihWr: 51.8},
-  {name: 'Uro, Titan of Nature\'s Wrath', color: 'UG', rarity: 'M', alsa: 5.51, gihWr: 51.7},
-  {name: 'Time Spiral', color: 'U', rarity: 'R', alsa: 4.66, gihWr: 51.7},
-  {name: 'Duress', color: 'B', rarity: 'C', alsa: 5.60, gihWr: 51.5},
-  {name: 'Reanimate', color: 'B', rarity: 'R', alsa: 3.00, gihWr: 51.4},
-  {name: 'Xander\'s Lounge', color: '', rarity: 'R', alsa: 5.76, gihWr: 51.4},
-  {name: 'Trinket Mage', color: 'U', rarity: 'C', alsa: 6.72, gihWr: 51.4},
-  {name: 'Oracle of the Alpha', color: 'U', rarity: 'M', alsa: 2.83, gihWr: 50.3},
-  {name: 'Tamiyo, Collector of Tales', color: 'UG', rarity: 'R', alsa: 6.58, gihWr: 50.2},
-  {name: 'Displacer Kitten', color: 'U', rarity: 'R', alsa: 5.56, gihWr: 49.6},
-  {name: 'Ba Sing Se', color: '', rarity: 'R', alsa: 8.31, gihWr: 49.5},
-  {name: 'Vaultborn Tyrant', color: 'G', rarity: 'M', alsa: 5.40, gihWr: 49.3},
-  {name: 'Hedge Maze', color: '', rarity: 'R', alsa: 6.55, gihWr: 49.0},
-  {name: 'Pentad Prism', color: '', rarity: 'C', alsa: 6.65, gihWr: 47.4}
+  {name: 'Time Walk', color: 'U', rarity: 'M', alsa: 1.18, gihWr: 66.4},
+  {name: 'Ancestral Recall', color: 'U', rarity: 'M', alsa: 1.24, gihWr: 64.1},
+  {name: 'Ajani, Nacatl Pariah', color: 'W', rarity: 'M', alsa: 3.27, gihWr: 64.1},
+  {name: 'Orcish Bowmasters', color: 'B', rarity: 'R', alsa: 2.48, gihWr: 63.7},
+  {name: 'Black Lotus', color: '', rarity: 'M', alsa: 1.07, gihWr: 62.9},
+  {name: 'Parallax Wave', color: 'W', rarity: 'R', alsa: 4.66, gihWr: 62.5},
+  {name: 'Sol Ring', color: '', rarity: 'M', alsa: 1.17, gihWr: 62.3},
+  {name: 'Karakas', color: '', rarity: 'M', alsa: 2.68, gihWr: 62.1},
+  {name: 'Phelia, Exuberant Shepherd', color: 'W', rarity: 'R', alsa: 4.01, gihWr: 62.1},
+  {name: 'Mox Sapphire', color: '', rarity: 'M', alsa: 1.18, gihWr: 62.0},
+  {name: 'Mana Crypt', color: '', rarity: 'M', alsa: 1.38, gihWr: 61.9},
+  {name: 'Mox Pearl', color: '', rarity: 'M', alsa: 1.24, gihWr: 61.7},
+  {name: 'Phlage, Titan of Fire\'s Fury', color: 'WR', rarity: 'M', alsa: 4.58, gihWr: 61.7},
+  {name: 'Stoneforge Mystic', color: 'W', rarity: 'M', alsa: 6.31, gihWr: 61.5},
+  {name: 'Swords to Plowshares', color: 'W', rarity: 'R', alsa: 2.95, gihWr: 61.3},
+  {name: 'Ocelot Pride', color: 'W', rarity: 'M', alsa: 3.57, gihWr: 61.3},
+  {name: 'Mox Emerald', color: '', rarity: 'R', alsa: 1.28, gihWr: 61.3},
+  {name: 'Fury', color: 'R', rarity: 'M', alsa: 3.78, gihWr: 61.2},
+  {name: 'Pyrogoyf', color: 'R', rarity: 'R', alsa: 3.15, gihWr: 61.1},
+  {name: 'Solitude', color: 'W', rarity: 'M', alsa: 4.22, gihWr: 61.0},
+  {name: 'Broadside Bombardiers', color: 'R', rarity: 'R', alsa: 3.07, gihWr: 60.9},
+  {name: 'Mox Ruby', color: '', rarity: 'R', alsa: 1.24, gihWr: 60.9},
+  {name: 'Tolarian Academy', color: '', rarity: 'M', alsa: 3.44, gihWr: 60.8},
+  {name: 'Elspeth, Storm Slayer', color: 'W', rarity: 'M', alsa: 4.57, gihWr: 60.8},
+  {name: 'Laelia, the Blade Reforged', color: 'R', rarity: 'R', alsa: 4.62, gihWr: 60.5},
+  {name: 'Clarion Conqueror', color: 'W', rarity: 'R', alsa: 7.92, gihWr: 60.5},
+  {name: 'Sage of the Skies', color: 'W', rarity: 'R', alsa: 6.30, gihWr: 60.5},
+  {name: 'Fable of the Mirror-Breaker', color: 'R', rarity: 'R', alsa: 3.19, gihWr: 60.3},
+  {name: 'Ragavan, Nimble Pilferer', color: 'R', rarity: 'M', alsa: 2.68, gihWr: 60.2},
+  {name: 'Ademi of the Silkchutes', color: 'W', rarity: 'R', alsa: 7.36, gihWr: 60.1},
+  {name: 'Underworld Breach', color: 'R', rarity: 'R', alsa: 5.39, gihWr: 60.0},
+  {name: 'Beza, the Bounding Spring', color: 'W', rarity: 'M', alsa: 8.01, gihWr: 60.0},
+  {name: 'Mother of Runes', color: 'W', rarity: 'U', alsa: 5.27, gihWr: 59.8},
+  {name: 'Mox Jet', color: '', rarity: 'M', alsa: 1.21, gihWr: 59.8},
+  {name: 'Barrowgoyf', color: 'B', rarity: 'R', alsa: 4.03, gihWr: 59.8},
+  {name: 'Tinker', color: 'U', rarity: 'U', alsa: 4.07, gihWr: 59.7},
+  {name: 'Lightning Bolt', color: 'R', rarity: 'R', alsa: 3.66, gihWr: 59.7},
+  {name: 'Figure of Fable', color: 'WG', rarity: 'R', alsa: 7.18, gihWr: 59.7},
+  {name: 'Plateau', color: '', rarity: 'R', alsa: 5.28, gihWr: 59.7},
+  {name: 'Teferi, Time Raveler', color: 'WU', rarity: 'R', alsa: 4.47, gihWr: 59.6},
+  {name: 'Adeline, Resplendent Cathar', color: 'W', rarity: 'R', alsa: 6.28, gihWr: 59.6},
+  {name: 'Abandoned Air Temple', color: '', rarity: 'R', alsa: 7.47, gihWr: 59.6},
+  {name: 'Oust', color: 'W', rarity: 'U', alsa: 6.32, gihWr: 59.5},
+  {name: 'Skyclave Apparition', color: 'W', rarity: 'R', alsa: 6.67, gihWr: 59.5},
+  {name: 'Screaming Nemesis', color: 'R', rarity: 'M', alsa: 5.62, gihWr: 59.5},
+  {name: 'Nova Hellkite', color: 'R', rarity: 'R', alsa: 7.19, gihWr: 59.4},
+  {name: 'Reprieve', color: 'W', rarity: 'U', alsa: 5.70, gihWr: 59.3},
+  {name: 'Urza\'s Saga', color: '', rarity: 'R', alsa: 3.38, gihWr: 59.2},
+  {name: 'Mana Tithe', color: 'W', rarity: 'R', alsa: 7.37, gihWr: 59.2},
+  {name: 'Fractured Identity', color: 'WU', rarity: 'M', alsa: 3.81, gihWr: 59.2},
+  {name: 'Minsc & Boo, Timeless Heroes', color: 'RG', rarity: 'M', alsa: 2.99, gihWr: 59.1},
+  {name: 'Hired Claw', color: 'R', rarity: 'R', alsa: 8.10, gihWr: 59.1},
+  {name: 'Aang, Swift Savior', color: 'WU', rarity: 'R', alsa: 7.04, gihWr: 59.1},
+  {name: 'Glimmer Lens', color: 'W', rarity: 'R', alsa: 7.19, gihWr: 59.1},
+  {name: 'Figure of Destiny', color: 'WR', rarity: 'R', alsa: 7.49, gihWr: 59.0},
+  {name: 'Psychic Frog', color: 'UB', rarity: 'R', alsa: 2.93, gihWr: 59.0},
+  {name: 'Flickerwisp', color: 'W', rarity: 'U', alsa: 8.43, gihWr: 58.9},
+  {name: 'Sunbaked Canyon', color: '', rarity: 'R', alsa: 7.29, gihWr: 58.9},
+  {name: 'Mana Drain', color: 'U', rarity: 'M', alsa: 2.29, gihWr: 58.9},
+  {name: 'Unexpectedly Absent', color: 'W', rarity: 'R', alsa: 8.18, gihWr: 58.8},
+  {name: 'Thraben Inspector', color: 'W', rarity: 'C', alsa: 7.59, gihWr: 58.8},
+  {name: 'Showdown of the Skalds', color: 'WR', rarity: 'R', alsa: 7.92, gihWr: 58.8},
+  {name: 'Cosmogrand Zenith', color: 'W', rarity: 'M', alsa: 6.38, gihWr: 58.8},
+  {name: 'Giver of Runes', color: 'W', rarity: 'R', alsa: 6.22, gihWr: 58.7},
+  {name: 'Inti, Seneschal of the Sun', color: 'R', rarity: 'R', alsa: 5.42, gihWr: 58.7},
+  {name: 'Generous Plunderer', color: 'R', rarity: 'M', alsa: 5.69, gihWr: 58.7},
+  {name: 'Staff of the Storyteller', color: 'W', rarity: 'R', alsa: 6.17, gihWr: 58.7},
+  {name: 'Containment Priest', color: 'W', rarity: 'R', alsa: 6.92, gihWr: 58.6},
+  {name: 'Flash', color: 'U', rarity: 'R', alsa: 3.91, gihWr: 58.6},
+  {name: 'Fiery Confluence', color: 'R', rarity: 'R', alsa: 5.16, gihWr: 58.6},
+  {name: 'No More Lies', color: 'WU', rarity: 'U', alsa: 6.40, gihWr: 58.6},
+  {name: 'Nia, Skysail Storyteller', color: 'R', rarity: 'M', alsa: 8.05, gihWr: 58.6},
+  {name: 'Upheaval', color: 'U', rarity: 'R', alsa: 6.58, gihWr: 58.5},
+  {name: 'Dismember', color: 'B', rarity: 'M', alsa: 3.32, gihWr: 58.5},
+  {name: 'Kellan, Planar Trailblazer', color: 'R', rarity: 'R', alsa: 7.81, gihWr: 58.5},
+  {name: 'Animate Dead', color: 'B', rarity: 'U', alsa: 3.79, gihWr: 58.4},
+  {name: 'Grim Lavamancer', color: 'R', rarity: 'R', alsa: 8.77, gihWr: 58.4},
+  {name: 'Elite Spellbinder', color: 'W', rarity: 'R', alsa: 6.82, gihWr: 58.4},
+  {name: 'Ugin, Eye of the Storms', color: '', rarity: 'M', alsa: 3.76, gihWr: 58.4},
+  {name: 'Strip Mine', color: '', rarity: 'M', alsa: 3.18, gihWr: 58.4},
+  {name: 'Fireblast', color: 'R', rarity: 'U', alsa: 8.90, gihWr: 58.3},
+  {name: 'Brain Freeze', color: 'U', rarity: 'U', alsa: 5.29, gihWr: 58.2},
+  {name: 'Marsh Flats', color: '', rarity: 'R', alsa: 3.72, gihWr: 58.2},
+  {name: 'Bonehoard Dracosaur', color: 'R', rarity: 'M', alsa: 7.18, gihWr: 58.2},
+  {name: 'Nadu, Winged Wisdom', color: 'UG', rarity: 'R', alsa: 4.34, gihWr: 58.2},
+  {name: 'Thalia, Guardian of Thraben', color: 'W', rarity: 'R', alsa: 7.67, gihWr: 58.1},
+  {name: 'Sunfall', color: 'W', rarity: 'R', alsa: 7.11, gihWr: 58.1},
+  {name: 'Detective\'s Phoenix', color: 'R', rarity: 'R', alsa: 7.78, gihWr: 58.1},
+  {name: 'Force of Will', color: 'U', rarity: 'M', alsa: 2.46, gihWr: 58.1},
+  {name: 'Necromancy', color: 'B', rarity: 'U', alsa: 4.66, gihWr: 58.0},
+  {name: 'Timetwister', color: 'U', rarity: 'M', alsa: 2.86, gihWr: 58.0},
+  {name: 'Hellrider', color: 'R', rarity: 'R', alsa: 8.27, gihWr: 58.0},
+  {name: 'Memory Lapse', color: 'U', rarity: 'R', alsa: 4.08, gihWr: 58.0},
+  {name: 'Emperor of Bones', color: 'B', rarity: 'R', alsa: 4.65, gihWr: 58.0},
+  {name: 'Gut, True Soul Zealot', color: 'R', rarity: 'U', alsa: 4.21, gihWr: 58.0},
+  {name: 'Bonecrusher Giant', color: 'R', rarity: 'R', alsa: 6.09, gihWr: 57.9},
+  {name: 'Loran of the Third Path', color: 'W', rarity: 'R', alsa: 7.44, gihWr: 57.9},
+  {name: 'Stock Up', color: 'U', rarity: 'U', alsa: 3.65, gihWr: 57.9},
+  {name: 'Sunbillow Verge', color: '', rarity: 'R', alsa: 7.17, gihWr: 57.9},
+  {name: 'Sacred Foundry', color: '', rarity: 'R', alsa: 5.93, gihWr: 57.8},
+  {name: 'Bomat Courier', color: '', rarity: 'R', alsa: 8.41, gihWr: 57.8},
+  {name: 'Tamiyo, Inquisitive Student', color: 'U', rarity: 'M', alsa: 2.60, gihWr: 57.8},
+  {name: 'Nethergoyf', color: 'B', rarity: 'M', alsa: 7.40, gihWr: 57.8},
+  {name: 'Seasoned Pyromancer', color: 'R', rarity: 'M', alsa: 6.93, gihWr: 57.7},
+  {name: 'Lightning Helix', color: 'WR', rarity: 'R', alsa: 7.19, gihWr: 57.7},
+  {name: 'Overlord of the Mistmoors', color: 'W', rarity: 'M', alsa: 6.51, gihWr: 57.7},
+  {name: 'Kytheon, Hero of Akros', color: 'W', rarity: 'M', alsa: 7.60, gihWr: 57.7},
+  {name: 'Ouroboroid', color: 'G', rarity: 'M', alsa: 5.39, gihWr: 57.7},
+  {name: 'Chain Lightning', color: 'R', rarity: 'C', alsa: 5.53, gihWr: 57.7},
+  {name: 'Arid Mesa', color: '', rarity: 'R', alsa: 3.55, gihWr: 57.6},
+  {name: 'Galvanic Discharge', color: 'R', rarity: 'C', alsa: 6.11, gihWr: 57.6},
+  {name: 'The Legend of Yangchen', color: 'W', rarity: 'M', alsa: 8.43, gihWr: 57.6},
+  {name: 'Leonardo, Leader in Blue', color: 'W', rarity: 'U', alsa: 9.08, gihWr: 57.6},
+  {name: 'Mana Leak', color: 'U', rarity: 'C', alsa: 3.51, gihWr: 57.5},
+  {name: 'Goblin Bombardment', color: 'R', rarity: 'R', alsa: 7.34, gihWr: 57.5},
+  {name: 'Gideon, Ally of Zendikar', color: 'W', rarity: 'M', alsa: 7.82, gihWr: 57.5},
+  {name: 'Ranger-Captain of Eos', color: 'W', rarity: 'M', alsa: 8.14, gihWr: 57.4},
+  {name: 'Eagles of the North', color: 'W', rarity: 'C', alsa: 8.51, gihWr: 57.4},
+  {name: 'Ivora, Insatiable Heir', color: 'R', rarity: 'U', alsa: 6.95, gihWr: 57.4},
+  {name: 'Cori-Steel Cutter', color: 'R', rarity: 'R', alsa: 4.43, gihWr: 57.4},
+  {name: 'Mystic Confluence', color: 'U', rarity: 'R', alsa: 4.05, gihWr: 57.4},
+  {name: 'Fear of Missing Out', color: 'R', rarity: 'R', alsa: 6.19, gihWr: 57.3},
+  {name: 'Remand', color: 'U', rarity: 'U', alsa: 3.85, gihWr: 57.3},
+  {name: 'Quantum Riddler', color: 'U', rarity: 'M', alsa: 3.76, gihWr: 57.3},
+  {name: 'Noble Hierarch', color: 'G', rarity: 'R', alsa: 5.26, gihWr: 57.2},
+  {name: 'Retrofitter Foundry', color: '', rarity: 'R', alsa: 4.83, gihWr: 57.2},
+  {name: 'Sneak Attack', color: 'R', rarity: 'M', alsa: 5.15, gihWr: 57.2},
+  {name: 'Portable Hole', color: 'W', rarity: 'U', alsa: 7.14, gihWr: 57.1},
+  {name: 'Demonic Tutor', color: 'B', rarity: 'M', alsa: 3.10, gihWr: 57.1},
+  {name: 'Hullbreacher', color: 'U', rarity: 'R', alsa: 2.57, gihWr: 57.1},
+  {name: 'Anointed Peacekeeper', color: 'W', rarity: 'R', alsa: 8.10, gihWr: 57.1},
+  {name: 'Sheoldred, the Apocalypse', color: 'B', rarity: 'M', alsa: 3.19, gihWr: 57.1},
+  {name: 'Prismatic Vista', color: '', rarity: 'M', alsa: 3.74, gihWr: 57.1},
+  {name: 'Crabomination', color: 'B', rarity: 'R', alsa: 5.94, gihWr: 57.1},
+  {name: 'Prismatic Ending', color: 'W', rarity: 'M', alsa: 7.08, gihWr: 57.1},
+  {name: 'Enduring Innocence', color: 'W', rarity: 'R', alsa: 7.03, gihWr: 57.1},
+  {name: 'Overlord of the Boilerbilges', color: 'R', rarity: 'M', alsa: 6.81, gihWr: 57.1},
+  {name: 'Scythecat Cub', color: 'G', rarity: 'R', alsa: 6.13, gihWr: 57.1},
+  {name: 'Burst Lightning', color: 'R', rarity: 'C', alsa: 6.58, gihWr: 57.1},
+  {name: 'Vibrance', color: 'RG', rarity: 'M', alsa: 7.04, gihWr: 57.1},
+  {name: 'Esper Sentinel', color: 'W', rarity: 'R', alsa: 5.38, gihWr: 57.0},
+  {name: 'Elegant Parlor', color: '', rarity: 'R', alsa: 6.93, gihWr: 57.0},
+  {name: 'Makdee and Itla, Skysnarers', color: 'WU', rarity: 'R', alsa: 5.51, gihWr: 57.0},
+  {name: 'Windswept Heath', color: '', rarity: 'R', alsa: 3.87, gihWr: 56.9},
+  {name: 'Robber of the Rich', color: 'R', rarity: 'M', alsa: 6.34, gihWr: 56.9},
+  {name: 'Dragon\'s Rage Channeler', color: 'R', rarity: 'U', alsa: 7.16, gihWr: 56.9},
+  {name: 'Badgermole Cub', color: 'G', rarity: 'M', alsa: 4.55, gihWr: 56.9},
+  {name: 'Agent Bishop, Man in Black', color: 'W', rarity: 'R', alsa: 6.67, gihWr: 56.9},
+  {name: 'Timeless Dragon', color: 'W', rarity: 'R', alsa: 8.53, gihWr: 56.8},
+  {name: 'Counterspell', color: 'U', rarity: 'R', alsa: 3.67, gihWr: 56.8},
+  {name: 'Subtlety', color: 'U', rarity: 'M', alsa: 5.26, gihWr: 56.8},
+  {name: 'Fresh Start', color: 'U', rarity: 'U', alsa: 7.58, gihWr: 56.8},
+  {name: 'Celestial Colonnade', color: '', rarity: 'R', alsa: 7.06, gihWr: 56.8},
+  {name: 'Wan Shi Tong, Librarian', color: 'U', rarity: 'M', alsa: 4.71, gihWr: 56.8},
+  {name: 'Mine Collapse', color: 'R', rarity: 'C', alsa: 8.15, gihWr: 56.7},
+  {name: 'Misty Rainforest', color: '', rarity: 'R', alsa: 3.15, gihWr: 56.7},
+  {name: 'Serra Paragon', color: 'W', rarity: 'M', alsa: 7.01, gihWr: 56.7},
+  {name: 'Lingering Souls', color: 'W', rarity: 'U', alsa: 7.93, gihWr: 56.7},
+  {name: 'Searslicer Goblin', color: 'R', rarity: 'R', alsa: 7.59, gihWr: 56.7},
+  {name: 'Multiversal Passage', color: '', rarity: 'R', alsa: 4.94, gihWr: 56.7},
+  {name: 'Raphael, the Nightwatcher', color: 'R', rarity: 'R', alsa: 8.07, gihWr: 56.7},
+  {name: 'Pyrokinesis', color: 'R', rarity: 'U', alsa: 6.50, gihWr: 56.6},
+  {name: 'Malevolent Rumble', color: 'G', rarity: 'C', alsa: 6.31, gihWr: 56.6},
+  {name: 'Sowing Mycospawn', color: 'G', rarity: 'R', alsa: 7.23, gihWr: 56.6},
+  {name: 'Birds of Paradise', color: 'G', rarity: 'R', alsa: 4.68, gihWr: 56.6},
+  {name: 'Floodpits Drowner', color: 'U', rarity: 'U', alsa: 7.53, gihWr: 56.6},
+  {name: 'Flitterwing Nuisance', color: 'U', rarity: 'R', alsa: 7.32, gihWr: 56.6},
+  {name: 'Natural Order', color: 'G', rarity: 'M', alsa: 5.60, gihWr: 56.5},
+  {name: 'The Wandering Emperor', color: 'W', rarity: 'M', alsa: 6.02, gihWr: 56.5},
+  {name: 'Daze', color: 'U', rarity: 'C', alsa: 5.31, gihWr: 56.4},
+  {name: 'Flooded Strand', color: '', rarity: 'R', alsa: 3.14, gihWr: 56.4},
+  {name: 'Tundra', color: '', rarity: 'R', alsa: 4.79, gihWr: 56.4},
+  {name: 'Omnath, Locus of Creation', color: 'WURG', rarity: 'M', alsa: 8.32, gihWr: 56.4},
+  {name: 'Esika\'s Chariot', color: 'G', rarity: 'R', alsa: 7.15, gihWr: 56.4},
+  {name: 'Titania, Protector of Argoth', color: 'G', rarity: 'M', alsa: 5.56, gihWr: 56.4},
+  {name: 'Otawara, Soaring City', color: '', rarity: 'R', alsa: 6.40, gihWr: 56.4},
+  {name: 'Razorverge Thicket', color: '', rarity: 'R', alsa: 9.27, gihWr: 56.4},
+  {name: 'Spyglass Siren', color: 'U', rarity: 'U', alsa: 7.49, gihWr: 56.4},
+  {name: 'Bristly Bill, Spine Sower', color: 'G', rarity: 'M', alsa: 5.71, gihWr: 56.4},
+  {name: 'Overlord of the Balemurk', color: 'B', rarity: 'M', alsa: 6.04, gihWr: 56.4},
+  {name: 'Green Sun\'s Zenith', color: 'G', rarity: 'R', alsa: 6.86, gihWr: 56.4},
+  {name: 'Hymn to Tourach', color: 'B', rarity: 'U', alsa: 6.84, gihWr: 56.3},
+  {name: 'Hallowed Fountain', color: '', rarity: 'R', alsa: 5.66, gihWr: 56.3},
+  {name: 'Brazen Borrower', color: 'U', rarity: 'M', alsa: 5.00, gihWr: 56.3},
+  {name: 'Goldspan Dragon', color: 'R', rarity: 'M', alsa: 6.68, gihWr: 56.3},
+  {name: 'Ignoble Hierarch', color: 'G', rarity: 'R', alsa: 5.55, gihWr: 56.3},
+  {name: 'Mana Vault', color: '', rarity: 'M', alsa: 2.40, gihWr: 56.3},
+  {name: 'Meticulous Archive', color: '', rarity: 'R', alsa: 6.32, gihWr: 56.3},
+  {name: 'Floodfarm Verge', color: '', rarity: 'R', alsa: 6.92, gihWr: 56.3},
+  {name: 'Carnage Interpreter', color: 'BR', rarity: 'R', alsa: 7.98, gihWr: 56.3},
+  {name: 'Flame Slash', color: 'R', rarity: 'C', alsa: 5.64, gihWr: 56.2},
+  {name: 'Lion\'s Eye Diamond', color: '', rarity: 'M', alsa: 5.56, gihWr: 56.2},
+  {name: 'Teferi, Hero of Dominaria', color: 'WU', rarity: 'M', alsa: 4.97, gihWr: 56.2},
+  {name: 'Oko, Thief of Crowns', color: 'UG', rarity: 'M', alsa: 3.32, gihWr: 56.2},
+  {name: 'Wrenn and Six', color: 'RG', rarity: 'M', alsa: 6.35, gihWr: 56.2},
+  {name: 'Three Steps Ahead', color: 'U', rarity: 'R', alsa: 5.52, gihWr: 56.2},
+  {name: 'Ghostfire Slice', color: 'R', rarity: 'U', alsa: 7.70, gihWr: 56.2},
+  {name: 'Bleachbone Verge', color: '', rarity: 'R', alsa: 8.31, gihWr: 56.2},
+  {name: 'Wooded Foothills', color: '', rarity: 'R', alsa: 3.70, gihWr: 56.1},
+  {name: 'Smuggler\'s Copter', color: '', rarity: 'R', alsa: 5.32, gihWr: 56.1},
+  {name: 'Glorybringer', color: 'R', rarity: 'R', alsa: 7.18, gihWr: 56.1},
+  {name: 'Concealed Courtyard', color: '', rarity: 'R', alsa: 8.41, gihWr: 56.1},
+  {name: 'Unholy Heat', color: 'R', rarity: 'C', alsa: 6.42, gihWr: 56.1},
+  {name: 'Cathar Commando', color: 'W', rarity: 'C', alsa: 7.99, gihWr: 56.1},
+  {name: 'Kaito, Bane of Nightmares', color: 'UB', rarity: 'M', alsa: 6.57, gihWr: 56.1},
+  {name: 'Cecil, Dark Knight', color: 'B', rarity: 'R', alsa: 8.11, gihWr: 56.1},
+  {name: 'Starting Town', color: '', rarity: 'R', alsa: 5.02, gihWr: 56.1},
+  {name: 'Mox Diamond', color: '', rarity: 'R', alsa: 2.90, gihWr: 56.0},
+  {name: 'Gaea\'s Cradle', color: '', rarity: 'R', alsa: 5.71, gihWr: 56.0},
+  {name: 'Mishra\'s Workshop', color: '', rarity: 'M', alsa: 6.71, gihWr: 56.0},
+  {name: 'Fatal Push', color: 'B', rarity: 'U', alsa: 5.64, gihWr: 56.0},
+  {name: 'Sentinel of the Nameless City', color: 'G', rarity: 'R', alsa: 6.91, gihWr: 56.0},
+  {name: 'Baleful Strix', color: 'UB', rarity: 'R', alsa: 5.37, gihWr: 56.0},
+  {name: 'Ancient Tomb', color: '', rarity: 'M', alsa: 3.84, gihWr: 56.0},
+  {name: 'The Legend of Kuruk', color: 'U', rarity: 'M', alsa: 5.90, gihWr: 56.0},
+  {name: 'Urza, Lord High Artificer', color: 'U', rarity: 'M', alsa: 3.54, gihWr: 55.9},
+  {name: 'Graveyard Trespasser', color: 'B', rarity: 'R', alsa: 7.97, gihWr: 55.9},
+  {name: 'The One Ring', color: '', rarity: 'M', alsa: 1.84, gihWr: 55.9},
+  {name: 'Sun-Blessed Healer', color: 'W', rarity: 'U', alsa: 8.41, gihWr: 55.9},
+  {name: 'Elegy Acolyte', color: 'B', rarity: 'R', alsa: 7.78, gihWr: 55.9},
+  {name: 'Urza\'s Bauble', color: '', rarity: 'U', alsa: 5.34, gihWr: 55.9},
+  {name: 'Raugrin Triome', color: '', rarity: 'R', alsa: 6.07, gihWr: 55.8},
+  {name: 'March of Otherworldly Light', color: 'W', rarity: 'R', alsa: 7.63, gihWr: 55.8},
+  {name: 'Mishra\'s Bauble', color: '', rarity: 'U', alsa: 4.94, gihWr: 55.8},
+  {name: 'Sear', color: 'R', rarity: 'U', alsa: 6.03, gihWr: 55.8},
+  {name: 'Mox Opal', color: '', rarity: 'M', alsa: 4.69, gihWr: 55.7},
+  {name: 'Bloodtithe Harvester', color: 'BR', rarity: 'U', alsa: 8.55, gihWr: 55.7},
+  {name: 'The Mightstone and Weakstone', color: '', rarity: 'R', alsa: 6.79, gihWr: 55.7},
+  {name: 'Aang\'s Iceberg', color: 'W', rarity: 'R', alsa: 7.35, gihWr: 55.7},
+  {name: 'Skullclamp', color: '', rarity: 'U', alsa: 3.69, gihWr: 55.6},
+  {name: 'Faerie Mastermind', color: 'U', rarity: 'R', alsa: 5.62, gihWr: 55.6},
+  {name: 'Reanimate', color: 'B', rarity: 'R', alsa: 3.04, gihWr: 55.6},
+  {name: 'Pest Infestation', color: 'G', rarity: 'R', alsa: 5.44, gihWr: 55.6},
+  {name: 'Riverpyre Verge', color: '', rarity: 'R', alsa: 6.50, gihWr: 55.6},
+  {name: 'Entomb', color: 'B', rarity: 'R', alsa: 5.08, gihWr: 55.5},
+  {name: 'Fire Covenant', color: 'BR', rarity: 'U', alsa: 5.96, gihWr: 55.5},
+  {name: 'Stoke the Flames', color: 'R', rarity: 'U', alsa: 8.47, gihWr: 55.5},
+  {name: 'Oliphaunt', color: 'R', rarity: 'C', alsa: 7.28, gihWr: 55.5},
+  {name: 'Harvester of Misery', color: 'B', rarity: 'M', alsa: 7.22, gihWr: 55.5},
+  {name: 'Cryptic Command', color: 'U', rarity: 'R', alsa: 5.70, gihWr: 55.5},
+  {name: 'Loch Mare', color: 'U', rarity: 'M', alsa: 6.20, gihWr: 55.5},
+  {name: 'Leonardo, Sewer Samurai', color: 'W', rarity: 'M', alsa: 8.39, gihWr: 55.5},
+  {name: 'Polluted Delta', color: '', rarity: 'R', alsa: 3.05, gihWr: 55.4},
+  {name: 'Malcolm, Alluring Scoundrel', color: 'U', rarity: 'R', alsa: 4.92, gihWr: 55.4},
+  {name: 'Bloodstained Mire', color: '', rarity: 'R', alsa: 3.49, gihWr: 55.3},
+  {name: 'Underground Sea', color: '', rarity: 'R', alsa: 4.19, gihWr: 55.3},
+  {name: 'Force of Negation', color: 'U', rarity: 'R', alsa: 3.66, gihWr: 55.3},
+  {name: 'Aether Spellbomb', color: '', rarity: 'C', alsa: 6.37, gihWr: 55.3},
+  {name: 'Scalding Tarn', color: '', rarity: 'R', alsa: 2.98, gihWr: 55.3},
+  {name: 'Inquisition of Kozilek', color: 'B', rarity: 'R', alsa: 5.12, gihWr: 55.3},
+  {name: 'Blackcleave Cliffs', color: '', rarity: 'R', alsa: 7.58, gihWr: 55.3},
+  {name: 'Tishana\'s Tidebinder', color: 'U', rarity: 'R', alsa: 6.03, gihWr: 55.3},
+  {name: 'Shadowy Backstreet', color: '', rarity: 'R', alsa: 7.82, gihWr: 55.3},
+  {name: 'Tezzeret, Cruel Captain', color: '', rarity: 'M', alsa: 5.47, gihWr: 55.3},
+  {name: 'Steam Vents', color: '', rarity: 'R', alsa: 4.99, gihWr: 55.2},
+  {name: 'Lurrus of the Dream-Den', color: 'WB', rarity: 'R', alsa: 5.96, gihWr: 55.2},
+  {name: 'Magda, Brazen Outlaw', color: 'R', rarity: 'R', alsa: 6.59, gihWr: 55.2},
+  {name: 'Expressive Iteration', color: 'UR', rarity: 'U', alsa: 6.32, gihWr: 55.2},
+  {name: 'Keen-Eyed Curator', color: 'G', rarity: 'R', alsa: 8.75, gihWr: 55.2},
+  {name: 'Tersa Lightshatter', color: 'R', rarity: 'R', alsa: 6.53, gihWr: 55.2},
+  {name: 'Kolaghan\'s Command', color: 'BR', rarity: 'R', alsa: 7.46, gihWr: 55.1},
+  {name: 'Spell Pierce', color: 'U', rarity: 'C', alsa: 5.19, gihWr: 55.1},
+  {name: 'Temple Garden', color: '', rarity: 'R', alsa: 7.86, gihWr: 55.1},
+  {name: 'Narset, Parter of Veils', color: 'U', rarity: 'U', alsa: 4.37, gihWr: 55.1},
+  {name: 'Fabled Passage', color: '', rarity: 'R', alsa: 5.06, gihWr: 55.1},
+  {name: 'Abrade', color: 'R', rarity: 'U', alsa: 5.97, gihWr: 55.1},
+  {name: 'Time Warp', color: 'U', rarity: 'M', alsa: 4.83, gihWr: 55.1},
+  {name: 'Sheoldred\'s Edict', color: 'B', rarity: 'U', alsa: 5.84, gihWr: 55.1},
+  {name: 'Preacher of the Schism', color: 'B', rarity: 'R', alsa: 7.06, gihWr: 55.1},
+  {name: 'Fallen Shinobi', color: 'UB', rarity: 'R', alsa: 6.02, gihWr: 55.1},
+  {name: 'Wheel of Fortune', color: 'R', rarity: 'M', alsa: 4.07, gihWr: 55.0},
+  {name: 'Badlands', color: '', rarity: 'R', alsa: 5.44, gihWr: 55.0},
+  {name: 'Taiga', color: '', rarity: 'R', alsa: 5.95, gihWr: 55.0},
+  {name: 'Archon of Cruelty', color: 'B', rarity: 'M', alsa: 3.93, gihWr: 55.0},
+  {name: 'Verdant Catacombs', color: '', rarity: 'R', alsa: 3.79, gihWr: 55.0},
+  {name: 'Deep-Cavern Bat', color: 'B', rarity: 'U', alsa: 5.28, gihWr: 55.0},
+  {name: 'Fanatic of Rhonas', color: 'G', rarity: 'R', alsa: 6.75, gihWr: 55.0},
+  {name: 'Formidable Speaker', color: 'G', rarity: 'R', alsa: 6.14, gihWr: 55.0},
+  {name: 'Snuff Out', color: 'B', rarity: 'C', alsa: 5.01, gihWr: 54.9},
+  {name: 'Mana Confluence', color: '', rarity: 'R', alsa: 5.71, gihWr: 54.9},
+  {name: 'Scrubland', color: '', rarity: 'R', alsa: 6.34, gihWr: 54.9},
+  {name: 'Ketria Triome', color: '', rarity: 'R', alsa: 6.28, gihWr: 54.9},
+  {name: 'Leyline Binding', color: 'W', rarity: 'R', alsa: 7.76, gihWr: 54.9},
+  {name: 'Get Lost', color: 'W', rarity: 'R', alsa: 6.27, gihWr: 54.9},
+  {name: 'Legion Extruder', color: 'R', rarity: 'M', alsa: 6.94, gihWr: 54.9},
+  {name: 'Path to Exile', color: 'W', rarity: 'R', alsa: 4.89, gihWr: 54.9},
+  {name: 'Jace, the Mind Sculptor', color: 'U', rarity: 'M', alsa: 4.77, gihWr: 54.9},
+  {name: 'Jace, Vryn\'s Prodigy', color: 'U', rarity: 'M', alsa: 4.71, gihWr: 54.9},
+  {name: 'Ultima', color: 'W', rarity: 'R', alsa: 8.13, gihWr: 54.9},
+  {name: 'Ponder', color: 'U', rarity: 'C', alsa: 4.97, gihWr: 54.9},
+  {name: 'Wistfulness', color: 'UG', rarity: 'M', alsa: 6.71, gihWr: 54.9},
+  {name: 'Mind Twist', color: 'B', rarity: 'R', alsa: 5.62, gihWr: 54.9},
+  {name: 'Shelldock Isle', color: '', rarity: 'R', alsa: 6.11, gihWr: 54.8},
+  {name: 'Karn, Scion of Urza', color: '', rarity: 'M', alsa: 5.93, gihWr: 54.8},
+  {name: 'Embereth Shieldbreaker', color: 'R', rarity: 'U', alsa: 8.47, gihWr: 54.8},
+  {name: 'Spirebluff Canal', color: '', rarity: 'R', alsa: 6.58, gihWr: 54.8},
+  {name: 'Zuran Orb', color: '', rarity: 'U', alsa: 7.44, gihWr: 54.8},
+  {name: 'Dauthi Voidwalker', color: 'B', rarity: 'R', alsa: 6.20, gihWr: 54.8},
+  {name: 'Caustic Bronco', color: 'B', rarity: 'R', alsa: 7.49, gihWr: 54.8},
+  {name: 'Kappa Cannoneer', color: 'U', rarity: 'R', alsa: 6.10, gihWr: 54.8},
+  {name: 'Dark Confidant', color: 'B', rarity: 'M', alsa: 6.88, gihWr: 54.8},
+  {name: 'Galvanic Blast', color: 'R', rarity: 'C', alsa: 7.38, gihWr: 54.8},
+  {name: 'Creeping Tar Pit', color: '', rarity: 'R', alsa: 6.89, gihWr: 54.8},
+  {name: 'Wasteland', color: '', rarity: 'U', alsa: 4.66, gihWr: 54.7},
+  {name: 'Preordain', color: 'U', rarity: 'C', alsa: 5.15, gihWr: 54.7},
+  {name: 'Dack Fayden', color: 'UR', rarity: 'M', alsa: 4.65, gihWr: 54.7},
+  {name: 'Library of Alexandria', color: '', rarity: 'M', alsa: 3.91, gihWr: 54.7},
+  {name: 'Nurturing Pixie', color: 'W', rarity: 'U', alsa: 8.94, gihWr: 54.7},
+  {name: 'Enduring Curiosity', color: 'U', rarity: 'R', alsa: 6.47, gihWr: 54.7},
+  {name: 'Chrome Mox', color: '', rarity: 'M', alsa: 3.75, gihWr: 54.7},
+  {name: 'Yuffie, Materia Hunter', color: 'R', rarity: 'R', alsa: 8.04, gihWr: 54.7},
+  {name: 'Currency Converter', color: '', rarity: 'R', alsa: 5.05, gihWr: 54.7},
+  {name: 'Lotus Petal', color: '', rarity: 'C', alsa: 4.56, gihWr: 54.6},
+  {name: 'Pyrite Spellbomb', color: '', rarity: 'C', alsa: 7.35, gihWr: 54.6},
+  {name: 'Dig Through Time', color: 'U', rarity: 'R', alsa: 6.79, gihWr: 54.6},
+  {name: 'Balance', color: 'W', rarity: 'M', alsa: 4.95, gihWr: 54.6},
+  {name: 'Godless Shrine', color: '', rarity: 'R', alsa: 7.17, gihWr: 54.6},
+  {name: 'Savai Triome', color: '', rarity: 'R', alsa: 7.39, gihWr: 54.6},
+  {name: 'Manamorphose', color: 'RG', rarity: 'U', alsa: 7.75, gihWr: 54.6},
+  {name: 'Cut Down', color: 'B', rarity: 'U', alsa: 6.65, gihWr: 54.6},
+  {name: 'Snapcaster Mage', color: 'U', rarity: 'M', alsa: 3.87, gihWr: 54.6},
+  {name: 'Thundertrap Trainer', color: 'U', rarity: 'R', alsa: 6.16, gihWr: 54.6},
+  {name: 'Blazemire Verge', color: '', rarity: 'R', alsa: 7.49, gihWr: 54.6},
+  {name: 'Gloomlake Verge', color: '', rarity: 'R', alsa: 6.22, gihWr: 54.6},
+  {name: 'Miscalculation', color: 'U', rarity: 'C', alsa: 4.56, gihWr: 54.5},
+  {name: 'Nissa, Who Shakes the World', color: 'G', rarity: 'R', alsa: 6.88, gihWr: 54.5},
+  {name: 'Thoughtseize', color: 'B', rarity: 'R', alsa: 3.46, gihWr: 54.5},
+  {name: 'Grist, the Hunger Tide', color: 'BG', rarity: 'M', alsa: 7.48, gihWr: 54.5},
+  {name: 'Damn', color: 'B', rarity: 'R', alsa: 7.52, gihWr: 54.5},
+  {name: 'Chrome Host Seedshark', color: 'U', rarity: 'R', alsa: 6.29, gihWr: 54.5},
+  {name: 'Delighted Halfling', color: 'G', rarity: 'R', alsa: 5.48, gihWr: 54.5},
+  {name: 'Unearth', color: 'B', rarity: 'C', alsa: 7.70, gihWr: 54.5},
+  {name: 'Booster Tutor', color: 'B', rarity: 'U', alsa: 3.49, gihWr: 54.5},
+  {name: 'Tragic Trajectory', color: 'B', rarity: 'U', alsa: 7.57, gihWr: 54.5},
+  {name: 'Scuzzback Scrounger', color: 'R', rarity: 'R', alsa: 7.67, gihWr: 54.5},
+  {name: 'Volcanic Island', color: '', rarity: 'R', alsa: 4.17, gihWr: 54.5},
+  {name: 'Trinket Mage', color: 'U', rarity: 'C', alsa: 6.75, gihWr: 54.4},
+  {name: 'Bayou', color: '', rarity: 'R', alsa: 6.04, gihWr: 54.4},
+  {name: 'Watery Grave', color: '', rarity: 'R', alsa: 4.88, gihWr: 54.4},
+  {name: 'Stomping Ground', color: '', rarity: 'R', alsa: 6.69, gihWr: 54.4},
+  {name: 'Lotus Cobra', color: 'G', rarity: 'R', alsa: 6.23, gihWr: 54.4},
+  {name: 'Chandra, Torch of Defiance', color: 'R', rarity: 'M', alsa: 6.25, gihWr: 54.4},
+  {name: 'Ulvenwald Oddity', color: 'G', rarity: 'R', alsa: 8.53, gihWr: 54.4},
+  {name: 'Lion Sash', color: 'W', rarity: 'R', alsa: 8.11, gihWr: 54.4},
+  {name: 'Willowrush Verge', color: '', rarity: 'R', alsa: 7.11, gihWr: 54.4},
+  {name: 'Super Shredder', color: 'B', rarity: 'M', alsa: 5.92, gihWr: 54.4},
+  {name: 'Worldspine Wurm', color: 'G', rarity: 'M', alsa: 5.74, gihWr: 54.3},
+  {name: 'Archfiend of the Dross', color: 'B', rarity: 'R', alsa: 9.24, gihWr: 54.3},
+  {name: 'Raucous Theater', color: '', rarity: 'R', alsa: 6.91, gihWr: 54.3},
+  {name: 'Umezawa\'s Jitte', color: '', rarity: 'R', alsa: 4.82, gihWr: 54.2},
+  {name: 'Reckoner Bankbuster', color: '', rarity: 'R', alsa: 6.63, gihWr: 54.2},
+  {name: 'Atraxa, Grand Unifier', color: 'WUBG', rarity: 'M', alsa: 4.16, gihWr: 54.2},
+  {name: 'Undercity Sewers', color: '', rarity: 'R', alsa: 5.57, gihWr: 54.2},
+  {name: 'Tranquil Landscape', color: '', rarity: 'C', alsa: 7.58, gihWr: 54.2},
+  {name: 'Suplex', color: 'R', rarity: 'C', alsa: 6.46, gihWr: 54.2},
+  {name: 'Candelabra of Tawnos', color: '', rarity: 'R', alsa: 7.75, gihWr: 54.2},
+  {name: 'Breeding Pool', color: '', rarity: 'R', alsa: 5.60, gihWr: 54.1},
+  {name: 'Once Upon a Time', color: 'G', rarity: 'R', alsa: 6.47, gihWr: 54.1},
+  {name: 'Brainstorm', color: 'U', rarity: 'R', alsa: 5.43, gihWr: 54.1},
+  {name: 'Concealing Curtains', color: 'B', rarity: 'R', alsa: 8.19, gihWr: 54.1},
+  {name: 'Third Path Iconoclast', color: 'UR', rarity: 'U', alsa: 6.28, gihWr: 54.1},
+  {name: 'Bitter Triumph', color: 'B', rarity: 'U', alsa: 5.23, gihWr: 54.1},
+  {name: 'Persist', color: 'B', rarity: 'M', alsa: 5.45, gihWr: 54.1},
+  {name: 'Grim Monolith', color: '', rarity: 'R', alsa: 4.07, gihWr: 54.0},
+  {name: 'Savannah', color: '', rarity: 'R', alsa: 7.10, gihWr: 54.0},
+  {name: 'Llanowar Elves', color: 'G', rarity: 'C', alsa: 6.40, gihWr: 54.0},
+  {name: 'Liliana of the Veil', color: 'B', rarity: 'M', alsa: 5.69, gihWr: 54.0},
+  {name: 'Copperline Gorge', color: '', rarity: 'R', alsa: 8.29, gihWr: 54.0},
+  {name: 'Sylvan Safekeeper', color: 'G', rarity: 'R', alsa: 7.23, gihWr: 53.9},
+  {name: 'Stormchaser\'s Talent', color: 'U', rarity: 'R', alsa: 6.20, gihWr: 53.9},
+  {name: 'Thundering Falls', color: '', rarity: 'R', alsa: 5.66, gihWr: 53.8},
+  {name: 'Memory Jar', color: '', rarity: 'R', alsa: 7.39, gihWr: 53.7},
+  {name: 'Elvish Mystic', color: 'G', rarity: 'C', alsa: 6.51, gihWr: 53.7},
+  {name: 'Raffine\'s Tower', color: '', rarity: 'R', alsa: 6.31, gihWr: 53.7},
+  {name: 'Kitesail Larcenist', color: 'U', rarity: 'R', alsa: 7.18, gihWr: 53.7},
+  {name: 'Springheart Nantuko', color: 'G', rarity: 'R', alsa: 6.27, gihWr: 53.7},
+  {name: 'Grief', color: 'B', rarity: 'M', alsa: 5.12, gihWr: 53.7},
+  {name: 'Earthbender Ascension', color: 'G', rarity: 'R', alsa: 7.18, gihWr: 53.7},
+  {name: 'Blood Crypt', color: '', rarity: 'R', alsa: 6.08, gihWr: 53.6},
+  {name: 'Questing Beast', color: 'G', rarity: 'M', alsa: 7.04, gihWr: 53.6},
+  {name: 'Nettlecyst', color: '', rarity: 'R', alsa: 7.15, gihWr: 53.6},
+  {name: 'Witherbloom Command', color: 'BG', rarity: 'R', alsa: 9.21, gihWr: 53.6},
+  {name: 'Lórien Revealed', color: 'U', rarity: 'C', alsa: 5.06, gihWr: 53.6},
+  {name: 'Troll of Khazad-dûm', color: 'B', rarity: 'C', alsa: 6.19, gihWr: 53.6},
+  {name: 'Loot, the Pathfinder', color: 'URG', rarity: 'M', alsa: 7.76, gihWr: 53.6},
+  {name: 'Consult the Star Charts', color: 'U', rarity: 'R', alsa: 5.47, gihWr: 53.6},
+  {name: 'Icetill Explorer', color: 'G', rarity: 'R', alsa: 5.09, gihWr: 53.6},
+  {name: 'Pinnacle Emissary', color: 'UR', rarity: 'R', alsa: 7.07, gihWr: 53.6},
+  {name: 'Time Spiral', color: 'U', rarity: 'R', alsa: 4.65, gihWr: 53.5},
+  {name: 'Lightning Greaves', color: '', rarity: 'U', alsa: 5.98, gihWr: 53.5},
+  {name: 'Proft\'s Eidetic Memory', color: 'U', rarity: 'R', alsa: 6.93, gihWr: 53.5},
+  {name: 'Hushwood Verge', color: '', rarity: 'R', alsa: 8.92, gihWr: 53.5},
+  {name: 'Bitterbloom Bearer', color: 'B', rarity: 'M', alsa: 7.09, gihWr: 53.5},
+  {name: 'Michelangelo, the Heart', color: 'G', rarity: 'M', alsa: 8.25, gihWr: 53.5},
+  {name: 'Thieving Skydiver', color: 'U', rarity: 'R', alsa: 6.24, gihWr: 53.4},
+  {name: 'Jetmir\'s Garden', color: '', rarity: 'R', alsa: 7.64, gihWr: 53.4},
+  {name: 'Forsaken Miner', color: 'B', rarity: 'U', alsa: 9.39, gihWr: 53.4},
+  {name: 'Magmatic Hellkite', color: 'R', rarity: 'R', alsa: 8.37, gihWr: 53.4},
+  {name: 'Recurring Nightmare', color: 'B', rarity: 'R', alsa: 5.54, gihWr: 53.3},
+  {name: 'Talisman of Creativity', color: '', rarity: 'U', alsa: 6.17, gihWr: 53.3},
+  {name: 'Territorial Kavu', color: 'RG', rarity: 'R', alsa: 9.48, gihWr: 53.3},
+  {name: 'Tenacious Underdog', color: 'B', rarity: 'R', alsa: 8.62, gihWr: 53.3},
+  {name: 'Gix, Yawgmoth Praetor', color: 'B', rarity: 'M', alsa: 7.71, gihWr: 53.3},
+  {name: 'Go for the Throat', color: 'B', rarity: 'U', alsa: 5.55, gihWr: 53.3},
+  {name: 'Six', color: 'G', rarity: 'R', alsa: 6.54, gihWr: 53.3},
+  {name: 'Shifting Woodland', color: '', rarity: 'R', alsa: 8.35, gihWr: 53.3},
+  {name: 'Thornspire Verge', color: '', rarity: 'R', alsa: 8.11, gihWr: 53.3},
+  {name: 'Saheeli, Sublime Artificer', color: 'UR', rarity: 'U', alsa: 6.20, gihWr: 53.2},
+  {name: 'Kroxa, Titan of Death\'s Hunger', color: 'BR', rarity: 'M', alsa: 7.92, gihWr: 53.2},
+  {name: 'Uro, Titan of Nature\'s Wrath', color: 'UG', rarity: 'M', alsa: 5.30, gihWr: 53.2},
+  {name: 'Consider', color: 'U', rarity: 'C', alsa: 6.38, gihWr: 53.2},
+  {name: 'Stern Scolding', color: 'U', rarity: 'U', alsa: 6.91, gihWr: 53.2},
+  {name: 'Virtue of Persistence', color: 'B', rarity: 'M', alsa: 5.88, gihWr: 53.2},
+  {name: 'Lavaspur Boots', color: '', rarity: 'U', alsa: 7.60, gihWr: 53.2},
+  {name: 'Toxic Deluge', color: 'B', rarity: 'R', alsa: 4.79, gihWr: 53.2},
+  {name: 'Abhorrent Oculus', color: 'U', rarity: 'M', alsa: 6.56, gihWr: 53.2},
+  {name: 'Moonshadow', color: 'B', rarity: 'M', alsa: 6.83, gihWr: 53.2},
+  {name: 'Life // Death', color: 'BG', rarity: 'U', alsa: 5.95, gihWr: 53.2},
+  {name: 'Winds of Abandon', color: 'W', rarity: 'R', alsa: 7.55, gihWr: 53.2},
+  {name: 'Tropical Island', color: '', rarity: 'R', alsa: 4.74, gihWr: 53.1},
+  {name: 'Woe Strider', color: 'B', rarity: 'R', alsa: 8.81, gihWr: 53.1},
+  {name: 'Talisman of Conviction', color: '', rarity: 'U', alsa: 7.57, gihWr: 53.1},
+  {name: 'Vindicate', color: 'WB', rarity: 'R', alsa: 8.17, gihWr: 53.1},
+  {name: 'Jadar, Ghoulcaller of Nephalia', color: 'B', rarity: 'R', alsa: 8.26, gihWr: 53.1},
+  {name: 'Spara\'s Headquarters', color: '', rarity: 'R', alsa: 6.67, gihWr: 53.1},
+  {name: 'Xander\'s Lounge', color: '', rarity: 'R', alsa: 5.77, gihWr: 53.1},
+  {name: 'Collective Brutality', color: 'B', rarity: 'R', alsa: 6.65, gihWr: 53.1},
+  {name: 'Commercial District', color: '', rarity: 'R', alsa: 7.49, gihWr: 53.1},
+  {name: 'Talisman of Dominance', color: '', rarity: 'U', alsa: 6.18, gihWr: 53.0},
+  {name: 'Soul-Guide Lantern', color: '', rarity: 'U', alsa: 6.87, gihWr: 53.0},
+  {name: 'Zagoth Triome', color: '', rarity: 'R', alsa: 6.19, gihWr: 53.0},
+  {name: 'Bone Shards', color: 'B', rarity: 'C', alsa: 6.77, gihWr: 53.0},
+  {name: 'Night\'s Whisper', color: 'B', rarity: 'C', alsa: 7.52, gihWr: 53.0},
+  {name: 'Emrakul, the Aeons Torn', color: '', rarity: 'M', alsa: 5.52, gihWr: 52.9},
+  {name: 'Chromatic Star', color: '', rarity: 'U', alsa: 6.36, gihWr: 52.9},
+  {name: 'Monastery Mentor', color: 'W', rarity: 'M', alsa: 6.92, gihWr: 52.9},
+  {name: 'Surrak, Elusive Hunter', color: 'G', rarity: 'R', alsa: 7.51, gihWr: 52.9},
+  {name: 'Torsten, Founder of Benalia', color: 'WG', rarity: 'M', alsa: 6.41, gihWr: 52.9},
+  {name: 'Gitaxian Probe', color: 'U', rarity: 'C', alsa: 5.06, gihWr: 52.8},
+  {name: 'Tarmogoyf', color: 'G', rarity: 'M', alsa: 8.52, gihWr: 52.8},
+  {name: 'Sylvan Caryatid', color: 'G', rarity: 'R', alsa: 6.44, gihWr: 52.8},
+  {name: 'Ba Sing Se', color: '', rarity: 'R', alsa: 8.28, gihWr: 52.8},
+  {name: 'Echo of Eons', color: 'U', rarity: 'R', alsa: 4.88, gihWr: 52.7},
+  {name: 'Tamiyo, Collector of Tales', color: 'UG', rarity: 'R', alsa: 6.54, gihWr: 52.6},
+  {name: 'Hedge Maze', color: '', rarity: 'R', alsa: 6.54, gihWr: 52.6},
+  {name: 'Endurance', color: 'G', rarity: 'M', alsa: 8.09, gihWr: 52.6},
+  {name: 'Treasure Cruise', color: 'U', rarity: 'C', alsa: 6.65, gihWr: 52.5},
+  {name: 'Rofellos, Llanowar Emissary', color: 'G', rarity: 'R', alsa: 7.78, gihWr: 52.5},
+  {name: 'Leovold, Emissary of Trest', color: 'UBG', rarity: 'M', alsa: 6.65, gihWr: 52.5},
+  {name: 'Lush Portico', color: '', rarity: 'R', alsa: 8.57, gihWr: 52.5},
+  {name: 'Nexus of Becoming', color: '', rarity: 'M', alsa: 6.80, gihWr: 52.5},
+  {name: 'Elvish Reclaimer', color: 'G', rarity: 'R', alsa: 8.90, gihWr: 52.4},
+  {name: 'Channel', color: 'G', rarity: 'M', alsa: 6.59, gihWr: 52.4},
+  {name: 'Deceptive Landscape', color: '', rarity: 'C', alsa: 8.44, gihWr: 52.4},
+  {name: 'Astrologian\'s Planisphere', color: 'U', rarity: 'R', alsa: 6.64, gihWr: 52.4},
+  {name: 'Vivi Ornitier', color: 'UR', rarity: 'M', alsa: 4.82, gihWr: 52.4},
+  {name: 'Talisman of Progress', color: '', rarity: 'U', alsa: 6.40, gihWr: 52.3},
+  {name: 'Touch the Spirit Realm', color: 'W', rarity: 'U', alsa: 7.78, gihWr: 52.3},
+  {name: 'Utopia Sprawl', color: 'G', rarity: 'U', alsa: 7.84, gihWr: 52.3},
+  {name: 'Underground Mortuary', color: '', rarity: 'R', alsa: 7.48, gihWr: 52.3},
+  {name: 'Wastewood Verge', color: '', rarity: 'R', alsa: 8.06, gihWr: 52.3},
+  {name: 'Mystical Tutor', color: 'U', rarity: 'U', alsa: 5.34, gihWr: 52.1},
+  {name: 'Golos, Tireless Pilgrim', color: '', rarity: 'R', alsa: 6.96, gihWr: 52.1},
+  {name: 'Coveted Jewel', color: '', rarity: 'R', alsa: 6.70, gihWr: 52.1},
+  {name: 'Sephiroth, Fabled SOLDIER', color: 'B', rarity: 'M', alsa: 7.62, gihWr: 52.1},
+  {name: 'Leatherhead, Swamp Stalker', color: 'G', rarity: 'R', alsa: 8.28, gihWr: 52.1},
+  {name: 'Hazoret the Fervent', color: 'R', rarity: 'M', alsa: 8.70, gihWr: 52.0},
+  {name: 'Dark Ritual', color: 'B', rarity: 'R', alsa: 5.75, gihWr: 52.0},
+  {name: 'Faithless Looting', color: 'R', rarity: 'R', alsa: 7.44, gihWr: 52.0},
+  {name: 'Generous Ent', color: 'G', rarity: 'C', alsa: 8.08, gihWr: 52.0},
+  {name: 'Palantír of Orthanc', color: '', rarity: 'M', alsa: 4.85, gihWr: 52.0},
+  {name: 'Nissa, Resurgent Animist', color: 'G', rarity: 'M', alsa: 7.57, gihWr: 52.0},
+  {name: 'Scrapshooter', color: 'G', rarity: 'R', alsa: 9.25, gihWr: 52.0},
+  {name: 'Regrowth', color: 'G', rarity: 'R', alsa: 7.54, gihWr: 51.9},
+  {name: 'Expedition Map', color: '', rarity: 'C', alsa: 7.33, gihWr: 51.9},
+  {name: 'Deceit', color: 'UB', rarity: 'M', alsa: 6.21, gihWr: 51.9},
+  {name: 'Michelangelo, Weirdness to 11', color: 'G', rarity: 'R', alsa: 8.35, gihWr: 51.9},
+  {name: 'Overgrown Tomb', color: '', rarity: 'R', alsa: 6.91, gihWr: 51.8},
+  {name: 'Indatha Triome', color: '', rarity: 'R', alsa: 7.80, gihWr: 51.8},
+  {name: 'Evolved Sleeper', color: 'B', rarity: 'R', alsa: 8.45, gihWr: 51.8},
+  {name: 'Enlightened Tutor', color: 'W', rarity: 'U', alsa: 8.40, gihWr: 51.7},
+  {name: 'Tireless Tracker', color: 'G', rarity: 'R', alsa: 6.92, gihWr: 51.7},
+  {name: 'Foreboding Landscape', color: '', rarity: 'C', alsa: 7.29, gihWr: 51.7},
+  {name: 'Sazh\'s Chocobo', color: 'G', rarity: 'U', alsa: 8.68, gihWr: 51.7},
+  {name: 'Duress', color: 'B', rarity: 'C', alsa: 5.59, gihWr: 51.6},
+  {name: 'Tear Asunder', color: 'G', rarity: 'U', alsa: 8.13, gihWr: 51.6},
+  {name: 'Coalition Relic', color: '', rarity: 'R', alsa: 6.30, gihWr: 51.5},
+  {name: 'Fastbond', color: 'G', rarity: 'M', alsa: 5.54, gihWr: 51.5},
+  {name: 'Midnight Reaper', color: 'B', rarity: 'R', alsa: 8.95, gihWr: 51.5},
+  {name: 'Pentad Prism', color: '', rarity: 'C', alsa: 6.73, gihWr: 51.4},
+  {name: 'Ziatora\'s Proving Ground', color: '', rarity: 'R', alsa: 7.18, gihWr: 51.4},
+  {name: 'Pillage the Bog', color: 'BG', rarity: 'R', alsa: 8.86, gihWr: 51.4},
+  {name: 'Myr Battlesphere', color: '', rarity: 'R', alsa: 6.92, gihWr: 51.3},
+  {name: 'Emrakul, the Promised End', color: '', rarity: 'M', alsa: 5.78, gihWr: 51.3},
+  {name: 'Kaldra Compleat', color: '', rarity: 'M', alsa: 6.58, gihWr: 51.2},
+  {name: 'Frantic Search', color: 'U', rarity: 'C', alsa: 5.36, gihWr: 51.1},
+  {name: 'Explore', color: 'G', rarity: 'C', alsa: 8.13, gihWr: 51.1},
+  {name: 'Tireless Provisioner', color: 'G', rarity: 'U', alsa: 7.60, gihWr: 51.1},
+  {name: 'Vampiric Tutor', color: 'B', rarity: 'M', alsa: 4.24, gihWr: 51.1},
+  {name: 'Restless Vinestalk', color: '', rarity: 'R', alsa: 8.12, gihWr: 51.0},
+  {name: 'Eternal Witness', color: 'G', rarity: 'U', alsa: 7.44, gihWr: 51.0},
+  {name: 'Mutagen Man, Living Ooze', color: 'G', rarity: 'R', alsa: 8.39, gihWr: 51.0},
+  {name: 'Batterskull', color: '', rarity: 'M', alsa: 6.80, gihWr: 50.9},
+  {name: 'Woodfall Primus', color: 'G', rarity: 'R', alsa: 6.11, gihWr: 50.8},
+  {name: 'Blood Artist', color: 'B', rarity: 'U', alsa: 8.87, gihWr: 50.8},
+  {name: 'Craterhoof Behemoth', color: 'G', rarity: 'M', alsa: 6.85, gihWr: 50.8},
+  {name: 'Talisman of Curiosity', color: '', rarity: 'U', alsa: 6.89, gihWr: 50.7},
+  {name: 'Etali, Primal Conqueror', color: 'R', rarity: 'R', alsa: 5.65, gihWr: 50.7},
+  {name: 'Tifa Lockhart', color: 'G', rarity: 'R', alsa: 9.13, gihWr: 50.7},
+  {name: 'Oracle of the Alpha', color: 'U', rarity: 'M', alsa: 2.69, gihWr: 50.6},
+  {name: 'Chatterfang, Squirrel General', color: 'G', rarity: 'M', alsa: 8.82, gihWr: 50.5},
+  {name: 'Yawgmoth, Thran Physician', color: 'B', rarity: 'M', alsa: 8.45, gihWr: 50.3},
+  {name: 'Boseiju, Who Endures', color: '', rarity: 'R', alsa: 7.55, gihWr: 50.3},
+  {name: 'Mightform Harmonizer', color: 'G', rarity: 'R', alsa: 8.39, gihWr: 50.1},
+  {name: 'Unmarked Grave', color: 'B', rarity: 'R', alsa: 7.58, gihWr: 50.0},
+  {name: 'Primeval Titan', color: 'G', rarity: 'M', alsa: 5.78, gihWr: 49.9},
+  {name: 'Displacer Kitten', color: 'U', rarity: 'R', alsa: 5.52, gihWr: 49.9},
+  {name: 'Restless Cottage', color: '', rarity: 'R', alsa: 8.79, gihWr: 49.9},
+  {name: 'Crucible of Worlds', color: '', rarity: 'M', alsa: 6.62, gihWr: 49.8},
+  {name: 'Bumi, Unleashed', color: 'RG', rarity: 'M', alsa: 8.87, gihWr: 49.7},
+  {name: 'Ravenous Robots', color: 'R', rarity: 'R', alsa: 7.49, gihWr: 49.7},
+  {name: 'Vaultborn Tyrant', color: 'G', rarity: 'M', alsa: 5.41, gihWr: 49.6},
+  {name: 'Show and Tell', color: 'U', rarity: 'M', alsa: 5.87, gihWr: 49.5},
+  {name: 'Portal to Phyrexia', color: '', rarity: 'M', alsa: 5.44, gihWr: 49.4},
+  {name: 'Triplicate Titan', color: '', rarity: 'R', alsa: 6.30, gihWr: 49.0},
+  {name: 'Razorlash Transmogrant', color: '', rarity: 'R', alsa: 8.83, gihWr: 48.9},
+  {name: 'Bebop & Rocksteady', color: 'BG', rarity: 'R', alsa: 9.04, gihWr: 48.9},
+  {name: 'Glissa Sunslayer', color: 'BG', rarity: 'R', alsa: 8.11, gihWr: 48.7},
+  {name: 'Knight of the Reliquary', color: 'WG', rarity: 'R', alsa: 9.76, gihWr: 48.6},
+  {name: 'Cryptbreaker', color: 'B', rarity: 'R', alsa: 9.03, gihWr: 48.5},
+  {name: 'Elder Gargaroth', color: 'G', rarity: 'M', alsa: 7.19, gihWr: 48.4},
+  {name: 'Griselbrand', color: 'B', rarity: 'M', alsa: 5.22, gihWr: 48.2},
+  {name: 'The Endstone', color: '', rarity: 'M', alsa: 7.41, gihWr: 47.9},
+  {name: 'Sin, Spira\'s Punishment', color: 'UBG', rarity: 'R', alsa: 7.16, gihWr: 47.7},
+  {name: 'Exploration', color: 'G', rarity: 'R', alsa: 7.58, gihWr: 46.5},
+  {name: 'Michelangelo, Improviser', color: 'G', rarity: 'M', alsa: 7.89, gihWr: 46.5},
+  {name: 'Krang, Utrom Warlord', color: '', rarity: 'M', alsa: 5.84, gihWr: 46.5},
+  {name: 'Warren Soultrader', color: 'B', rarity: 'R', alsa: 8.96, gihWr: 46.1}
 ];
 
 // BLB - 265 cards
@@ -3037,6 +3265,8 @@ const TLA_CARDS = [
   {name: 'Sozin\'s Comet', color: 'R', rarity: 'M', alsa: 5.59, gihWr: 43.4},
   {name: 'The Walls of Ba Sing Se', color: '', rarity: 'M', alsa: 4.83, gihWr: 41.0}
 ];
+
+
 
 // OM1 - 185 cards
 const OM1_CARDS = [
@@ -4218,9 +4448,9 @@ const SET_CONFIG = {
     name: 'CUBE (Powered Cube)',
     shortName: 'Powered Cube',
     data: CUBE_CARDS,
-    ratingsLink: 'https://www.17lands.com/card_data?expansion=CUBE&format=TradDraft',
-    dataDate: '2026-04-02',
-    dataTimestamp: '2026-04-02 UTC'
+    ratingsLink: 'https://www.17lands.com/card_data?expansion=Cube+-+Powered&format=PremierDraft&start=2026-03-11',
+    dataDate: '2026-04-10',
+    dataTimestamp: '2026-04-10 UTC'
   },
   OM1: {
     name: 'OM1 (OTJ: The Big Score — Pick 2 Draft)',
@@ -4258,8 +4488,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.3.4';
-const LAST_UPDATE = '2026-04-03 12:45 UTC';
+const QUIZ_VERSION = '4.3.5';
+const LAST_UPDATE = '2026-04-10 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -4719,7 +4949,7 @@ const SCRYFALL_SET_CODES = {
   FDN: ['fdn', 'spg'],
   BLB: ['blb', 'spg'],
   TLA: ['tla', 'tle', 'spg'],
-  OM1: ['otj', 'spg'],
+  OM1: ['om1', 'spg'],
   EOE: ['eoe', 'spg'],
   TDM: ['ddt', 'spg'],
   FIN: ['fin', 'fca', 'spg']
@@ -4791,7 +5021,7 @@ const fetchCardData = async (cardName, setCode) => {
     const toughness = data.toughness || null;
 
     // Return card data even without imageUrl - allows fallback rendering
-    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name };
+    return { imageUrl, oracleText, manaValue, typeLine, power, toughness, name: data.name, collectorNumber: data.collector_number || null, oracleId: data.oracle_id || null };
   };
 
   const scryfallSets = SCRYFALL_SET_CODES[setCode || 'ECL'];
@@ -4824,6 +5054,57 @@ const fetchCardData = async (cardName, setCode) => {
           continue;
         }
       }
+    }
+
+    // CUBE: exact name first (no set filter), then oldest print fallback
+    if (setCode === 'CUBE') {
+      try {
+        let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`, {timeout: 3000});
+        if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (exactResponse.ok) {
+          const data = await exactResponse.json();
+          const cardData = getCardData(data);
+          if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+        }
+        const exactQuery = `!"${cardName}"`;
+        let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
+        if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (oldestResponse.ok) {
+          const data = await oldestResponse.json();
+          if (data.data && data.data.length > 0) {
+            const cardData = getCardData(data.data[0]);
+            if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+          }
+        }
+      } catch (e) { /* fall through */ }
+      return null;
+    }
+
+    // OM1: exact name first within set codes, then oldest print fallback
+    if (setCode === 'OM1') {
+      const scryfallSetsForExact = SCRYFALL_SET_CODES[setCode];
+      try {
+        for (const scryfallSet of scryfallSetsForExact) {
+          let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${scryfallSet}`, {timeout: 3000});
+          if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+          if (exactResponse.ok) {
+            const data = await exactResponse.json();
+            const cardData = getCardData(data);
+            if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+          }
+        }
+        const exactQuery = `!"${cardName}" (${scryfallSetsForExact.map(s => `set:${s}`).join(' OR ')})`;
+        let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
+        if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (oldestResponse.ok) {
+          const data = await oldestResponse.json();
+          if (data.data && data.data.length > 0) {
+            const cardData = getCardData(data.data[0]);
+            if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
+          }
+        }
+      } catch (e) { /* fall through */ }
+      return null;
     }
 
     // Fallback: fuzzy search (any version) - works for all sets
@@ -4878,7 +5159,7 @@ const fetchCardData = async (cardName, setCode) => {
   }
 };
 
-const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL', onImageLoaded }) => {
+const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL', onImageLoaded, preferSPM = false }) => {
   const [imageUrl, setImageUrl] = React.useState(null);
   const [cardInfo, setCardInfo] = React.useState(null);
   const [imageLoading, setImageLoading] = React.useState(true);
@@ -4895,6 +5176,27 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
       const cardData = await fetchCardData(card.name, setCode);
       if (cardData) {
         setCardInfo(cardData);
+
+        // For OM1 with SPM art preference: try fetching SPM version by oracle ID
+        if (preferSPM && cardData.oracleId) {
+          try {
+            const spmRes = await fetch(`https://api.scryfall.com/cards/search?q=set:spm oracleid:${cardData.oracleId}`, {timeout: 3000});
+            if (spmRes.ok) {
+              const spmSearchData = await spmRes.json();
+              if (spmSearchData.data && spmSearchData.data.length > 0) {
+                const spmData = spmSearchData.data[0];
+                const spmUrl = spmData.card_faces?.[0]?.image_uris?.normal || spmData.image_uris?.normal || null;
+                if (spmUrl) {
+                  setImageUrl(spmUrl);
+                  if (onImageLoaded) onImageLoaded(cardNumber);
+                  setImageLoading(false);
+                  return;
+                }
+              }
+            }
+          } catch (e) { /* fall back to OM1 art */ }
+        }
+
         setImageUrl(cardData.imageUrl);
         // Notify parent that image has been loaded/cached
         if (onImageLoaded) {
@@ -4906,7 +5208,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
       setImageLoading(false);
     };
     loadCardData();
-  }, [card.name, setCode, cardNumber, onImageLoaded]);
+  }, [card.name, setCode, cardNumber, onImageLoaded, preferSPM]);
 
   const containerClass = [
     'card-image-container',
@@ -5057,6 +5359,7 @@ const GIHQuiz = () => {
   const [history, setHistory] = React.useState(loadAllHistory('comparison'));
   const [showToast, setShowToast] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
+  const [preferSPM, setPreferSPM] = React.useState(false);
 
   // Update score when mode or set changes (history is now unified across all sets)
   React.useEffect(() => {
@@ -5070,6 +5373,7 @@ const GIHQuiz = () => {
     setSelectedGrade(null);
     setCurrentPair(null);
     setCurrentCard(null);
+    setPreferSPM(false);
     // Smart selection only applies to comparison mode
     if (quizMode !== 'comparison') {
       setSmartSelectionEnabled(false);
@@ -5925,6 +6229,24 @@ Play at: ${baseUrl}`,
                 </div>
               )}
 
+              {currentSetCode === 'OM1' && (
+                <div className="mode-toggle" style={{marginBottom: '12px'}}>
+                  <button
+                    className={`mode-option ${!preferSPM ? 'active' : ''}`}
+                    onClick={() => setPreferSPM(false)}
+                    title="Show Universes Within (OM1) art"
+                  >
+                    🧙 OM1 Art
+                  </button>
+                  <button
+                    className={`mode-option ${preferSPM ? 'active' : ''}`}
+                    onClick={() => setPreferSPM(true)}
+                    title="Show Marvel: Spider-Man art"
+                  >
+                    🕷 SPM Art
+                  </button>
+                </div>
+              )}
               <div className="card-area">
               <CardDisplay
                 card={currentPair[0]}
@@ -5937,6 +6259,7 @@ Play at: ${baseUrl}`,
                 metric={metric}
                 setCode={currentSetCode}
                 onImageLoaded={handleImageLoaded}
+                preferSPM={preferSPM}
               />
               <CardDisplay
                 card={currentPair[1]}
@@ -5949,6 +6272,7 @@ Play at: ${baseUrl}`,
                 metric={metric}
                 setCode={currentSetCode}
                 onImageLoaded={handleImageLoaded}
+                preferSPM={preferSPM}
               />
             </div>
             </>
@@ -5968,6 +6292,7 @@ Play at: ${baseUrl}`,
                   metric={metric}
                   setCode={currentSetCode}
                   onImageLoaded={handleImageLoaded}
+                  preferSPM={preferSPM}
                 />
               </div>
               <GradeSelector
