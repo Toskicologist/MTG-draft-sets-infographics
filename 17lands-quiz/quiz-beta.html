@@ -4687,7 +4687,7 @@ const loadHistory = (mode = 'comparison', setCode = 'ECL') => {
   try {
     const base = mode === 'grading' ? STORAGE_KEYS.HISTORY_GRADING : STORAGE_KEYS.HISTORY_COMPARISON;
     const data = safeStorage.getItem(storageKey(base, setCode));
-    // Fall back to legacy key (no set suffix) for ECL backwards compat
+    // Legacy: pre-v4.0 stored without set suffix; ECL was the only set
     if (!data && setCode === 'ECL') {
       const legacy = safeStorage.getItem(base);
       return legacy ? JSON.parse(legacy) : [];
@@ -4785,7 +4785,7 @@ const loadShownCards = (mode = 'comparison', filterKey, setCode = 'ECL') => {
   try {
     const base = mode === 'grading' ? STORAGE_KEYS.SHOWN_GRADING : STORAGE_KEYS.SHOWN_COMPARISON;
     const data = safeStorage.getItem(storageKey(base, setCode));
-    // Fall back to legacy key for ECL
+    // Legacy: pre-v4.0 stored without set suffix; ECL was the only set
     if (!data && setCode === 'ECL') {
       const legacy = safeStorage.getItem(base);
       const allShown = legacy ? JSON.parse(legacy) : {};
@@ -4816,7 +4816,7 @@ const loadScore = (mode = 'comparison', setCode = 'ECL') => {
   try {
     const base = mode === 'grading' ? STORAGE_KEYS.SCORE_GRADING : STORAGE_KEYS.SCORE_COMPARISON;
     const data = safeStorage.getItem(storageKey(base, setCode));
-    // Fall back to legacy key for ECL
+    // Legacy: pre-v4.0 stored without set suffix; ECL was the only set
     if (!data && setCode === 'ECL') {
       const legacy = safeStorage.getItem(base);
       return legacy ? JSON.parse(legacy) : { points: 0, questions: 0 };
@@ -5083,7 +5083,7 @@ const fetchCardData = async (cardName, setCode) => {
       return null;
     }
 
-    // OM1: exact name first within set codes, then oldest print fallback
+    // OM1 fallback: if set-filtered fuzzy search above missed, try exact name match per set code
     if (setCode === 'OM1') {
       const scryfallSetsForExact = SCRYFALL_SET_CODES[setCode];
       try {
@@ -6018,6 +6018,7 @@ Play at: ${baseUrl}`,
               </select>
             </div>
 
+            {/* Type filter: only ECL cards have type data; hidden for other sets */}
             {activeCardData.some(c => c.type) && (
             <div className="filter-group">
               <label className="filter-label">Type</label>
