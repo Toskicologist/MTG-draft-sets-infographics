@@ -1136,18 +1136,14 @@
 
   CHANGELOG:
   v4.3.5 (2026-04-03 UTC - Claude Sonnet 4.6):
+  - DATA (CUBE): Updated from TradDraft to PremierDraft format (318 → 538 cards, accurate sample sizes)
+  - FIX (CUBE): Updated ratingsLink to PremierDraft format (Gitaxian Probe now 52.8% instead of 56.3%)
+  - FIX (CUBE): Use exact name match first to avoid fuzzy search returning newer split cards (e.g. "Wheel of Fortune" → "Naktamun Lorespinner // Wheel of Fortune")
+    - If exact fails, searches by exact name ordered by oldest release date (gets classic Alpha/Beta versions)
   - FIX: OM1 Scryfall set code corrected from 'otj' to 'om1' (was fetching OTJ art instead of Universes Within art)
   - FEAT: OM1/SPM art toggle button — when playing OM1, click to switch between OM1 Universes Within art and Marvel Spider-Man art
     - Uses Scryfall oracle ID to find matching SPM card (best-effort; falls back to OM1 art if SPM card not found)
     - Toggle resets automatically when switching sets
-  - FIX (CUBE): Use exact name match first to avoid fuzzy search returning newer split cards (e.g. "Wheel of Fortune" → "Naktamun Lorespinner // Wheel of Fortune")
-    - If exact fails, searches by exact name ordered by oldest release date (gets classic Alpha/Beta versions)
-
-  v4.2.6 (2026-04-02 22:38 UTC - Claude Sonnet 4.6):
-  - FIX: Disable all startup preloading due to Scryfall rate limits
-  - Only fetch card data when user views a question
-  - Use cached oracle text and fallback messages
-  - Prevents 429 errors and CORS issues
 
   v4.3.2 (2026-04-03 11:24 UTC - Claude Sonnet 4.6):
   - UI: Rename OM1 display from 'OM1' to 'OM1 Pick 2' across banner, buttons, and history
@@ -1183,6 +1179,12 @@
   - Resolves card loading issues where ATLA: TLE (Eternal/Borderless) cards were pulling from wrong set
   - Image search now checks main ATLA set first, then Eternal variant, then Source Material Cards
   - Fixes reported issue of only showing rares/mythics in ATLA quiz
+
+  v4.2.6 (2026-04-02 22:38 UTC - Claude Sonnet 4.6):
+  - FIX: Disable all startup preloading due to Scryfall rate limits
+  - Only fetch card data when user views a question
+  - Use cached oracle text and fallback messages
+  - Prevents 429 errors and CORS issues
 
   v4.2.5 (2026-04-02 22:36 UTC - Claude Sonnet 4.6):
   - FIX: Reduce aggressive startup preloading (was hitting rate limits)
@@ -1401,10 +1403,10 @@
   - Google Fonts and React/Babel loaded from CDN (requires internet for first load)
 */
 
-// Embedded card data - extracted from 17 lands ECL premier draft card-ratings-2026-02-12.csv
-// Downloaded from 17 Lands on 2026-02-12
+// Embedded card data - extracted from 17 lands ECL premier draft card-ratings-2026-02-27.csv
+// Downloaded from 17 Lands on 2026-02-27
 // Expansion: ECL - Premier Draft
-// Total cards: 271 (includes 8 new cards with valid GIH WR data)
+// Total cards: 273
 const CARD_DATA = [
   {name: "Abigale, Eloquent First-Year", color: "WB", type: "Legendary Creature — Bird Bard", rarity: "R", gihWr: 58.6, alsa: 1.67},
   {name: "Adept Watershaper", color: "W", type: "Creature — Merfolk Cleric", rarity: "R", gihWr: 57.9, alsa: 2.13},
@@ -4495,7 +4497,7 @@ const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographic
 
 // Detect environment
 const IS_LOCAL = window.location.protocol === 'file:';
-const IS_BETA = window.location.pathname.includes('index-beta');
+const IS_BETA = window.location.pathname.includes('quiz-beta');
 
 const scryfallImageCache = {};
 
