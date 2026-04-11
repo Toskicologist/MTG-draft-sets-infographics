@@ -1407,7 +1407,7 @@
 // Downloaded from 17 Lands on 2026-02-27
 // Expansion: ECL - Premier Draft
 // Total cards: 273
-const CARD_DATA = [
+const ECL_CARDS = [
   {name: "Abigale, Eloquent First-Year", color: "WB", type: "Legendary Creature — Bird Bard", rarity: "R", gihWr: 58.6, alsa: 1.67},
   {name: "Adept Watershaper", color: "W", type: "Creature — Merfolk Cleric", rarity: "R", gihWr: 57.9, alsa: 2.13},
   {name: "Ajani, Outland Chaperone", color: "W", type: "Legendary Planeswalker — Ajani", rarity: "M", gihWr: 60.9, alsa: 1.49},
@@ -1685,7 +1685,7 @@ const CARD_DATA = [
 
 // TMT (Teenage Mutant Turtles) card data - extracted from 17lands exports
 // Downloaded from 17 Lands on 2026-03-30
-const CARD_DATA_TMT = [
+const TMT_CARDS = [
   {name: 'Action News Crew', color: 'W', rarity: 'C', gihWr: 53.6, alsa: 6.15},
   {name: 'Agent Bishop, Man in Black', color: 'W', rarity: 'R', gihWr: 64, alsa: 1.52},
   {name: 'Anchovy & Banana Pizza', color: 'B', rarity: 'C', gihWr: 57.1, alsa: 3.61},
@@ -1876,7 +1876,7 @@ const CARD_DATA_TMT = [
 
 // Foundations (FDN) card data - extracted from 17lands exports
 // Downloaded from 17 Lands on 2026-03-30
-const CARD_DATA_FDN = [
+const FDN_CARDS = [
   {name: 'Embercleave', color: 'R', rarity: 'M', gihWr: 64.2, alsa: 1.79},
   {name: 'Liliana, Dreadhorde General', color: 'B', rarity: 'M', gihWr: 64.1, alsa: 1.26},
   {name: 'Zimone, Paradox Sculptor', color: 'UG', rarity: 'M', gihWr: 62.5, alsa: 1.83},
@@ -4409,15 +4409,15 @@ const SET_CONFIG = {
   ECL: {
     name: 'ECL (Etchings of Cryptic Lore)',
     shortName: 'ECL',
-    data: CARD_DATA,
+    data: ECL_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20',
     dataDate: '2026-02-27',
-    dataTimestamp: '2026-02-27 12:01 UTC'
+    dataTimestamp: '2026-02-27 UTC'
   },
   TMT: {
     name: 'TMT (Teenage Mutant Turtles)',
     shortName: 'TMT',
-    data: CARD_DATA_TMT,
+    data: TMT_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=TMT&format=PremierDraft',
     dataDate: '2026-03-30',
     dataTimestamp: '2026-03-30 UTC'
@@ -4425,7 +4425,7 @@ const SET_CONFIG = {
   FDN: {
     name: 'FDN (Foundations)',
     shortName: 'FDN',
-    data: CARD_DATA_FDN,
+    data: FDN_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=FDN&format=PremierDraft',
     dataDate: '2026-03-30',
     dataTimestamp: '2026-03-30 UTC'
@@ -4955,13 +4955,14 @@ const SCRYFALL_SET_CODES = {
   EOE: ['eoe', 'spg'],
   TDM: ['ddt', 'spg'],
   FIN: ['fin', 'fca', 'spg']
-  // CUBE uses fuzzy search (special cube set)
+  // CUBE excluded: cards span all sets, uses exact-name + oldest-print strategy (see below)
 };
 
 // Rate limiting state for Scryfall API
 let scryfallRateLimitReset = 0;
 let lastScryfallRequestTime = 0;
 const MIN_REQUEST_DELAY = 20; // Minimum 20ms between Scryfall requests (reduced for faster loading)
+const hitRateLimit = () => { scryfallRateLimitReset = Date.now() + 5000; return null; };
 const ORACLE_CACHE_KEY = 'gih_quiz_oracle_cache_v1';
 
 // Load oracle text cache from localStorage
@@ -5037,7 +5038,7 @@ const fetchCardData = async (cardName, setCode) => {
 
           // Handle rate limiting
           if (response.status === 429) {
-            scryfallRateLimitReset = now + 5000; // Wait 5 seconds
+            hitRateLimit();
             continue;
           }
 
@@ -5062,7 +5063,7 @@ const fetchCardData = async (cardName, setCode) => {
     if (setCode === 'CUBE') {
       try {
         let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`, {timeout: 3000});
-        if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (exactResponse.status === 429) return hitRateLimit();
         if (exactResponse.ok) {
           const data = await exactResponse.json();
           const cardData = getCardData(data);
@@ -5070,7 +5071,7 @@ const fetchCardData = async (cardName, setCode) => {
         }
         const exactQuery = `!"${cardName}"`;
         let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
-        if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (oldestResponse.status === 429) return hitRateLimit();
         if (oldestResponse.ok) {
           const data = await oldestResponse.json();
           if (data.data && data.data.length > 0) {
@@ -5088,7 +5089,7 @@ const fetchCardData = async (cardName, setCode) => {
       try {
         for (const scryfallSet of scryfallSetsForExact) {
           let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${scryfallSet}`, {timeout: 3000});
-          if (exactResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+          if (exactResponse.status === 429) return hitRateLimit();
           if (exactResponse.ok) {
             const data = await exactResponse.json();
             const cardData = getCardData(data);
@@ -5097,7 +5098,7 @@ const fetchCardData = async (cardName, setCode) => {
         }
         const exactQuery = `!"${cardName}" (${scryfallSetsForExact.map(s => `set:${s}`).join(' OR ')})`;
         let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
-        if (oldestResponse.status === 429) { scryfallRateLimitReset = Date.now() + 5000; return null; }
+        if (oldestResponse.status === 429) return hitRateLimit();
         if (oldestResponse.ok) {
           const data = await oldestResponse.json();
           if (data.data && data.data.length > 0) {
@@ -5113,8 +5114,7 @@ const fetchCardData = async (cardName, setCode) => {
     let response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`, {timeout: 3000});
 
     if (response.status === 429) {
-      scryfallRateLimitReset = now + 5000; // Wait 5 seconds
-      return null;
+      return hitRateLimit();
     }
 
     if (response.ok) {
