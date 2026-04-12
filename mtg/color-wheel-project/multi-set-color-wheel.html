@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel</title>
   <meta property="og:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, and TMT">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -31,14 +31,24 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.0.2 React (STABLE)
+ * 1.1.0 React (STABLE)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
  *   - Magic: The Gathering Foundations (FDN) - v1.0.0 - Nov 2024
  *   - Teenage Mutant Ninja Turtles (TMT) - v1.0.4 - Mar 2026
+ *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
  *
  * CHANGELOG:
+ * 1.1.0 (2026-04-12, UTC) - [Claude Opus 4.6]
+ *   - Re-enabled Secrets of Strixhaven with real data from WotC Prerelease Guide
+ *   - Renamed key from STX to SOS (actual set code)
+ *   - Updated all 5 college archetypes with mechanic details (repartee, opus, infusion, flashback, increment)
+ *   - Updated off-college pairs with real source URLs (TheGamer)
+ *   - Set code updated to 'sos', release date April 24, 2026
+ *   - Added SOS keyrune icon to tab bar
+ *   - URL hash #sos now supported
+ *
  * 1.0.2 (2026-04-02, UTC) - [Claude Sonnet 4.6]
  *   - Added URL hash navigation (#ecl, #fdn, #tmt)
  *   - Hash updates when user switches sets (deep linking support)
@@ -89,7 +99,11 @@ const SET_DATA = {
       BG: { text: "Elves", sub: "Graveyard\nvalue", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
       RW: { text: "-1/-1 Aggro", sub: "Counter removal", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", sourceText: "WotC Making Magic", sourceUrl: "https://magic.wizards.com/en/news/making-magic/total-eclipsed-of-the-sun" },
       GU: { text: "Vivid", sub: "Ramp", details: "Vivid cares about color diversity among your permanents. Ramp into big threats while accumulating multiple colors. Hybrid mana and color fixing enable splashing powerful cards for late-game advantage.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
-    }
+    },
+    resourceLinks: [
+      { label: "WotC Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
+      { label: "Draftsim Limited Set Review", url: "https://draftsim.com/mtg-ecl-limited-set-review/" },
+    ]
   },
 
   FDN: {
@@ -120,7 +134,12 @@ const SET_DATA = {
       BG: { text: "Golgari", sub: "Morbid\nGrind", details: "Trigger Morbid by having creatures die—trade profitably, sacrifice, or let opponents do the work. Classic Golgari grind: never run out of threats, generate value from every death.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
       RW: { text: "Boros", sub: "Token\nAggro", details: "Deploy cheap creatures and pump the whole team. Heroic Reinforcements is CRACKED—extra creature AND +1/+1 for everyone at instant speed. Flood the board and end games quickly.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
       GU: { text: "Simic", sub: "Ramp &\nBig Creatures", details: "Accelerate with mana ramp into oversized threats. Llanowar Elves enables early big plays. Koma, Cosmos Serpent is the top payoff—the biggest win condition in the format.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
-    }
+    },
+    resourceLinks: [
+      { label: "Card Game Base Draft Guide", url: "https://cardgamebase.com/foundations-draft-guide/" },
+      { label: "WotC Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/foundations-prerelease-guide" },
+      { label: "Card Kingdom Draft Guide", url: "https://blog.cardkingdom.com/the-foundations-draft-guide/" },
+    ]
   },
 
   TMT: {
@@ -151,42 +170,54 @@ const SET_DATA = {
       BR: { text: "Off-arch", sub: "Splash B/R", details: "No dedicated BR archetype. Bridges Ooze (BG) and Alliance (RW). Raphael cards span both colors. Aggressive black/red builds can work with creature-based removal and direct pressure.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
       RG: { text: "Off-arch", sub: "Splash R/G", details: "No dedicated RG archetype. Bridges Alliance (RW) and Mutagen (GU). Green ramp into red threats is viable. Groundchuck & Dirtbag provide Mutagen-adjacent value in non-dedicated builds.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
       GW: { text: "Off-arch", sub: "Splash G/W", details: "No dedicated GW archetype. Bridges Mutagen (GU) and Ninja/Alliance (WB, RW). Sally Pride's Alliance payoffs pair naturally with green's wide board. Token-heavy GW shells can work around Alliance triggers.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-    }
+    },
+    resourceLinks: [
+      { label: "Draftsim Limited Set Review", url: "https://draftsim.com/mtg-tmt-limited-set-review/" },
+      { label: "TheGamer Draft Archetypes", url: "https://www.thegamer.com/magic-the-gathering-tmnt-best-draft-archetypes/" },
+    ]
   },
 
-  STX: {
-    key: 'STX',
+  SOS: {
+    key: 'SOS',
     name: 'Secrets of Strixhaven',
-    shortName: 'STX',
-    releaseDate: '2026',
-    version: '1.0.1',
-    scryfallCodes: ['soa', 'sos'],
+    shortName: 'SOS',
+    releaseDate: 'April 24, 2026',
+    version: '1.0.2',
+    scryfallCodes: ['sos'],
     primaryArchetypes: ['WB', 'UR', 'BG', 'RW', 'GU'],
     primaryLabel: '5 College archetypes (enemy pairs)',
     accentColor: '#8B5CF6',
     colorDescriptions: {
-      W: { name: "White", description: "Home to Silverquill (WB) and Lorehold (RW). Silverquill inspires creatures and rewards targeted spells while pressing the attack. Lorehold fills the graveyard and excavates it for history-making plays." },
-      U: { name: "Blue", description: "Home to Prismari (UR) and Quandrix (GU). Prismari loads up on instants and sorceries with opus bonuses for big spells. Quandrix grows creatures with counters and accelerates mana for incremental value." },
-      B: { name: "Black", description: "Home to Silverquill (WB) and Witherbloom (BG). Silverquill hurls cutting critiques and buffs allies with targeted spells. Witherbloom builds a Pest army and converts lifegain into boosted spell effects." },
-      R: { name: "Red", description: "Home to Prismari (UR) and Lorehold (RW). Prismari paints the battlefield with cheap spells or showstopping 5+ mana plays. Lorehold digs up the graveyard for powerful flashback excavation." },
-      G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms opponents with Pests and lifegain-boosted spells. Quandrix grows creatures with counters as you cast bigger and bigger spells." }
+      W: { name: "White", description: "Home to Silverquill (WB) and Lorehold (RW). Silverquill targets creatures with repartee spells—combat tricks or removal—to press the attack. Lorehold fills the graveyard and excavates it with flashback for history-making plays." },
+      U: { name: "Blue", description: "Home to Prismari (UR) and Quandrix (GU). Prismari loads up on instants and sorceries, earning opus bonuses for spending 5+ mana. Quandrix grows creatures via increment—casting spells with mana value exceeding creature stats." },
+      B: { name: "Black", description: "Home to Silverquill (WB) and Witherbloom (BG). Silverquill hurls cutting critiques with targeted removal. Witherbloom builds a Pest army and converts lifegain into infusion-boosted spell effects." },
+      R: { name: "Red", description: "Home to Prismari (UR) and Lorehold (RW). Prismari paints the battlefield with cheap spells or showstopping 5+ mana opus plays. Lorehold digs up the graveyard with flashback for powerful recursive aggression." },
+      G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms with Pests and infusion-boosted spells. Quandrix grows creatures with +1/+1 counters via increment as you cast bigger and bigger spells." }
     },
     labels: {
-      WU: { text: "Off-College", sub: "Control", details: "An off-college combination blending white removal and blue counter magic. Without a dedicated college signpost, this archetype leverages efficient interaction and card advantage to outlast opponents.", sourceText: "Draftsim Set Review", sourceUrl: "#" },
-      UB: { text: "Off-College", sub: "Draw-go", details: "Blue-black mixes Prismari's spellcasting depth with Witherbloom's graveyard reach. Play reactively, draw cards, and grind out opponents over a long game.", sourceText: "Community analysis", sourceUrl: "#" },
-      BR: { text: "Off-College", sub: "Sacrifice\naggro", details: "Red-black combines Witherbloom's creature swarm with Lorehold's aggressive graveyard spells. Fill the graveyard, keep the pressure on, and convert dying creatures into recurring threats.", sourceText: "Community analysis", sourceUrl: "#" },
-      RG: { text: "Off-College", sub: "Stompy", details: "Red-green bridges Lorehold's flashback excavation with Quandrix's ramp and creature growth. Accelerate into oversized threats and overwhelm with raw power.", sourceText: "Community analysis", sourceUrl: "#" },
-      GW: { text: "Off-College", sub: "Go-wide\nbuffs", details: "Green-white pairs Quandrix's counter-based creature growth with Silverquill's targeted buff spells. Build a board of growing creatures and attack with a full team.", sourceText: "Community analysis", sourceUrl: "#" },
-      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Inspire your creatures with words of affirmation or hurl cutting critiques at your enemies. Either way, get rewarded for casting targeted spells while you press the attack.", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
-      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "Load up your deck with instants and sorceries and paint the battlefield red and blue! Fire off cheap spells or get a showstopping bonus from spending five or more mana on your opus.", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
-      BG: { text: "Witherbloom", sub: "Lifegain\nSwarm", details: "Build up an army of Pests and other creatures to gain lots of life and overwhelm your opponents. Steady lifegain will also infuse your spells with boosted effects!", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
-      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Fill your graveyard and then dig it back up again. When cards leave your graveyard, you'll uncover the power for history-making plays!", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
-      GU: { text: "Quandrix", sub: "Incremental\nValue", details: "Grow your creatures with counters as you cast bigger and bigger spells! Accelerate your mana, draw cards, and attack with huge creatures—math isn't just for blockers here.", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
-    }
+      WU: { text: "Off-College", sub: "Control", details: "An off-college combination blending white removal and blue counter magic. Without a dedicated college signpost, leverage efficient interaction, prepared creatures, and converge for color-diverse value.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
+      UB: { text: "Off-College", sub: "Draw-go", details: "Blue-black mixes Prismari's spellcasting depth with Witherbloom's graveyard reach. Play reactively with prepared creatures, draw cards, and grind out opponents over a long game.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
+      BR: { text: "Off-College", sub: "Sacrifice\naggro", details: "Red-black combines Witherbloom's Pest swarm with Lorehold's aggressive graveyard spells. Sacrifice Pests for value, cast flashback spells, and convert dying creatures into recurring threats.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
+      RG: { text: "Off-College", sub: "Stompy", details: "Red-green bridges Lorehold's flashback excavation with Quandrix's ramp and increment creature growth. Accelerate into oversized threats and overwhelm with raw power.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
+      GW: { text: "Off-College", sub: "Go-wide\nbuffs", details: "Green-white pairs Quandrix's increment counter growth with Silverquill's targeted buff spells. Build a board of growing creatures and press the attack with a full team.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
+      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+      BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Cast flashback spells from hand, then again from your graveyard. Discard flashback cards to Pursue the Past for value, then recast them. Assemble archeologists like Owlin Historian and Garrison Excavator that trigger when cards leave your graveyard.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+      GU: { text: "Quandrix", sub: "Increment\nValue", details: "The increment mechanic adds +1/+1 counters when you cast spells with greater mana value than a creature's power or toughness. Deploy Cuboid Colony early, then grow it with massive spells. Look for evasion like Emil, Vastlands Roamer to push damage through.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+    },
+    resourceLinks: [
+      { label: "WotC Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+      { label: "Draftsim Prerelease Guide", url: "https://draftsim.com/mtg-secrets-of-strixhaven-prerelease/" },
+      { label: "Draftsim Mechanics Guide", url: "https://draftsim.com/mtg-secrets-of-strixhaven-mechanics/" },
+      { label: "TheGamer Draft Archetypes", url: "https://www.thegamer.com/magic-the-gathering-secrets-of-strixhaven-best-draft-archetypes/" },
+      { label: "Card Game Base Prerelease", url: "https://cardgamebase.com/mtg-prerelease-guide-secrets-of-strixhaven/" },
+      { label: "Card Kingdom First Look", url: "https://blog.cardkingdom.com/secrets-of-strixhaven-first-look-blog/" },
+    ]
   }
 };
 
-const SET_ORDER = ['ECL', 'FDN', 'TMT'];
+const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -623,7 +654,7 @@ function MultiSetColorWheel() {
           MTG Draft Archetypes
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: '0 0 12px 0' }}>
-          Multi-Set Color Wheel · v1.0.2 · Select a set or use #ecl, #fdn, #tmt
+          Multi-Set Color Wheel · v1.1.0 · Select a set or use #ecl, #fdn, #tmt, #sos
         </p>
       </div>
 
@@ -640,7 +671,7 @@ function MultiSetColorWheel() {
             ECL: 'ss ss-ecl',
             FDN: 'ss ss-fdn',
             TMT: 'ss ss-tmt',
-            STX: 'ss ss-soa',
+            SOS: 'ss ss-sos',
           }[key];
           return (
             <button
@@ -892,6 +923,32 @@ function MultiSetColorWheel() {
           </>
         )}
       </div>
+
+      {/* Resource Links */}
+      {currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && (
+        <div style={{ width: '100%', marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#111827', marginBottom: '12px',
+            paddingBottom: '8px', borderBottom: '1px solid #E5E7EB' }}>
+            Resources &amp; Guides
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {currentSet.resourceLinks.map((link, i) => (
+              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block', padding: '6px 14px', borderRadius: '6px',
+                  backgroundColor: '#F3F4F6', color: '#2563EB', fontSize: '0.8rem',
+                  fontWeight: '500', textDecoration: 'none', border: '1px solid #E5E7EB',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={e => e.target.style.backgroundColor = '#E5E7EB'}
+                onMouseLeave={e => e.target.style.backgroundColor = '#F3F4F6'}
+              >
+                {link.label} &#x2197;
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Hover Info Panel */}
       <InfoPanel
