@@ -215,9 +215,9 @@ const SET_DATA = {
       { label: "Secrets of Strixhaven First Look", url: "https://blog.cardkingdom.com/secrets-of-strixhaven-first-look-blog/", desc: "Card Kingdom's initial analysis of set themes and college strategies" },
     ],
     setMechanics: [
-      { name: "Prepared", keyword: "prepared", description: "Some creatures enter the battlefield prepared, exiling a spell from the set. While the creature is prepared, you may cast a copy of that spell. Casting it causes the creature to become unprepared. Prepared creatures carry extra value as both a body and a spell.", scryfallQuery: "o:prepared" },
-      { name: "Converge", keyword: "converge", description: "Converge spells count the number of different colors of mana spent to cast them, scaling their effect from 0 to 5. Even in a two-color deck, fixing and treasure tokens can push your converge count higher for stronger payoffs.", scryfallQuery: "o:converge" },
-      { name: "Paradigm", keyword: "paradigm", description: "A keyword on a cycle of Lesson sorceries, one per college. The first time it resolves, exile it. From then on, at the beginning of each of your first main phases, you may cast a copy without paying its mana cost. Unlike the old Epic mechanic, you can still cast other spells normally.", scryfallQuery: "o:paradigm" },
+      { name: "Prepared", keyword: "prepared", description: "Some creatures enter the battlefield prepared, exiling a spell from the set. While the creature is prepared, you may cast a copy of that spell. Casting it causes the creature to become unprepared. Prepared creatures carry extra value as both a body and a spell.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
+      { name: "Converge", keyword: "converge", description: "Converge spells count the number of different colors of mana spent to cast them, scaling their effect from 0 to 5. Even in a two-color deck, fixing and treasure tokens can push your converge count higher for stronger payoffs.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
+      { name: "Paradigm", keyword: "paradigm", description: "A keyword on a cycle of Lesson sorceries, one per college. The first time it resolves, exile it. From then on, at the beginning of each of your first main phases, you may cast a copy without paying its mana cost. Unlike the old Epic mechanic, you can still cast other spells normally.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
     ]
   }
 };
@@ -998,7 +998,12 @@ function MultiSetColorWheel() {
                   <div key={i} style={{ backgroundColor: '#1F2937', color: '#F9FAFB', padding: '16px', borderRadius: '8px',
                     border: `2px solid ${currentSet.accentColor}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>{mech.name}</div>
-                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '10px' }}>{mech.description}</div>
+                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{mech.description}</div>
+                    {mech.source && (
+                      <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
+                        Source: <a href={mech.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#93C5FD', textDecoration: 'underline' }}>{mech.source}</a>
+                      </div>
+                    )}
                     <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
                     <a href={mechUrl} target="_blank" rel="noopener noreferrer"
                        style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: '#F9FAFB', color: '#1F2937',
