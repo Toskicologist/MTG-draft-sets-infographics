@@ -200,11 +200,11 @@ const SET_DATA = {
       BR: { text: "Off-College", sub: "Sacrifice\naggro", details: "Red-black combines Witherbloom's Pest swarm with Lorehold's aggressive graveyard spells. Sacrifice Pests for value, cast flashback spells, and convert dying creatures into recurring threats.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
       RG: { text: "Off-College", sub: "Stompy", details: "Red-green bridges Lorehold's flashback excavation with Quandrix's ramp and increment creature growth. Accelerate into oversized threats and overwhelm with raw power.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
       GW: { text: "Off-College", sub: "Go-wide\nbuffs", details: "Green-white pairs Quandrix's increment counter growth with Silverquill's targeted buff spells. Build a board of growing creatures and press the attack with a full team.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
-      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee" },
-      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus" },
-      BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion" },
-      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Cast flashback spells from hand, then again from your graveyard. Discard flashback cards to Pursue the Past for value, then recast them. Assemble archeologists like Owlin Historian and Garrison Excavator that trigger when cards leave your graveyard.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "flashback" },
-      GU: { text: "Quandrix", sub: "Increment\nValue", details: "The increment mechanic adds +1/+1 counters when you cast spells with greater mana value than a creature's power or toughness. Deploy Cuboid Colony early, then grow it with massive spells. Look for evasion like Emil, Vastlands Roamer to push damage through.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "increment" },
+      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee", mechanicDef: "Repartee — Triggered abilities that trigger whenever you cast an instant or sorcery spell targeting a creature." },
+      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus", mechanicDef: "Opus — Abilities that trigger when you cast an instant or sorcery, with an enhanced effect if five or more mana was spent to cast it." },
+      BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion", mechanicDef: "Infusion — Abilities that trigger or gain bonuses if you've gained life this turn." },
+      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Cast flashback spells from hand, then again from your graveyard. Discard flashback cards to Pursue the Past for value, then recast them. Assemble archeologists like Owlin Historian and Garrison Excavator that trigger when cards leave your graveyard.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "flashback", mechanicDef: "Flashback — Cast instant and sorcery spells from your graveyard by paying their flashback cost, then exile them." },
+      GU: { text: "Quandrix", sub: "Increment\nValue", details: "The increment mechanic adds +1/+1 counters when you cast spells with greater mana value than a creature's power or toughness. Deploy Cuboid Colony early, then grow it with massive spells. Look for evasion like Emil, Vastlands Roamer to push damage through.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "increment", mechanicDef: "Increment — When you cast a spell, if the mana spent exceeds this creature's power or toughness, put a +1/+1 counter on it." },
     },
     resourceLinks: [
       { label: "Secrets of Strixhaven Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", desc: "Official Wizards of the Coast archetype overview, college mechanics, and prerelease info", official: true },
@@ -213,6 +213,10 @@ const SET_DATA = {
       { label: "Everything You Need to Know About the SOS Prerelease", url: "https://draftsim.com/mtg-secrets-of-strixhaven-prerelease/", desc: "Draftsim's prerelease preparation guide and format expectations" },
       { label: "MTG Prerelease Guide: Secrets of Strixhaven", url: "https://cardgamebase.com/mtg-prerelease-guide-secrets-of-strixhaven/", desc: "Card Game Base's prerelease tips and college overviews" },
       { label: "Secrets of Strixhaven First Look", url: "https://blog.cardkingdom.com/secrets-of-strixhaven-first-look-blog/", desc: "Card Kingdom's initial analysis of set themes and college strategies" },
+    ],
+    setMechanics: [
+      { name: "Prepared", keyword: "prepared", description: "Some creatures enter the battlefield prepared, exiling a spell from the set. While the creature is prepared, you may cast a copy of that spell. Casting it causes the creature to become unprepared. Prepared creatures carry extra value as both a body and a spell.", scryfallQuery: "o:prepared" },
+      { name: "Converge", keyword: "converge", description: "Converge spells count the number of different colors of mana spent to cast them, scaling their effect from 0 to 5. Even in a two-color deck, fixing and treasure tokens can push your converge count higher for stronger payoffs.", scryfallQuery: "o:converge" },
     ]
   }
 };
@@ -910,6 +914,12 @@ function MultiSetColorWheel() {
                         </a>
                       )}
                     </div>
+                    {data.mechanicDef && (
+                      <div style={{ fontSize: '0.7rem', marginTop: '10px', padding: '6px 8px', borderRadius: '4px',
+                        backgroundColor: 'rgba(255,255,255,0.15)', fontStyle: 'italic', lineHeight: '1.4', opacity: 0.9 }}>
+                        {data.mechanicDef}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -966,6 +976,39 @@ function MultiSetColorWheel() {
               </div>
             )}
           </>
+        )}
+
+        {/* Set-wide mechanics (not tied to a college) */}
+        {currentSet.setMechanics && currentSet.setMechanics.length > 0 && (
+          <div style={{ marginTop: '24px' }}>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px',
+              paddingBottom: '8px', borderBottom: `2px solid ${currentSet.accentColor}` }}>
+              Set-Wide Mechanics
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
+              These mechanics appear across all colleges, not tied to a specific color pair.
+            </p>
+            <div className="archetype-grid" style={{ display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
+              {currentSet.setMechanics.map((mech, i) => {
+                const sc = currentSet.scryfallCodes[0];
+                const mechUrl = `https://scryfall.com/search?q=set%3A${sc}+o%3A${mech.keyword}`;
+                return (
+                  <div key={i} style={{ backgroundColor: '#1F2937', color: '#F9FAFB', padding: '16px', borderRadius: '8px',
+                    border: `2px solid ${currentSet.accentColor}` }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>{mech.name}</div>
+                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '10px' }}>{mech.description}</div>
+                    <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
+                    <a href={mechUrl} target="_blank" rel="noopener noreferrer"
+                       style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: '#F9FAFB', color: '#1F2937',
+                         textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                      o:{mech.keyword}
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
 
