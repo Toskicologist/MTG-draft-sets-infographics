@@ -101,8 +101,8 @@ const SET_DATA = {
       GU: { text: "Vivid", sub: "Ramp", details: "Vivid cares about color diversity among your permanents. Ramp into big threats while accumulating multiple colors. Hybrid mana and color fixing enable splashing powerful cards for late-game advantage.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
     },
     resourceLinks: [
-      { label: "WotC Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
-      { label: "Draftsim Limited Set Review", url: "https://draftsim.com/mtg-ecl-limited-set-review/" },
+      { label: "Lorwyn Eclipsed Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide", desc: "Official Wizards of the Coast archetype overview and prerelease info" },
+      { label: "The Ultimate Lorwyn Eclipsed Limited Set Review", url: "https://draftsim.com/mtg-ecl-limited-set-review/", desc: "Draftsim's comprehensive card-by-card limited review" },
     ]
   },
 
@@ -136,9 +136,9 @@ const SET_DATA = {
       GU: { text: "Simic", sub: "Ramp &\nBig Creatures", details: "Accelerate with mana ramp into oversized threats. Llanowar Elves enables early big plays. Koma, Cosmos Serpent is the top payoff—the biggest win condition in the format.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
     },
     resourceLinks: [
-      { label: "Card Game Base Draft Guide", url: "https://cardgamebase.com/foundations-draft-guide/" },
-      { label: "WotC Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/foundations-prerelease-guide" },
-      { label: "Card Kingdom Draft Guide", url: "https://blog.cardkingdom.com/the-foundations-draft-guide/" },
+      { label: "Foundations Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/foundations-prerelease-guide", desc: "Official Wizards of the Coast prerelease overview" },
+      { label: "Foundations Draft Guide", url: "https://cardgamebase.com/foundations-draft-guide/", desc: "Card Game Base's archetype breakdowns and pick priorities" },
+      { label: "The Foundations Draft Guide", url: "https://blog.cardkingdom.com/the-foundations-draft-guide/", desc: "Card Kingdom's draft strategy and archetype analysis" },
     ]
   },
 
@@ -172,8 +172,8 @@ const SET_DATA = {
       GW: { text: "Off-arch", sub: "Splash G/W", details: "No dedicated GW archetype. Bridges Mutagen (GU) and Ninja/Alliance (WB, RW). Sally Pride's Alliance payoffs pair naturally with green's wide board. Token-heavy GW shells can work around Alliance triggers.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
     },
     resourceLinks: [
-      { label: "Draftsim Limited Set Review", url: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-      { label: "TheGamer Draft Archetypes", url: "https://www.thegamer.com/magic-the-gathering-tmnt-best-draft-archetypes/" },
+      { label: "TMT Limited Set Review", url: "https://draftsim.com/mtg-tmt-limited-set-review/", desc: "Draftsim's comprehensive card-by-card limited review" },
+      { label: "How To Draft MTG TMNT", url: "https://www.thegamer.com/magic-the-gathering-tmnt-best-draft-archetypes/", desc: "TheGamer's archetype tier list and draft strategy" },
     ]
   },
 
@@ -200,19 +200,19 @@ const SET_DATA = {
       BR: { text: "Off-College", sub: "Sacrifice\naggro", details: "Red-black combines Witherbloom's Pest swarm with Lorehold's aggressive graveyard spells. Sacrifice Pests for value, cast flashback spells, and convert dying creatures into recurring threats.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
       RG: { text: "Off-College", sub: "Stompy", details: "Red-green bridges Lorehold's flashback excavation with Quandrix's ramp and increment creature growth. Accelerate into oversized threats and overwhelm with raw power.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
       GW: { text: "Off-College", sub: "Go-wide\nbuffs", details: "Green-white pairs Quandrix's increment counter growth with Silverquill's targeted buff spells. Build a board of growing creatures and press the attack with a full team.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
-      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
-      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
-      BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
-      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Cast flashback spells from hand, then again from your graveyard. Discard flashback cards to Pursue the Past for value, then recast them. Assemble archeologists like Owlin Historian and Garrison Excavator that trigger when cards leave your graveyard.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
-      GU: { text: "Quandrix", sub: "Increment\nValue", details: "The increment mechanic adds +1/+1 counters when you cast spells with greater mana value than a creature's power or toughness. Deploy Cuboid Colony early, then grow it with massive spells. Look for evasion like Emil, Vastlands Roamer to push damage through.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
+      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee" },
+      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus" },
+      BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion" },
+      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Cast flashback spells from hand, then again from your graveyard. Discard flashback cards to Pursue the Past for value, then recast them. Assemble archeologists like Owlin Historian and Garrison Excavator that trigger when cards leave your graveyard.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "flashback" },
+      GU: { text: "Quandrix", sub: "Increment\nValue", details: "The increment mechanic adds +1/+1 counters when you cast spells with greater mana value than a creature's power or toughness. Deploy Cuboid Colony early, then grow it with massive spells. Look for evasion like Emil, Vastlands Roamer to push damage through.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "increment" },
     },
     resourceLinks: [
-      { label: "WotC Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide" },
-      { label: "Draftsim Prerelease Guide", url: "https://draftsim.com/mtg-secrets-of-strixhaven-prerelease/" },
-      { label: "Draftsim Mechanics Guide", url: "https://draftsim.com/mtg-secrets-of-strixhaven-mechanics/" },
-      { label: "TheGamer Draft Archetypes", url: "https://www.thegamer.com/magic-the-gathering-secrets-of-strixhaven-best-draft-archetypes/" },
-      { label: "Card Game Base Prerelease", url: "https://cardgamebase.com/mtg-prerelease-guide-secrets-of-strixhaven/" },
-      { label: "Card Kingdom First Look", url: "https://blog.cardkingdom.com/secrets-of-strixhaven-first-look-blog/" },
+      { label: "Secrets of Strixhaven Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", desc: "Official Wizards of the Coast archetype overview, college mechanics, and prerelease info" },
+      { label: "How To Draft Secrets of Strixhaven", url: "https://www.thegamer.com/magic-the-gathering-secrets-of-strixhaven-best-draft-archetypes/", desc: "TheGamer's college archetype tier list and draft strategy guide" },
+      { label: "Every Mechanic from Secrets of Strixhaven, Explained", url: "https://draftsim.com/mtg-secrets-of-strixhaven-mechanics/", desc: "Draftsim's breakdown of repartee, opus, infusion, flashback, increment, prepared, and converge" },
+      { label: "Everything You Need to Know About the SOS Prerelease", url: "https://draftsim.com/mtg-secrets-of-strixhaven-prerelease/", desc: "Draftsim's prerelease preparation guide and format expectations" },
+      { label: "MTG Prerelease Guide: Secrets of Strixhaven", url: "https://cardgamebase.com/mtg-prerelease-guide-secrets-of-strixhaven/", desc: "Card Game Base's prerelease tips and college overviews" },
+      { label: "Secrets of Strixhaven First Look", url: "https://blog.cardkingdom.com/secrets-of-strixhaven-first-look-blog/", desc: "Card Kingdom's initial analysis of set themes and college strategies" },
     ]
   }
 };
@@ -713,11 +713,43 @@ function MultiSetColorWheel() {
           ★ {currentSet.primaryLabel}
         </div>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '4px 0 0 0' }}>
-          <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a>
+          Mouse over archetypes for details · Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a>
           {' | '}
           <a href="#archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Archetypes</a>
         </p>
       </div>
+
+      {/* Sources & Citations */}
+      {currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && (
+        <div style={{
+          marginBottom: '16px', padding: '16px',
+          backgroundColor: '#F9FAFB', borderRadius: '8px',
+          border: '1px solid #E5E7EB', maxWidth: '900px',
+          width: '100%',
+        }}>
+          <div style={{ fontSize: '0.8rem', color: '#6B7280', lineHeight: '1.6' }}>
+            <strong style={{ color: '#374151' }}>Sources &amp; Citations:</strong><br />
+            Archetype information sourced from official Wizards of the Coast materials and community resources:<br />
+            {currentSet.resourceLinks.map((link, i) => (
+              <span key={i}>
+                {'• '}
+                <a href={link.url} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#2563EB', textDecoration: 'underline' }}>
+                  {link.label}
+                </a>
+                {link.desc && <span> — {link.desc}</span>}
+                <br />
+              </span>
+            ))}
+            <br />
+            <strong style={{ color: '#374151' }}>Interactive Features:</strong><br />
+            • Hover over any color node (W/U/B/R/G) to see that color's role in the set<br />
+            • Hover over archetype labels for detailed strategy and Scryfall links<br />
+            • Click "A&amp;B" to see cards that are both colors (exactly those two)<br />
+            • Click "A∪B" to see cards with at least one of those colors
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       <div style={{ display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
@@ -792,6 +824,7 @@ function MultiSetColorWheel() {
                 const sc = currentSet.scryfallCodes[0];
                 const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
                 const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+                const mechanicUrl = data.mechanic ? `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` : null;
                 return (
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
@@ -818,6 +851,13 @@ function MultiSetColorWheel() {
                            textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
                         {pair[0]}&#x222A;{pair[1]}
                       </a>
+                      {mechanicUrl && (
+                        <a href={mechanicUrl} target="_blank" rel="noopener noreferrer"
+                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
+                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                          o:{data.mechanic}
+                        </a>
+                      )}
                     </div>
                   </div>
                 );
@@ -838,6 +878,7 @@ function MultiSetColorWheel() {
                 const sc = currentSet.scryfallCodes[0];
                 const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
                 const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+                const mechanicUrl = data.mechanic ? `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` : null;
                 return (
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
@@ -864,6 +905,13 @@ function MultiSetColorWheel() {
                            textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
                         {pair[0]}&#x222A;{pair[1]}
                       </a>
+                      {mechanicUrl && (
+                        <a href={mechanicUrl} target="_blank" rel="noopener noreferrer"
+                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
+                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                          o:{data.mechanic}
+                        </a>
+                      )}
                     </div>
                   </div>
                 );
@@ -923,32 +971,6 @@ function MultiSetColorWheel() {
           </>
         )}
       </div>
-
-      {/* Resource Links */}
-      {currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && (
-        <div style={{ width: '100%', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#111827', marginBottom: '12px',
-            paddingBottom: '8px', borderBottom: '1px solid #E5E7EB' }}>
-            Resources &amp; Guides
-          </h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {currentSet.resourceLinks.map((link, i) => (
-              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block', padding: '6px 14px', borderRadius: '6px',
-                  backgroundColor: '#F3F4F6', color: '#2563EB', fontSize: '0.8rem',
-                  fontWeight: '500', textDecoration: 'none', border: '1px solid #E5E7EB',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={e => e.target.style.backgroundColor = '#E5E7EB'}
-                onMouseLeave={e => e.target.style.backgroundColor = '#F3F4F6'}
-              >
-                {link.label} &#x2197;
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Hover Info Panel */}
       <InfoPanel
