@@ -543,7 +543,8 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
     <div onMouseEnter={onHover} onMouseLeave={onLeave}
          style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
            backgroundColor: bg, color: fg, padding: '16px 24px', borderRadius: '8px',
-           border: `2px solid ${blend(pair[0], pair[1])}`, maxWidth: '500px', textAlign: 'center',
+           border: `2px solid ${blend(pair[0], pair[1])}`, width: '90vw', maxWidth: '500px', textAlign: 'center',
+           maxHeight: '75vh', overflowY: 'auto',
            boxShadow: '0 4px 12px rgba(0,0,0,0.3)', transition: 'all 0.2s ease', zIndex: 1000 }}>
       <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>
         {pair}: {labelData.text}{isPrimary ? ' ★' : ''}
