@@ -195,11 +195,11 @@ const SET_DATA = {
       G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms with Pests and infusion-boosted spells. Quandrix grows creatures with +1/+1 counters via increment as you cast bigger and bigger spells." }
     },
     labels: {
-      WU: { text: "Off-College", sub: "Control", details: "An off-college combination blending white removal and blue counter magic. Without a dedicated college signpost, leverage efficient interaction, prepared creatures, and converge for color-diverse value.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
-      UB: { text: "Off-College", sub: "Draw-go", details: "Blue-black mixes Prismari's spellcasting depth with Witherbloom's graveyard reach. Play reactively with prepared creatures, draw cards, and grind out opponents over a long game.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
-      BR: { text: "Off-College", sub: "Sacrifice\naggro", details: "Red-black combines Witherbloom's Pest swarm with Lorehold's aggressive graveyard spells. Sacrifice Pests for value, cast flashback spells, and convert dying creatures into recurring threats.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
-      RG: { text: "Off-College", sub: "Stompy", details: "Red-green bridges Lorehold's flashback excavation with Quandrix's ramp and increment creature growth. Accelerate into oversized threats and overwhelm with raw power.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
-      GW: { text: "Off-College", sub: "Go-wide\nbuffs", details: "Green-white pairs Quandrix's increment counter growth with Silverquill's targeted buff spells. Build a board of growing creatures and press the attack with a full team.", sourceText: "Inferred from college mechanics", sourceUrl: "" },
+      WU: { text: "Off-College", details: "Bridges Silverquill (WB) and Prismari (UR); no dedicated college signpost." },
+      UB: { text: "Off-College", details: "Bridges Prismari (UR) and Witherbloom (BG); no dedicated college signpost." },
+      BR: { text: "Off-College", details: "Bridges Witherbloom (BG) and Lorehold (RW); no dedicated college signpost." },
+      RG: { text: "Off-College", details: "Bridges Lorehold (RW) and Quandrix (GU); no dedicated college signpost." },
+      GW: { text: "Off-College", details: "Bridges Quandrix (GU) and Silverquill (WB); no dedicated college signpost." },
       WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee", mechanicDef: "Repartee — Triggered abilities that trigger whenever you cast an instant or sorcery spell targeting a creature." },
       UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus", mechanicDef: "Opus — Abilities that trigger when you cast an instant or sorcery, with an enhanced effect if five or more mana was spent to cast it." },
       BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion", mechanicDef: "Infusion — Abilities that trigger or gain bonuses if you've gained life this turn." },
@@ -828,7 +828,7 @@ function MultiSetColorWheel() {
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub.replace('\n', ' / ')}</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
@@ -882,7 +882,7 @@ function MultiSetColorWheel() {
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub.replace('\n', ' / ')}</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
@@ -944,7 +944,7 @@ function MultiSetColorWheel() {
                       <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                         border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
                         <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                        <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub.replace('\n', ' / ')}</div>
+                        <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
                         <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                         {data.sourceText && (
                           <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
