@@ -446,14 +446,14 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const labelData = labels[code] || labels[group.v + group.u];
   if (!labelData) return null;
   const { bg, fg } = getLabelColors(group.u, group.v);
-  const subLines = labelData.sub.split('\n');
+  const subLines = labelData.sub ? labelData.sub.split('\n') : [];
   const boxBg = isSimple ? '#FFFFFF' : bg;
   const boxStroke = isSimple ? '#000000' : blend(group.u, group.v);
   const textColor = isSimple ? '#000000' : fg;
   const isPrimary = primaryArchetypes.includes(code);
 
   const lh1 = config.fontSize * 1.1, lh2 = config.fontSize * 1.1, lh3 = config.fontSize * 1.1;
-  const totalTextHeight = lh1 + lh2 + lh3 + (subLines.length - 1) * 7;
+  const totalTextHeight = lh1 + lh2 + (subLines.length > 0 ? lh3 + (subLines.length - 1) * 7 : 0);
   const startY = group.cy - totalTextHeight / 2;
   const y1 = startY + lh1 * 0.8, y2 = y1 + lh2, y3 = y2 + lh3 * 0.9;
 
@@ -478,9 +478,11 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
         style={{ transition: 'all 0.2s ease' }} />
       <text x={group.cx} y={y1} textAnchor="middle" fontSize={config.fontSize} fontWeight="bold" fill={textColor}>{code}</text>
       <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>{labelData.text}</text>
-      <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
-        {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
-      </text>
+      {subLines.length > 0 && (
+        <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
+          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
+        </text>
+      )}
     </g>
   );
 };
@@ -546,9 +548,11 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
       <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>
         {pair}: {labelData.text}{isPrimary ? ' ★' : ''}
       </div>
-      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '8px' }}>
-        {labelData.sub.replace('\n', ' / ')}
-      </div>
+      {labelData.sub && (
+        <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '8px' }}>
+          {labelData.sub.replace('\n', ' / ')}
+        </div>
+      )}
       <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>{labelData.details}</div>
       {labelData.sourceText && (
         <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '12px', fontStyle: 'italic' }}>
