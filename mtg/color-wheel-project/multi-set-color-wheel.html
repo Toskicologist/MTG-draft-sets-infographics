@@ -697,7 +697,9 @@ function MultiSetColorWheel() {
             ECL: 'ss ss-ecl',
             FDN: 'ss ss-fdn',
             TMT: 'ss ss-tmt',
-            SOS: 'ss ss-sos',
+          }[key];
+          const scryfallIcon = {
+            SOS: 'https://svgs.scryfall.io/sets/sos.svg',
           }[key];
           return (
             <button
@@ -719,7 +721,10 @@ function MultiSetColorWheel() {
                 gap: '6px',
               }}
             >
-              <i className={setSymbolClass} style={{ fontSize: '1.2em' }}></i>
+              {scryfallIcon
+                ? <img src={scryfallIcon} alt={key} style={{ width: '1.2em', height: '1.2em', filter: isActive ? 'brightness(0) invert(1)' : 'brightness(0)' }} />
+                : <i className={setSymbolClass} style={{ fontSize: '1.2em' }}></i>
+              }
               {s.shortName}
             </button>
           );
