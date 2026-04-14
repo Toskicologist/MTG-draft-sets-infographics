@@ -31,7 +31,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.1.0 React (STABLE)
+ * 1.1.1 React (STABLE)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -40,6 +40,11 @@
  *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
  *
  * CHANGELOG:
+ * 1.1.1 (2026-04-14, 18:07 UTC) - [Claude Sonnet 4.6]
+ *   - ECL: Fixed UB Flash source attribution (was WotC Prerelease Guide, correct is Draftsim)
+ *   - ECL: Restored "blight" mention in Black color description
+ *   - ECL: Added primaryDescription field with set-specific intro text for Primary Archetypes section
+ *
  * 1.1.0 (2026-04-12, UTC) - [Claude Opus 4.6]
  *   - Re-enabled Secrets of Strixhaven with real data from WotC Prerelease Guide
  *   - Renamed key from STX to SOS (actual set code)
@@ -80,17 +85,18 @@ const SET_DATA = {
     scryfallCodes: ['ecl'],
     primaryArchetypes: ['WU', 'BR', 'GW', 'UR', 'BG'],
     primaryLabel: '5 allied-pair archetypes',
+    primaryDescription: "Lorwyn Eclipsed has an unusual set structure with 5 main typal archetypes (gold signpost uncommons, strong typal synergies) that beginners are encouraged to focus on, plus 5 secondary archetypes built around set mechanics.",
     accentColor: '#7C3AED',
     colorDescriptions: {
       W: { name: "White", description: "Kithkin tokens and go-wide strategies. Merfolk tap triggers and persist creatures for resilient threats. Partners with Blue (Merfolk) and Green (Kithkin)." },
       U: { name: "Blue", description: "Flash creatures (Faeries and Merfolk) for instant-speed trickery. Supports Elementals and enables vivid splashing. Partners with White (Merfolk) and Red (Elementals)." },
-      B: { name: "Black", description: "Graveyard value with Elves and recursion. Goblins with sacrifice synergies. Persist creatures for resilient threats. Partners with Red (Goblins) and Green (Elves)." },
+      B: { name: "Black", description: "Graveyard value with Elves and recursion. Goblins with blight and sacrifice synergies. Persist creatures for resilient threats. Partners with Red (Goblins) and Green (Elves)." },
       R: { name: "Red", description: "Aggressive Goblins with sacrifice payoffs. Big Elementals rewarding 4+ CMC spells. Vivid beatdown leveraging color diversity. Partners with Black (Goblins) and Blue (Elementals)." },
       G: { name: "Green", description: "Elf typal with graveyard synergies. Kithkin go-wide tokens. Vivid ramp enabling splashing and big threats. Partners with White (Kithkin) and Blue (Vivid ramp)." }
     },
     labels: {
       WU: { text: "Merfolk", sub: "Tap triggers", details: "Tricksy Merfolk disrupt opponents and accrue value over time. Key Merfolk have abilities that trigger when tapped. Convoke spells let you trigger these abilities without endangering creatures in combat.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
-      UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
+      UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
       BR: { text: "Goblins", sub: "Blight\nsacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
       RG: { text: "Vivid", sub: "Beatdown", details: "Vivid abilities care about the number of colors among your permanents. Thanks to hybrid mana, even 2-color decks can achieve all five colors. Play efficient beaters and leverage color diversity for bonuses.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
       GW: { text: "Kithkin", sub: "Go-wide tokens", details: "Swarm the board with Kithkin tokens and strengthen them with anthem effects and team buffs for an overwhelming board presence.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
@@ -876,10 +882,15 @@ function MultiSetColorWheel() {
         ) : (
           <>
             {/* Primary archetypes */}
-            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '16px',
+            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px',
               paddingBottom: '8px', borderBottom: `2px solid ${currentSet.accentColor}` }}>
               ★ Primary Archetypes
             </h2>
+            {currentSet.primaryDescription && (
+              <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
+                {currentSet.primaryDescription}
+              </p>
+            )}
             <div className="archetype-grid" style={{ display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
               {primaryPairs.map(([pair, data]) => {
