@@ -1,3 +1,22 @@
+<!--
+  ratings-template.html — Reusable template for MTG limited set ratings pages.
+  Generated pages embed SET_CONFIG + CARD_DATA via build_page.py.
+
+  CHANGELOG:
+  v2.1.0 (2026-04-16) — Promoted combobox filters to default (filterStyle: "combobox" in config).
+    Security: added rel="noopener noreferrer" to all target="_blank" links in sources panel.
+    Security: escape card name/type values in HTML attribute context.
+    Data: SPG special guest set codes corrected in SOS card data.
+
+  v2.0.0 (2026-01-18) — Initial template-based system.
+    Replaced 7000-line hardcoded ECL page with data-driven template.
+    Config-driven raters, raterGroups (grouped column headers), filterStyle feature flag.
+    Sources panel with rater descriptions and Patreon links.
+    Standard header with background image, gradient overlay, version/project/contact meta.
+    Set code badge pills (SOS, SOA, ECL, SPG).
+    SOA/SPG set-pinned card image fetching via Scryfall API.
+    Color filter bug fix (was using wrong cell index after Set column addition).
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -682,7 +701,7 @@
             setCode: "SOS",
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison \u2014 Beta",
-            version: "2.0.0-beta.1",
+            version: "2.1.0-beta.1",
             filterStyle: "combobox",
             dataKey: "sos",
             outputSuffix: "-beta",
@@ -718,7 +737,7 @@
             {"name": "Cyclonic Rift", "setCode": "SOA", "rarity": "mythic", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 6.5, "avgNorm": 0.94, "controversy": 0.659},
             {"name": "Dismember", "setCode": "SOA", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{1}{B/P}{B/P}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 7, "norm": 1.523}, "llu_m": {"raw": 6.5, "norm": 1.307}}, "avgRaw": 7.5, "avgNorm": 1.499, "controversy": 0.181},
             {"name": "Silverquill, the Disputant", "setCode": "SOS", "rarity": "mythic", "colors": ["B", "W"], "type": "Legendary Creature", "manaCost": "{2}{W}{B}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 6.5, "norm": 1.307}}, "avgRaw": 7.17, "avgNorm": 1.309, "controversy": 0.358},
-            {"name": "Sylvan Library", "setCode": "SOA", "rarity": "mythic", "colors": ["G"], "type": "Enchantment", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 6, "norm": 1.038}}, "avgRaw": 6.67, "avgNorm": 1.029, "controversy": 0.643},
+            {"name": "Sylvan Library", "setCode": "SPG", "rarity": "mythic", "colors": ["G"], "type": "Enchantment", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 6, "norm": 1.038}}, "avgRaw": 6.67, "avgNorm": 1.029, "controversy": 0.643},
             {"name": "Emeritus of Abundance // Regrowth", "setCode": "SOS", "rarity": "mythic", "colors": ["G"], "type": "Creature", "manaCost": "{2}{G} // {1}{G}", "ratings": {"ds": {"raw": 10.0, "norm": 2.056}, "cs": {"raw": 6.5, "norm": 1.185}, "llu_a": {"raw": 6.5, "norm": 1.238}, "llu_m": {"raw": 7, "norm": 1.575}}, "avgRaw": 7.5, "avgNorm": 1.514, "controversy": 0.401},
             {"name": "Improvisation Capstone", "setCode": "SOS", "rarity": "mythic", "colors": ["R"], "type": "Sorcery", "manaCost": "{5}{R}{R}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": 7.5, "norm": 1.839}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 6.25, "avgNorm": 0.933, "controversy": 0.76},
             {"name": "Stirring Hopesinger", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Creature", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": 7.5, "norm": 1.839}, "llu_a": {"raw": 6.5, "norm": 1.238}, "llu_m": {"raw": 6.5, "norm": 1.307}}, "avgRaw": 7.12, "avgNorm": 1.415, "controversy": 0.284},
@@ -728,8 +747,8 @@
             {"name": "Informed Inkwright", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": 6.5, "norm": 1.185}, "llu_a": {"raw": 6.5, "norm": 1.238}, "llu_m": {"raw": 6.5, "norm": 1.307}}, "avgRaw": 7.12, "avgNorm": 1.349, "controversy": 0.218},
             {"name": "Magmablood Archaic", "setCode": "SOS", "rarity": "rare", "colors": ["R"], "type": "Creature", "manaCost": "{2/R}{2/R}{2/R}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": 6.5, "norm": 1.185}, "llu_a": {"raw": 5.5, "norm": 0.667}, "llu_m": {"raw": 6, "norm": 1.038}}, "avgRaw": 6.75, "avgNorm": 1.139, "controversy": 0.414},
             {"name": "Splatter Technique", "setCode": "SOS", "rarity": "rare", "colors": ["R", "U"], "type": "Sorcery", "manaCost": "{1}{U}{U}{R}{R}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": 6.5, "norm": 1.185}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 6.75, "avgNorm": 1.143, "controversy": 0.388},
-            {"name": "Archmage Emeritus", "setCode": "SOA", "rarity": "rare", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}{U}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 6.5, "avgNorm": 1.0, "controversy": 0.257},
-            {"name": "Murmuring Mystic", "setCode": "SOA", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 6, "norm": 1.038}}, "avgRaw": 6.67, "avgNorm": 1.089, "controversy": 0.168},
+            {"name": "Archmage Emeritus", "setCode": "SPG", "rarity": "rare", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}{U}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 6.5, "avgNorm": 1.0, "controversy": 0.257},
+            {"name": "Murmuring Mystic", "setCode": "SPG", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 6, "norm": 1.038}}, "avgRaw": 6.67, "avgNorm": 1.089, "controversy": 0.168},
             {"name": "Subterranean Tremors", "setCode": "SOA", "rarity": "mythic", "colors": ["R"], "type": "Sorcery", "manaCost": "{X}{R}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 7, "norm": 1.523}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 6.33, "avgNorm": 0.922, "controversy": 0.838},
             {"name": "Triumph of the Hordes", "setCode": "SOA", "rarity": "uncommon", "colors": ["G"], "type": "Sorcery", "manaCost": "{2}{G}{G}", "ratings": {"ds": {"raw": 8.0, "norm": 1.277}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 2.67, "avgNorm": -1.125, "controversy": 2.086},
             {"name": "Traumatic Critique", "setCode": "SOS", "rarity": "rare", "colors": ["R", "U"], "type": "Instant", "manaCost": "{X}{U}{R}", "ratings": {"ds": {"raw": 9.0, "norm": 1.667}, "cs": {"raw": 6, "norm": 0.857}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 6.62, "avgNorm": 1.062, "controversy": 0.41},
@@ -758,7 +777,7 @@
             {"name": "Aziza, Mage Tower Captain", "setCode": "SOS", "rarity": "rare", "colors": ["R", "W"], "type": "Legendary Creature", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 5.17, "avgNorm": 0.316, "controversy": 0.499},
             {"name": "Bitter Triumph", "setCode": "SOA", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5.5, "norm": 0.667}, "llu_m": {"raw": 5, "norm": 0.502}}, "avgRaw": 5.83, "avgNorm": 0.686, "controversy": 0.194},
             {"name": "Expressive Iteration", "setCode": "SOA", "rarity": "uncommon", "colors": ["R", "U"], "type": "Sorcery", "manaCost": "{U}{R}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 6, "norm": 1.038}}, "avgRaw": 6.0, "avgNorm": 0.769, "controversy": 0.344},
-            {"name": "Grim Haruspex", "setCode": "SOA", "rarity": "rare", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 5.5, "avgNorm": 0.501, "controversy": 0.343},
+            {"name": "Grim Haruspex", "setCode": "SPG", "rarity": "rare", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 5.5, "avgNorm": 0.501, "controversy": 0.343},
             {"name": "Lluwen, Exchange Student // Pest Friend", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Legendary Creature", "manaCost": "{2}{B}{G} // {B/G}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 5.33, "avgNorm": 0.412, "controversy": 0.462},
             {"name": "Orysa, Tide Choreographer", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Legendary Creature", "manaCost": "{4}{U}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 5.5, "avgNorm": 0.501, "controversy": 0.343},
             {"name": "Poisoner's Apprentice", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.888}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 5.17, "avgNorm": 0.316, "controversy": 0.499},
@@ -807,7 +826,7 @@
             {"name": "Wilt in the Heat", "setCode": "SOS", "rarity": "common", "colors": ["R", "W"], "type": "Instant", "manaCost": "{2}{R}{W}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": 5.5, "norm": 0.53}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 5.5, "avgNorm": 0.545, "controversy": 0.163},
             {"name": "Abrade", "setCode": "SOA", "rarity": "uncommon", "colors": ["R"], "type": "Instant", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 5, "norm": 0.502}}, "avgRaw": 5.33, "avgNorm": 0.461, "controversy": 0.068},
             {"name": "Ad Nauseam", "setCode": "SOA", "rarity": "rare", "colors": ["B"], "type": "Instant", "manaCost": "{3}{B}{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 2.0, "avgNorm": -1.385, "controversy": 1.638},
-            {"name": "Archaeomancer", "setCode": "SOA", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4, "norm": -0.189}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 4.83, "avgNorm": 0.181, "controversy": 0.347},
+            {"name": "Archaeomancer", "setCode": "SPG", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4, "norm": -0.189}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 4.83, "avgNorm": 0.181, "controversy": 0.347},
             {"name": "Brain Freeze", "setCode": "SOA", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": null, "norm": null}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 3.0, "avgNorm": -0.841, "controversy": 1.895},
             {"name": "Brotherhood's End", "setCode": "SOA", "rarity": "rare", "colors": ["R"], "type": "Sorcery", "manaCost": "{1}{R}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 3, "norm": -0.572}}, "avgRaw": 4.67, "avgNorm": 0.103, "controversy": 0.587},
             {"name": "Burst Lightning", "setCode": "SOA", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.499}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 6, "norm": 0.952}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 5.83, "avgNorm": 0.74, "controversy": 0.228},
@@ -909,9 +928,9 @@
             {"name": "Hydro-Channeler", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 5, "norm": 0.203}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 4.12, "avgNorm": -0.101, "controversy": 0.391},
             {"name": "Lorehold Charm", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Instant", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 5, "norm": 0.203}, "llu_a": {"raw": 4, "norm": -0.189}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 4.0, "avgNorm": -0.173, "controversy": 0.368},
             {"name": "Big Score", "setCode": "SOA", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{3}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 4.33, "avgNorm": 0.016, "controversy": 0.266},
-            {"name": "Codie, Vociferous Codex", "setCode": "SOA", "rarity": "rare", "colors": [], "type": "Legendary Artifact Creature", "manaCost": "{3}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 3.0, "avgNorm": -0.716, "controversy": 0.416},
+            {"name": "Codie, Vociferous Codex", "setCode": "SPG", "rarity": "rare", "colors": [], "type": "Legendary Artifact Creature", "manaCost": "{3}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 3.0, "avgNorm": -0.716, "controversy": 0.416},
             {"name": "Deduce", "setCode": "SOA", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 5, "norm": 0.502}}, "avgRaw": 4.67, "avgNorm": 0.201, "controversy": 0.421},
-            {"name": "Dualcaster Mage", "setCode": "SOA", "rarity": "rare", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 4.67, "avgNorm": 0.195, "controversy": 0.532},
+            {"name": "Dualcaster Mage", "setCode": "SPG", "rarity": "rare", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 5.5, "norm": 0.77}}, "avgRaw": 4.67, "avgNorm": 0.195, "controversy": 0.532},
             {"name": "Helping Hand", "setCode": "SOA", "rarity": "uncommon", "colors": ["W"], "type": "Sorcery", "manaCost": "{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 3, "norm": -0.572}}, "avgRaw": 3.33, "avgNorm": -0.537, "controversy": 0.242},
             {"name": "Oracle's Restoration", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{G}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 3.0, "avgNorm": -0.716, "controversy": 0.416},
             {"name": "Potioner's Trove", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Artifact", "manaCost": "{3}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 3, "norm": -0.572}}, "avgRaw": 3.33, "avgNorm": -0.537, "controversy": 0.242},
@@ -970,7 +989,7 @@
             {"name": "Follow the Lumarets", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": 3, "norm": -1.106}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 4.5, "norm": 0.233}}, "avgRaw": 4.0, "avgNorm": -0.264, "controversy": 0.602},
             {"name": "Giant Growth", "setCode": "SOA", "rarity": "common", "colors": ["G"], "type": "Instant", "manaCost": "{G}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 2, "norm": -1.331}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 2.33, "avgNorm": -1.036, "controversy": 0.337},
             {"name": "Graduation Day", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Enchantment", "manaCost": "{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": 3, "norm": -1.106}, "llu_a": {"raw": 4.5, "norm": 0.096}, "llu_m": {"raw": 4, "norm": -0.035}}, "avgRaw": 3.88, "avgNorm": -0.331, "controversy": 0.539},
-            {"name": "Magus of the Library", "setCode": "SOA", "rarity": "rare", "colors": ["G"], "type": "Creature", "manaCost": "{G}{G}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 1.0, "avgNorm": -1.774, "controversy": 0.968},
+            {"name": "Magus of the Library", "setCode": "SPG", "rarity": "rare", "colors": ["G"], "type": "Creature", "manaCost": "{G}{G}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 1.0, "avgNorm": -1.774, "controversy": 0.968},
             {"name": "Monstrous Rage", "setCode": "SOA", "rarity": "uncommon", "colors": ["R"], "type": "Instant", "manaCost": "{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 5, "norm": 0.382}, "llu_m": {"raw": 5, "norm": 0.502}}, "avgRaw": 4.33, "avgNorm": 0.072, "controversy": 0.644},
             {"name": "Rapier Wit", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.28}, "cs": {"raw": 3, "norm": -1.106}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 3.0, "avgNorm": -0.814, "controversy": 0.391},
             {"name": "Zombify", "setCode": "SOA", "rarity": "uncommon", "colors": ["B"], "type": "Sorcery", "manaCost": "{3}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 2.67, "avgNorm": -0.846, "controversy": 0.232},
@@ -1007,7 +1026,7 @@
             {"name": "Divergent Equation", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{X}{X}{U}", "ratings": {"ds": {"raw": 2.0, "norm": -1.058}, "cs": {"raw": 2, "norm": -1.761}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 3, "norm": -0.572}}, "avgRaw": 2.5, "avgNorm": -1.038, "controversy": 0.522},
             {"name": "Rancorous Archaic", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Creature", "manaCost": "{5}", "ratings": {"ds": {"raw": 2.0, "norm": -1.058}, "cs": {"raw": 2, "norm": -1.761}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 3, "norm": -0.572}}, "avgRaw": 2.5, "avgNorm": -1.038, "controversy": 0.522},
             {"name": "Textbook Tabulator", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 2.0, "norm": -1.058}, "cs": {"raw": 2, "norm": -1.761}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 3, "norm": -0.572}}, "avgRaw": 2.5, "avgNorm": -1.038, "controversy": 0.522},
-            {"name": "Adrix and Nev, Twincasters", "setCode": "SOA", "rarity": "mythic", "colors": ["G", "U"], "type": "Legendary Creature", "manaCost": "{2}{G}{U}", "ratings": {"ds": {"raw": 1.0, "norm": -1.448}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 0.33, "avgNorm": -2.034, "controversy": 0.528},
+            {"name": "Adrix and Nev, Twincasters", "setCode": "SPG", "rarity": "mythic", "colors": ["G", "U"], "type": "Legendary Creature", "manaCost": "{2}{G}{U}", "ratings": {"ds": {"raw": 1.0, "norm": -1.448}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 0.33, "avgNorm": -2.034, "controversy": 0.528},
             {"name": "Bulk Up", "setCode": "SOA", "rarity": "uncommon", "colors": ["R"], "type": "Instant", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 1.0, "norm": -1.448}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 2, "norm": -1.331}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 1.67, "avgNorm": -1.296, "controversy": 0.173},
             {"name": "Deflecting Palm", "setCode": "SOA", "rarity": "rare", "colors": ["R", "W"], "type": "Instant", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 1.0, "norm": -1.448}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 0.33, "avgNorm": -2.034, "controversy": 0.528},
             {"name": "Empty the Warrens", "setCode": "SOA", "rarity": "common", "colors": ["R"], "type": "Sorcery", "manaCost": "{3}{R}", "ratings": {"ds": {"raw": 1.0, "norm": -1.448}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 3, "norm": -0.76}, "llu_m": {"raw": 2, "norm": -1.108}}, "avgRaw": 2.0, "avgNorm": -1.105, "controversy": 0.344},
@@ -1028,7 +1047,7 @@
             {"name": "Dina's Guidance", "setCode": "SOS", "rarity": "rare", "colors": ["B", "G"], "type": "Instant", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 0.0, "avgNorm": -2.163, "controversy": 0.318},
             {"name": "Glimpse of Nature", "setCode": "SOA", "rarity": "rare", "colors": ["G"], "type": "Sorcery", "manaCost": "{G}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 2, "norm": -1.331}, "llu_m": {"raw": 1, "norm": -1.645}}, "avgRaw": 1.0, "avgNorm": -1.604, "controversy": 0.255},
             {"name": "Jeska's Will", "setCode": "SOA", "rarity": "rare", "colors": ["R"], "type": "Sorcery", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 1, "norm": -1.901}, "llu_m": {"raw": 1, "norm": -1.645}}, "avgRaw": 0.67, "avgNorm": -1.794, "controversy": 0.133},
-            {"name": "Library of Leng", "setCode": "SOA", "rarity": "common", "colors": [], "type": "Artifact", "manaCost": "{1}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": null, "norm": null}, "llu_m": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.837, "controversy": null},
+            {"name": "Library of Leng", "setCode": "SPG", "rarity": "common", "colors": [], "type": "Artifact", "manaCost": "{1}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": null, "norm": null}, "llu_m": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.837, "controversy": null},
             {"name": "Living End", "setCode": "SOA", "rarity": "mythic", "colors": ["B"], "type": "Sorcery", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 1, "norm": -1.901}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 0.33, "avgNorm": -1.973, "controversy": 0.183},
             {"name": "Pongify", "setCode": "SOA", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{U}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 0, "norm": -2.181}}, "avgRaw": 0.0, "avgNorm": -2.163, "controversy": 0.318},
             {"name": "Pyretic Ritual", "setCode": "SOA", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 0.0, "norm": -1.837}, "cs": {"raw": null, "norm": null}, "llu_a": {"raw": 0, "norm": -2.472}, "llu_m": {"raw": 1, "norm": -1.645}}, "avgRaw": 0.33, "avgNorm": -1.985, "controversy": 0.433},
@@ -1246,21 +1265,21 @@
                         const group = groups.find(g => g.raterIds.includes(rater.id));
                         if (group && !processedGroups.has(group.name)) {
                             processedGroups.add(group.name);
-                            let html = '<strong>' + (group.url ? '<a href="' + group.url + '" target="_blank">' + group.name + '</a>' : group.name) + '</strong>';
+                            let html = '<strong>' + (group.url ? '<a href="' + group.url + '" target="_blank" rel="noopener noreferrer">' + group.name + '</a>' : group.name) + '</strong>';
                             if (group.description) html += ' \u2014 ' + group.description;
-                            if (group.patreon) html += ' <a href="' + group.patreon + '" target="_blank" class="source-patreon">\u2665 Patreon</a>';
+                            if (group.patreon) html += ' <a href="' + group.patreon + '" target="_blank" rel="noopener noreferrer" class="source-patreon">\u2665 Patreon</a>';
                             const subLinks = group.raterIds.map(id => {
                                 const r = raters.find(x => x.id === id);
                                 if (!r || !r.url) return '';
-                                return '<a href="' + r.url + '" target="_blank">' + r.name + (r.description ? ': ' + r.description : '') + '</a>';
+                                return '<a href="' + r.url + '" target="_blank" rel="noopener noreferrer">' + r.name + (r.description ? ': ' + r.description : '') + '</a>';
                             }).filter(Boolean);
                             if (subLinks.length) html += '<span class="source-sub">' + subLinks.join(' \u00b7 ') + '</span>';
                             items.push('<li>' + html + '</li>');
                         }
                     } else {
-                        let html = '<strong>' + (rater.url ? '<a href="' + rater.url + '" target="_blank">' + rater.name + '</a>' : rater.name) + '</strong>';
+                        let html = '<strong>' + (rater.url ? '<a href="' + rater.url + '" target="_blank" rel="noopener noreferrer">' + rater.name + '</a>' : rater.name) + '</strong>';
                         if (rater.description) html += ' \u2014 ' + rater.description;
-                        if (rater.patreon) html += ' <a href="' + rater.patreon + '" target="_blank" class="source-patreon">\u2665 Patreon</a>';
+                        if (rater.patreon) html += ' <a href="' + rater.patreon + '" target="_blank" rel="noopener noreferrer" class="source-patreon">\u2665 Patreon</a>';
                         items.push('<li>' + html + '</li>');
                     }
                 }
@@ -1479,7 +1498,10 @@
             // Build cell HTML
             // Scryfall URL: use card.scryfallUrl or construct a search URL
             const scryfallUrl = card.scryfallUrl || ('https://scryfall.com/search?q=' + encodeURIComponent('"' + card.name + '"'));
-            let html = '<td><a href="' + scryfallUrl + '" target="_blank" title="View on Scryfall">' + card.name + '</a></td>';
+            // Escape for HTML attribute context
+            const escapedName = card.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const escapedType = (card.type || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = '<td><a href="' + scryfallUrl + '" target="_blank" rel="noopener noreferrer" title="View on Scryfall">' + escapedName + '</a></td>';
 
             const setCode = card.setCode || '';
             const setBadgeClass = 'set-badge set-' + setCode.toLowerCase();
@@ -1491,7 +1513,7 @@
             html += '<td class="col-colors" data-colors="' + card.colors.join('') + '">' + colorText + '</td>';
 
             const typeCode = getTypeCode(card.type);
-            html += '<td class="col-type compact" data-full-type="' + (card.type || '') + '" title="' + (card.type || '') + '">' + typeCode + '</td>';
+            html += '<td class="col-type compact" data-full-type="' + escapedType + '" title="' + escapedType + '">' + typeCode + '</td>';
             html += '<td class="col-mana-cost">' + (card.manaCost || '-') + '</td>';
 
             const avgNormClass = getScoreClass(card.avgNorm);
