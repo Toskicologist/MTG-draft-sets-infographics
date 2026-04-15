@@ -1045,7 +1045,8 @@
             }
 
             // Info banner
-            let bannerHtml = SET_CONFIG.infoBanner || '';
+            const preamble = 'What makes a card a 7 or 7.5? C or C+? Different reviewers use scores differently. Some would say that we should accept that value is inherently subjective, but they\'re cowards \u2014 we can use the magic of mathematics! In the table below I\'ve compiled several different reviewers, converted their scores to a normalized value using a <a href="https://en.wikipedia.org/wiki/Standard_score" target="_blank" rel="noopener">z-score</a>, averaged them and calculated the cards with the most variation between reviews.';
+            let bannerHtml = '<p style="margin-bottom: 10px;">' + preamble + '</p>' + (SET_CONFIG.infoBanner || '');
             if (SET_CONFIG.colorWheelUrl) {
                 bannerHtml += '<p style="margin-top: 12px;">• You might also like my <a href="' + SET_CONFIG.colorWheelUrl + '" target="_blank" rel="noopener">interactive color wheel of the set archetypes</a></p>';
             }
