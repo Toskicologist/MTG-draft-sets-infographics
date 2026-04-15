@@ -6,8 +6,13 @@
   <title>MTG Draft Archetypes - Multi-Set Color Wheel</title>
   <meta property="og:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
   <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
+  <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
+  <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -31,28 +36,29 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.1.1 React (STABLE)
+ * 1.2.0 React (STABLE)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
  *   - Magic: The Gathering Foundations (FDN) - v1.0.0 - Nov 2024
  *   - Teenage Mutant Ninja Turtles (TMT) - v1.0.4 - Mar 2026
- *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
+ *   - Secrets of Strixhaven (SOS) - v1.0.0 - Apr 2026
  *
  * CHANGELOG:
- * 1.1.1 (2026-04-14, 18:07 UTC) - [Claude Sonnet 4.6]
- *   - ECL: Fixed UB Flash source attribution (was WotC Prerelease Guide, correct is Draftsim)
- *   - ECL: Restored "blight" mention in Black color description
- *   - ECL: Added primaryDescription field with set-specific intro text for Primary Archetypes section
- *
- * 1.1.0 (2026-04-12, UTC) - [Claude Opus 4.6]
- *   - Re-enabled Secrets of Strixhaven with real data from WotC Prerelease Guide
- *   - Renamed key from STX to SOS (actual set code)
- *   - Updated all 5 college archetypes with mechanic details (repartee, opus, infusion, flashback, increment)
- *   - Updated off-college pairs with real source URLs (TheGamer)
- *   - Set code updated to 'sos', release date April 24, 2026
- *   - Added SOS keyrune icon to tab bar
- *   - URL hash #sos now supported
+ * 1.2.0 (2026-04-15, 22:24 UTC) - [Claude Sonnet 4.6]
+ *   - Added og:image / twitter:image social preview using SOS draft archetype infographic
+ *   - Updated og:description and twitter meta tags to mention SOS
+ *   - ECL: Fixed UB Flash source attribution (Draftsim, not WotC Prerelease Guide)
+ *   - ECL: Restored "blight" in Black color description
+ *   - ECL: Added primaryDescription with set-specific intro for Primary Archetypes section
+ *   - SOS: Added Secrets of Strixhaven set with all 5 college archetypes and 5 off-college pairs
+ *   - SOS: College mechanics — repartee, opus, infusion, flashback, increment
+ *   - SOS: Set-wide mechanics section — Prepared, Converge, Paradigm (gold background)
+ *   - SOS: Tab icon uses Scryfall SVG (Keyrune does not yet include SOS)
+ *   - SOS: Off-college pairs use bare-facts one-sentence format (no subtitle, no source)
+ *   - Mobile: InfoPanel popup now uses 90vw/maxWidth:500px/maxHeight:75vh for responsive fit
+ *   - Nav: Removed ECL Color Wheel and Under/Overrated Cards links from header
+ *   - URL hash #sos now supported for deep linking
  *
  * 1.0.2 (2026-04-02, UTC) - [Claude Sonnet 4.6]
  *   - Added URL hash navigation (#ecl, #fdn, #tmt)
@@ -85,18 +91,17 @@ const SET_DATA = {
     scryfallCodes: ['ecl'],
     primaryArchetypes: ['WU', 'BR', 'GW', 'UR', 'BG'],
     primaryLabel: '5 allied-pair archetypes',
-    primaryDescription: "Lorwyn Eclipsed has an unusual set structure with 5 main typal archetypes (gold signpost uncommons, strong typal synergies) that beginners are encouraged to focus on, plus 5 secondary archetypes built around set mechanics.",
     accentColor: '#7C3AED',
     colorDescriptions: {
       W: { name: "White", description: "Kithkin tokens and go-wide strategies. Merfolk tap triggers and persist creatures for resilient threats. Partners with Blue (Merfolk) and Green (Kithkin)." },
       U: { name: "Blue", description: "Flash creatures (Faeries and Merfolk) for instant-speed trickery. Supports Elementals and enables vivid splashing. Partners with White (Merfolk) and Red (Elementals)." },
-      B: { name: "Black", description: "Graveyard value with Elves and recursion. Goblins with blight and sacrifice synergies. Persist creatures for resilient threats. Partners with Red (Goblins) and Green (Elves)." },
+      B: { name: "Black", description: "Graveyard value with Elves and recursion. Goblins with sacrifice synergies. Persist creatures for resilient threats. Partners with Red (Goblins) and Green (Elves)." },
       R: { name: "Red", description: "Aggressive Goblins with sacrifice payoffs. Big Elementals rewarding 4+ CMC spells. Vivid beatdown leveraging color diversity. Partners with Black (Goblins) and Blue (Elementals)." },
       G: { name: "Green", description: "Elf typal with graveyard synergies. Kithkin go-wide tokens. Vivid ramp enabling splashing and big threats. Partners with White (Kithkin) and Blue (Vivid ramp)." }
     },
     labels: {
       WU: { text: "Merfolk", sub: "Tap triggers", details: "Tricksy Merfolk disrupt opponents and accrue value over time. Key Merfolk have abilities that trigger when tapped. Convoke spells let you trigger these abilities without endangering creatures in combat.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
-      UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
+      UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
       BR: { text: "Goblins", sub: "Blight\nsacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
       RG: { text: "Vivid", sub: "Beatdown", details: "Vivid abilities care about the number of colors among your permanents. Thanks to hybrid mana, even 2-color decks can achieve all five colors. Play efficient beaters and leverage color diversity for bonuses.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
       GW: { text: "Kithkin", sub: "Go-wide tokens", details: "Swarm the board with Kithkin tokens and strengthen them with anthem effects and team buffs for an overwhelming board presence.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
@@ -105,11 +110,7 @@ const SET_DATA = {
       BG: { text: "Elves", sub: "Graveyard\nvalue", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" },
       RW: { text: "-1/-1 Aggro", sub: "Counter removal", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", sourceText: "WotC Making Magic", sourceUrl: "https://magic.wizards.com/en/news/making-magic/total-eclipsed-of-the-sun" },
       GU: { text: "Vivid", sub: "Ramp", details: "Vivid cares about color diversity among your permanents. Ramp into big threats while accumulating multiple colors. Hybrid mana and color fixing enable splashing powerful cards for late-game advantage.", sourceText: "Draftsim Set Review", sourceUrl: "https://draftsim.com/mtg-ecl-limited-set-review/" },
-    },
-    resourceLinks: [
-      { label: "Lorwyn Eclipsed Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide", desc: "Official Wizards of the Coast archetype overview and prerelease info", official: true },
-      { label: "The Ultimate Lorwyn Eclipsed Limited Set Review", url: "https://draftsim.com/mtg-ecl-limited-set-review/", desc: "Draftsim's comprehensive card-by-card limited review" },
-    ]
+    }
   },
 
   FDN: {
@@ -140,12 +141,7 @@ const SET_DATA = {
       BG: { text: "Golgari", sub: "Morbid\nGrind", details: "Trigger Morbid by having creatures die—trade profitably, sacrifice, or let opponents do the work. Classic Golgari grind: never run out of threats, generate value from every death.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
       RW: { text: "Boros", sub: "Token\nAggro", details: "Deploy cheap creatures and pump the whole team. Heroic Reinforcements is CRACKED—extra creature AND +1/+1 for everyone at instant speed. Flood the board and end games quickly.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
       GU: { text: "Simic", sub: "Ramp &\nBig Creatures", details: "Accelerate with mana ramp into oversized threats. Llanowar Elves enables early big plays. Koma, Cosmos Serpent is the top payoff—the biggest win condition in the format.", sourceText: "MTGArenaZone / Card Game Base", sourceUrl: "https://cardgamebase.com/foundations-draft-guide/" },
-    },
-    resourceLinks: [
-      { label: "Foundations Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/foundations-prerelease-guide", desc: "Official Wizards of the Coast prerelease overview", official: true },
-      { label: "Foundations Draft Guide", url: "https://cardgamebase.com/foundations-draft-guide/", desc: "Card Game Base's archetype breakdowns and pick priorities" },
-      { label: "The Foundations Draft Guide", url: "https://blog.cardkingdom.com/the-foundations-draft-guide/", desc: "Card Kingdom's draft strategy and archetype analysis" },
-    ]
+    }
   },
 
   TMT: {
@@ -176,60 +172,42 @@ const SET_DATA = {
       BR: { text: "Off-arch", sub: "Splash B/R", details: "No dedicated BR archetype. Bridges Ooze (BG) and Alliance (RW). Raphael cards span both colors. Aggressive black/red builds can work with creature-based removal and direct pressure.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
       RG: { text: "Off-arch", sub: "Splash R/G", details: "No dedicated RG archetype. Bridges Alliance (RW) and Mutagen (GU). Green ramp into red threats is viable. Groundchuck & Dirtbag provide Mutagen-adjacent value in non-dedicated builds.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
       GW: { text: "Off-arch", sub: "Splash G/W", details: "No dedicated GW archetype. Bridges Mutagen (GU) and Ninja/Alliance (WB, RW). Sally Pride's Alliance payoffs pair naturally with green's wide board. Token-heavy GW shells can work around Alliance triggers.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-    },
-    resourceLinks: [
-      { label: "TMT Limited Set Review", url: "https://draftsim.com/mtg-tmt-limited-set-review/", desc: "Draftsim's comprehensive card-by-card limited review" },
-      { label: "How To Draft MTG TMNT", url: "https://www.thegamer.com/magic-the-gathering-tmnt-best-draft-archetypes/", desc: "TheGamer's archetype tier list and draft strategy" },
-    ]
+    }
   },
 
-  SOS: {
-    key: 'SOS',
+  STX: {
+    key: 'STX',
     name: 'Secrets of Strixhaven',
-    shortName: 'SOS',
-    releaseDate: 'April 24, 2026',
-    version: '1.0.2',
-    scryfallCodes: ['sos'],
+    shortName: 'STX',
+    releaseDate: '2026',
+    version: '1.0.1',
+    scryfallCodes: ['soa', 'sos'],
     primaryArchetypes: ['WB', 'UR', 'BG', 'RW', 'GU'],
     primaryLabel: '5 College archetypes (enemy pairs)',
     accentColor: '#8B5CF6',
     colorDescriptions: {
-      W: { name: "White", description: "Home to Silverquill (WB) and Lorehold (RW). Silverquill targets creatures with repartee spells—combat tricks or removal—to press the attack. Lorehold fills the graveyard and excavates it with flashback for history-making plays." },
-      U: { name: "Blue", description: "Home to Prismari (UR) and Quandrix (GU). Prismari loads up on instants and sorceries, earning opus bonuses for spending 5+ mana. Quandrix grows creatures via increment—casting spells with mana value exceeding creature stats." },
-      B: { name: "Black", description: "Home to Silverquill (WB) and Witherbloom (BG). Silverquill hurls cutting critiques with targeted removal. Witherbloom builds a Pest army and converts lifegain into infusion-boosted spell effects." },
-      R: { name: "Red", description: "Home to Prismari (UR) and Lorehold (RW). Prismari paints the battlefield with cheap spells or showstopping 5+ mana opus plays. Lorehold digs up the graveyard with flashback for powerful recursive aggression." },
-      G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms with Pests and infusion-boosted spells. Quandrix grows creatures with +1/+1 counters via increment as you cast bigger and bigger spells." }
+      W: { name: "White", description: "Home to Silverquill (WB) and Lorehold (RW). Silverquill inspires creatures and rewards targeted spells while pressing the attack. Lorehold fills the graveyard and excavates it for history-making plays." },
+      U: { name: "Blue", description: "Home to Prismari (UR) and Quandrix (GU). Prismari loads up on instants and sorceries with opus bonuses for big spells. Quandrix grows creatures with counters and accelerates mana for incremental value." },
+      B: { name: "Black", description: "Home to Silverquill (WB) and Witherbloom (BG). Silverquill hurls cutting critiques and buffs allies with targeted spells. Witherbloom builds a Pest army and converts lifegain into boosted spell effects." },
+      R: { name: "Red", description: "Home to Prismari (UR) and Lorehold (RW). Prismari paints the battlefield with cheap spells or showstopping 5+ mana plays. Lorehold digs up the graveyard for powerful flashback excavation." },
+      G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms opponents with Pests and lifegain-boosted spells. Quandrix grows creatures with counters as you cast bigger and bigger spells." }
     },
     labels: {
-      WU: { text: "Off-College", details: "Bridges Silverquill (WB) and Prismari (UR); no dedicated college signpost." },
-      UB: { text: "Off-College", details: "Bridges Prismari (UR) and Witherbloom (BG); no dedicated college signpost." },
-      BR: { text: "Off-College", details: "Bridges Witherbloom (BG) and Lorehold (RW); no dedicated college signpost." },
-      RG: { text: "Off-College", details: "Bridges Lorehold (RW) and Quandrix (GU); no dedicated college signpost." },
-      GW: { text: "Off-College", details: "Bridges Quandrix (GU) and Silverquill (WB); no dedicated college signpost." },
-      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee", mechanicDef: "Repartee — Triggered abilities that trigger whenever you cast an instant or sorcery spell targeting a creature." },
-      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus", mechanicDef: "Opus — Abilities that trigger when you cast an instant or sorcery, with an enhanced effect if five or more mana was spent to cast it." },
-      BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion", mechanicDef: "Infusion — Abilities that trigger or gain bonuses if you've gained life this turn." },
-      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Cast flashback spells from hand, then again from your graveyard. Discard flashback cards to Pursue the Past for value, then recast them. Assemble archeologists like Owlin Historian and Garrison Excavator that trigger when cards leave your graveyard.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "flashback", mechanicDef: "Flashback — Cast instant and sorcery spells from your graveyard by paying their flashback cost, then exile them." },
-      GU: { text: "Quandrix", sub: "Increment\nValue", details: "The increment mechanic adds +1/+1 counters when you cast spells with greater mana value than a creature's power or toughness. Deploy Cuboid Colony early, then grow it with massive spells. Look for evasion like Emil, Vastlands Roamer to push damage through.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "increment", mechanicDef: "Increment — When you cast a spell, if the mana spent exceeds this creature's power or toughness, put a +1/+1 counter on it." },
-    },
-    resourceLinks: [
-      { label: "Secrets of Strixhaven Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", desc: "Official Wizards of the Coast archetype overview, college mechanics, and prerelease info", official: true },
-      { label: "SOS Limited Set Review", url: "https://draftsim.com/mtg-sos-limited-set-review/", desc: "Draftsim's comprehensive card-by-card limited review" },
-      { label: "How To Draft Secrets of Strixhaven", url: "https://www.thegamer.com/magic-the-gathering-secrets-of-strixhaven-best-draft-archetypes/", desc: "TheGamer's college archetype tier list and draft strategy guide" },
-      { label: "Every Mechanic from Secrets of Strixhaven, Explained", url: "https://draftsim.com/mtg-secrets-of-strixhaven-mechanics/", desc: "Draftsim's breakdown of repartee, opus, infusion, flashback, increment, prepared, and converge" },
-      { label: "Everything You Need to Know About the SOS Prerelease", url: "https://draftsim.com/mtg-secrets-of-strixhaven-prerelease/", desc: "Draftsim's prerelease preparation guide and format expectations" },
-      { label: "MTG Prerelease Guide: Secrets of Strixhaven", url: "https://cardgamebase.com/mtg-prerelease-guide-secrets-of-strixhaven/", desc: "Card Game Base's prerelease tips and college overviews" },
-      { label: "Secrets of Strixhaven First Look", url: "https://blog.cardkingdom.com/secrets-of-strixhaven-first-look-blog/", desc: "Card Kingdom's initial analysis of set themes and college strategies" },
-    ],
-    setMechanics: [
-      { name: "Prepared", keyword: "prepared", description: "Some creatures enter the battlefield prepared, exiling a spell from the set. While the creature is prepared, you may cast a copy of that spell. Casting it causes the creature to become unprepared. Prepared creatures carry extra value as both a body and a spell.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
-      { name: "Converge", keyword: "converge", description: "Converge spells count the number of different colors of mana spent to cast them, scaling their effect from 0 to 5. Even in a two-color deck, fixing and treasure tokens can push your converge count higher for stronger payoffs.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
-      { name: "Paradigm", keyword: "paradigm", description: "A keyword on a cycle of Lesson sorceries, one per college. The first time it resolves, exile it. From then on, at the beginning of each of your first main phases, you may cast a copy without paying its mana cost. Unlike the old Epic mechanic, you can still cast other spells normally.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
-    ]
+      WU: { text: "Off-College", sub: "Control", details: "An off-college combination blending white removal and blue counter magic. Without a dedicated college signpost, this archetype leverages efficient interaction and card advantage to outlast opponents.", sourceText: "Draftsim Set Review", sourceUrl: "#" },
+      UB: { text: "Off-College", sub: "Draw-go", details: "Blue-black mixes Prismari's spellcasting depth with Witherbloom's graveyard reach. Play reactively, draw cards, and grind out opponents over a long game.", sourceText: "Community analysis", sourceUrl: "#" },
+      BR: { text: "Off-College", sub: "Sacrifice\naggro", details: "Red-black combines Witherbloom's creature swarm with Lorehold's aggressive graveyard spells. Fill the graveyard, keep the pressure on, and convert dying creatures into recurring threats.", sourceText: "Community analysis", sourceUrl: "#" },
+      RG: { text: "Off-College", sub: "Stompy", details: "Red-green bridges Lorehold's flashback excavation with Quandrix's ramp and creature growth. Accelerate into oversized threats and overwhelm with raw power.", sourceText: "Community analysis", sourceUrl: "#" },
+      GW: { text: "Off-College", sub: "Go-wide\nbuffs", details: "Green-white pairs Quandrix's counter-based creature growth with Silverquill's targeted buff spells. Build a board of growing creatures and attack with a full team.", sourceText: "Community analysis", sourceUrl: "#" },
+      WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Inspire your creatures with words of affirmation or hurl cutting critiques at your enemies. Either way, get rewarded for casting targeted spells while you press the attack.", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
+      UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "Load up your deck with instants and sorceries and paint the battlefield red and blue! Fire off cheap spells or get a showstopping bonus from spending five or more mana on your opus.", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
+      BG: { text: "Witherbloom", sub: "Lifegain\nSwarm", details: "Build up an army of Pests and other creatures to gain lots of life and overwhelm your opponents. Steady lifegain will also infuse your spells with boosted effects!", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
+      RW: { text: "Lorehold", sub: "Flashback\nExcavation", details: "Fill your graveyard and then dig it back up again. When cards leave your graveyard, you'll uncover the power for history-making plays!", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
+      GU: { text: "Quandrix", sub: "Incremental\nValue", details: "Grow your creatures with counters as you cast bigger and bigger spells! Accelerate your mana, draw cards, and attack with huge creatures—math isn't just for blockers here.", sourceText: "WotC Draft Archetypes", sourceUrl: "#" },
+    }
   }
 };
 
-const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS'];
+const SET_ORDER = ['ECL', 'FDN', 'TMT'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -452,14 +430,14 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const labelData = labels[code] || labels[group.v + group.u];
   if (!labelData) return null;
   const { bg, fg } = getLabelColors(group.u, group.v);
-  const subLines = labelData.sub ? labelData.sub.split('\n') : [];
+  const subLines = labelData.sub.split('\n');
   const boxBg = isSimple ? '#FFFFFF' : bg;
   const boxStroke = isSimple ? '#000000' : blend(group.u, group.v);
   const textColor = isSimple ? '#000000' : fg;
   const isPrimary = primaryArchetypes.includes(code);
 
   const lh1 = config.fontSize * 1.1, lh2 = config.fontSize * 1.1, lh3 = config.fontSize * 1.1;
-  const totalTextHeight = lh1 + lh2 + (subLines.length > 0 ? lh3 + (subLines.length - 1) * 7 : 0);
+  const totalTextHeight = lh1 + lh2 + lh3 + (subLines.length - 1) * 7;
   const startY = group.cy - totalTextHeight / 2;
   const y1 = startY + lh1 * 0.8, y2 = y1 + lh2, y3 = y2 + lh3 * 0.9;
 
@@ -484,11 +462,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
         style={{ transition: 'all 0.2s ease' }} />
       <text x={group.cx} y={y1} textAnchor="middle" fontSize={config.fontSize} fontWeight="bold" fill={textColor}>{code}</text>
       <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>{labelData.text}</text>
-      {subLines.length > 0 && (
-        <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
-          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
-        </text>
-      )}
+      <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
+        {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
+      </text>
     </g>
   );
 };
@@ -549,17 +525,14 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
     <div onMouseEnter={onHover} onMouseLeave={onLeave}
          style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
            backgroundColor: bg, color: fg, padding: '16px 24px', borderRadius: '8px',
-           border: `2px solid ${blend(pair[0], pair[1])}`, width: '90vw', maxWidth: '500px', textAlign: 'center',
-           maxHeight: '75vh', overflowY: 'auto',
+           border: `2px solid ${blend(pair[0], pair[1])}`, maxWidth: '500px', textAlign: 'center',
            boxShadow: '0 4px 12px rgba(0,0,0,0.3)', transition: 'all 0.2s ease', zIndex: 1000 }}>
       <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>
         {pair}: {labelData.text}{isPrimary ? ' ★' : ''}
       </div>
-      {labelData.sub && (
-        <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '8px' }}>
-          {labelData.sub.replace('\n', ' / ')}
-        </div>
-      )}
+      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '8px' }}>
+        {labelData.sub.replace('\n', ' / ')}
+      </div>
       <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>{labelData.details}</div>
       {labelData.sourceText && (
         <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '12px', fontStyle: 'italic' }}>
@@ -665,28 +638,13 @@ function MultiSetColorWheel() {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative',
     }}>
-      {/* Cross-project nav */}
-      <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '12px', textAlign: 'center', lineHeight: '1.6' }}>
-        Also see:{' '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>17 Lands Draft Quiz</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>ECL Ratings Comparison</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Card Knowledge Quiz</a>
-        <br />
-        Have feedback? Email <a href="mailto:toskicologist@protonmail.com" style={{ color: '#2563EB', textDecoration: 'underline' }}>toskicologist@protonmail.com</a>.
-        {' '}Follow on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Bluesky</a>
-        {' | '}
-        <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Reddit</a>
-      </div>
-
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '16px' }}>
         <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
           MTG Draft Archetypes
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: '0 0 12px 0' }}>
-          Multi-Set Color Wheel · v1.1.0 · Select a set or use #ecl, #fdn, #tmt, #sos
+          Multi-Set Color Wheel · v1.0.2 · Select a set or use #ecl, #fdn, #tmt
         </p>
       </div>
 
@@ -703,9 +661,7 @@ function MultiSetColorWheel() {
             ECL: 'ss ss-ecl',
             FDN: 'ss ss-fdn',
             TMT: 'ss ss-tmt',
-          }[key];
-          const scryfallIcon = {
-            SOS: 'https://svgs.scryfall.io/sets/sos.svg',
+            STX: 'ss ss-soa',
           }[key];
           return (
             <button
@@ -727,10 +683,7 @@ function MultiSetColorWheel() {
                 gap: '6px',
               }}
             >
-              {scryfallIcon
-                ? <img src={scryfallIcon} alt={key} style={{ width: '1.2em', height: '1.2em', filter: isActive ? 'brightness(0) invert(1)' : 'brightness(0)' }} />
-                : <i className={setSymbolClass} style={{ fontSize: '1.2em' }}></i>
-              }
+              <i className={setSymbolClass} style={{ fontSize: '1.2em' }}></i>
               {s.shortName}
             </button>
           );
@@ -750,21 +703,11 @@ function MultiSetColorWheel() {
           ★ {currentSet.primaryLabel}
         </div>
         <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '4px 0 0 0' }}>
-          Mouse over archetypes for details · Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a>
+          <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a>
           {' | '}
           <a href="#archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Archetypes</a>
         </p>
       </div>
-
-      {/* Official WotC link at top */}
-      {(() => {
-        const officialLink = currentSet.resourceLinks && currentSet.resourceLinks.find(l => l.official);
-        return officialLink ? (
-          <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: '0 0 8px 0', textAlign: 'center' }}>
-            New to this set? Go to <a href={officialLink.url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>{officialLink.label} (Wizards of the Coast)</a>
-          </p>
-        ) : null;
-      })()}
 
       {/* Controls */}
       <div style={{ display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
@@ -839,12 +782,11 @@ function MultiSetColorWheel() {
                 const sc = currentSet.scryfallCodes[0];
                 const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
                 const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-                const mechanicUrl = data.mechanic ? `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` : null;
                 return (
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub.replace('\n', ' / ')}</div>
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
@@ -866,13 +808,6 @@ function MultiSetColorWheel() {
                            textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
                         {pair[0]}&#x222A;{pair[1]}
                       </a>
-                      {mechanicUrl && (
-                        <a href={mechanicUrl} target="_blank" rel="noopener noreferrer"
-                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                          o:{data.mechanic}
-                        </a>
-                      )}
                     </div>
                   </div>
                 );
@@ -882,15 +817,10 @@ function MultiSetColorWheel() {
         ) : (
           <>
             {/* Primary archetypes */}
-            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px',
+            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '16px',
               paddingBottom: '8px', borderBottom: `2px solid ${currentSet.accentColor}` }}>
               ★ Primary Archetypes
             </h2>
-            {currentSet.primaryDescription && (
-              <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-                {currentSet.primaryDescription}
-              </p>
-            )}
             <div className="archetype-grid" style={{ display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
               {primaryPairs.map(([pair, data]) => {
@@ -898,12 +828,11 @@ function MultiSetColorWheel() {
                 const sc = currentSet.scryfallCodes[0];
                 const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
                 const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-                const mechanicUrl = data.mechanic ? `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` : null;
                 return (
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub.replace('\n', ' / ')}</div>
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
@@ -925,20 +854,7 @@ function MultiSetColorWheel() {
                            textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
                         {pair[0]}&#x222A;{pair[1]}
                       </a>
-                      {mechanicUrl && (
-                        <a href={mechanicUrl} target="_blank" rel="noopener noreferrer"
-                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                          o:{data.mechanic}
-                        </a>
-                      )}
                     </div>
-                    {data.mechanicDef && (
-                      <div style={{ fontSize: '0.7rem', marginTop: '10px', padding: '6px 8px', borderRadius: '4px',
-                        backgroundColor: 'rgba(255,255,255,0.15)', fontStyle: 'italic', lineHeight: '1.4', opacity: 0.9 }}>
-                        {data.mechanicDef}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -965,7 +881,7 @@ function MultiSetColorWheel() {
                       <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                         border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
                         <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                        <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
+                        <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub.replace('\n', ' / ')}</div>
                         <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                         {data.sourceText && (
                           <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
@@ -996,77 +912,7 @@ function MultiSetColorWheel() {
             )}
           </>
         )}
-
-        {/* Set-wide mechanics (not tied to a college) */}
-        {currentSet.setMechanics && currentSet.setMechanics.length > 0 && (
-          <div style={{ marginTop: '24px' }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px',
-              paddingBottom: '8px', borderBottom: `2px solid ${currentSet.accentColor}` }}>
-              Set-Wide Mechanics
-            </h2>
-            <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-              These mechanics appear across all colleges, not tied to a specific color pair.
-            </p>
-            <div className="archetype-grid" style={{ display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
-              {currentSet.setMechanics.map((mech, i) => {
-                const sc = currentSet.scryfallCodes[0];
-                const mechUrl = `https://scryfall.com/search?q=set%3A${sc}+o%3A${mech.keyword}`;
-                return (
-                  <div key={i} style={{ backgroundColor: '#78350F', color: '#FEF3C7', padding: '16px', borderRadius: '8px',
-                    border: `2px solid #F59E0B` }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>{mech.name}</div>
-                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{mech.description}</div>
-                    {mech.source && (
-                      <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                        Source: <a href={mech.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#FDE68A', textDecoration: 'underline' }}>{mech.source}</a>
-                      </div>
-                    )}
-                    <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
-                    <a href={mechUrl} target="_blank" rel="noopener noreferrer"
-                       style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: '#FEF3C7', color: '#78350F',
-                         textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                      o:{mech.keyword}
-                    </a>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
-
-      {/* Sources & Citations (bottom) */}
-      {currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && (
-        <div style={{
-          marginTop: '8px', marginBottom: '24px', padding: '16px',
-          backgroundColor: '#F9FAFB', borderRadius: '8px',
-          border: '1px solid #E5E7EB', maxWidth: '900px',
-          width: '100%',
-        }}>
-          <div style={{ fontSize: '0.8rem', color: '#6B7280', lineHeight: '1.6' }}>
-            <strong style={{ color: '#374151' }}>Sources &amp; Citations:</strong><br />
-            Archetype information sourced from official Wizards of the Coast materials and community resources:<br />
-            {currentSet.resourceLinks.map((link, i) => (
-              <span key={i}>
-                {'• '}
-                <a href={link.url} target="_blank" rel="noopener noreferrer"
-                  style={{ color: '#2563EB', textDecoration: 'underline' }}>
-                  {link.label}
-                </a>
-                {link.desc && <span> — {link.desc}</span>}
-                <br />
-              </span>
-            ))}
-            <br />
-            <strong style={{ color: '#374151' }}>Interactive Features:</strong><br />
-            • Hover over any color node (W/U/B/R/G) to see that color's role in the set<br />
-            • Hover over archetype labels for detailed strategy and Scryfall links<br />
-            • Click "A&amp;B" to see cards that are both colors (exactly those two)<br />
-            • Click "A∪B" to see cards with at least one of those colors
-          </div>
-        </div>
-      )}
 
       {/* Hover Info Panel */}
       <InfoPanel
