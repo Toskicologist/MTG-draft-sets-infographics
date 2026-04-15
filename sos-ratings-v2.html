@@ -72,6 +72,44 @@
             line-height: 1.6;
         }
 
+        .sources-panel {
+            background: #fafbff;
+            border-bottom: 1px solid #dde3f5;
+            padding: 14px 30px;
+            font-size: 0.88em;
+            color: #444;
+            line-height: 1.7;
+        }
+        .sources-panel > .sources-heading {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .sources-panel ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .sources-panel li { padding-left: 12px; }
+        .sources-panel a { color: #4a6cf7; text-decoration: none; }
+        .sources-panel a:hover { text-decoration: underline; }
+        .sources-panel .source-patreon {
+            color: #e85d26;
+            font-size: 0.87em;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+        .sources-panel .source-sub {
+            display: block;
+            margin-left: 16px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
         .controls {
             padding: 20px 30px;
             background: #f8f9fa;
@@ -435,6 +473,8 @@
 
         <div class="info-banner" id="infoBanner"></div>
 
+        <div class="sources-panel" id="sourcesList"></div>
+
         <div class="controls">
             <div class="sort-group">
                 <label for="sortBy">Sort by:</label>
@@ -525,11 +565,12 @@
             headerGradient: ["rgba(75, 0, 130, 0.78)", "rgba(186, 85, 211, 0.78)"],
             colorWheelUrl: null,
             infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
+            raterGroups: [{"name": "Limited Level Ups", "url": "https://www.youtube.com/@limitedlevel-ups/videos", "patreon": "https://www.patreon.com/limitedlevelups", "raterIds": ["llu_a", "llu_m"], "description": "Limited format podcast and YouTube channel covering set reviews and draft strategy."}],
             raters: [
-            { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-sos-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-sos-limited-set-review/#:~:text=${encodeURIComponent(name)}` },
-            { id: "cs", name: "CS Ratings", abbreviation: "CS", url: null },
-            { id: "llu_a", name: "LLU Alex", abbreviation: "LLU-A", url: "https://www.17lands.com/tier_list/alex_sos_set_review" },
-            { id: "llu_m", name: "LLU Marc", abbreviation: "LLU-M", url: "https://www.17lands.com/tier_list/marc_sos_set_review" }
+            { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-sos-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-sos-limited-set-review/#:~:text=${encodeURIComponent(name)}`, description: "Card-by-card limited set review" },
+            { id: "cs", name: "Casual_Spike", abbreviation: "CS", url: "https://www.reddit.com/r/lrcast/comments/1sim2r1/sos_limited_overview/", description: "SOS limited overview posted on r/lrcast" },
+            { id: "llu_a", name: "LLU Alex", abbreviation: "LLU-A", url: "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208", description: "Alex's SOS tier list" },
+            { id: "llu_m", name: "LLU Marc", abbreviation: "LLU-M", url: "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c", description: "Marc's SOS tier list" }
             ]
         };
         const CARD_DATA = [
@@ -1009,6 +1050,41 @@
             }
             document.getElementById('infoBanner').innerHTML = bannerHtml;
 
+            // Sources panel
+            const sourcesList = document.getElementById('sourcesList');
+            if (sourcesList) {
+                const groups = SET_CONFIG.raterGroups || [];
+                const groupedIds = new Set(groups.flatMap(g => g.raterIds));
+                const processedGroups = new Set();
+                let items = [];
+                for (const rater of raters) {
+                    if (groupedIds.has(rater.id)) {
+                        const group = groups.find(g => g.raterIds.includes(rater.id));
+                        if (group && !processedGroups.has(group.name)) {
+                            processedGroups.add(group.name);
+                            let html = '<strong>' + (group.url ? '<a href="' + group.url + '" target="_blank">' + group.name + '</a>' : group.name) + '</strong>';
+                            if (group.description) html += ' \u2014 ' + group.description;
+                            if (group.patreon) html += ' <a href="' + group.patreon + '" target="_blank" class="source-patreon">\u2665 Patreon</a>';
+                            const subLinks = group.raterIds.map(id => {
+                                const r = raters.find(x => x.id === id);
+                                if (!r || !r.url) return '';
+                                return '<a href="' + r.url + '" target="_blank">' + r.name + (r.description ? ': ' + r.description : '') + '</a>';
+                            }).filter(Boolean);
+                            if (subLinks.length) html += '<span class="source-sub">' + subLinks.join(' \u00b7 ') + '</span>';
+                            items.push('<li>' + html + '</li>');
+                        }
+                    } else {
+                        let html = '<strong>' + (rater.url ? '<a href="' + rater.url + '" target="_blank">' + rater.name + '</a>' : rater.name) + '</strong>';
+                        if (rater.description) html += ' \u2014 ' + rater.description;
+                        if (rater.patreon) html += ' <a href="' + rater.patreon + '" target="_blank" class="source-patreon">\u2665 Patreon</a>';
+                        items.push('<li>' + html + '</li>');
+                    }
+                }
+                if (items.length) {
+                    sourcesList.innerHTML = '<span class="sources-heading">Sources</span><ul>' + items.join('') + '</ul>';
+                }
+            }
+
             // OG meta tags
             document.querySelector('meta[property="og:title"]').content = SET_CONFIG.setCode + ' - ' + SET_CONFIG.subtitle;
             document.querySelector('meta[property="og:description"]').content = 'Interactive z-score normalized ratings viewer for ' + SET_CONFIG.fullName;
@@ -1048,7 +1124,13 @@
             const thead = document.getElementById('tableHead');
             thead.innerHTML = '';
 
-            // Row 1: fixed headers + rater group headers + avg raw
+            const theadGroups = SET_CONFIG.raterGroups || [];
+            const hasGroups = theadGroups.length > 0;
+            const fixedRowSpan = hasGroups ? 3 : 2;
+            const standaloneRaterRowSpan = hasGroups ? 2 : 1;
+            const groupedRaterIds = new Set(theadGroups.flatMap(g => g.raterIds));
+
+            // Row 1: fixed headers + rater/group headers + avg raw
             const row1 = document.createElement('tr');
             const fixedHeaders = [
                 { text: 'Card Name', sortKey: 'name', colIndex: 0, resizable: true },
@@ -1063,7 +1145,7 @@
 
             fixedHeaders.forEach(h => {
                 const th = document.createElement('th');
-                th.rowSpan = 2;
+                th.rowSpan = fixedRowSpan;
                 th.className = 'sortable' + (h.cls ? ' ' + h.cls : '');
                 th.dataset.sortKey = h.sortKey;
                 th.dataset.colIndex = h.colIndex;
@@ -1072,24 +1154,44 @@
                 row1.appendChild(th);
             });
 
-            // Rater group headers (colspan=2 each)
-            const raterStartCol = 8; // first rater column index (6 fixed + 2 = 8)
+            // Rater/group headers in row 1
+            const raterStartCol = 8;
+            const processedGroupNames = new Set();
             raters.forEach((rater, i) => {
-                const th = document.createElement('th');
-                th.colSpan = 2;
-                th.className = 'source-header group-start group-end';
-                if (rater.url) {
-                    th.innerHTML = '<a href="' + rater.url + '" target="_blank" title="View ' + rater.name + ' review">' + rater.name + '</a>';
+                if (groupedRaterIds.has(rater.id)) {
+                    // First rater of a group emits the group header
+                    const group = theadGroups.find(g => g.raterIds[0] === rater.id);
+                    if (group && !processedGroupNames.has(group.name)) {
+                        processedGroupNames.add(group.name);
+                        const th = document.createElement('th');
+                        th.colSpan = group.raterIds.length * 2;
+                        th.className = 'source-header group-start group-end';
+                        if (group.url) {
+                            th.innerHTML = '<a href="' + group.url + '" target="_blank" title="' + group.name + '">' + group.name + '</a>';
+                        } else {
+                            th.textContent = group.name;
+                        }
+                        row1.appendChild(th);
+                    }
                 } else {
-                    th.textContent = rater.name;
+                    // Standalone rater — spans into row 2 if groups exist
+                    const th = document.createElement('th');
+                    th.colSpan = 2;
+                    th.rowSpan = standaloneRaterRowSpan;
+                    th.className = 'source-header group-start group-end';
+                    if (rater.url) {
+                        th.innerHTML = '<a href="' + rater.url + '" target="_blank" title="View ' + rater.name + ' review">' + rater.name + '</a>';
+                    } else {
+                        th.textContent = rater.name;
+                    }
+                    row1.appendChild(th);
                 }
-                row1.appendChild(th);
             });
 
             // Avg Raw header
             const avgRawColIndex = raterStartCol + numRaters * 2;
             const avgRawTh = document.createElement('th');
-            avgRawTh.rowSpan = 2;
+            avgRawTh.rowSpan = fixedRowSpan;
             avgRawTh.className = 'sortable';
             avgRawTh.dataset.sortKey = 'avg_raw';
             avgRawTh.dataset.colIndex = avgRawColIndex;
@@ -1099,8 +1201,29 @@
 
             thead.appendChild(row1);
 
-            // Row 2: Raw/Norm sub-headers for each rater
-            const row2 = document.createElement('tr');
+            // Row 2 (only when groups exist): individual rater headers for grouped raters
+            if (hasGroups) {
+                const row2 = document.createElement('tr');
+                theadGroups.forEach(group => {
+                    group.raterIds.forEach(id => {
+                        const rater = raters.find(r => r.id === id);
+                        if (!rater) return;
+                        const th = document.createElement('th');
+                        th.colSpan = 2;
+                        th.className = 'source-header group-start group-end';
+                        if (rater.url) {
+                            th.innerHTML = '<a href="' + rater.url + '" target="_blank" title="View ' + rater.name + ' review">' + rater.abbreviation + '</a>';
+                        } else {
+                            th.textContent = rater.abbreviation;
+                        }
+                        row2.appendChild(th);
+                    });
+                });
+                thead.appendChild(row2);
+            }
+
+            // Last row: Raw/Norm sub-headers for each rater
+            const rawNormRow = document.createElement('tr');
             raters.forEach((rater, i) => {
                 const rawColIndex = raterStartCol + i * 2;
                 const normColIndex = rawColIndex + 1;
@@ -1110,16 +1233,16 @@
                 rawTh.dataset.sortKey = rater.id + '_raw';
                 rawTh.dataset.colIndex = rawColIndex;
                 rawTh.innerHTML = 'Raw<span class="sort-indicator">\u25B2</span>';
-                row2.appendChild(rawTh);
+                rawNormRow.appendChild(rawTh);
 
                 const normTh = document.createElement('th');
                 normTh.className = 'sortable group-end';
                 normTh.dataset.sortKey = rater.id + '_norm';
                 normTh.dataset.colIndex = normColIndex;
                 normTh.innerHTML = 'Norm<span class="sort-indicator">\u25B2</span>';
-                row2.appendChild(normTh);
+                rawNormRow.appendChild(normTh);
             });
-            thead.appendChild(row2);
+            thead.appendChild(rawNormRow);
 
             // Sort dropdown: add per-rater options
             const sortBy = document.getElementById('sortBy');
