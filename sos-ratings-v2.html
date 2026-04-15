@@ -35,9 +35,12 @@
         header {
             position: relative;
             color: white;
-            padding: 40px 30px;
+            padding: 0;
             text-align: center;
             overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         header::before {
@@ -47,21 +50,40 @@
             z-index: 1;
         }
 
-        header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .header-content {
             position: relative;
             z-index: 2;
+            padding: 36px 30px 28px;
         }
 
-        header p {
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p#pageSubtitle {
             font-size: 1.1em;
             opacity: 0.95;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
+            margin-bottom: 0;
         }
+
+        .header-meta {
+            margin-top: 18px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.85em;
+            line-height: 1.7;
+            text-align: left;
+            display: inline-block;
+            min-width: 50%;
+        }
+
+        .header-meta a { color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 2px; }
+        .header-meta a:hover { color: #fff; }
+        .header-meta .meta-row { display: block; }
+        .header-meta .meta-label { font-weight: 600; opacity: 0.8; margin-right: 4px; }
 
         .info-banner {
             background: #f0f4ff;
@@ -467,8 +489,11 @@
 <body>
     <div class="container">
         <header id="pageHeader">
-            <h1 id="pageTitle"></h1>
-            <p id="pageSubtitle"></p>
+            <div class="header-content">
+                <h1 id="pageTitle"></h1>
+                <p id="pageSubtitle"></p>
+                <div id="headerMeta" class="header-meta"></div>
+            </div>
         </header>
 
         <div class="info-banner" id="infoBanner"></div>
@@ -563,7 +588,9 @@
             subtitle: "Normalized Ratings Comparison",
             version: "2.0.0",
             headerGradient: ["rgba(75, 0, 130, 0.78)", "rgba(186, 85, 211, 0.78)"],
+            headerImageUrl: "mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png",
             colorWheelUrl: null,
+            projectLinks: [{"text": "Draft Archetypes Color Wheel", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/"}, {"text": "ECL Ratings", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings-v2.html"}, {"text": "ECL Draft Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/"}],
             infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
             raterGroups: [{"name": "Limited Level Ups", "url": "https://www.youtube.com/@limitedlevel-ups/videos", "patreon": "https://www.patreon.com/limitedlevelups", "raterIds": ["llu_a", "llu_m"], "description": "Limited format podcast and YouTube channel covering set reviews and draft strategy."}],
             raters: [
@@ -1034,13 +1061,47 @@
             document.getElementById('pageTitle').textContent = SET_CONFIG.fullName;
             document.getElementById('pageSubtitle').textContent = SET_CONFIG.subtitle;
 
-            // Header gradient
+            // Header background image
+            const header = document.getElementById('pageHeader');
+            if (SET_CONFIG.headerImageUrl) {
+                header.style.backgroundImage = "url('" + SET_CONFIG.headerImageUrl + "')";
+            }
+
+            // Header gradient overlay (::before)
             if (SET_CONFIG.headerGradient) {
-                const header = document.getElementById('pageHeader');
-                header.style.background = 'linear-gradient(135deg, ' + SET_CONFIG.headerGradient[0] + ' 0%, ' + SET_CONFIG.headerGradient[1] + ' 100%)';
                 const beforeStyle = document.createElement('style');
                 beforeStyle.textContent = 'header::before { background: linear-gradient(135deg, ' + SET_CONFIG.headerGradient[0] + ' 0%, ' + SET_CONFIG.headerGradient[1] + ' 100%); }';
                 document.head.appendChild(beforeStyle);
+            }
+
+            // Header meta: version, project links, contact, credits
+            const headerMeta = document.getElementById('headerMeta');
+            if (headerMeta) {
+                const version = SET_CONFIG.version || '';
+                const today = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+
+                // Project links
+                const projectLinks = SET_CONFIG.projectLinks || [];
+                const navHtml = projectLinks.length
+                    ? projectLinks.map(l => '<a href="' + l.url + '" target="_blank" rel="noopener">' + l.text + '</a>').join(' \u00b7 ')
+                    : '';
+
+                headerMeta.innerHTML =
+                    '<span class="meta-row">' +
+                        '<span class="meta-label">Version:</span>' + version + ' \u00b7 ' + today +
+                    '</span>' +
+                    (navHtml ? '<span class="meta-row"><span class="meta-label">Also see:</span>' + navHtml + '</span>' : '') +
+                    '<span class="meta-row"><span class="meta-label">Credits:</span>' +
+                        'Card images: <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> ' +
+                        '(<a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener">Patreon</a>) \u00b7 ' +
+                        '<a href="https://draftsim.com" target="_blank" rel="noopener">Draftsim</a> ' +
+                        '(<a href="https://www.patreon.com/cw/draftsim" target="_blank" rel="noopener">Patreon</a>)' +
+                    '</span>' +
+                    '<span class="meta-row"><span class="meta-label">Feedback:</span>' +
+                        '<a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a> \u00b7 ' +
+                        '<a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener">Bluesky</a> \u00b7 ' +
+                        '<a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener">Reddit</a>' +
+                    '</span>';
             }
 
             // Info banner
