@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><!-- SET_TITLE --></title>
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            position: relative;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-banner {
+            background: #f0f4ff;
+            padding: 15px 30px;
+            border-bottom: 2px solid #667eea;
+            font-size: 0.95em;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .image-toggle, .rarity-filter, .color-filter {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .rarity-filter label, .color-filter label {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rarity-filter input[type="checkbox"],
+        .color-filter input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .rarity-filter-action, .color-filter-action {
+            padding: 4px 8px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 0.85em;
+            cursor: pointer;
+        }
+
+        .rarity-filter-action:hover, .color-filter-action:hover {
+            border-color: #667eea;
+        }
+
+        .separator {
+            width: 1px;
+            height: 24px;
+            background: #ccc;
+            margin: 0 8px;
+        }
+
+        .type-display-toggle {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .type-display-toggle input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .col-type, td.col-type {
+            width: 5.5ch;
+            max-width: 200px;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .col-type.compact, td.col-type.compact {
+            max-width: 2ch;
+        }
+
+        col.col-set { width: 3.5ch; min-width: 3.5ch; }
+
+        .col-set, td.col-set {
+            width: 3.5ch;
+            max-width: 4.5ch;
+            text-align: center;
+            font-size: 0.8em;
+            color: #777;
+            white-space: nowrap;
+        }
+
+        .col-rarity, td.col-rarity {
+            width: 3ch;
+            max-width: 3ch;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .col-colors, td.col-colors {
+            width: 5.5ch;
+            max-width: 5.5ch;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .col-mana-cost, td.col-mana-cost {
+            width: 5.5ch;
+            max-width: 5.5ch;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        td.col-mana-cost {
+            font-size: 0.85em;
+        }
+
+        .sort-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sort-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+            background: white;
+            cursor: pointer;
+        }
+
+        select:hover, input:hover {
+            border-color: #667eea;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 20px 30px;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        col.col-name {
+            width: 220px;
+            min-width: 100px;
+        }
+
+        col.col-score {
+            width: 5.5ch;
+            min-width: 5.5ch;
+        }
+
+        col.col-rarity { width: 5.5ch; min-width: 5.5ch; }
+        col.col-colors { width: 5.5ch; min-width: 5.5ch; }
+        col.col-type { width: 5.5ch; min-width: 5.5ch; }
+        col.col-mana-cost { width: 5.5ch; min-width: 5.5ch; }
+
+        th.col-rarity, td.col-rarity {
+            text-align: center;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 4px 5px;
+            padding-right: 10px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            white-space: normal;
+            line-height: 1.1;
+            cursor: default;
+            user-select: none;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        th.col-rarity, th.col-colors, th.col-type, th.col-mana-cost {
+            max-width: 100%;
+        }
+
+        th:hover { background: #764ba2; }
+
+        th a {
+            color: #fff;
+            text-decoration: underline;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        th a:hover { text-decoration-thickness: 2px; }
+        th.source-header { text-align: center; }
+
+        th[data-col-index="0"] {
+            left: 0;
+            z-index: 4;
+            background: #667eea;
+            white-space: nowrap;
+        }
+
+        th.group-start, td.group-start {
+            border-left: 2px solid rgba(102, 126, 234, 0.6);
+        }
+
+        th.group-end, td.group-end {
+            border-right: 2px solid rgba(102, 126, 234, 0.6);
+        }
+
+        th.sortable { cursor: pointer; }
+
+        th.sortable .sort-indicator {
+            margin-left: 6px;
+            font-size: 0.75em;
+            opacity: 0.35;
+        }
+
+        th.sorted .sort-indicator { opacity: 1; }
+
+        th .col-resizer {
+            position: absolute;
+            right: 0; top: 0;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
+            user-select: none;
+            border-right: 2px solid transparent;
+            transition: border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        th .col-resizer::before {
+            content: '';
+            width: 2px;
+            height: 60%;
+            background: rgba(255,255,255,0.3);
+            border-radius: 1px;
+        }
+
+        th:hover .col-resizer { border-right-color: rgba(255,255,255,0.5); }
+        th:hover .col-resizer::before { background: rgba(255,255,255,0.7); }
+        th.resizing .col-resizer { border-right-color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.15); }
+        th.resizing .col-resizer::before { background: white; height: 80%; }
+
+        td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        tr:hover { background: #f8f9fa; }
+        tr:nth-child(even) { background: #fafbfc; }
+        tr:nth-child(even):hover { background: #f0f2f5; }
+
+        td:first-child {
+            font-weight: 600;
+            color: #667eea;
+            position: sticky;
+            left: 0;
+            background: inherit;
+            min-width: 160px;
+            max-width: 220px;
+            text-align: left;
+            z-index: 2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        td:first-child a {
+            color: #667eea;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s;
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        td:first-child a:hover { border-bottom-color: #667eea; }
+
+        .score-link { color: inherit; text-decoration: none; }
+        .score-link:hover { text-decoration: underline; }
+
+        body.rarity-color tr[data-rarity="common"] { background-color: rgba(86, 180, 233, 0.28) !important; }
+        body.rarity-color tr[data-rarity="uncommon"] { background-color: rgba(0, 158, 115, 0.22) !important; }
+        body.rarity-color tr[data-rarity="rare"] { background-color: rgba(230, 159, 0, 0.25) !important; }
+        body.rarity-color tr[data-rarity="mythic"] { background-color: rgba(213, 94, 0, 0.25) !important; }
+
+        .card-image { display: none; margin-top: 6px; }
+        .card-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            display: block;
+        }
+        body.show-images .card-image { display: block; }
+
+        th.col-avg-norm, th.col-controversy { white-space: normal; line-height: 1.1; }
+        th.col-controversy { word-break: break-all; }
+        th.col-avg-norm, th.col-controversy, td.col-avg-norm, td.col-controversy { font-weight: 700; }
+
+        .score-excellent { background-color: #d4edda; color: #155724; font-weight: 600; }
+        .score-good { background-color: #d1ecf1; color: #0c5460; }
+        .score-neutral { background-color: #fff3cd; color: #856404; }
+        .score-poor { background-color: #f8d7da; color: #721c24; }
+        .score-very-poor { background-color: #e74c3c; color: white; font-weight: 600; }
+        .controversy-low { background-color: #e8f5e9; }
+        .controversy-medium { background-color: #fff9c4; }
+        .controversy-high { background-color: #ffccbc; }
+
+        .card-tooltip {
+            position: fixed;
+            display: none;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            padding: 8px;
+            max-width: 300px;
+            pointer-events: none;
+        }
+
+        .card-tooltip img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            max-height: 400px;
+        }
+
+        footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header id="pageHeader">
+            <h1 id="pageTitle"></h1>
+            <p id="pageSubtitle"></p>
+        </header>
+
+        <div class="info-banner" id="infoBanner"></div>
+
+        <div class="controls">
+            <div class="sort-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="name">Card Name</option>
+                    <option value="rarity">Rarity</option>
+                    <option value="avg_norm" selected>Avg Normalized Score</option>
+                    <option value="avg_raw">Avg Raw Score</option>
+                    <option value="controversy">Controversy</option>
+                    <!-- Rater-specific options injected by initializePage -->
+                </select>
+            </div>
+            <div class="sort-group">
+                <label for="direction">Direction:</label>
+                <select id="direction">
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                </select>
+            </div>
+            <div class="sort-group">
+                <input type="text" id="searchBox" placeholder="Search cards...">
+            </div>
+            <div class="image-toggle">
+                <input type="checkbox" id="toggleImages">
+                <label for="toggleImages">Show images</label>
+            </div>
+            <div class="image-toggle">
+                <input type="checkbox" id="toggleRarity">
+                <label for="toggleRarity">Rarity colors</label>
+            </div>
+            <div class="type-display-toggle">
+                <input type="checkbox" id="toggleTypeDisplay">
+                <label for="toggleTypeDisplay">Show full typeline</label>
+            </div>
+            <div class="separator"></div>
+            <div class="rarity-filter">
+                <span>Rarity:</span>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="common" checked> C</label>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="uncommon" checked> U</label>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="rare" checked> R</label>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="mythic" checked> M</label>
+                <button type="button" class="rarity-filter-action" data-action="all">All</button>
+                <button type="button" class="rarity-filter-action" data-action="none">None</button>
+            </div>
+            <div class="separator"></div>
+            <div class="color-filter">
+                <span>Colors:</span>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="W" checked title="White"> W</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="U" checked title="Blue"> U</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="B" checked title="Black"> B</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="R" checked title="Red"> R</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="G" checked title="Green"> G</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="C" checked title="Colorless"> C</label>
+                <button type="button" class="color-filter-action" data-action="all">All</button>
+                <button type="button" class="color-filter-action" data-action="none">None</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="ratingsTable">
+                <colgroup id="tableColgroup">
+                    <!-- Generated by initializePage -->
+                </colgroup>
+                <thead id="tableHead">
+                    <!-- Generated by initializePage -->
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <footer id="pageFooter">
+            <!-- Generated by initializePage -->
+        </footer>
+    </div>
+
+    <div class="card-tooltip" id="cardTooltip"></div>
+
+    <script>
+        // ============================================================
+        // SET_CONFIG and CARD_DATA are injected by build_page.py
+        // ============================================================
+        const SET_CONFIG = {
+            setCode: "ECL",
+            fullName: "Lorwyn Eclipsed",
+            subtitle: "Normalized Ratings Comparison Across Major Reviewers",
+            version: "2.0.0",
+            headerGradient: ["rgba(102, 126, 234, 0.78)", "rgba(118, 75, 162, 0.78)"],
+            colorWheelUrl: "https://toskicologist.github.io/MTG-draft-sets-infographics/",
+            infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
+            raters: [
+            { id: "cgb", name: "Card Game Base", abbreviation: "CGB", url: "https://cardgamebase.com/lorwyn-eclipsed-draft-tier-list/" },
+            { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-ecl-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-ecl-limited-set-review/#:~:text=${encodeURIComponent(name)}` },
+            { id: "lr", name: "Limited Resources", abbreviation: "LR", url: "https://lrcast.com/limited-resources-836-lorwyn-eclipsed-set-review-commons-and-uncommons/" },
+            { id: "llu1", name: "Limited Level-Ups (1)", abbreviation: "LLU1", url: "https://limitedlevelups.libsyn.com/" },
+            { id: "llu2", name: "Limited Level-Ups (2)", abbreviation: "LLU2", url: "https://limitedlevelups.libsyn.com/" },
+            { id: "cfb", name: "Channel Fireball", abbreviation: "CFB", url: "https://www.tcgplayer.com/search/articles?q=Lorwyn+Eclipsed+Magic:+The+Gathering+Limited+Set+Review&productLineName=magic" }
+            ]
+        };
+        const CARD_DATA = [
+            {"name": "Abigale, Eloquent First-Year", "setCode": "ECL", "rarity": "rare", "colors": ["B", "W"], "type": "Legendary Creature — Bird Bard", "manaCost": "{W/B}{W/B}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.0, "avgNorm": 1.014, "controversy": 0.264},
+            {"name": "Adept Watershaper", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Creature — Merfolk Cleric", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6, "norm": 0.836}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.5, "norm": 1.401}}, "avgRaw": 6.62, "avgNorm": 0.838, "controversy": 0.558},
+            {"name": "Ajani, Outland Chaperone", "setCode": "ECL", "rarity": "mythic", "colors": ["W"], "type": "Legendary Planeswalker — Ajani", "manaCost": "{1}{W}{W}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 8.12, "avgNorm": 1.554, "controversy": 0.251},
+            {"name": "Appeal to Eirdu", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 2.0, "norm": -1.879}}, "avgRaw": 2.92, "avgNorm": -0.964, "controversy": 0.671},
+            {"name": "Aquitect's Defenses", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Enchantment — Aura", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 3.5, "avgNorm": -0.662, "controversy": 0.596},
+            {"name": "Ashling, Rekindled // Ashling, Rimebound", "setCode": "ECL", "rarity": "rare", "colors": ["R", "U"], "type": "Legendary Creature — Elemental Sorcerer // Legendary Creature — Elemental Wizard", "manaCost": null, "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.0, "avgNorm": 0.055, "controversy": 0.572},
+            {"name": "Ashling's Command", "setCode": "ECL", "rarity": "rare", "colors": ["R", "U"], "type": "Kindred Instant — Elemental", "manaCost": "{3}{U}{R}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.75, "avgNorm": 1.366, "controversy": 0.444},
+            {"name": "Assert Perfection", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.25, "avgNorm": 0.298, "controversy": 0.295},
+            {"name": "Auntie's Sentence", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Sorcery", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.17, "avgNorm": -0.345, "controversy": 0.309},
+            {"name": "Aurora Awakener", "setCode": "ECL", "rarity": "mythic", "colors": ["G"], "type": "Creature — Giant Druid", "manaCost": "{6}{G}", "ratings": {"cgb": {"raw": 7.5, "norm": 1.981}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.5, "norm": 1.401}}, "avgRaw": 8.25, "avgNorm": 1.621, "controversy": 0.292},
+            {"name": "Barbed Bloodletter", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Artifact — Equipment", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.33, "avgNorm": -0.844, "controversy": 0.196},
+            {"name": "Bark of Doran", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Artifact — Equipment", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 1.0, "norm": -1.814}, "llu2": {"raw": 1.0, "norm": -2.526}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 2.3, "avgNorm": -1.476, "controversy": 0.803},
+            {"name": "Bile-Vial Boggart", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Goblin Assassin", "manaCost": "{B}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.33, "avgNorm": -0.241, "controversy": 0.197},
+            {"name": "Bitterbloom Bearer", "setCode": "ECL", "rarity": "mythic", "colors": ["B"], "type": "Creature — Faerie Rogue", "manaCost": "{B}{B}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.62, "avgNorm": 1.306, "controversy": 0.084},
+            {"name": "Bitterblossom", "setCode": "SPG", "rarity": "mythic", "colors": ["B"], "type": "Kindred Enchantment — Faerie", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 7.75, "avgNorm": 1.476, "controversy": 0.221},
+            {"name": "Blight Rot", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Instant", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.25, "avgNorm": 0.298, "controversy": 0.295},
+            {"name": "Blighted Blackthorn", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Treefolk Warlock", "manaCost": "{4}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.0, "avgNorm": -1.122, "controversy": 0.668},
+            {"name": "Blood Crypt", "setCode": "ECL", "rarity": "rare", "colors": ["B", "R"], "type": "Land — Swamp Mountain", "manaCost": null, "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": null, "norm": null}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.357, "controversy": 0.072},
+            {"name": "Bloodline Bidding", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Sorcery", "manaCost": "{6}{B}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 3, "norm": -0.754}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 4.88, "avgNorm": -0.086, "controversy": 1.048},
+            {"name": "Bloom Tender", "setCode": "ECL", "rarity": "mythic", "colors": ["G"], "type": "Creature — Elf Druid", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 5.88, "avgNorm": 0.475, "controversy": 0.495},
+            {"name": "Blossombind", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Enchantment — Aura", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.33, "avgNorm": 0.373, "controversy": 0.547},
+            {"name": "Blossoming Defense", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Instant", "manaCost": "{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.25, "avgNorm": 0.297, "controversy": 0.452},
+            {"name": "Boggart Cursecrafter", "setCode": "ECL", "rarity": "uncommon", "colors": ["B", "R"], "type": "Creature — Goblin Warlock", "manaCost": "{B}{R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.08, "avgNorm": 0.746, "controversy": 0.256},
+            {"name": "Boggart Mischief", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Kindred Enchantment — Goblin", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.67, "avgNorm": 0.505, "controversy": 0.542},
+            {"name": "Boggart Prankster", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Goblin Warrior", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.0, "avgNorm": -0.414, "controversy": 0.351},
+            {"name": "Bogslither's Embrace", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Sorcery", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.25, "avgNorm": 0.291, "controversy": 0.296},
+            {"name": "Boldwyr Aggressor", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Giant Warrior", "manaCost": "{3}{R}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.83, "avgNorm": -0.684, "controversy": 0.918},
+            {"name": "Boneclub Berserker", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Goblin Berserker", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": 1.0, "norm": -2.11}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.25, "avgNorm": -0.917, "controversy": 0.608},
+            {"name": "Boulder Dash", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.83, "avgNorm": 0.628, "controversy": 0.322},
+            {"name": "Brambleback Brute", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Giant Warrior", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 4.08, "avgNorm": -0.398, "controversy": 0.429},
+            {"name": "Bre of Clan Stoutarm", "setCode": "ECL", "rarity": "rare", "colors": ["R", "W"], "type": "Legendary Creature — Giant Warrior", "manaCost": "{2}{R}{W}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.62, "avgNorm": 0.786, "controversy": 0.549},
+            {"name": "Brigid, Clachan's Heart // Brigid, Doun's Mind", "setCode": "ECL", "rarity": "rare", "colors": ["G", "W"], "type": "Legendary Creature — Kithkin Warrior // Legendary Creature — Kithkin Soldier", "manaCost": null, "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 6.88, "avgNorm": 0.954, "controversy": 0.313},
+            {"name": "Brigid's Command", "setCode": "ECL", "rarity": "rare", "colors": ["G", "W"], "type": "Kindred Sorcery — Kithkin", "manaCost": "{1}{G}{W}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.62, "avgNorm": 0.826, "controversy": 0.439},
+            {"name": "Bristlebane Battler", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Creature — Kithkin Soldier", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.62, "avgNorm": 0.844, "controversy": 0.281},
+            {"name": "Bristlebane Outrider", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Kithkin Knight", "manaCost": "{3}{G}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 4.67, "avgNorm": -0.015, "controversy": 0.439},
+            {"name": "Burdened Stoneback", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Giant Warrior", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 4.58, "avgNorm": -0.147, "controversy": 0.446},
+            {"name": "Burning Curiosity", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Sorcery", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.42, "avgNorm": -0.71, "controversy": 0.504},
+            {"name": "Catharsis", "setCode": "ECL", "rarity": "mythic", "colors": ["R", "W"], "type": "Creature — Elemental Incarnation", "manaCost": "{4}{R/W}{R/W}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 7.38, "avgNorm": 1.232, "controversy": 0.635},
+            {"name": "Celestial Reunion", "setCode": "ECL", "rarity": "mythic", "colors": ["G"], "type": "Sorcery", "manaCost": "{X}{G}", "ratings": {"cgb": {"raw": 0, "norm": -2.74}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 1.25, "avgNorm": -1.917, "controversy": 0.776},
+            {"name": "Champion of the Clachan", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Creature — Kithkin Knight", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.5, "norm": 0.964}}, "avgRaw": 7.62, "avgNorm": 1.263, "controversy": 0.497},
+            {"name": "Champion of the Path", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Creature — Elemental Sorcerer", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": 3, "norm": -0.851}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 3, "norm": -0.754}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.25, "avgNorm": -0.414, "controversy": 0.458},
+            {"name": "Champion of the Weird", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Creature — Goblin Berserker", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.25, "avgNorm": 1.052, "controversy": 0.524},
+            {"name": "Champions of the Perfect", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Creature — Elf Warrior", "manaCost": "{3}{G}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.38, "avgNorm": 1.161, "controversy": 0.122},
+            {"name": "Champions of the Shoal", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Creature — Merfolk Soldier", "manaCost": "{3}{U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.75, "avgNorm": 1.318, "controversy": 0.464},
+            {"name": "Changeling Wayfinder", "setCode": "ECL", "rarity": "common", "colors": [], "type": "Creature — Shapeshifter", "manaCost": "{3}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.17, "avgNorm": 0.187, "controversy": 0.252},
+            {"name": "Chaos Spewer", "setCode": "ECL", "rarity": "common", "colors": ["B", "R"], "type": "Creature — Goblin Warlock", "manaCost": "{2}{B/R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 1.0, "norm": -2.526}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.08, "avgNorm": -1.066, "controversy": 0.774},
+            {"name": "Chitinous Graspling", "setCode": "ECL", "rarity": "common", "colors": ["G", "U"], "type": "Creature — Shapeshifter", "manaCost": "{3}{G/U}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.08, "avgNorm": -1.02, "controversy": 0.49},
+            {"name": "Chomping Changeling", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Shapeshifter", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": null, "norm": null}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.38, "avgNorm": -0.386, "controversy": 0.794},
+            {"name": "Chronicle of Victory", "setCode": "ECL", "rarity": "mythic", "colors": [], "type": "Legendary Artifact", "manaCost": "{6}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6, "norm": 0.836}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 10.0, "norm": 1.62}}, "avgRaw": 7.5, "avgNorm": 1.203, "controversy": 0.341},
+            {"name": "Cinder Strike", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Sorcery", "manaCost": "{R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.75, "avgNorm": 0.562, "controversy": 0.364},
+            {"name": "Clachan Festival", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Kindred Enchantment — Kithkin", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": 0.021, "controversy": 0.415},
+            {"name": "Collective Inferno", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Enchantment", "manaCost": "{3}{R}{R}", "ratings": {"cgb": {"raw": 1, "norm": -2.11}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 2, "norm": -1.284}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 2.0, "avgNorm": -1.494, "controversy": 0.473},
+            {"name": "Creakwood Safewright", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Elf Warrior", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.0, "avgNorm": 0.123, "controversy": 0.303},
+            {"name": "Crib Swap", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Kindred Instant — Shapeshifter", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 1.0, "norm": -2.11}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 3.5, "norm": -1.238}, "llu1": {"raw": 1.0, "norm": -1.814}, "llu2": {"raw": 1.0, "norm": -2.526}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.08, "avgNorm": -1.647, "controversy": 0.637},
+            {"name": "Crossroads Watcher", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Kithkin Ranger", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 4.42, "avgNorm": -0.229, "controversy": 0.175},
+            {"name": "Curious Colossus", "setCode": "ECL", "rarity": "mythic", "colors": ["W"], "type": "Creature — Giant Warrior", "manaCost": "{5}{W}{W}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 10.0, "norm": 2.148}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 8.12, "avgNorm": 1.525, "controversy": 0.484},
+            {"name": "Darkness Descends", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Sorcery", "manaCost": "{2}{B}{B}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 3.9, "avgNorm": -0.45, "controversy": 0.737},
+            {"name": "Dawn-Blessed Pennant", "setCode": "ECL", "rarity": "uncommon", "colors": [], "type": "Artifact", "manaCost": "{1}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 2.83, "avgNorm": -1.254, "controversy": 0.719},
+            {"name": "Dawn's Light Archer", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Elf Archer", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.33, "avgNorm": -0.914, "controversy": 0.81},
+            {"name": "Dawnhand Dissident", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Creature — Elf Warlock", "manaCost": "{B}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.62, "avgNorm": 0.809, "controversy": 0.455},
+            {"name": "Dawnhand Eulogist", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Elf Warlock", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.83, "avgNorm": -0.446, "controversy": 0.72},
+            {"name": "Deceit", "setCode": "ECL", "rarity": "mythic", "colors": ["B", "U"], "type": "Creature — Elemental Incarnation", "manaCost": "{4}{U/B}{U/B}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 8.0, "avgNorm": 1.488, "controversy": 0.258},
+            {"name": "Deepchannel Duelist", "setCode": "ECL", "rarity": "uncommon", "colors": ["U", "W"], "type": "Creature — Merfolk Soldier", "manaCost": "{W}{U}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.08, "avgNorm": 0.801, "controversy": 0.492},
+            {"name": "Deepway Navigator", "setCode": "ECL", "rarity": "rare", "colors": ["U", "W"], "type": "Creature — Merfolk Wizard", "manaCost": "{W}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.5, "avgNorm": 0.233, "controversy": 0.208},
+            {"name": "Devoted Druid", "setCode": "SPG", "rarity": "mythic", "colors": ["G"], "type": "Creature — Elf Druid", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.25, "avgNorm": 0.267, "controversy": 0.319},
+            {"name": "Disruptor of Currents", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Creature — Merfolk Wizard", "manaCost": "{3}{U}{U}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.5, "avgNorm": 1.262, "controversy": 0.372},
+            {"name": "Dolmen Gate", "setCode": "SPG", "rarity": "mythic", "colors": [], "type": "Artifact", "manaCost": "{2}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 2, "norm": -1.284}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.639, "controversy": 0.501},
+            {"name": "Door of Destinies", "setCode": "SPG", "rarity": "mythic", "colors": [], "type": "Artifact", "manaCost": "{4}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 1, "norm": -1.814}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.696, "controversy": 0.166},
+            {"name": "Doran, Besieged by Time", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G", "W"], "type": "Legendary Creature — Treefolk Druid", "manaCost": "{1}{W}{B}{G}", "ratings": {"cgb": {"raw": 3, "norm": -0.851}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 3, "norm": -0.754}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": -0.207, "controversy": 0.808},
+            {"name": "Dose of Dawnglow", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{4}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.75, "avgNorm": -0.655, "controversy": 0.803},
+            {"name": "Dream Harvest", "setCode": "ECL", "rarity": "rare", "colors": ["B", "U"], "type": "Sorcery", "manaCost": "{5}{U/B}{U/B}", "ratings": {"cgb": {"raw": 3, "norm": -0.851}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 1, "norm": -1.814}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 2.75, "avgNorm": -1.088, "controversy": 1.057},
+            {"name": "Dream Seizer", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Faerie Rogue", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.33, "avgNorm": -0.281, "controversy": 0.364},
+            {"name": "Dundoolin Weaver", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Kithkin Druid", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.42, "avgNorm": 0.352, "controversy": 0.339},
+            {"name": "Eclipsed Boggart", "setCode": "ECL", "rarity": "uncommon", "colors": ["B", "R"], "type": "Creature — Goblin Scout", "manaCost": "{B/R}{B/R}{B/R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 14.0, "norm": 3.37}}, "avgRaw": 7.33, "avgNorm": 1.34, "controversy": 1.033},
+            {"name": "Eclipsed Elf", "setCode": "ECL", "rarity": "uncommon", "colors": ["B", "G"], "type": "Creature — Elf Scout", "manaCost": "{B/G}{B/G}{B/G}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.5, "norm": 1.939}, "cfb": {"raw": 14.0, "norm": 3.37}}, "avgRaw": 7.5, "avgNorm": 1.475, "controversy": 1.053},
+            {"name": "Eclipsed Flamekin", "setCode": "ECL", "rarity": "uncommon", "colors": ["R", "U"], "type": "Creature — Elemental Scout", "manaCost": "{1}{U/R}{U/R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 14.0, "norm": 3.37}}, "avgRaw": 7.08, "avgNorm": 1.184, "controversy": 1.101},
+            {"name": "Eclipsed Kithkin", "setCode": "ECL", "rarity": "uncommon", "colors": ["G", "W"], "type": "Creature — Kithkin Scout", "manaCost": "{G/W}{G/W}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 7.0, "norm": 1.367}, "llu2": {"raw": 7.0, "norm": 2.345}, "cfb": {"raw": 14.0, "norm": 3.37}}, "avgRaw": 7.67, "avgNorm": 1.587, "controversy": 1.084},
+            {"name": "Eclipsed Merrow", "setCode": "ECL", "rarity": "uncommon", "colors": ["U", "W"], "type": "Creature — Merfolk Scout", "manaCost": "{W/U}{W/U}{W/U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 14.0, "norm": 3.37}}, "avgRaw": 7.25, "avgNorm": 1.272, "controversy": 1.055},
+            {"name": "Eclipsed Realms", "setCode": "ECL", "rarity": "uncommon", "colors": [], "type": "Land", "manaCost": null, "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 14.0, "norm": 3.37}}, "avgRaw": 4.6, "avgNorm": -0.547, "controversy": 2.282},
+            {"name": "Eirdu, Carrier of Dawn // Isilu, Carrier of Twilight", "setCode": "ECL", "rarity": "mythic", "colors": ["B", "W"], "type": "Legendary Creature — Elemental God // Legendary Creature — Elemental God", "manaCost": null, "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.88, "avgNorm": 1.421, "controversy": 0.325},
+            {"name": "Elder Auntie", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Goblin Warlock", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.67, "avgNorm": -0.064, "controversy": 0.345},
+            {"name": "Emptiness", "setCode": "ECL", "rarity": "mythic", "colors": ["B", "W"], "type": "Creature — Elemental Incarnation", "manaCost": "{4}{W/B}{W/B}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.88, "avgNorm": 1.444, "controversy": 0.468},
+            {"name": "Encumbered Reejerey", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Merfolk Soldier", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.83, "avgNorm": 0.612, "controversy": 0.383},
+            {"name": "End-Blaze Epiphany", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Instant", "manaCost": "{X}{R}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.62, "avgNorm": 0.88, "controversy": 0.559},
+            {"name": "Enraged Flamecaster", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Elemental Sorcerer", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 2.83, "avgNorm": -1.258, "controversy": 0.696},
+            {"name": "Evershrike's Gift", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Enchantment — Aura", "manaCost": "{W}", "ratings": {"cgb": {"raw": 1.0, "norm": -2.11}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 3.25, "avgNorm": -0.775, "controversy": 0.982},
+            {"name": "Explosive Prodigy", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Elemental Sorcerer", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.25, "avgNorm": 0.795, "controversy": 0.354},
+            {"name": "Faerie Macabre", "setCode": "SPG", "rarity": "mythic", "colors": ["B"], "type": "Creature — Faerie Rogue", "manaCost": "{1}{B}{B}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.5, "avgNorm": -1.962, "controversy": 0.542},
+            {"name": "Feed the Flames", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.67, "avgNorm": -0.064, "controversy": 0.345},
+            {"name": "Feisty Spikeling", "setCode": "ECL", "rarity": "common", "colors": ["R", "W"], "type": "Creature — Shapeshifter", "manaCost": "{1}{R/W}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.92, "avgNorm": -0.533, "controversy": 0.259},
+            {"name": "Figure of Fable", "setCode": "ECL", "rarity": "rare", "colors": ["G", "W"], "type": "Creature — Kithkin", "manaCost": "{G/W}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 8, "norm": 1.897}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.75, "avgNorm": 1.353, "controversy": 0.551},
+            {"name": "Firdoch Core", "setCode": "ECL", "rarity": "common", "colors": [], "type": "Kindred Artifact — Shapeshifter", "manaCost": "{3}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 4.5, "norm": -0.786}}, "avgRaw": 3.25, "avgNorm": -0.947, "controversy": 0.378},
+            {"name": "Flame-Chain Mauler", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Elemental Warrior", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.08, "avgNorm": -0.411, "controversy": 0.324},
+            {"name": "Flamebraider", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Elemental Bard", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.17, "avgNorm": 0.794, "controversy": 0.306},
+            {"name": "Flamekin Gildweaver", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Elemental Sorcerer", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.25, "avgNorm": -0.224, "controversy": 0.665},
+            {"name": "Flaring Cinder", "setCode": "ECL", "rarity": "common", "colors": ["R", "U"], "type": "Creature — Elemental Sorcerer", "manaCost": "{1}{U/R}{U/R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 3.75, "avgNorm": -0.541, "controversy": 0.615},
+            {"name": "Flitterwing Nuisance", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Creature — Faerie Rogue", "manaCost": "{U}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.5, "norm": 1.401}}, "avgRaw": 7.5, "avgNorm": 1.256, "controversy": 0.235},
+            {"name": "Flock Impostor", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Shapeshifter", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.42, "avgNorm": 0.36, "controversy": 0.285},
+            {"name": "Foraging Wickermaw", "setCode": "ECL", "rarity": "common", "colors": [], "type": "Artifact Creature — Scarecrow", "manaCost": "{2}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.33, "avgNorm": -0.298, "controversy": 0.47},
+            {"name": "Formidable Speaker", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Creature — Elf Druid", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.12, "avgNorm": 1.093, "controversy": 0.315},
+            {"name": "Gallant Fowlknight", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Kithkin Knight", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 3.67, "avgNorm": -0.593, "controversy": 0.426},
+            {"name": "Gangly Stompling", "setCode": "ECL", "rarity": "common", "colors": ["G", "R"], "type": "Creature — Shapeshifter", "manaCost": "{2}{R/G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.5, "avgNorm": -0.81, "controversy": 0.956},
+            {"name": "Gathering Stone", "setCode": "ECL", "rarity": "uncommon", "colors": [], "type": "Artifact", "manaCost": "{4}", "ratings": {"cgb": {"raw": 1.0, "norm": -2.11}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": null, "norm": null}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.75, "avgNorm": -1.079, "controversy": 1.296},
+            {"name": "Giantfall", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Instant", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.92, "avgNorm": 0.049, "controversy": 0.3},
+            {"name": "Gilt-Leaf's Embrace", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Enchantment — Aura", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.5, "avgNorm": -1.399, "controversy": 0.636},
+            {"name": "Glamer Gifter", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Faerie Wizard", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.67, "avgNorm": 0.536, "controversy": 0.286},
+            {"name": "Glamermite", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Faerie Rogue", "manaCost": "{2}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.25, "norm": 0.2}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.62, "avgNorm": -0.042, "controversy": 0.339},
+            {"name": "Glen Elendra Guardian", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Creature — Faerie Wizard", "manaCost": "{2}{U}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.5, "avgNorm": 1.239, "controversy": 0.117},
+            {"name": "Glen Elendra's Answer", "setCode": "ECL", "rarity": "mythic", "colors": ["U"], "type": "Instant", "manaCost": "{2}{U}{U}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6, "norm": 0.836}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 5.38, "avgNorm": 0.285, "controversy": 1.031},
+            {"name": "Glister Bairn", "setCode": "ECL", "rarity": "uncommon", "colors": ["G", "U"], "type": "Creature — Ouphe", "manaCost": "{2}{G/U}{G/U}{G/U}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 2.92, "avgNorm": -1.04, "controversy": 0.75},
+            {"name": "Gloom Ripper", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Creature — Elf Assassin", "manaCost": "{3}{B}{B}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 8, "norm": 1.897}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 8.25, "avgNorm": 1.62, "controversy": 0.307},
+            {"name": "Gnarlbark Elm", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Treefolk Warlock", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.42, "avgNorm": 0.352, "controversy": 0.423},
+            {"name": "Goatnap", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.0, "avgNorm": -1.134, "controversy": 0.768},
+            {"name": "Goblin Chieftain", "setCode": "SPG", "rarity": "mythic", "colors": ["R"], "type": "Creature — Goblin", "manaCost": "{1}{R}{R}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.5, "avgNorm": 0.399, "controversy": 0.132},
+            {"name": "Goblin Sharpshooter", "setCode": "SPG", "rarity": "mythic", "colors": ["R"], "type": "Creature — Goblin", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6, "norm": 0.836}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 1.078, "controversy": 0.342},
+            {"name": "Goldmeadow Nomad", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Kithkin Scout", "manaCost": "{W}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 4.17, "avgNorm": -0.271, "controversy": 0.506},
+            {"name": "Goliath Daydreamer", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Creature — Giant Wizard", "manaCost": "{2}{R}{R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.38, "avgNorm": 0.616, "controversy": 0.542},
+            {"name": "Gravelgill Scoundrel", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Merfolk Rogue", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.92, "avgNorm": -1.112, "controversy": 0.587},
+            {"name": "Graveshifter", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Shapeshifter", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.92, "avgNorm": 0.631, "controversy": 0.387},
+            {"name": "Great Forest Druid", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Treefolk Druid", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.0, "avgNorm": 0.09, "controversy": 0.271},
+            {"name": "Gristle Glutton", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Goblin Scout", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.75, "avgNorm": -0.7, "controversy": 0.564},
+            {"name": "Grub, Storied Matriarch // Grub, Notorious Auntie", "setCode": "ECL", "rarity": "rare", "colors": ["B", "R"], "type": "Legendary Creature — Goblin Warlock // Legendary Creature — Goblin Warrior", "manaCost": null, "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.0, "avgNorm": 0.966, "controversy": 0.417},
+            {"name": "Grub's Command", "setCode": "ECL", "rarity": "rare", "colors": ["B", "R"], "type": "Kindred Sorcery — Goblin", "manaCost": "{3}{B}{R}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.38, "avgNorm": 1.155, "controversy": 0.416},
+            {"name": "Gutsplitter Gang", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Goblin Berserker", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.42, "avgNorm": -0.254, "controversy": 0.496},
+            {"name": "Hallowed Fountain", "setCode": "ECL", "rarity": "rare", "colors": ["U", "W"], "type": "Land — Plains Island", "manaCost": null, "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": null, "norm": null}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.357, "controversy": 0.072},
+            {"name": "Harmonized Crescendo", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Instant", "manaCost": "{4}{U}{U}", "ratings": {"cgb": {"raw": 2, "norm": -1.481}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 4.12, "avgNorm": -0.459, "controversy": 1.322},
+            {"name": "Heat Shimmer", "setCode": "SPG", "rarity": "mythic", "colors": ["R"], "type": "Sorcery", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -2.169, "controversy": 0.249},
+            {"name": "Heirloom Auntie", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Goblin Warlock", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.67, "avgNorm": -0.59, "controversy": 0.728},
+            {"name": "Helix Pinnacle", "setCode": "SPG", "rarity": "mythic", "colors": ["G"], "type": "Enchantment", "manaCost": "{G}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -2.169, "controversy": 0.249},
+            {"name": "Hexing Squelcher", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Creature — Goblin Sorcerer", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 3, "norm": -0.851}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": -0.149, "controversy": 0.501},
+            {"name": "High Perfect Morcant", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G"], "type": "Legendary Creature — Elf Noble", "manaCost": "{2}{B}{G}", "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": 10.0, "norm": 2.148}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.38, "avgNorm": 1.101, "controversy": 0.753},
+            {"name": "Hovel Hurler", "setCode": "ECL", "rarity": "uncommon", "colors": ["R", "W"], "type": "Creature — Giant Warrior", "manaCost": "{3}{R/W}{R/W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": -0.045, "controversy": 0.557},
+            {"name": "Idyllic Tutor", "setCode": "SPG", "rarity": "mythic", "colors": ["W"], "type": "Sorcery", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -2.169, "controversy": 0.249},
+            {"name": "Illusion Spinners", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Faerie Wizard", "manaCost": "{4}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.17, "avgNorm": -1.069, "controversy": 0.758},
+            {"name": "Impolite Entrance", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{R}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.5, "avgNorm": -0.872, "controversy": 0.844},
+            {"name": "Iron-Shield Elf", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Elf Warrior", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.83, "avgNorm": 0.651, "controversy": 0.625},
+            {"name": "Keep Out", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 4.0, "avgNorm": -0.402, "controversy": 0.394},
+            {"name": "Kinbinding", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Enchantment", "manaCost": "{3}{W}{W}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 10.0, "norm": 2.148}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 10.0, "norm": 1.62}}, "avgRaw": 8.38, "avgNorm": 1.622, "controversy": 0.372},
+            {"name": "Kindle the Inner Flame", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Kindred Sorcery — Elemental", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 1.0, "norm": -2.526}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.25, "avgNorm": -1.501, "controversy": 0.745},
+            {"name": "Kinsbaile Aspirant", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Kithkin Citizen", "manaCost": "{W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.5, "avgNorm": 0.403, "controversy": 0.368},
+            {"name": "Kinsbaile Cavalier", "setCode": "SPG", "rarity": "mythic", "colors": ["W"], "type": "Creature — Kithkin Knight", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 2, "norm": -1.284}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 2.5, "avgNorm": -1.018, "controversy": 0.377},
+            {"name": "Kinscaer Sentry", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Creature — Kithkin Soldier", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.0, "avgNorm": 0.978, "controversy": 0.207},
+            {"name": "Kirol, Attentive First-Year", "setCode": "ECL", "rarity": "rare", "colors": ["R", "W"], "type": "Legendary Creature — Vampire Cleric", "manaCost": "{1}{R/W}{R/W}", "ratings": {"cgb": {"raw": 3, "norm": -0.851}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 4.88, "avgNorm": -0.106, "controversy": 0.511},
+            {"name": "Kithkeeper", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Elemental", "manaCost": "{6}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": -0.019, "controversy": 0.68},
+            {"name": "Kulrath Mystic", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Elemental Wizard", "manaCost": "{2}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 4.5, "norm": -0.786}}, "avgRaw": 2.83, "avgNorm": -1.105, "controversy": 0.503},
+            {"name": "Kulrath Zealot", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Creature — Elemental Warrior", "manaCost": "{5}{R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.58, "avgNorm": -0.073, "controversy": 0.363},
+            {"name": "Lasting Tarfire", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Enchantment", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 1.0, "norm": -2.11}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 1.0, "norm": -2.526}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.5, "avgNorm": -0.859, "controversy": 1.322},
+            {"name": "Lavaleaper", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Creature — Elemental", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 1, "norm": -1.814}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 0.0, "norm": -2.754}}, "avgRaw": 2.88, "avgNorm": -0.996, "controversy": 1.545},
+            {"name": "Leaf-Crowned Visionary", "setCode": "SPG", "rarity": "mythic", "colors": ["G"], "type": "Creature — Elf Druid", "manaCost": "{G}{G}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6, "norm": 0.836}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 6.5, "avgNorm": 0.871, "controversy": 0.049},
+            {"name": "Liminal Hold", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Enchantment", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.33, "avgNorm": 0.298, "controversy": 0.318},
+            {"name": "Lluwen, Imperfect Naturalist", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G"], "type": "Legendary Creature — Elf Druid", "manaCost": "{B/G}{B/G}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.88, "avgNorm": 0.983, "controversy": 0.498},
+            {"name": "Loch Mare", "setCode": "ECL", "rarity": "mythic", "colors": ["U"], "type": "Creature — Horse Serpent", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 8, "norm": 1.897}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 10.0, "norm": 1.62}}, "avgRaw": 8.5, "avgNorm": 1.73, "controversy": 0.121},
+            {"name": "Lofty Dreams", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Enchantment — Aura", "manaCost": "{3}{U}{U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.33, "avgNorm": 0.336, "controversy": 0.39},
+            {"name": "Luminollusk", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Elemental", "manaCost": "{3}{G}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 5.25, "avgNorm": 0.294, "controversy": 0.484},
+            {"name": "Lys Alana Dignitary", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Elf Advisor", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 4.75, "avgNorm": 0.054, "controversy": 0.598},
+            {"name": "Lys Alana Informant", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Elf Scout", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": 0.011, "controversy": 0.374},
+            {"name": "Manamorphose", "setCode": "SPG", "rarity": "mythic", "colors": ["G", "R"], "type": "Instant", "manaCost": "{1}{R/G}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 2, "norm": -1.284}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.224, "controversy": 0.084},
+            {"name": "Maralen, Fae Ascendant", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G", "U"], "type": "Legendary Creature — Elf Faerie Noble", "manaCost": "{2}{B}{G}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.0, "avgNorm": 0.948, "controversy": 0.678},
+            {"name": "Meanders Guide", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Merfolk Scout", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.33, "avgNorm": -0.224, "controversy": 0.599},
+            {"name": "Meek Attack", "setCode": "ECL", "rarity": "mythic", "colors": ["R"], "type": "Enchantment", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 0, "norm": -2.74}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 0.0, "norm": -2.754}}, "avgRaw": 0.0, "avgNorm": -2.458, "controversy": 0.363},
+            {"name": "Merrow Skyswimmer", "setCode": "ECL", "rarity": "common", "colors": ["U", "W"], "type": "Creature — Merfolk Soldier", "manaCost": "{3}{W/U}{W/U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.25, "avgNorm": 0.311, "controversy": 0.428},
+            {"name": "Midnight Tilling", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Instant", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.75, "avgNorm": -0.556, "controversy": 0.367},
+            {"name": "Mirrorform", "setCode": "ECL", "rarity": "mythic", "colors": ["U"], "type": "Instant", "manaCost": "{4}{U}{U}", "ratings": {"cgb": {"raw": 4, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 3, "norm": -0.754}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 4.75, "avgNorm": -0.136, "controversy": 0.914},
+            {"name": "Mirrormind Crown", "setCode": "ECL", "rarity": "rare", "colors": [], "type": "Artifact — Equipment", "manaCost": "{4}", "ratings": {"cgb": {"raw": 0, "norm": -2.74}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 0.0, "norm": -2.754}}, "avgRaw": 0.0, "avgNorm": -2.458, "controversy": 0.363},
+            {"name": "Mischievous Sneakling", "setCode": "ECL", "rarity": "common", "colors": ["B", "U"], "type": "Creature — Shapeshifter", "manaCost": "{1}{U/B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.08, "avgNorm": -0.411, "controversy": 0.324},
+            {"name": "Mistbind Clique", "setCode": "SPG", "rarity": "mythic", "colors": ["U"], "type": "Creature — Faerie Wizard", "manaCost": "{3}{U}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 1.137, "controversy": 0.326},
+            {"name": "Mistmeadow Council", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Kithkin Advisor", "manaCost": "{4}{G}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": -0.028, "controversy": 0.316},
+            {"name": "Moon-Vigil Adherents", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Elf Druid", "manaCost": "{2}{G}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.08, "avgNorm": 0.175, "controversy": 0.699},
+            {"name": "Moonglove Extractor", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Elf Warlock", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.0, "norm": -0.827}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.5, "avgNorm": -0.795, "controversy": 0.322},
+            {"name": "Moonlit Lamenter", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Treefolk Cleric", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.08, "avgNorm": 0.716, "controversy": 0.53},
+            {"name": "Moonshadow", "setCode": "ECL", "rarity": "mythic", "colors": ["B"], "type": "Creature — Elemental", "manaCost": "{B}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.5, "avgNorm": 0.784, "controversy": 0.451},
+            {"name": "Morcant's Eyes", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Kindred Enchantment — Elf", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.25, "avgNorm": 0.196, "controversy": 0.647},
+            {"name": "Morcant's Loyalist", "setCode": "ECL", "rarity": "uncommon", "colors": ["B", "G"], "type": "Creature — Elf Warrior", "manaCost": "{1}{B}{G}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.5, "norm": 1.939}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.5, "avgNorm": 1.038, "controversy": 0.517},
+            {"name": "Morningtide's Light", "setCode": "ECL", "rarity": "mythic", "colors": ["W"], "type": "Sorcery", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 2, "norm": -1.481}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 3.88, "avgNorm": -0.54, "controversy": 1.4},
+            {"name": "Mornsong Aria", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Legendary Enchantment", "manaCost": "{1}{B}{B}", "ratings": {"cgb": {"raw": 2, "norm": -1.481}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 1.25, "avgNorm": -1.815, "controversy": 0.433},
+            {"name": "Mudbutton Cursetosser", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Goblin Warlock", "manaCost": "{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.17, "avgNorm": 0.203, "controversy": 0.239},
+            {"name": "Mutable Explorer", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Creature — Shapeshifter", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.5, "norm": 0.964}}, "avgRaw": 7.0, "avgNorm": 1.002, "controversy": 0.085},
+            {"name": "Nameless Inversion", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Kindred Instant — Shapeshifter", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.08, "avgNorm": 0.742, "controversy": 0.282},
+            {"name": "Nightmare Sower", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Faerie Assassin", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 4.92, "avgNorm": -0.009, "controversy": 0.313},
+            {"name": "Noggle Robber", "setCode": "ECL", "rarity": "uncommon", "colors": ["G", "R"], "type": "Creature — Noggle Rogue", "manaCost": "{1}{R/G}{R/G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.33, "avgNorm": 0.389, "controversy": 0.641},
+            {"name": "Noggle the Mind", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Enchantment — Aura", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 2.0, "norm": -1.879}}, "avgRaw": 4.08, "avgNorm": -0.225, "controversy": 1.058},
+            {"name": "Oko, Lorwyn Liege // Oko, Shadowmoor Scion", "setCode": "ECL", "rarity": "mythic", "colors": ["G", "U"], "type": "Legendary Planeswalker — Oko // Legendary Planeswalker — Oko", "manaCost": null, "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 10.0, "norm": 1.62}}, "avgRaw": 7.88, "avgNorm": 1.427, "controversy": 0.266},
+            {"name": "Omni-Changeling", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Shapeshifter", "manaCost": "{3}{U}{U}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.17, "avgNorm": 0.212, "controversy": 0.565},
+            {"name": "Overgrown Tomb", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G"], "type": "Land — Swamp Forest", "manaCost": null, "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": null, "norm": null}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.357, "controversy": 0.072},
+            {"name": "Painter's Servant", "setCode": "SPG", "rarity": "mythic", "colors": [], "type": "Artifact Creature — Scarecrow", "manaCost": "{2}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -2.169, "controversy": 0.249},
+            {"name": "Perfect Intimidation", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Sorcery", "manaCost": "{3}{B}", "ratings": {"cgb": {"raw": 1.0, "norm": -2.11}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 2.83, "avgNorm": -1.259, "controversy": 0.814},
+            {"name": "Personify", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Instant", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 4.5, "norm": -0.786}}, "avgRaw": 4.83, "avgNorm": 0.068, "controversy": 0.438},
+            {"name": "Pestered Wellguard", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Merfolk Soldier", "manaCost": "{3}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 4.67, "avgNorm": -0.222, "controversy": 0.593},
+            {"name": "Pitiless Fists", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Enchantment — Aura", "manaCost": "{3}{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 4.92, "avgNorm": 0.173, "controversy": 0.54},
+            {"name": "Prideful Feastling", "setCode": "ECL", "rarity": "common", "colors": ["B", "W"], "type": "Creature — Shapeshifter", "manaCost": "{2}{W/B}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.92, "avgNorm": -0.529, "controversy": 0.318},
+            {"name": "Prismabasher", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Elemental", "manaCost": "{4}{G}{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.0, "avgNorm": 0.147, "controversy": 0.44},
+            {"name": "Prismatic Undercurrents", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Enchantment", "manaCost": "{3}{G}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 1.0, "norm": -1.814}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.38, "avgNorm": -1.313, "controversy": 0.617},
+            {"name": "Protective Response", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Instant", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.33, "avgNorm": 0.382, "controversy": 0.487},
+            {"name": "Puca's Eye", "setCode": "ECL", "rarity": "uncommon", "colors": [], "type": "Artifact", "manaCost": "{2}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.33, "avgNorm": -0.879, "controversy": 0.625},
+            {"name": "Pummeler for Hire", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Giant Mercenary", "manaCost": "{4}{G}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 7.75, "norm": 2.254}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 6.29, "avgNorm": 1.016, "controversy": 0.842},
+            {"name": "Pyrrhic Strike", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Instant", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.42, "avgNorm": 0.426, "controversy": 0.491},
+            {"name": "Raiding Schemes", "setCode": "ECL", "rarity": "rare", "colors": ["G", "R"], "type": "Enchantment", "manaCost": "{3}{R}{G}", "ratings": {"cgb": {"raw": 0, "norm": -2.74}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 1.5, "avgNorm": -1.802, "controversy": 1.156},
+            {"name": "Reaping Willow", "setCode": "ECL", "rarity": "uncommon", "colors": ["B", "W"], "type": "Creature — Treefolk Cleric", "manaCost": "{1}{W/B}{W/B}{W/B}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.25, "avgNorm": 0.24, "controversy": 0.349},
+            {"name": "Reckless Ransacking", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 3.0, "avgNorm": -1.04, "controversy": 0.875},
+            {"name": "Regal Force", "setCode": "SPG", "rarity": "mythic", "colors": ["G"], "type": "Creature — Elemental", "manaCost": "{4}{G}{G}{G}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 7.25, "avgNorm": 1.152, "controversy": 0.822},
+            {"name": "Reluctant Dounguard", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Kithkin Soldier", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.08, "avgNorm": -0.954, "controversy": 0.362},
+            {"name": "Requiting Hex", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{B}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 5.17, "avgNorm": 0.269, "controversy": 0.576},
+            {"name": "Retched Wretch", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Goblin", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.83, "avgNorm": -0.585, "controversy": 0.503},
+            {"name": "Rhys, the Evermore", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Legendary Creature — Elf Warrior", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 6.75, "avgNorm": 0.858, "controversy": 0.385},
+            {"name": "Rime Chill", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{6}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.83, "avgNorm": 0.061, "controversy": 0.34},
+            {"name": "Rimefire Torque", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Artifact", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 0, "norm": -2.74}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 0.0, "norm": -2.754}}, "avgRaw": 0.0, "avgNorm": -2.458, "controversy": 0.363},
+            {"name": "Rimekin Recluse", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Elemental Wizard", "manaCost": "{2}{U}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 7.0, "norm": 1.367}, "llu2": {"raw": 7.0, "norm": 2.345}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.92, "avgNorm": 1.271, "controversy": 0.571},
+            {"name": "Risen Reef", "setCode": "SPG", "rarity": "mythic", "colors": ["G", "U"], "type": "Creature — Elemental", "manaCost": "{1}{G}{U}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 7.5, "avgNorm": 1.344, "controversy": 0.033},
+            {"name": "Riverguard's Reflexes", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 2.92, "avgNorm": -1.027, "controversy": 0.415},
+            {"name": "Rooftop Percher", "setCode": "ECL", "rarity": "common", "colors": [], "type": "Creature — Shapeshifter", "manaCost": "{5}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.17, "avgNorm": -1.014, "controversy": 0.781},
+            {"name": "Run Away Together", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 3.75, "avgNorm": -0.59, "controversy": 0.466},
+            {"name": "Safewright Cavalry", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Elf Warrior", "manaCost": "{3}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 4.25, "avgNorm": -0.31, "controversy": 0.375},
+            {"name": "Sanar, Innovative First-Year", "setCode": "ECL", "rarity": "rare", "colors": ["R", "U"], "type": "Legendary Creature — Goblin Sorcerer", "manaCost": "{2}{U/R}{U/R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.38, "avgNorm": 0.67, "controversy": 0.256},
+            {"name": "Sapling Nursery", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Enchantment", "manaCost": "{6}{G}{G}", "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 3, "norm": -0.754}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.62, "avgNorm": 0.266, "controversy": 0.857},
+            {"name": "Scarblade Scout", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Creature — Elf Scout", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": 0.039, "controversy": 0.489},
+            {"name": "Scarblade's Malice", "setCode": "ECL", "rarity": "common", "colors": ["B"], "type": "Instant", "manaCost": "{B}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 3.92, "avgNorm": -0.573, "controversy": 0.997},
+            {"name": "Scuzzback Scrounger", "setCode": "ECL", "rarity": "rare", "colors": ["R"], "type": "Creature — Goblin Warrior", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 5.62, "avgNorm": 0.305, "controversy": 0.311},
+            {"name": "Sear", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Instant", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.5, "norm": 1.939}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.5, "avgNorm": 1.038, "controversy": 0.517},
+            {"name": "Selfless Safewright", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Creature — Elf Warrior", "manaCost": "{3}{G}{G}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.12, "avgNorm": 0.566, "controversy": 0.208},
+            {"name": "Shadow Urchin", "setCode": "ECL", "rarity": "rare", "colors": ["B", "R"], "type": "Creature — Ouphe", "manaCost": "{2}{B/R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.0, "avgNorm": 0.499, "controversy": 0.434},
+            {"name": "Shimmercreep", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Creature — Elemental", "manaCost": "{4}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 4.83, "avgNorm": 0.025, "controversy": 0.582},
+            {"name": "Shimmerwilds Growth", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Enchantment — Aura", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.08, "avgNorm": 0.163, "controversy": 0.367},
+            {"name": "Shinestriker", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Elemental", "manaCost": "{4}{U}{U}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.42, "avgNorm": 0.537, "controversy": 0.88},
+            {"name": "Shore Lurker", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Merfolk Scout", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 2.0, "norm": -1.879}}, "avgRaw": 2.92, "avgNorm": -0.995, "controversy": 0.496},
+            {"name": "Silvergill Mentor", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Merfolk Wizard", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.67, "avgNorm": 0.567, "controversy": 0.506},
+            {"name": "Silvergill Peddler", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Merfolk Citizen", "manaCost": "{2}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 3.25, "avgNorm": -0.853, "controversy": 0.335},
+            {"name": "Sizzling Changeling", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Shapeshifter", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.42, "avgNorm": 0.423, "controversy": 0.433},
+            {"name": "Slippery Bogle", "setCode": "SPG", "rarity": "mythic", "colors": ["G", "U"], "type": "Creature — Beast", "manaCost": "{G/U}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.5, "avgNorm": -1.962, "controversy": 0.542},
+            {"name": "Slumbering Walker", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Creature — Giant Warrior", "manaCost": "{3}{W}{W}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.5, "norm": 0.964}}, "avgRaw": 7.62, "avgNorm": 1.317, "controversy": 0.274},
+            {"name": "Soul Immolation", "setCode": "ECL", "rarity": "mythic", "colors": ["R"], "type": "Sorcery", "manaCost": "{3}{R}{R}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 10.0, "norm": 2.148}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.88, "avgNorm": 1.415, "controversy": 0.619},
+            {"name": "Soulbright Seeker", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Elemental Sorcerer", "manaCost": "{R}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.83, "avgNorm": 0.014, "controversy": 0.221},
+            {"name": "Sourbread Auntie", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Goblin Warrior", "manaCost": "{2}{R}{R}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.08, "avgNorm": 0.751, "controversy": 0.381},
+            {"name": "Spell Snare", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{U}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": null, "norm": null}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 3.33, "avgNorm": -0.917, "controversy": 1.062},
+            {"name": "Spinerock Tyrant", "setCode": "ECL", "rarity": "mythic", "colors": ["R"], "type": "Creature — Dragon", "manaCost": "{3}{R}{R}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 8.0, "norm": 1.32}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.62, "avgNorm": 1.318, "controversy": 0.249},
+            {"name": "Spiral into Solitude", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Enchantment — Aura", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.33, "avgNorm": 0.366, "controversy": 0.364},
+            {"name": "Springleaf Drum", "setCode": "ECL", "rarity": "uncommon", "colors": [], "type": "Artifact", "manaCost": "{1}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 3.0, "avgNorm": -0.922, "controversy": 0.561},
+            {"name": "Spry and Mighty", "setCode": "ECL", "rarity": "rare", "colors": ["G"], "type": "Sorcery", "manaCost": "{4}{G}", "ratings": {"cgb": {"raw": 4, "norm": -0.222}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 5.88, "avgNorm": 0.373, "controversy": 0.615},
+            {"name": "Squawkroaster", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Elemental", "manaCost": "{3}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.25, "avgNorm": -0.408, "controversy": 0.397},
+            {"name": "Stalactite Dagger", "setCode": "ECL", "rarity": "common", "colors": [], "type": "Artifact — Equipment", "manaCost": "{2}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 2.0, "norm": -1.714}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.08, "avgNorm": -0.984, "controversy": 0.438},
+            {"name": "Steam Vents", "setCode": "ECL", "rarity": "rare", "colors": ["R", "U"], "type": "Land — Island Mountain", "manaCost": null, "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": null, "norm": null}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.357, "controversy": 0.072},
+            {"name": "Sting-Slinger", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Goblin Warrior", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.08, "avgNorm": 0.143, "controversy": 0.592},
+            {"name": "Stoic Grove-Guide", "setCode": "ECL", "rarity": "common", "colors": ["B", "G"], "type": "Creature — Elf Druid", "manaCost": "{4}{B/G}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 3.67, "avgNorm": -0.671, "controversy": 0.54},
+            {"name": "Stratosoarer", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Elemental", "manaCost": "{4}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.5, "norm": -0.348}}, "avgRaw": 4.08, "avgNorm": -0.378, "controversy": 0.349},
+            {"name": "Summit Sentinel", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Elemental Soldier", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 2.0, "norm": -1.879}}, "avgRaw": 3.92, "avgNorm": -0.407, "controversy": 0.737},
+            {"name": "Sun-Dappled Celebrant", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Treefolk Cleric", "manaCost": "{4}{W}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 4.42, "avgNorm": -0.268, "controversy": 0.383},
+            {"name": "Sunderflock", "setCode": "ECL", "rarity": "rare", "colors": ["U"], "type": "Creature — Elemental", "manaCost": "{7}{U}{U}", "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 9.0, "norm": 1.734}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.5, "norm": 1.401}}, "avgRaw": 7.88, "avgNorm": 1.385, "controversy": 0.285},
+            {"name": "Surly Farrier", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Kithkin Citizen", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.17, "avgNorm": -0.326, "controversy": 0.313},
+            {"name": "Swat Away", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{2}{U}{U}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 5.83, "avgNorm": 0.659, "controversy": 0.554},
+            {"name": "Sygg, Wanderwine Wisdom // Sygg, Wanderbrine Shield", "setCode": "ECL", "rarity": "rare", "colors": ["U", "W"], "type": "Legendary Creature — Merfolk Wizard // Legendary Creature — Merfolk Rogue", "manaCost": null, "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 7.12, "avgNorm": 1.057, "controversy": 0.117},
+            {"name": "Sygg's Command", "setCode": "ECL", "rarity": "rare", "colors": ["U", "W"], "type": "Kindred Sorcery — Merfolk", "manaCost": "{1}{W}{U}", "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.88, "avgNorm": 0.445, "controversy": 0.113},
+            {"name": "Tam, Mindful First-Year", "setCode": "ECL", "rarity": "rare", "colors": ["G", "U"], "type": "Legendary Creature — Gorgon Wizard", "manaCost": "{1}{G/U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.25, "avgNorm": 0.656, "controversy": 0.342},
+            {"name": "Tanufel Rimespeaker", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Elemental Wizard", "manaCost": "{3}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 4.67, "avgNorm": -0.165, "controversy": 0.606},
+            {"name": "Taster of Wares", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Creature — Goblin Warlock", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.0, "avgNorm": 1.026, "controversy": 0.262},
+            {"name": "Temple Garden", "setCode": "ECL", "rarity": "rare", "colors": ["G", "W"], "type": "Land — Forest Plains", "manaCost": null, "ratings": {"cgb": {"raw": 5, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.264, "controversy": 0.169},
+            {"name": "Temporal Cleansing", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Sorcery", "manaCost": "{3}{U}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 4.83, "avgNorm": 0.072, "controversy": 0.692},
+            {"name": "Tend the Sprigs", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 3.5, "norm": -1.223}}, "avgRaw": 3.08, "avgNorm": -0.941, "controversy": 0.529},
+            {"name": "Thirst for Identity", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{2}{U}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 4.25, "avgNorm": -0.327, "controversy": 0.506},
+            {"name": "Thoughtweft Charge", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Instant", "manaCost": "{1}{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.75, "avgNorm": 0.004, "controversy": 0.299},
+            {"name": "Thoughtweft Imbuer", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Kithkin Advisor", "manaCost": "{3}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 4.42, "avgNorm": -0.322, "controversy": 0.589},
+            {"name": "Thoughtweft Lieutenant", "setCode": "ECL", "rarity": "uncommon", "colors": ["G", "W"], "type": "Creature — Kithkin Soldier", "manaCost": "{G}{W}", "ratings": {"cgb": {"raw": 6.0, "norm": 1.037}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.5, "norm": 1.939}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.5, "avgNorm": 1.018, "controversy": 0.532},
+            {"name": "Thousand-Year Elixir", "setCode": "SPG", "rarity": "mythic", "colors": [], "type": "Artifact", "manaCost": "{3}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 0.0, "norm": -1.993}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 0, "norm": -2.345}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -2.169, "controversy": 0.249},
+            {"name": "Timid Shieldbearer", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Kithkin Soldier", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.25, "avgNorm": -0.306, "controversy": 0.246},
+            {"name": "Tributary Vaulter", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Merfolk Warrior", "manaCost": "{2}{W}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 2.0, "norm": -1.284}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 1.0, "norm": -2.317}}, "avgRaw": 2.75, "avgNorm": -1.087, "controversy": 0.664},
+            {"name": "Trystan, Callous Cultivator // Trystan, Penitent Culler", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G"], "type": "Legendary Creature — Elf Druid // Legendary Creature — Elf Warlock", "manaCost": null, "ratings": {"cgb": {"raw": 6, "norm": 1.037}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 6.38, "avgNorm": 0.711, "controversy": 0.242},
+            {"name": "Trystan's Command", "setCode": "ECL", "rarity": "rare", "colors": ["B", "G"], "type": "Kindred Sorcery — Elf", "manaCost": "{4}{B}{G}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 10.0, "norm": 2.148}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7, "norm": 1.367}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 8.0, "avgNorm": 1.482, "controversy": 0.587},
+            {"name": "Tweeze", "setCode": "ECL", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{2}{R}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.25, "avgNorm": 0.243, "controversy": 0.272},
+            {"name": "Twilight Diviner", "setCode": "ECL", "rarity": "rare", "colors": ["B"], "type": "Creature — Elf Cleric", "manaCost": "{2}{B}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 5, "norm": 0.306}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.38, "avgNorm": 0.25, "controversy": 0.437},
+            {"name": "Twinflame Travelers", "setCode": "ECL", "rarity": "uncommon", "colors": ["R", "U"], "type": "Creature — Elemental Sorcerer", "manaCost": "{2}{U}{R}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 5.0, "avgNorm": 0.092, "controversy": 0.562},
+            {"name": "Unbury", "setCode": "ECL", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{1}{B}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 4.75, "avgNorm": 0.012, "controversy": 0.568},
+            {"name": "Unexpected Assistance", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{3}{U}{U}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 5.0, "norm": -0.006}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.5, "norm": 1.127}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 4.67, "avgNorm": 0.03, "controversy": 0.705},
+            {"name": "Unforgiving Aim", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Instant", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": 2.0, "norm": -2.471}, "llu1": {"raw": null, "norm": null}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 1.67, "avgNorm": -1.844, "controversy": 0.545},
+            {"name": "Unwelcome Sprite", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Creature — Faerie Rogue", "manaCost": "{1}{U}", "ratings": {"cgb": {"raw": 5.5, "norm": 0.722}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 5.0, "norm": 0.306}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 8.5, "norm": 0.964}}, "avgRaw": 5.92, "avgNorm": 0.602, "controversy": 0.244},
+            {"name": "Vibrance", "setCode": "ECL", "rarity": "mythic", "colors": ["G", "R"], "type": "Creature — Elemental Incarnation", "manaCost": "{3}{R/G}{R/G}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 10.0, "norm": 2.148}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 8, "norm": 1.897}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 8.12, "avgNorm": 1.536, "controversy": 0.623},
+            {"name": "Vinebred Brawler", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Elf Berserker", "manaCost": "{2}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 5.0, "norm": -0.567}}, "avgRaw": 3.75, "avgNorm": -0.619, "controversy": 0.265},
+            {"name": "Virulent Emissary", "setCode": "ECL", "rarity": "uncommon", "colors": ["G"], "type": "Creature — Elf Assassin", "manaCost": "{G}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 5.0, "norm": 0.078}, "lr": {"raw": 6.0, "norm": 0.816}, "llu1": {"raw": 6.5, "norm": 1.102}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 6.5, "norm": 0.089}}, "avgRaw": 5.83, "avgNorm": 0.671, "controversy": 0.585},
+            {"name": "Voracious Tome-Skimmer", "setCode": "ECL", "rarity": "uncommon", "colors": ["B", "U"], "type": "Creature — Faerie Rogue", "manaCost": "{U/B}{U/B}{U/B}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 4.67, "avgNorm": -0.08, "controversy": 0.547},
+            {"name": "Wanderbrine Preacher", "setCode": "ECL", "rarity": "common", "colors": ["W"], "type": "Creature — Merfolk Cleric", "manaCost": "{1}{W}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.25, "norm": 0.2}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.54, "avgNorm": -0.091, "controversy": 0.38},
+            {"name": "Wanderbrine Trapper", "setCode": "ECL", "rarity": "uncommon", "colors": ["W"], "type": "Creature — Merfolk Scout", "manaCost": "{W}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 6.0, "norm": 0.836}, "llu2": {"raw": 6.0, "norm": 1.533}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.25, "avgNorm": 0.87, "controversy": 0.469},
+            {"name": "Wanderwine Distracter", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Creature — Merfolk Wizard", "manaCost": "{3}{U}", "ratings": {"cgb": {"raw": 2.0, "norm": -1.481}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 2.5, "norm": -1.66}}, "avgRaw": 3.0, "avgNorm": -0.994, "controversy": 0.477},
+            {"name": "Wanderwine Farewell", "setCode": "ECL", "rarity": "uncommon", "colors": ["U"], "type": "Kindred Sorcery — Merfolk", "manaCost": "{5}{U}{U}", "ratings": {"cgb": {"raw": 5.0, "norm": 0.408}, "ds": {"raw": 7.0, "norm": 0.906}, "lr": {"raw": 6.5, "norm": 1.227}, "llu1": {"raw": 5.5, "norm": 0.571}, "llu2": {"raw": 5.0, "norm": 0.721}, "cfb": {"raw": 7.0, "norm": 0.308}}, "avgRaw": 6.0, "avgNorm": 0.69, "controversy": 0.339},
+            {"name": "Wanderwine Prophets", "setCode": "SPG", "rarity": "mythic", "colors": ["U"], "type": "Creature — Merfolk Wizard", "manaCost": "{4}{U}{U}", "ratings": {"cgb": {"raw": null, "norm": null}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 1, "norm": -1.814}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": null, "norm": null}}, "avgRaw": 2.5, "avgNorm": -1.075, "controversy": 1.045},
+            {"name": "Warren Torchmaster", "setCode": "ECL", "rarity": "uncommon", "colors": ["R"], "type": "Creature — Goblin Warrior", "manaCost": "{1}{R}", "ratings": {"cgb": {"raw": 4.5, "norm": 0.093}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 5.5, "norm": 0.405}, "llu1": {"raw": 3.0, "norm": -0.754}, "llu2": {"raw": 4.0, "norm": -0.09}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.33, "avgNorm": -0.204, "controversy": 0.465},
+            {"name": "Wary Farmer", "setCode": "ECL", "rarity": "common", "colors": ["G", "W"], "type": "Creature — Kithkin Citizen", "manaCost": "{1}{G/W}{G/W}", "ratings": {"cgb": {"raw": 4.0, "norm": -0.222}, "ds": {"raw": 2.0, "norm": -1.165}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 4.0, "norm": -1.004}}, "avgRaw": 3.92, "avgNorm": -0.409, "controversy": 0.581},
+            {"name": "Wild Unraveling", "setCode": "ECL", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{U}{U}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 3.0, "norm": -0.751}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.0, "norm": -0.224}, "llu2": {"raw": 4.5, "norm": 0.315}, "cfb": {"raw": 3.0, "norm": -1.442}}, "avgRaw": 3.67, "avgNorm": -0.562, "controversy": 0.6},
+            {"name": "Wildvine Pummeler", "setCode": "ECL", "rarity": "common", "colors": ["G"], "type": "Creature — Giant Berserker", "manaCost": "{6}{G}", "ratings": {"cgb": {"raw": 3.0, "norm": -0.851}, "ds": {"raw": 4.0, "norm": -0.336}, "lr": {"raw": 4.5, "norm": -0.417}, "llu1": {"raw": 4.5, "norm": 0.041}, "llu2": {"raw": 3.0, "norm": -0.902}, "cfb": {"raw": 6.0, "norm": -0.13}}, "avgRaw": 4.17, "avgNorm": -0.433, "controversy": 0.38},
+            {"name": "Winnowing", "setCode": "ECL", "rarity": "rare", "colors": ["W"], "type": "Sorcery", "manaCost": "{4}{W}{W}", "ratings": {"cgb": {"raw": 6.5, "norm": 1.352}, "ds": {"raw": 1.0, "norm": -1.579}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 1, "norm": -1.814}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 9.0, "norm": 1.183}}, "avgRaw": 4.38, "avgNorm": -0.214, "controversy": 1.715},
+            {"name": "Wistfulness", "setCode": "ECL", "rarity": "mythic", "colors": ["G", "U"], "type": "Creature — Elemental Incarnation", "manaCost": "{3}{G/U}{G/U}", "ratings": {"cgb": {"raw": 7, "norm": 1.667}, "ds": {"raw": 6.0, "norm": 0.492}, "lr": {"raw": null, "norm": null}, "llu1": {"raw": 7.5, "norm": 1.632}, "llu2": {"raw": null, "norm": null}, "cfb": {"raw": 8.0, "norm": 0.745}}, "avgRaw": 7.12, "avgNorm": 1.134, "controversy": 0.604}
+        ];
+
+        // ============================================================
+        // Constants
+        // ============================================================
+        const IMAGE_COLUMN_SCALE = 1.5;
+        const RARITY_ORDER = { common: 1, uncommon: 2, rare: 3, mythic: 4 };
+        const RARITY_LABELS = { common: 'C', uncommon: 'U', rare: 'R', mythic: 'M' };
+
+        let activeCardLink = null;
+        const cardImageCache = new Map();
+        const columnWidthState = { baseWidths: null, imagesScaled: false };
+        const sortState = { key: 'avg_norm', direction: 'desc' };
+
+        // ============================================================
+        // Generated from SET_CONFIG — sortKeyMap
+        // ============================================================
+        const sortKeyMap = {
+            name: 'name',
+            set_code: 'setCode',
+            rarity: 'rarityRank',
+            color_identity: 'colorIdentity',
+            type: 'type',
+            mana_cost: 'manaCost',
+            avg_norm: 'avgNorm',
+            avg_raw: 'avgRaw',
+            controversy: 'controversy'
+        };
+        for (const rater of SET_CONFIG.raters) {
+            sortKeyMap[rater.id + '_raw'] = rater.id + 'Raw';
+            sortKeyMap[rater.id + '_norm'] = rater.id + 'Norm';
+        }
+
+        // ============================================================
+        // Utility functions
+        // ============================================================
+        function getRarityRank(rarity) {
+            if (!rarity) return null;
+            const key = String(rarity).toLowerCase();
+            return RARITY_ORDER[key] ?? null;
+        }
+
+        function formatRarity(rarity) {
+            if (!rarity) return '-';
+            const key = String(rarity).toLowerCase();
+            return RARITY_LABELS[key] ?? rarity;
+        }
+
+        function getTypeCode(fullType) {
+            if (!fullType) return '-';
+            const t = String(fullType).toLowerCase();
+            if (t.includes('creature')) return 'C';
+            if (t.includes('instant')) return 'I';
+            if (t.includes('sorcery')) return 'S';
+            if (t.includes('artifact')) return 'A';
+            if (t.includes('enchantment')) return 'E';
+            if (t.includes('land')) return 'L';
+            if (t.includes('planeswalker')) return 'P';
+            return '?';
+        }
+
+        function getScoreClass(value) {
+            if (!Number.isFinite(value)) return '';
+            if (value >= 1.5) return 'score-excellent';
+            if (value >= 0.5) return 'score-good';
+            if (value > -0.5) return 'score-neutral';
+            if (value >= -1.5) return 'score-poor';
+            return 'score-very-poor';
+        }
+
+        function getControversyClass(value) {
+            if (!Number.isFinite(value)) return '';
+            if (value < 0.5) return 'controversy-low';
+            if (value < 1.0) return 'controversy-medium';
+            return 'controversy-high';
+        }
+
+        function buildRaterLink(rater, cardName) {
+            if (!rater.linkPattern) return null;
+            if (typeof rater.linkPattern === 'function') {
+                return rater.linkPattern(cardName);
+            }
+            return rater.linkPattern;
+        }
+
+        // ============================================================
+        // Scryfall image fetching
+        // ============================================================
+        function fetchCardImageUrl(cardName) {
+            if (cardImageCache.has(cardName)) {
+                return Promise.resolve(cardImageCache.get(cardName));
+            }
+            return fetch('https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(cardName))
+                .then(r => r.json())
+                .then(card => {
+                    const url = (card.image_uris && card.image_uris.normal) || null;
+                    cardImageCache.set(cardName, url);
+                    return url;
+                })
+                .catch(() => { cardImageCache.set(cardName, null); return null; });
+        }
+
+        // ============================================================
+        // initializePage — generates all rater-dependent HTML
+        // ============================================================
+        function initializePage() {
+            const raters = SET_CONFIG.raters;
+            const numRaters = raters.length;
+
+            // Page title and header
+            document.title = SET_CONFIG.setCode + ' - ' + SET_CONFIG.subtitle;
+            document.getElementById('pageTitle').textContent = SET_CONFIG.fullName;
+            document.getElementById('pageSubtitle').textContent = SET_CONFIG.subtitle;
+
+            // Header gradient
+            if (SET_CONFIG.headerGradient) {
+                const header = document.getElementById('pageHeader');
+                header.style.background = 'linear-gradient(135deg, ' + SET_CONFIG.headerGradient[0] + ' 0%, ' + SET_CONFIG.headerGradient[1] + ' 100%)';
+                const beforeStyle = document.createElement('style');
+                beforeStyle.textContent = 'header::before { background: linear-gradient(135deg, ' + SET_CONFIG.headerGradient[0] + ' 0%, ' + SET_CONFIG.headerGradient[1] + ' 100%); }';
+                document.head.appendChild(beforeStyle);
+            }
+
+            // Info banner
+            let bannerHtml = SET_CONFIG.infoBanner || '';
+            if (SET_CONFIG.colorWheelUrl) {
+                bannerHtml += '<p style="margin-top: 12px;">• You might also like my <a href="' + SET_CONFIG.colorWheelUrl + '" target="_blank" rel="noopener">interactive color wheel of the set archetypes</a></p>';
+            }
+            document.getElementById('infoBanner').innerHTML = bannerHtml;
+
+            // OG meta tags
+            document.querySelector('meta[property="og:title"]').content = SET_CONFIG.setCode + ' - ' + SET_CONFIG.subtitle;
+            document.querySelector('meta[property="og:description"]').content = 'Interactive z-score normalized ratings viewer for ' + SET_CONFIG.fullName;
+
+            // Colgroup: 6 fixed + 2 per rater + 1 avg_raw = 6 + 2*N + 1
+            const colgroup = document.getElementById('tableColgroup');
+            colgroup.innerHTML = '';
+            const fixedCols = [
+                { cls: 'col-name' },
+                { cls: 'col-set' },
+                { cls: 'col-score col-rarity' },
+                { cls: 'col-score col-colors' },
+                { cls: 'col-type' },
+                { cls: 'col-mana-cost' },
+                { cls: 'col-score col-avg-norm' },
+                { cls: 'col-score col-controversy' }
+            ];
+            fixedCols.forEach(c => {
+                const col = document.createElement('col');
+                col.className = c.cls;
+                colgroup.appendChild(col);
+            });
+            // Per-rater columns (raw + norm)
+            for (let i = 0; i < numRaters; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const col = document.createElement('col');
+                    col.className = 'col-score';
+                    colgroup.appendChild(col);
+                }
+            }
+            // Avg Raw column
+            const avgRawCol = document.createElement('col');
+            avgRawCol.className = 'col-score';
+            colgroup.appendChild(avgRawCol);
+
+            // Thead
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = '';
+
+            // Row 1: fixed headers + rater group headers + avg raw
+            const row1 = document.createElement('tr');
+            const fixedHeaders = [
+                { text: 'Card Name', sortKey: 'name', colIndex: 0, resizable: true },
+                { text: 'Set', sortKey: 'set_code', colIndex: 1, resizable: true, cls: 'col-set' },
+                { text: 'Rarity', sortKey: 'rarity', colIndex: 2, resizable: true, cls: 'col-rarity' },
+                { text: 'Colors', sortKey: 'color_identity', colIndex: 3, resizable: true, cls: 'col-colors' },
+                { text: 'Type', sortKey: 'type', colIndex: 4, resizable: true, cls: 'col-type' },
+                { text: 'Mana', sortKey: 'mana_cost', colIndex: 5, resizable: true, cls: 'col-mana-cost' },
+                { text: 'Avg Norm', sortKey: 'avg_norm', colIndex: 6, resizable: true, cls: 'col-avg-norm' },
+                { text: 'Controversy', sortKey: 'controversy', colIndex: 7, resizable: true, cls: 'col-controversy' }
+            ];
+
+            fixedHeaders.forEach(h => {
+                const th = document.createElement('th');
+                th.rowSpan = 2;
+                th.className = 'sortable' + (h.cls ? ' ' + h.cls : '');
+                th.dataset.sortKey = h.sortKey;
+                th.dataset.colIndex = h.colIndex;
+                if (h.resizable) th.dataset.resizable = 'true';
+                th.innerHTML = h.text + '<span class="sort-indicator">\u25B2</span>';
+                row1.appendChild(th);
+            });
+
+            // Rater group headers (colspan=2 each)
+            const raterStartCol = 8; // first rater column index (6 fixed + 2 = 8)
+            raters.forEach((rater, i) => {
+                const th = document.createElement('th');
+                th.colSpan = 2;
+                th.className = 'source-header group-start group-end';
+                if (rater.url) {
+                    th.innerHTML = '<a href="' + rater.url + '" target="_blank" title="View ' + rater.name + ' review">' + rater.name + '</a>';
+                } else {
+                    th.textContent = rater.name;
+                }
+                row1.appendChild(th);
+            });
+
+            // Avg Raw header
+            const avgRawColIndex = raterStartCol + numRaters * 2;
+            const avgRawTh = document.createElement('th');
+            avgRawTh.rowSpan = 2;
+            avgRawTh.className = 'sortable';
+            avgRawTh.dataset.sortKey = 'avg_raw';
+            avgRawTh.dataset.colIndex = avgRawColIndex;
+            avgRawTh.dataset.resizable = 'true';
+            avgRawTh.innerHTML = 'Avg Raw<span class="sort-indicator">\u25B2</span>';
+            row1.appendChild(avgRawTh);
+
+            thead.appendChild(row1);
+
+            // Row 2: Raw/Norm sub-headers for each rater
+            const row2 = document.createElement('tr');
+            raters.forEach((rater, i) => {
+                const rawColIndex = raterStartCol + i * 2;
+                const normColIndex = rawColIndex + 1;
+
+                const rawTh = document.createElement('th');
+                rawTh.className = 'sortable group-start';
+                rawTh.dataset.sortKey = rater.id + '_raw';
+                rawTh.dataset.colIndex = rawColIndex;
+                rawTh.innerHTML = 'Raw<span class="sort-indicator">\u25B2</span>';
+                row2.appendChild(rawTh);
+
+                const normTh = document.createElement('th');
+                normTh.className = 'sortable group-end';
+                normTh.dataset.sortKey = rater.id + '_norm';
+                normTh.dataset.colIndex = normColIndex;
+                normTh.innerHTML = 'Norm<span class="sort-indicator">\u25B2</span>';
+                row2.appendChild(normTh);
+            });
+            thead.appendChild(row2);
+
+            // Sort dropdown: add per-rater options
+            const sortBy = document.getElementById('sortBy');
+            raters.forEach(rater => {
+                const rawOpt = document.createElement('option');
+                rawOpt.value = rater.id + '_raw';
+                rawOpt.textContent = rater.abbreviation + ' Raw';
+                sortBy.appendChild(rawOpt);
+
+                const normOpt = document.createElement('option');
+                normOpt.value = rater.id + '_norm';
+                normOpt.textContent = rater.abbreviation + ' Norm';
+                sortBy.appendChild(normOpt);
+            });
+
+            // Footer
+            const footer = document.getElementById('pageFooter');
+            const abbreviations = raters.map(r => r.abbreviation + ' = ' + r.name).join(', ');
+            footer.innerHTML = '<p><strong>Rater Abbreviations:</strong> ' + abbreviations + '</p>' +
+                '<p>Data normalized using Z-score method. Card images powered by Scryfall API. Hover over card names to see card images.</p>' +
+                '<p id="versionInfo"></p>';
+        }
+
+        // ============================================================
+        // createTableRow — dynamic, iterates SET_CONFIG.raters
+        // ============================================================
+        function createTableRow(card) {
+            const raters = SET_CONFIG.raters;
+            const row = document.createElement('tr');
+
+            // Dataset attributes for sorting
+            row.dataset.name = card.name;
+            row.dataset.setCode = card.setCode || '';
+            row.dataset.rarity = card.rarity || '';
+            row.dataset.colorIdentity = card.colors.join('') || 'C';
+            row.dataset.type = card.type || '';
+            row.dataset.manaCost = card.manaCost || '';
+            row.dataset.rarityRank = getRarityRank(card.rarity) ?? '';
+            row.dataset.avgNorm = Number.isFinite(card.avgNorm) ? card.avgNorm : '';
+            row.dataset.avgRaw = Number.isFinite(card.avgRaw) ? card.avgRaw : '';
+            row.dataset.controversy = Number.isFinite(card.controversy) ? card.controversy : '';
+
+            // Per-rater dataset attrs
+            for (const rater of raters) {
+                const r = card.ratings[rater.id] || {};
+                row.dataset[rater.id + 'Raw'] = Number.isFinite(r.raw) ? r.raw : '';
+                row.dataset[rater.id + 'Norm'] = Number.isFinite(r.norm) ? r.norm : '';
+            }
+
+            // Build cell HTML
+            // Scryfall URL: use card.scryfallUrl or construct a search URL
+            const scryfallUrl = card.scryfallUrl || ('https://scryfall.com/search?q=' + encodeURIComponent('"' + card.name + '"'));
+            let html = '<td><a href="' + scryfallUrl + '" target="_blank" title="View on Scryfall">' + card.name + '</a></td>';
+
+            html += '<td class="col-set">' + (card.setCode || '') + '</td>';
+
+            html += '<td class="col-rarity">' + formatRarity(card.rarity) + '</td>';
+
+            const colorText = card.colors.join('') || 'C';
+            html += '<td class="col-colors" data-colors="' + card.colors.join('') + '">' + colorText + '</td>';
+
+            const typeCode = getTypeCode(card.type);
+            html += '<td class="col-type compact" data-full-type="' + (card.type || '') + '" title="' + (card.type || '') + '">' + typeCode + '</td>';
+            html += '<td class="col-mana-cost">' + (card.manaCost || '-') + '</td>';
+
+            const avgNormClass = getScoreClass(card.avgNorm);
+            const contClass = getControversyClass(card.controversy);
+            const avgNormText = Number.isFinite(card.avgNorm)
+                ? (card.avgNorm >= 0 ? '+' : '') + card.avgNorm.toFixed(2) : '-';
+            const contText = Number.isFinite(card.controversy) ? card.controversy.toFixed(2) : '-';
+            html += '<td class="' + avgNormClass + ' col-avg-norm">' + avgNormText + '</td>';
+            html += '<td class="' + contClass + ' col-controversy">' + contText + '</td>';
+
+            // Per-rater raw/norm pairs
+            for (const rater of raters) {
+                const r = card.ratings[rater.id] || {};
+                const rawVal = r.raw;
+                const normVal = r.norm;
+                const rawClass = getScoreClass(normVal);  // Color by norm score
+                const normClass = getScoreClass(normVal);
+                const rawText = Number.isFinite(rawVal) ? rawVal.toFixed(2) : '-';
+                const normText = Number.isFinite(normVal) ? (normVal >= 0 ? '+' : '') + normVal.toFixed(2) : '-';
+
+                let rawCell = rawText;
+                let normCell = normText;
+
+                // If rater has a linkPattern, wrap in link
+                if (rater.linkPattern) {
+                    const link = buildRaterLink(rater, card.name);
+                    if (Number.isFinite(rawVal)) {
+                        rawCell = '<a class="score-link" href="' + link + '" target="_blank" title="Open ' + rater.name + ' review">' + rawText + '</a>';
+                    }
+                    if (Number.isFinite(normVal)) {
+                        normCell = '<a class="score-link" href="' + link + '" target="_blank" title="Open ' + rater.name + ' review">' + normText + '</a>';
+                    }
+                }
+
+                html += '<td class="' + rawClass + ' group-start">' + rawCell + '</td>';
+                html += '<td class="' + normClass + ' group-end">' + normCell + '</td>';
+            }
+
+            // Avg Raw
+            const avgRawClass = getScoreClass(card.avgRaw);
+            const avgRawText = Number.isFinite(card.avgRaw) ? card.avgRaw.toFixed(2) : '-';
+            html += '<td class="' + avgRawClass + '">' + avgRawText + '</td>';
+
+            row.innerHTML = html;
+            return row;
+        }
+
+        // ============================================================
+        // Sort, filter, display functions
+        // ============================================================
+        function sortTable() {
+            const tbody = document.getElementById('tableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const sortKey = sortState.key;
+                if (sortKey === 'name') {
+                    const aVal = a.dataset.name.toLowerCase();
+                    const bVal = b.dataset.name.toLowerCase();
+                    if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                if (sortKey === 'color_identity' || sortKey === 'type' || sortKey === 'mana_cost' || sortKey === 'set_code') {
+                    const datasetKey = sortKeyMap[sortKey];
+                    const aVal = (a.dataset[datasetKey] || '').toLowerCase();
+                    const bVal = (b.dataset[datasetKey] || '').toLowerCase();
+                    if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                const datasetKey = sortKeyMap[sortKey];
+                const aRaw = parseFloat(a.dataset[datasetKey]);
+                const bRaw = parseFloat(b.dataset[datasetKey]);
+                const aVal = Number.isFinite(aRaw) ? aRaw : (sortState.direction === 'asc' ? Infinity : -Infinity);
+                const bVal = Number.isFinite(bRaw) ? bRaw : (sortState.direction === 'asc' ? Infinity : -Infinity);
+                if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            updateInlineImages();
+            updateSortIndicators();
+        }
+
+        function getSelectedRarities() {
+            const selected = new Set();
+            document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+                if (toggle.checked) selected.add(toggle.dataset.rarity);
+            });
+            return selected;
+        }
+
+        function setRarityFilters(enabled) {
+            document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+                toggle.checked = enabled;
+            });
+            applyFilters();
+        }
+
+        function getSelectedColors() {
+            const selected = new Set();
+            document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+                if (toggle.checked) selected.add(toggle.dataset.color);
+            });
+            return selected;
+        }
+
+        function setColorFilters(enabled) {
+            document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+                toggle.checked = enabled;
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const selectedRarities = getSelectedRarities();
+            const selectedColors = getSelectedColors();
+            const rows = document.getElementById('tableBody').querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cardName = row.dataset.name.toLowerCase();
+                const rarity = row.dataset.rarity || '';
+                const colorsTd = row.cells[2];
+                const cardColors = colorsTd ? (colorsTd.dataset.colors || '') : '';
+
+                const matchesName = cardName.includes(searchTerm);
+                const matchesRarity = selectedRarities.size > 0 && selectedRarities.has(rarity);
+
+                let matchesColor = true;
+                if (selectedColors.size > 0) {
+                    if (cardColors.length === 0) {
+                        matchesColor = selectedColors.has('C');
+                    } else {
+                        matchesColor = Array.from(cardColors).some(color => selectedColors.has(color));
+                    }
+                }
+
+                row.style.display = matchesName && matchesRarity && matchesColor ? '' : 'none';
+            });
+            updateInlineImages();
+        }
+
+        // ============================================================
+        // Card image tooltip
+        // ============================================================
+        function showCardImage(e) {
+            const link = e.currentTarget;
+            const cardName = link.textContent;
+            const tooltip = document.getElementById('cardTooltip');
+            activeCardLink = link;
+
+            fetchCardImageUrl(cardName).then(url => {
+                if (!url || activeCardLink !== link) return;
+                tooltip.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = cardName;
+                tooltip.appendChild(img);
+                tooltip.style.display = 'block';
+                img.addEventListener('load', updateTooltipPosition);
+                updateTooltipPosition();
+            });
+        }
+
+        function hideCardImage() {
+            activeCardLink = null;
+            document.getElementById('cardTooltip').style.display = 'none';
+        }
+
+        function updateTooltipPosition() {
+            const tooltip = document.getElementById('cardTooltip');
+            if (!activeCardLink || tooltip.style.display !== 'block') return;
+
+            const margin = 8;
+            const rect = activeCardLink.getBoundingClientRect();
+            const tooltipWidth = tooltip.offsetWidth;
+            const tooltipHeight = tooltip.offsetHeight;
+
+            let left = rect.left;
+            if (left + tooltipWidth > window.innerWidth - margin) left = window.innerWidth - margin - tooltipWidth;
+            if (left < margin) left = margin;
+
+            let top = rect.top - tooltipHeight - margin;
+            if (top < margin) top = rect.bottom + margin;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+
+        // ============================================================
+        // Inline card images
+        // ============================================================
+        function ensureRowImage(row) {
+            const cardName = row.dataset.name;
+            if (!cardName) return;
+            const cell = row.querySelector('td:first-child');
+            if (!cell) return;
+
+            let container = cell.querySelector('.card-image');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'card-image';
+                cell.appendChild(container);
+            }
+            if (container.dataset.loaded === 'true') return;
+            container.dataset.loaded = 'pending';
+
+            fetchCardImageUrl(cardName).then(url => {
+                if (!url) return;
+                if (!container.querySelector('img')) {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = cardName;
+                    container.appendChild(img);
+                }
+                container.dataset.loaded = 'true';
+            });
+        }
+
+        function updateInlineImages() {
+            const toggle = document.getElementById('toggleImages');
+            const enabled = toggle && toggle.checked;
+            document.body.classList.toggle('show-images', enabled);
+
+            if (enabled && !columnWidthState.imagesScaled) {
+                applyImageColumnScale(true);
+                columnWidthState.imagesScaled = true;
+            }
+            if (!enabled && columnWidthState.imagesScaled) {
+                applyImageColumnScale(false);
+                columnWidthState.imagesScaled = false;
+            }
+            if (!enabled) return;
+
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.style.display === 'none') return;
+                ensureRowImage(row);
+            });
+        }
+
+        function updateSortIndicators() {
+            document.querySelectorAll('th[data-sort-key]').forEach(th => {
+                const indicator = th.querySelector('.sort-indicator');
+                if (!indicator) return;
+                if (th.dataset.sortKey === sortState.key) {
+                    th.classList.add('sorted');
+                    indicator.textContent = sortState.direction === 'asc' ? '\u25B2' : '\u25BC';
+                } else {
+                    th.classList.remove('sorted');
+                    indicator.textContent = '\u25B2';
+                }
+            });
+        }
+
+        function updateRarityHighlight() {
+            const toggle = document.getElementById('toggleRarity');
+            document.body.classList.toggle('rarity-color', toggle && toggle.checked);
+        }
+
+        function updateTypeDisplay() {
+            const toggle = document.getElementById('toggleTypeDisplay');
+            const isExpanded = toggle && toggle.checked;
+            document.querySelectorAll('td.col-type').forEach(cell => {
+                if (isExpanded) {
+                    cell.classList.remove('compact');
+                    cell.textContent = cell.dataset.fullType || '-';
+                } else {
+                    cell.classList.add('compact');
+                    cell.textContent = getTypeCode(cell.dataset.fullType);
+                }
+            });
+        }
+
+        // ============================================================
+        // Column resizing
+        // ============================================================
+        function setColumnWidth(index, width) {
+            const cols = document.getElementById('ratingsTable').querySelectorAll('col');
+            const col = cols[index];
+            if (col) {
+                col.style.width = width + 'px';
+                col.style.minWidth = width + 'px';
+            }
+        }
+
+        function captureBaseWidths() {
+            const table = document.getElementById('ratingsTable');
+            const cols = table.querySelectorAll('col');
+            columnWidthState.baseWidths = Array.from(cols).map((col, index) => {
+                const header = table.querySelector('th[data-col-index="' + index + '"]');
+                return header ? header.offsetWidth : 0;
+            });
+        }
+
+        function applyImageColumnScale(enabled) {
+            if (!columnWidthState.baseWidths) captureBaseWidths();
+            const scale = enabled ? IMAGE_COLUMN_SCALE : 1;
+            columnWidthState.baseWidths.forEach((width, index) => {
+                const targetWidth = index === 0 ? Math.round(width * scale) : width;
+                setColumnWidth(index, targetWidth);
+            });
+        }
+
+        function setupColumnResizers() {
+            const table = document.getElementById('ratingsTable');
+            const headers = table.querySelectorAll('th[data-resizable="true"]');
+
+            headers.forEach(th => {
+                if (th.querySelector('.col-resizer')) return;
+                const colIndex = parseInt(th.dataset.colIndex, 10);
+                if (Number.isNaN(colIndex)) return;
+
+                const resizer = document.createElement('div');
+                resizer.className = 'col-resizer';
+                th.appendChild(resizer);
+
+                let startX = 0, startWidth = 0;
+
+                const onMouseMove = event => {
+                    const delta = event.pageX - startX;
+                    const minWidth = colIndex === 0 ? 160 : 35;
+                    const newWidth = Math.max(minWidth, startWidth + delta);
+                    setColumnWidth(colIndex, newWidth);
+                    if (!columnWidthState.baseWidths) captureBaseWidths();
+                    if (document.body.classList.contains('show-images') && colIndex === 0) {
+                        columnWidthState.baseWidths[colIndex] = newWidth / IMAGE_COLUMN_SCALE;
+                    } else {
+                        columnWidthState.baseWidths[colIndex] = newWidth;
+                    }
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    th.classList.remove('resizing');
+                };
+
+                resizer.addEventListener('mousedown', event => {
+                    event.preventDefault();
+                    startX = event.pageX;
+                    startWidth = th.offsetWidth;
+                    th.classList.add('resizing');
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            });
+        }
+
+        function setVersionInfo() {
+            const el = document.getElementById('versionInfo');
+            if (el) el.textContent = 'Viewer version ' + SET_CONFIG.version;
+        }
+
+        // ============================================================
+        // Initialize table with pre-computed data
+        // ============================================================
+        function initializeTable(data) {
+            const tbody = document.getElementById('tableBody');
+            data.forEach(card => {
+                tbody.appendChild(createTableRow(card));
+            });
+
+            // Tooltip event listeners
+            document.querySelectorAll('td:first-child a').forEach(link => {
+                link.addEventListener('mouseenter', showCardImage);
+                link.addEventListener('mouseleave', hideCardImage);
+                link.parentElement.parentElement.addEventListener('mousemove', updateTooltipPosition);
+            });
+
+            // Set initial sort
+            const sortBySelect = document.getElementById('sortBy');
+            const directionSelect = document.getElementById('direction');
+            if (sortBySelect && sortBySelect.querySelector('option[value="' + sortState.key + '"]')) {
+                sortBySelect.value = sortState.key;
+            }
+            if (directionSelect) directionSelect.value = sortState.direction;
+
+            sortTable();
+            applyFilters();
+            updateRarityHighlight();
+        }
+
+        // ============================================================
+        // Event listeners
+        // ============================================================
+        const sortBySelect = document.getElementById('sortBy');
+        const directionSelect = document.getElementById('direction');
+        if (sortBySelect) {
+            sortBySelect.addEventListener('change', () => {
+                sortState.key = sortBySelect.value;
+                sortTable();
+            });
+        }
+        if (directionSelect) {
+            directionSelect.addEventListener('change', () => {
+                sortState.direction = directionSelect.value;
+                sortTable();
+            });
+        }
+        document.getElementById('searchBox').addEventListener('input', applyFilters);
+        document.getElementById('toggleImages').addEventListener('change', updateInlineImages);
+
+        const rarityToggle = document.getElementById('toggleRarity');
+        if (rarityToggle) rarityToggle.addEventListener('change', updateRarityHighlight);
+
+        const typeToggle = document.getElementById('toggleTypeDisplay');
+        if (typeToggle) typeToggle.addEventListener('change', updateTypeDisplay);
+
+        document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+            toggle.addEventListener('change', applyFilters);
+        });
+        document.querySelectorAll('.rarity-filter-action').forEach(button => {
+            button.addEventListener('click', () => setRarityFilters(button.dataset.action === 'all'));
+        });
+        document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+            toggle.addEventListener('change', applyFilters);
+        });
+        document.querySelectorAll('.color-filter-action').forEach(button => {
+            button.addEventListener('click', () => setColorFilters(button.dataset.action === 'all'));
+        });
+
+        // ============================================================
+        // Main: initialize page and load data
+        // ============================================================
+        initializePage();
+        setVersionInfo();
+        setupColumnResizers();
+
+        // Header click sorting
+        document.querySelectorAll('th[data-sort-key]').forEach(th => {
+            th.addEventListener('click', event => {
+                if (event.target.classList.contains('col-resizer')) return;
+                const key = th.dataset.sortKey;
+                if (sortState.key === key) {
+                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortState.key = key;
+                    sortState.direction = 'desc';
+                }
+                if (sortBySelect && sortBySelect.querySelector('option[value="' + key + '"]')) {
+                    sortBySelect.value = key;
+                }
+                if (directionSelect) directionSelect.value = sortState.direction;
+                sortTable();
+            });
+        });
+
+        // Load data: CARD_DATA is pre-computed, just map and render
+        const cardData = CARD_DATA.map(card => ({
+            ...card,
+            colorIdentity: card.colors.join('') || 'C',
+            rarityRank: RARITY_ORDER[card.rarity] || 0
+        }));
+        initializeTable(cardData);
+    </script>
+</body>
+</html>

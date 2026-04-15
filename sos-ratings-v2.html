@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><!-- SET_TITLE --></title>
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            position: relative;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-banner {
+            background: #f0f4ff;
+            padding: 15px 30px;
+            border-bottom: 2px solid #667eea;
+            font-size: 0.95em;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .image-toggle, .rarity-filter, .color-filter {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .rarity-filter label, .color-filter label {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rarity-filter input[type="checkbox"],
+        .color-filter input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .rarity-filter-action, .color-filter-action {
+            padding: 4px 8px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 0.85em;
+            cursor: pointer;
+        }
+
+        .rarity-filter-action:hover, .color-filter-action:hover {
+            border-color: #667eea;
+        }
+
+        .separator {
+            width: 1px;
+            height: 24px;
+            background: #ccc;
+            margin: 0 8px;
+        }
+
+        .type-display-toggle {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .type-display-toggle input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .col-type, td.col-type {
+            width: 5.5ch;
+            max-width: 200px;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .col-type.compact, td.col-type.compact {
+            max-width: 2ch;
+        }
+
+        col.col-set { width: 3.5ch; min-width: 3.5ch; }
+
+        .col-set, td.col-set {
+            width: 3.5ch;
+            max-width: 4.5ch;
+            text-align: center;
+            font-size: 0.8em;
+            color: #777;
+            white-space: nowrap;
+        }
+
+        .col-rarity, td.col-rarity {
+            width: 3ch;
+            max-width: 3ch;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .col-colors, td.col-colors {
+            width: 5.5ch;
+            max-width: 5.5ch;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .col-mana-cost, td.col-mana-cost {
+            width: 5.5ch;
+            max-width: 5.5ch;
+            white-space: normal;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        td.col-mana-cost {
+            font-size: 0.85em;
+        }
+
+        .sort-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sort-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+            background: white;
+            cursor: pointer;
+        }
+
+        select:hover, input:hover {
+            border-color: #667eea;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 20px 30px;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        col.col-name {
+            width: 220px;
+            min-width: 100px;
+        }
+
+        col.col-score {
+            width: 5.5ch;
+            min-width: 5.5ch;
+        }
+
+        col.col-rarity { width: 5.5ch; min-width: 5.5ch; }
+        col.col-colors { width: 5.5ch; min-width: 5.5ch; }
+        col.col-type { width: 5.5ch; min-width: 5.5ch; }
+        col.col-mana-cost { width: 5.5ch; min-width: 5.5ch; }
+
+        th.col-rarity, td.col-rarity {
+            text-align: center;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 4px 5px;
+            padding-right: 10px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            white-space: normal;
+            line-height: 1.1;
+            cursor: default;
+            user-select: none;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        th.col-rarity, th.col-colors, th.col-type, th.col-mana-cost {
+            max-width: 100%;
+        }
+
+        th:hover { background: #764ba2; }
+
+        th a {
+            color: #fff;
+            text-decoration: underline;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        th a:hover { text-decoration-thickness: 2px; }
+        th.source-header { text-align: center; }
+
+        th[data-col-index="0"] {
+            left: 0;
+            z-index: 4;
+            background: #667eea;
+            white-space: nowrap;
+        }
+
+        th.group-start, td.group-start {
+            border-left: 2px solid rgba(102, 126, 234, 0.6);
+        }
+
+        th.group-end, td.group-end {
+            border-right: 2px solid rgba(102, 126, 234, 0.6);
+        }
+
+        th.sortable { cursor: pointer; }
+
+        th.sortable .sort-indicator {
+            margin-left: 6px;
+            font-size: 0.75em;
+            opacity: 0.35;
+        }
+
+        th.sorted .sort-indicator { opacity: 1; }
+
+        th .col-resizer {
+            position: absolute;
+            right: 0; top: 0;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
+            user-select: none;
+            border-right: 2px solid transparent;
+            transition: border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        th .col-resizer::before {
+            content: '';
+            width: 2px;
+            height: 60%;
+            background: rgba(255,255,255,0.3);
+            border-radius: 1px;
+        }
+
+        th:hover .col-resizer { border-right-color: rgba(255,255,255,0.5); }
+        th:hover .col-resizer::before { background: rgba(255,255,255,0.7); }
+        th.resizing .col-resizer { border-right-color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.15); }
+        th.resizing .col-resizer::before { background: white; height: 80%; }
+
+        td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        tr:hover { background: #f8f9fa; }
+        tr:nth-child(even) { background: #fafbfc; }
+        tr:nth-child(even):hover { background: #f0f2f5; }
+
+        td:first-child {
+            font-weight: 600;
+            color: #667eea;
+            position: sticky;
+            left: 0;
+            background: inherit;
+            min-width: 160px;
+            max-width: 220px;
+            text-align: left;
+            z-index: 2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        td:first-child a {
+            color: #667eea;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s;
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        td:first-child a:hover { border-bottom-color: #667eea; }
+
+        .score-link { color: inherit; text-decoration: none; }
+        .score-link:hover { text-decoration: underline; }
+
+        body.rarity-color tr[data-rarity="common"] { background-color: rgba(86, 180, 233, 0.28) !important; }
+        body.rarity-color tr[data-rarity="uncommon"] { background-color: rgba(0, 158, 115, 0.22) !important; }
+        body.rarity-color tr[data-rarity="rare"] { background-color: rgba(230, 159, 0, 0.25) !important; }
+        body.rarity-color tr[data-rarity="mythic"] { background-color: rgba(213, 94, 0, 0.25) !important; }
+
+        .card-image { display: none; margin-top: 6px; }
+        .card-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            display: block;
+        }
+        body.show-images .card-image { display: block; }
+
+        th.col-avg-norm, th.col-controversy { white-space: normal; line-height: 1.1; }
+        th.col-controversy { word-break: break-all; }
+        th.col-avg-norm, th.col-controversy, td.col-avg-norm, td.col-controversy { font-weight: 700; }
+
+        .score-excellent { background-color: #d4edda; color: #155724; font-weight: 600; }
+        .score-good { background-color: #d1ecf1; color: #0c5460; }
+        .score-neutral { background-color: #fff3cd; color: #856404; }
+        .score-poor { background-color: #f8d7da; color: #721c24; }
+        .score-very-poor { background-color: #e74c3c; color: white; font-weight: 600; }
+        .controversy-low { background-color: #e8f5e9; }
+        .controversy-medium { background-color: #fff9c4; }
+        .controversy-high { background-color: #ffccbc; }
+
+        .card-tooltip {
+            position: fixed;
+            display: none;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            padding: 8px;
+            max-width: 300px;
+            pointer-events: none;
+        }
+
+        .card-tooltip img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            max-height: 400px;
+        }
+
+        footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header id="pageHeader">
+            <h1 id="pageTitle"></h1>
+            <p id="pageSubtitle"></p>
+        </header>
+
+        <div class="info-banner" id="infoBanner"></div>
+
+        <div class="controls">
+            <div class="sort-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="name">Card Name</option>
+                    <option value="rarity">Rarity</option>
+                    <option value="avg_norm" selected>Avg Normalized Score</option>
+                    <option value="avg_raw">Avg Raw Score</option>
+                    <option value="controversy">Controversy</option>
+                    <!-- Rater-specific options injected by initializePage -->
+                </select>
+            </div>
+            <div class="sort-group">
+                <label for="direction">Direction:</label>
+                <select id="direction">
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                </select>
+            </div>
+            <div class="sort-group">
+                <input type="text" id="searchBox" placeholder="Search cards...">
+            </div>
+            <div class="image-toggle">
+                <input type="checkbox" id="toggleImages">
+                <label for="toggleImages">Show images</label>
+            </div>
+            <div class="image-toggle">
+                <input type="checkbox" id="toggleRarity">
+                <label for="toggleRarity">Rarity colors</label>
+            </div>
+            <div class="type-display-toggle">
+                <input type="checkbox" id="toggleTypeDisplay">
+                <label for="toggleTypeDisplay">Show full typeline</label>
+            </div>
+            <div class="separator"></div>
+            <div class="rarity-filter">
+                <span>Rarity:</span>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="common" checked> C</label>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="uncommon" checked> U</label>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="rare" checked> R</label>
+                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="mythic" checked> M</label>
+                <button type="button" class="rarity-filter-action" data-action="all">All</button>
+                <button type="button" class="rarity-filter-action" data-action="none">None</button>
+            </div>
+            <div class="separator"></div>
+            <div class="color-filter">
+                <span>Colors:</span>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="W" checked title="White"> W</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="U" checked title="Blue"> U</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="B" checked title="Black"> B</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="R" checked title="Red"> R</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="G" checked title="Green"> G</label>
+                <label><input type="checkbox" class="color-filter-toggle" data-color="C" checked title="Colorless"> C</label>
+                <button type="button" class="color-filter-action" data-action="all">All</button>
+                <button type="button" class="color-filter-action" data-action="none">None</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="ratingsTable">
+                <colgroup id="tableColgroup">
+                    <!-- Generated by initializePage -->
+                </colgroup>
+                <thead id="tableHead">
+                    <!-- Generated by initializePage -->
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <footer id="pageFooter">
+            <!-- Generated by initializePage -->
+        </footer>
+    </div>
+
+    <div class="card-tooltip" id="cardTooltip"></div>
+
+    <script>
+        // ============================================================
+        // SET_CONFIG and CARD_DATA are injected by build_page.py
+        // ============================================================
+        const SET_CONFIG = {
+            setCode: "SOS",
+            fullName: "Secrets of Strixhaven",
+            subtitle: "Normalized Ratings Comparison",
+            version: "1.0.0",
+            headerGradient: ["rgba(75, 0, 130, 0.78)", "rgba(186, 85, 211, 0.78)"],
+            colorWheelUrl: null,
+            infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
+            raters: [
+            { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-sos-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-sos-limited-set-review/#:~:text=${encodeURIComponent(name)}` },
+            { id: "cs", name: "CS Ratings", abbreviation: "CS", url: null }
+            ]
+        };
+        const CARD_DATA = [
+            {"name": "Emeritus of Ideation // Ancestral Recall", "setCode": "SOS", "rarity": "mythic", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}{U}", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": 8, "norm": 2.14}}, "avgRaw": 9.0, "avgNorm": 2.104, "controversy": 0.05091168824543146},
+            {"name": "Germination Practicum", "setCode": "SOS", "rarity": "mythic", "colors": ["G"], "type": "Sorcery", "manaCost": "{3}{G}{G}", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": 8, "norm": 2.14}}, "avgRaw": 9.0, "avgNorm": 2.104, "controversy": 0.05091168824543146},
+            {"name": "Moment of Reckoning", "setCode": "SOS", "rarity": "rare", "colors": ["W", "B"], "type": "Sorcery", "manaCost": "{3}{W}{W}{B}{B}", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": 8, "norm": 2.14}}, "avgRaw": 9.0, "avgNorm": 2.104, "controversy": 0.05091168824543146},
+            {"name": "Akromas Will", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": null, "norm": null}}, "avgRaw": 10.0, "avgNorm": 2.068, "controversy": null},
+            {"name": "Quandrix the Proof", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": null, "norm": null}}, "avgRaw": 10.0, "avgNorm": 2.068, "controversy": null},
+            {"name": "Winds of Abandon", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": null, "norm": null}}, "avgRaw": 10.0, "avgNorm": 2.068, "controversy": null},
+            {"name": "Professor Dellian Fel", "setCode": "SOS", "rarity": "mythic", "colors": ["B", "G"], "type": "Lgd. Planeswalker", "manaCost": "{2}{B}{G}", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": 7.5, "norm": 1.82}}, "avgRaw": 8.75, "avgNorm": 1.944, "controversy": 0.1753624817342638},
+            {"name": "Berta, Wise Extrapolator", "setCode": "SOS", "rarity": "rare", "colors": ["G", "U"], "type": "Lgd. Creature", "manaCost": "{2}{G}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 7.5, "norm": 1.82}}, "avgRaw": 7.5, "avgNorm": 1.82, "controversy": null},
+            {"name": "Jadzi, Steward of Fate // Oracle's Gift", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Lgd. Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 7.5, "norm": 1.82}}, "avgRaw": 7.5, "avgNorm": 1.82, "controversy": null},
+            {"name": "Lorehold, the Historian", "setCode": "SOS", "rarity": "mythic", "colors": ["R", "W"], "type": "Lgd. Creature", "manaCost": "{3}{R}{W}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 7.5, "norm": 1.82}}, "avgRaw": 7.5, "avgNorm": 1.82, "controversy": null},
+            {"name": "Emeritus of Truce // Swords to Plowshares", "setCode": "SOS", "rarity": "mythic", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}{W}", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": 7, "norm": 1.5}}, "avgRaw": 8.5, "avgNorm": 1.784, "controversy": 0.40163665171395907},
+            {"name": "Armageddon", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Conciliators Duelist", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Crackle with Power", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Cyclonic Rift", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Dismember", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Jadzi Steward of Fate", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Lorehold the Historian", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Silverquill the Disputant", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Sylvan Library", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": null, "norm": null}}, "avgRaw": 9.0, "avgNorm": 1.677, "controversy": null},
+            {"name": "Emeritus of Abundance // Regrowth", "setCode": "SOS", "rarity": "mythic", "colors": ["G"], "type": "Creature", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": 10.0, "norm": 2.068}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 8.25, "avgNorm": 1.624, "controversy": 0.6279108216936543},
+            {"name": "Improvisation Capstone", "setCode": "SOS", "rarity": "mythic", "colors": ["R"], "type": "Sorcery", "manaCost": "{5}{R}{R}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 7.5, "norm": 1.82}}, "avgRaw": 7.75, "avgNorm": 1.553, "controversy": 0.3775950211536164},
+            {"name": "Stirring Hopesinger", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Creature", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 7.5, "norm": 1.82}}, "avgRaw": 7.75, "avgNorm": 1.553, "controversy": 0.3775950211536164},
+            {"name": "Quandrix, the Proof", "setCode": "SOS", "rarity": "mythic", "colors": ["G", "U"], "type": "Lgd. Creature", "manaCost": "{4}{G}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 7, "norm": 1.5}}, "avgRaw": 7.0, "avgNorm": 1.5, "controversy": null},
+            {"name": "Ral Zarek, Guest Lecturer", "setCode": "SOS", "rarity": "mythic", "colors": ["B"], "type": "Lgd. Planeswalker", "manaCost": "{1}{B}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 7, "norm": 1.5}}, "avgRaw": 7.0, "avgNorm": 1.5, "controversy": null},
+            {"name": "Antiquities on the Loose", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Sorcery", "manaCost": "{1}{W}{W}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.75, "avgNorm": 1.429, "controversy": 0.3514320702497142},
+            {"name": "Applied Geometry", "setCode": "SOS", "rarity": "rare", "colors": ["G", "U"], "type": "Sorcery", "manaCost": "{2}{G}{U}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.75, "avgNorm": 1.429, "controversy": 0.3514320702497142},
+            {"name": "Informed Inkwright", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.75, "avgNorm": 1.429, "controversy": 0.3514320702497142},
+            {"name": "Magmablood Archaic", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Creature", "manaCost": "{2/R}{2/R}{2/R}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.75, "avgNorm": 1.429, "controversy": 0.3514320702497142},
+            {"name": "Splatter Technique", "setCode": "SOS", "rarity": "rare", "colors": ["U", "R"], "type": "Sorcery", "manaCost": "{1}{U}{U}{R}{R}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.75, "avgNorm": 1.429, "controversy": 0.3514320702497142},
+            {"name": "Archmage Emeritus", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": null, "norm": null}}, "avgRaw": 8.0, "avgNorm": 1.286, "controversy": null},
+            {"name": "Berta Wise Extrapolator", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": null, "norm": null}}, "avgRaw": 8.0, "avgNorm": 1.286, "controversy": null},
+            {"name": "Murmuring Mystic", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": null, "norm": null}}, "avgRaw": 8.0, "avgNorm": 1.286, "controversy": null},
+            {"name": "Subterranean Tremors", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": null, "norm": null}}, "avgRaw": 8.0, "avgNorm": 1.286, "controversy": null},
+            {"name": "Triumph of the Hordes", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": null, "norm": null}}, "avgRaw": 8.0, "avgNorm": 1.286, "controversy": null},
+            {"name": "Traumatic Critique", "setCode": "SOS", "rarity": "rare", "colors": ["U", "R"], "type": "Instant", "manaCost": "{X}{U}{R}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.5, "avgNorm": 1.268, "controversy": 0.5777062402294094},
+            {"name": "Vicious Rivalry", "setCode": "SOS", "rarity": "rare", "colors": ["B", "G"], "type": "Sorcery", "manaCost": "{2}{B}{G}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.5, "avgNorm": 1.268, "controversy": 0.5777062402294094},
+            {"name": "Wildgrowth Archaic", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Creature", "manaCost": "{2/G}{2/G}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.5, "avgNorm": 1.268, "controversy": 0.5777062402294094},
+            {"name": "Colorstorm Stallion", "setCode": "SOS", "rarity": "rare", "colors": ["U", "R"], "type": "Creature", "manaCost": "{1}{U}{R}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.25, "avgNorm": 1.233, "controversy": 0.0749533188057741},
+            {"name": "Vastlands Scavenger // Bind to Life", "setCode": "SOS", "rarity": "rare", "colors": ["G"], "type": "Creature", "manaCost": "{1}{G}{G}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.25, "avgNorm": 1.233, "controversy": 0.0749533188057741},
+            {"name": "Withering Curse", "setCode": "SOS", "rarity": "mythic", "colors": ["B"], "type": "Sorcery", "manaCost": "{1}{B}{B}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 7.25, "avgNorm": 1.233, "controversy": 0.0749533188057741},
+            {"name": "Mind into Matter", "setCode": "SOS", "rarity": "rare", "colors": ["G", "U"], "type": "Sorcery", "manaCost": "{X}{G}{U}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 7, "norm": 1.5}}, "avgRaw": 7.0, "avgNorm": 1.198, "controversy": 0.42779960261786126},
+            {"name": "Blech, Loafing Pest", "setCode": "SOS", "rarity": "rare", "colors": ["B", "G"], "type": "Lgd. Creature", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.5, "avgNorm": 1.18, "controversy": null},
+            {"name": "Witherbloom, the Balancer", "setCode": "SOS", "rarity": "mythic", "colors": ["B", "G"], "type": "Lgd. Creature", "manaCost": "{6}{B}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.5, "avgNorm": 1.18, "controversy": null},
+            {"name": "Cauldron of Essence", "setCode": "SOS", "rarity": "rare", "colors": ["B", "G"], "type": "Artifact", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 7.25, "avgNorm": 1.109, "controversy": 0.8039804102091046},
+            {"name": "Ambitious Augmenter", "setCode": "SOS", "rarity": "rare", "colors": ["G"], "type": "Creature", "manaCost": "{G}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.0, "avgNorm": 1.073, "controversy": 0.3012274887854693},
+            {"name": "Emeritus of Woe // Demonic Tutor", "setCode": "SOS", "rarity": "mythic", "colors": ["B"], "type": "Creature", "manaCost": "{3}{B}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.0, "avgNorm": 1.073, "controversy": 0.3012274887854693},
+            {"name": "Erode", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Instant", "manaCost": "{W}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.0, "avgNorm": 1.073, "controversy": 0.3012274887854693},
+            {"name": "Stress Dream", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Instant", "manaCost": "{3}{U}{R}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.0, "avgNorm": 1.073, "controversy": 0.3012274887854693},
+            {"name": "The Dawning Archaic", "setCode": "SOS", "rarity": "mythic", "colors": [], "type": "Lgd. Creature", "manaCost": "{10}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 7.0, "avgNorm": 1.073, "controversy": 0.3012274887854693},
+            {"name": "Additive Evolution", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Enchantment", "manaCost": "{3}{G}{G}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.75, "avgNorm": 1.038, "controversy": 0.20152543263816597},
+            {"name": "Grave Researcher // Reanimate", "setCode": "SOS", "rarity": "rare", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.75, "avgNorm": 1.038, "controversy": 0.20152543263816597},
+            {"name": "Practiced Offense", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Sorcery", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.75, "avgNorm": 1.038, "controversy": 0.20152543263816597},
+            {"name": "Practiced Scrollsmith", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Creature", "manaCost": "{R}{R/W}{W}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.75, "avgNorm": 1.038, "controversy": 0.20152543263816597},
+            {"name": "Tragedy Feaster", "setCode": "SOS", "rarity": "rare", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.75, "avgNorm": 1.038, "controversy": 0.20152543263816597},
+            {"name": "Echocasting Symposium", "setCode": "SOS", "rarity": "mythic", "colors": ["U"], "type": "Sorcery", "manaCost": "{4}{U}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 7, "norm": 1.5}}, "avgRaw": 6.5, "avgNorm": 1.002, "controversy": 0.7042783540618014},
+            {"name": "Skycoach Conductor // All Aboard", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 6.75, "avgNorm": 0.913, "controversy": 0.5275016587651644},
+            {"name": "Awaken the Woods", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Aziza Mage Tower Captain", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Bitter Triumph", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Blech Loafing Pest", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Expressive Iteration", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Grim Haruspex", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Lluwen Exchange Student", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Orysa Tide Choreographer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Poisoners Apprentice", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Reprieve", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Stock Up", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Tam Observant Sequencer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Veil of Summer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Witherbloom the Balancer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": null, "norm": null}}, "avgRaw": 7.0, "avgNorm": 0.895, "controversy": null},
+            {"name": "Ark of Hunger", "setCode": "SOS", "rarity": "rare", "colors": ["R", "W"], "type": "Artifact", "manaCost": "{2}{R}{W}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Colossus of the Blood Age", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Artifact Creature", "manaCost": "{4}{R}{W}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Environmental Scientist", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Creature", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Exhibition Tidecaller", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Creature", "manaCost": "{U}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Molten-Core Maestro", "setCode": "SOS", "rarity": "rare", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Scheming Silvertongue // Sign in Blood", "setCode": "SOS", "rarity": "rare", "colors": ["B"], "type": "Creature", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Stirring Honormancer", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Creature", "manaCost": "{2}{W}{W/B}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.5, "avgNorm": 0.877, "controversy": 0.024748737341529183},
+            {"name": "Abigale, Poet Laureate // Heroic Stanza", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Lgd. Creature", "manaCost": "{1}{W}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Aziza, Mage Tower Captain", "setCode": "SOS", "rarity": "rare", "colors": ["R", "W"], "type": "Lgd. Creature", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Conciliator's Duelist", "setCode": "SOS", "rarity": "rare", "colors": ["W", "B"], "type": "Creature", "manaCost": "{W}{W}{B}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Flashback", "setCode": "SOS", "rarity": "rare", "colors": ["R"], "type": "Instant", "manaCost": "{R}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Lluwen, Exchange Student // Pest Friend", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Lgd. Creature", "manaCost": "{2}{B}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Moseo, Vein's New Dean", "setCode": "SOS", "rarity": "rare", "colors": ["B"], "type": "Lgd. Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Prismari, the Inspiration", "setCode": "SOS", "rarity": "mythic", "colors": ["U", "R"], "type": "Lgd. Creature", "manaCost": "{5}{U}{R}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Silverquill, the Disputant", "setCode": "SOS", "rarity": "mythic", "colors": ["W", "B"], "type": "Lgd. Creature", "manaCost": "{2}{W}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.86, "controversy": null},
+            {"name": "Hardened Academic", "setCode": "SOS", "rarity": "rare", "colors": ["R", "W"], "type": "Creature", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.25, "avgNorm": 0.842, "controversy": 0.4780041840821061},
+            {"name": "Harmonized Trio // Brainstorm", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Creature", "manaCost": "{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6.5, "norm": 1.18}}, "avgRaw": 6.25, "avgNorm": 0.842, "controversy": 0.4780041840821061},
+            {"name": "Essenceknit Scholar", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Creature", "manaCost": "{B}{B/G}{G}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 6.25, "avgNorm": 0.718, "controversy": 0.25102290732122434},
+            {"name": "Forum Necroscribe", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{5}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 6.25, "avgNorm": 0.718, "controversy": 0.25102290732122434},
+            {"name": "Matterbending Mage", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 6.25, "avgNorm": 0.718, "controversy": 0.25102290732122434},
+            {"name": "Vibrant Outburst", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Instant", "manaCost": "{U}{R}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 6.25, "avgNorm": 0.718, "controversy": 0.25102290732122434},
+            {"name": "Foolish Fate", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.682, "controversy": 0.2517300141024109},
+            {"name": "Impractical Joke", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.682, "controversy": 0.2517300141024109},
+            {"name": "Mana Sculpt", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.682, "controversy": 0.2517300141024109},
+            {"name": "Pensive Professor", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Creature", "manaCost": "{1}{U}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.682, "controversy": 0.2517300141024109},
+            {"name": "Witherbloom Charm", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Instant", "manaCost": "{B}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 6.0, "avgNorm": 0.682, "controversy": 0.2517300141024109},
+            {"name": "Fractal Tender", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Creature", "manaCost": "{3}{G}{U}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 6.0, "avgNorm": 0.557, "controversy": 0.47729707730091964},
+            {"name": "Garrison Excavator", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Creature", "manaCost": "{3}{R}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 6.0, "avgNorm": 0.557, "controversy": 0.47729707730091964},
+            {"name": "Silverquill Charm", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Instant", "manaCost": "{W}{B}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 6.0, "avgNorm": 0.557, "controversy": 0.47729707730091964},
+            {"name": "Topiary Lecturer", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Creature", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 6.0, "avgNorm": 0.557, "controversy": 0.47729707730091964},
+            {"name": "Emil, Vastlands Roamer", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Lgd. Creature", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.5, "avgNorm": 0.54, "controversy": null},
+            {"name": "Killian's Confidence", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Sorcery", "manaCost": "{W}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.5, "avgNorm": 0.54, "controversy": null},
+            {"name": "Kirol, History Buff // Pack a Punch", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Lgd. Creature", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.5, "avgNorm": 0.54, "controversy": null},
+            {"name": "Emeritus of Conflict // Lightning Bolt", "setCode": "SOS", "rarity": "mythic", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Grapple with Death", "setCode": "SOS", "rarity": "common", "colors": ["B", "G"], "type": "Sorcery", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Last Gasp", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Instant", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Lecturing Scornmage", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Paradox Surveyor", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Creature", "manaCost": "{G}{G/U}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Snooping Page", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Creature", "manaCost": "{1}{W}{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Studious First-Year // Rampant Growth", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Creature", "manaCost": "{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Suspend Aggression", "setCode": "SOS", "rarity": "rare", "colors": ["R", "W"], "type": "Instant", "manaCost": "{1}{R}{W}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Thornfist Striker", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Creature", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Wilt in the Heat", "setCode": "SOS", "rarity": "common", "colors": ["R", "W"], "type": "Instant", "manaCost": "{2}{R}{W}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.75, "avgNorm": 0.522, "controversy": 0.02545584412271573},
+            {"name": "Abigale Poet Laureate", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Abrade", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Ad Nauseam", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Archaeomancer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Brain Freeze", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Brotherhoods End", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Burst Lightning", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Daze", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Ennis Debate Moderator", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Hop to It", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Killians Confidence", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Kirol History Buff", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Knockout Maneuver", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Moseo Veins New Dean", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Preordain", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Proctors Gaze", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Sanar Unfinished Genius", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Shared Roots", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Teachers Pest", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": null, "norm": null}}, "avgRaw": 6.0, "avgNorm": 0.504, "controversy": null},
+            {"name": "Charging Strifeknight", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Creature", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.75, "avgNorm": 0.398, "controversy": 0.7035712472806148},
+            {"name": "Artistic Process", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{3}{R}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.5, "avgNorm": 0.362, "controversy": 0.2008183258569795},
+            {"name": "Muse Seeker", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Creature", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.5, "avgNorm": 0.362, "controversy": 0.2008183258569795},
+            {"name": "Pestbrood Sloth", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Creature", "manaCost": "{3}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.5, "avgNorm": 0.362, "controversy": 0.2008183258569795},
+            {"name": "Group Project", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Sorcery", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Leech Collector // Bloodletting", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Postmortem Professor", "setCode": "SOS", "rarity": "rare", "colors": ["B"], "type": "Creature", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Scolding Administrator", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Creature", "manaCost": "{W}{B}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Startled Relic Sloth", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Creature", "manaCost": "{2}{R}{W}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Steal the Show", "setCode": "SOS", "rarity": "rare", "colors": ["R"], "type": "Sorcery", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Thunderdrum Soloist", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 5.25, "avgNorm": 0.327, "controversy": 0.3019345955666558},
+            {"name": "Together as One", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Sorcery", "manaCost": "{6}", "ratings": {"ds": {"raw": 9.0, "norm": 1.677}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 6.0, "avgNorm": 0.308, "controversy": 1.9353512601075806},
+            {"name": "Ajani's Response", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{4}{W}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Deathcap Glade", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Dreamroot Cascade", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Poisoner's Apprentice", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Proctor's Gaze", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Instant", "manaCost": "{2}{G}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Sanar, Unfinished Genius // Wild Idea", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Lgd. Creature", "manaCost": "{U}{R}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Shattered Sanctum", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Stormcarved Coast", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Sundown Pass", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Tam, Observant Sequencer // Deep Sight", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Lgd. Creature", "manaCost": "{2}{G}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Teacher's Pest", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Creature", "manaCost": "{B}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.22, "controversy": null},
+            {"name": "Aberrant Manawurm", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Creature", "manaCost": "{3}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.25, "avgNorm": 0.202, "controversy": 0.42709249583667475},
+            {"name": "Cuboid Colony", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Creature", "manaCost": "{G}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.25, "avgNorm": 0.202, "controversy": 0.42709249583667475},
+            {"name": "Eternal Student", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{3}{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.25, "avgNorm": 0.202, "controversy": 0.42709249583667475},
+            {"name": "Quandrix Charm", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Instant", "manaCost": "{G}{U}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.25, "avgNorm": 0.202, "controversy": 0.42709249583667475},
+            {"name": "Soaring Stoneglider", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Creature", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.25, "avgNorm": 0.202, "controversy": 0.42709249583667475},
+            {"name": "Social Snub", "setCode": "SOS", "rarity": "uncommon", "colors": ["W", "B"], "type": "Sorcery", "manaCost": "{1}{W}{B}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 5.25, "avgNorm": 0.202, "controversy": 0.42709249583667475},
+            {"name": "Burrog Barrage", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Instant", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Dissection Practice", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{B}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Encouraging Aviator // Jump", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Molten Note", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Sorcery", "manaCost": "{X}{R}{W}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Old-Growth Educator", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Creature", "manaCost": "{2}{B}{G}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Prismari Charm", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Instant", "manaCost": "{U}{R}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Spectacular Skywhale", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Creature", "manaCost": "{2}{U}{R}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Stand Up for Yourself", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Instant", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Unsubtle Mockery", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Wander Off", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Instant", "manaCost": "{3}{B}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 5.0, "avgNorm": 0.167, "controversy": 0.0756604255869606},
+            {"name": "Campus Composer // Aqueous Aria", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Elite Interceptor // Rejoinder", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Flow State", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Sorcery", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Pigment Wrangler // Striking Palette", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Creature", "manaCost": "{4}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Quill-Blade Laureate // Twofold Intent", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Run Behind", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{3}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Tome Blast", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Sorcery", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.75, "avgNorm": 0.131, "controversy": 0.5784133470105959},
+            {"name": "Arnyn Deathbloom Botanist", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "Locust Spray", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "Page Loose Leaf", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "Ral Zarek Guest Lecturer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "Repel Calamity", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "The Location Lands", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "The Slow Lands", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": null, "norm": null}}, "avgRaw": 5.0, "avgNorm": 0.113, "controversy": null},
+            {"name": "Stadium Tidalmage", "setCode": "SOS", "rarity": "common", "colors": ["U", "R"], "type": "Creature", "manaCost": "{2}{U}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 6, "norm": 0.86}}, "avgRaw": 4.5, "avgNorm": 0.095, "controversy": 1.0811662684342311},
+            {"name": "Abstract Paintmage", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Creature", "manaCost": "{U}{U/R}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 5.0, "avgNorm": 0.042, "controversy": 0.6533666658163698},
+            {"name": "Mind Roots", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Sorcery", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 5.0, "avgNorm": 0.042, "controversy": 0.6533666658163698},
+            {"name": "Strixhaven Skycoach", "setCode": "SOS", "rarity": "uncommon", "colors": [], "type": "Artifact", "manaCost": "{3}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 5.0, "avgNorm": 0.042, "controversy": 0.6533666658163698},
+            {"name": "Blazing Firesinger // Seething Song", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Creature", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.75, "avgNorm": 0.006, "controversy": 0.15061374439273464},
+            {"name": "Chelonian Tackle", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Sorcery", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.75, "avgNorm": 0.006, "controversy": 0.15061374439273464},
+            {"name": "Embrace the Paradox", "setCode": "SOS", "rarity": "common", "colors": ["G", "U"], "type": "Instant", "manaCost": "{3}{G}{U}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.75, "avgNorm": 0.006, "controversy": 0.15061374439273464},
+            {"name": "Noxious Newt", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Creature", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.75, "avgNorm": 0.006, "controversy": 0.15061374439273464},
+            {"name": "Slumbering Trudge", "setCode": "SOS", "rarity": "rare", "colors": ["G"], "type": "Creature", "manaCost": "{X}{G}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.75, "avgNorm": 0.006, "controversy": 0.15061374439273464},
+            {"name": "Terramorphic Expanse", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.75, "avgNorm": 0.006, "controversy": 0.15061374439273464},
+            {"name": "Banishing Betrayal", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Bogwater Lumaret", "setCode": "SOS", "rarity": "common", "colors": ["B", "G"], "type": "Creature", "manaCost": "{B}{G}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Burrog Banemaker", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Creature", "manaCost": "{B}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Dig Site Inventory", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Sorcery", "manaCost": "{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "End of the Hunt", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Sorcery", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Inkshape Demonstrator", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Creature", "manaCost": "{3}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Rubble Rouser", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Send in the Pest", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Sorcery", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Spiritcall Enthusiast // Scrollboost", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Creature", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Summoned Dromedary", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Creature", "manaCost": "{3}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.5, "avgNorm": -0.029, "controversy": 0.3521391770309007},
+            {"name": "Elemental Mascot", "setCode": "SOS", "rarity": "common", "colors": ["U", "R"], "type": "Creature", "manaCost": "{1}{U}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 5.5, "norm": 0.54}}, "avgRaw": 4.25, "avgNorm": -0.065, "controversy": 0.8548920984545361},
+            {"name": "Great Hall of the Biblioplex", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 5.0, "avgNorm": -0.083, "controversy": 1.3823937572197005},
+            {"name": "Arnyn, Deathbloom Botanist", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Lgd. Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Fields of Strife", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Forum of Amity", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Geometer's Arthropod", "setCode": "SOS", "rarity": "rare", "colors": ["G", "U"], "type": "Creature", "manaCost": "{G}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Orysa, Tide Choreographer", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Lgd. Creature", "manaCost": "{4}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Paradox Gardens", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Spectacle Summit", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Titan's Grave", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Visionary's Dance", "setCode": "SOS", "rarity": "common", "colors": ["U", "R"], "type": "Sorcery", "manaCost": "{5}{U}{R}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.5, "avgNorm": -0.1, "controversy": null},
+            {"name": "Tester of the Tangential", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Creature", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.5, "avgNorm": -0.153, "controversy": 0.3768879143724298},
+            {"name": "Deluge Virtuoso", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Duel Tactics", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Eager Glyphmage", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{3}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Fractal Mascot", "setCode": "SOS", "rarity": "common", "colors": ["G", "U"], "type": "Creature", "manaCost": "{4}{G}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Goblin Glasswright // Craft with Pride", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Homesickness", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{4}{U}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Pest Mascot", "setCode": "SOS", "rarity": "common", "colors": ["B", "G"], "type": "Creature", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Pterafractyl", "setCode": "SOS", "rarity": "common", "colors": ["G", "U"], "type": "Creature", "manaCost": "{X}{G}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Pursue the Past", "setCode": "SOS", "rarity": "common", "colors": ["R", "W"], "type": "Sorcery", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 4.25, "avgNorm": -0.189, "controversy": 0.12586500705120546},
+            {"name": "Decorum Dissertation", "setCode": "SOS", "rarity": "mythic", "colors": ["B"], "type": "Sorcery", "manaCost": "{3}{B}{B}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 5.0, "avgNorm": -0.207, "controversy": 2.111420848623031},
+            {"name": "Restoration Seminar", "setCode": "SOS", "rarity": "mythic", "colors": ["W"], "type": "Sorcery", "manaCost": "{5}{W}{W}", "ratings": {"ds": {"raw": 8.0, "norm": 1.286}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 5.0, "avgNorm": -0.207, "controversy": 2.111420848623031},
+            {"name": "Hydro-Channeler", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.0, "avgNorm": -0.225, "controversy": 0.6286179284748408},
+            {"name": "Lorehold Charm", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Instant", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 4.0, "avgNorm": -0.225, "controversy": 0.6286179284748408},
+            {"name": "Ajanis Response", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Big Score", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Codie Vociferous Codex", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Deduce", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Dualcaster Mage", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Emil Vastlands Roamer", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Flashback1", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Helping Hand", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Oracles Restoration", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Potioners Trove", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Prismari the Inspiration", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Prismatic Ending", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Royal Treatment", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Shamanic Revelation", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Sheoldreds Edict", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Sleight of Hand", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Tablet of Discovery", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Artifact", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 4.5, "avgNorm": -0.278, "controversy": 1.1059150057757603},
+            {"name": "Visionarys Dance", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": null, "norm": null}}, "avgRaw": 4.0, "avgNorm": -0.278, "controversy": null},
+            {"name": "Rapturous Moment", "setCode": "SOS", "rarity": "uncommon", "colors": ["U", "R"], "type": "Sorcery", "manaCost": "{4}{U}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.349, "controversy": 0.10040916292848971},
+            {"name": "Strife Scholar // Awaken the Ages", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.349, "controversy": 0.10040916292848971},
+            {"name": "Zealous Lorecaster", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{5}{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.349, "controversy": 0.10040916292848971},
+            {"name": "Adventurous Eater // Have a Bite", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Expressive Firedancer", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Infirmary Healer // Stream of Life", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Creature", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Inkling Mascot", "setCode": "SOS", "rarity": "common", "colors": ["W", "B"], "type": "Creature", "manaCost": "{W}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Joined Researchers // Secret Rendezvous", "setCode": "SOS", "rarity": "rare", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Landscape Painter // Vibrant Idea", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Melancholic Poet", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Creature", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Mindful Biomancer", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Creature", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Quick Study", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Rehearsed Debater", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Shattered Acolyte", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Stone Docent", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Tackle Artist", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{3}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.75, "avgNorm": -0.385, "controversy": 0.40234375849514553},
+            {"name": "Snarl Song", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Sorcery", "manaCost": "{5}{G}", "ratings": {"ds": {"raw": 7.0, "norm": 0.895}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 4.5, "avgNorm": -0.402, "controversy": 1.8349420971790906},
+            {"name": "Ennis, Debate Moderator", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Lgd. Creature", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.42, "controversy": null},
+            {"name": "Lumaret's Favor", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Instant", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.42, "controversy": null},
+            {"name": "Potioner's Trove", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Artifact", "manaCost": "{3}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.42, "controversy": null},
+            {"name": "Shopkeeper's Bane", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Creature", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 4.0, "avgNorm": -0.42, "controversy": null},
+            {"name": "Spellbook Seeker // Careful Study", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 3.5, "avgNorm": -0.42, "controversy": 0.9058037866999673},
+            {"name": "Cheerful Osteomancer // Raise Dead", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Creature", "manaCost": "{3}{B}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 4.0, "avgNorm": -0.474, "controversy": 0.8294362543318203},
+            {"name": "Daydream", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Sorcery", "manaCost": "{W}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 4.0, "avgNorm": -0.474, "controversy": 0.8294362543318203},
+            {"name": "Essence Scatter", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{1}{U}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 4.0, "avgNorm": -0.474, "controversy": 0.8294362543318203},
+            {"name": "Primary Research", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Enchantment", "manaCost": "{4}{W}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 4.0, "avgNorm": -0.474, "controversy": 0.8294362543318203},
+            {"name": "Sundering Archaic", "setCode": "SOS", "rarity": "uncommon", "colors": [], "type": "Creature", "manaCost": "{6}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 4.0, "avgNorm": -0.474, "controversy": 0.8294362543318203},
+            {"name": "Brush Off", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{2}{U}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Growth Curve", "setCode": "SOS", "rarity": "uncommon", "colors": ["G", "U"], "type": "Sorcery", "manaCost": "{G}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Heated Argument", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Instant", "manaCost": "{4}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Interjection", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Living History", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Enchantment", "manaCost": "{1}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Skycoach Waypoint", "setCode": "SOS", "rarity": "uncommon", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Sneering Shadewriter", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Creature", "manaCost": "{4}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.5, "avgNorm": -0.544, "controversy": 0.17606958851545038},
+            {"name": "Ascendant Dustspeaker", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{4}{W}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.25, "avgNorm": -0.581, "controversy": 0.6795296167202721},
+            {"name": "Biblioplex Tomekeeper", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Artifact Creature", "manaCost": "{4}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.25, "avgNorm": -0.581, "controversy": 0.6795296167202721},
+            {"name": "Imperious Inkmage", "setCode": "SOS", "rarity": "common", "colors": ["W", "B"], "type": "Creature", "manaCost": "{1}{W}{B}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 3.25, "avgNorm": -0.581, "controversy": 0.6795296167202721},
+            {"name": "Maelstrom Artisan // Rocket Volley", "setCode": "SOS", "rarity": "rare", "colors": ["R"], "type": "Creature", "manaCost": "{1}{R}{R}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 4.0, "avgNorm": -0.598, "controversy": 1.5584633457351507},
+            {"name": "Planar Engineering", "setCode": "SOS", "rarity": "rare", "colors": ["G"], "type": "Sorcery", "manaCost": "{3}{G}", "ratings": {"ds": {"raw": 6.0, "norm": 0.504}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 4.0, "avgNorm": -0.598, "controversy": 1.5584633457351507},
+            {"name": "Fractalize", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{X}{U}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 3.0, "avgNorm": -0.616, "controversy": 1.1822825381439075},
+            {"name": "Rabid Attack", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Instant", "manaCost": "{1}{B}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 3.0, "avgNorm": -0.616, "controversy": 1.1822825381439075},
+            {"name": "Tenured Concocter", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Creature", "manaCost": "{4}{G}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 3.0, "avgNorm": -0.616, "controversy": 1.1822825381439075},
+            {"name": "Ancestral Anger", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Sorcery", "manaCost": "{R}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.5, "avgNorm": -0.669, "controversy": 0.5529575028878801},
+            {"name": "Archaics Agony", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Diary of Dreams", "setCode": "SOS", "rarity": "uncommon", "colors": [], "type": "Artifact", "manaCost": "{2}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.5, "avgNorm": -0.669, "controversy": 0.5529575028878801},
+            {"name": "Disdainful Stroke", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Duty Beyond Death", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Feed the Swarm", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Follow the Lumarets", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.5, "avgNorm": -0.669, "controversy": 0.5529575028878801},
+            {"name": "Geometers Arthropod", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Giant Growth", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Graduation Day", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Enchantment", "manaCost": "{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.5, "avgNorm": -0.669, "controversy": 0.5529575028878801},
+            {"name": "Lumarets Favor", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Magus of the Library", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Monstrous Rage", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Rapier Wit", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Instant", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.5, "avgNorm": -0.669, "controversy": 0.5529575028878801},
+            {"name": "Zombify", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": null, "norm": null}}, "avgRaw": 3.0, "avgNorm": -0.669, "controversy": null},
+            {"name": "Efflorescence", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Instant", "manaCost": "{2}{G}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.0, "avgNorm": -0.74, "controversy": 0.45325544674057694},
+            {"name": "Render Speechless", "setCode": "SOS", "rarity": "common", "colors": ["W", "B"], "type": "Sorcery", "manaCost": "{2}{W}{B}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 3.0, "avgNorm": -0.74, "controversy": 0.45325544674057694},
+            {"name": "Honorbound Page // Forum's Favor", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{3}{W}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 2.75, "avgNorm": -0.776, "controversy": 0.9560083681642122},
+            {"name": "Mage Tower Referee", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Artifact Creature", "manaCost": "{2}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 2.75, "avgNorm": -0.776, "controversy": 0.9560083681642122},
+            {"name": "Root Manipulation", "setCode": "SOS", "rarity": "uncommon", "colors": ["B", "G"], "type": "Sorcery", "manaCost": "{3}{B}{G}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 2.75, "avgNorm": -0.776, "controversy": 0.9560083681642122},
+            {"name": "Scathing Shadelock // Venomous Words", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Creature", "manaCost": "{4}{B}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 4.5, "norm": -0.1}}, "avgRaw": 2.75, "avgNorm": -0.776, "controversy": 0.9560083681642122},
+            {"name": "Transcendent Archaic", "setCode": "SOS", "rarity": "uncommon", "colors": [], "type": "Creature", "manaCost": "{7}", "ratings": {"ds": {"raw": 5.0, "norm": 0.113}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 3.5, "avgNorm": -0.793, "controversy": 1.2819845942912105},
+            {"name": "Choreographed Sparks", "setCode": "SOS", "rarity": "rare", "colors": ["R"], "type": "Instant", "manaCost": "{R}{R}", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": 5, "norm": 0.22}}, "avgRaw": 2.5, "avgNorm": -0.811, "controversy": 1.4587612895878475},
+            {"name": "Cost of Brilliance", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Sorcery", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -0.865, "controversy": 0.2764787514439401},
+            {"name": "Pull from the Grave", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Sorcery", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -0.865, "controversy": 0.2764787514439401},
+            {"name": "Rearing Embermare", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Creature", "manaCost": "{4}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -0.865, "controversy": 0.2764787514439401},
+            {"name": "Seize the Spoils", "setCode": "SOS", "rarity": "common", "colors": ["R"], "type": "Sorcery", "manaCost": "{2}{R}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -0.865, "controversy": 0.2764787514439401},
+            {"name": "Spirit Mascot", "setCode": "SOS", "rarity": "common", "colors": ["R", "W"], "type": "Creature", "manaCost": "{R}{W}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -0.865, "controversy": 0.2764787514439401},
+            {"name": "Masterful Flourish", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Instant", "manaCost": "{B}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 2.5, "avgNorm": -0.936, "controversy": 0.729734198184517},
+            {"name": "Ulna Alley Shopkeep", "setCode": "SOS", "rarity": "common", "colors": ["B"], "type": "Creature", "manaCost": "{2}{B}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 4, "norm": -0.42}}, "avgRaw": 2.5, "avgNorm": -0.936, "controversy": 0.729734198184517},
+            {"name": "Mathemagics", "setCode": "SOS", "rarity": "mythic", "colors": ["U"], "type": "Sorcery", "manaCost": "{X}{X}{U}{U}", "ratings": {"ds": {"raw": 4.0, "norm": -0.278}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 3.0, "avgNorm": -0.989, "controversy": 1.0055058428472705},
+            {"name": "Muse's Encouragement", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{4}{U}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -1.06, "controversy": null},
+            {"name": "Nita, Forum Conciliator", "setCode": "SOS", "rarity": "rare", "colors": ["W", "B"], "type": "Lgd. Creature", "manaCost": "{1}{W}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -1.06, "controversy": null},
+            {"name": "Oracle's Restoration", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -1.06, "controversy": null},
+            {"name": "Owlin Historian", "setCode": "SOS", "rarity": "common", "colors": ["W"], "type": "Creature", "manaCost": "{2}{W}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 2.5, "avgNorm": -1.06, "controversy": 0.0007071067811864697},
+            {"name": "Wild Hypothesis", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Sorcery", "manaCost": "{X}{G}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 2.5, "avgNorm": -1.06, "controversy": 0.0007071067811864697},
+            {"name": "Zimone's Experiment", "setCode": "SOS", "rarity": "uncommon", "colors": ["G"], "type": "Sorcery", "manaCost": "{3}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 3.0, "avgNorm": -1.06, "controversy": null},
+            {"name": "Berserk", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Bring to Light", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Culling Ritual", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Mica Reader of Ruins", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Muses Encouragement", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Pick Your Poison", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Requisition Raid", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Shopkeepers Bane", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Stargaze", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": null, "norm": null}}, "avgRaw": 2.0, "avgNorm": -1.061, "controversy": null},
+            {"name": "Hungry Graffalon", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Creature", "manaCost": "{3}{G}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 2.5, "avgNorm": -1.184, "controversy": 0.7290270914033304},
+            {"name": "Chase Inspiration", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Instant", "manaCost": "{U}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 3, "norm": -1.06}}, "avgRaw": 2.0, "avgNorm": -1.256, "controversy": 0.27718585822512654},
+            {"name": "Divergent Equation", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{X}{X}{U}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 2.0, "avgNorm": -1.381, "controversy": 0.4518412331782039},
+            {"name": "Rancorous Archaic", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Creature", "manaCost": "{5}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 2.0, "avgNorm": -1.381, "controversy": 0.4518412331782039},
+            {"name": "Textbook Tabulator", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Creature", "manaCost": "{2}{U}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 2.0, "avgNorm": -1.381, "controversy": 0.4518412331782039},
+            {"name": "Adrix and Nev Twincasters", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Bulk Up", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Deflecting Palm", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Empty the Warrens", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Flusterstorm", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Force of Will", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Fracture", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Nita Forum Conciliator", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Smallpox", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Spell Pierce", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Zimones Experiment", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": null, "norm": null}}, "avgRaw": 1.0, "avgNorm": -1.452, "controversy": null},
+            {"name": "Wisdom of Ages", "setCode": "SOS", "rarity": "rare", "colors": ["U"], "type": "Sorcery", "manaCost": "{4}{U}{U}{U}", "ratings": {"ds": {"raw": 3.0, "norm": -0.669}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 2.0, "avgNorm": -1.504, "controversy": 1.1815754313627207},
+            {"name": "Borrowed Knowledge", "setCode": "SOS", "rarity": "uncommon", "colors": ["R", "W"], "type": "Sorcery", "manaCost": "{2}{R}{W}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 1.5, "avgNorm": -1.576, "controversy": 0.1753624817342638},
+            {"name": "Comforting Counsel", "setCode": "SOS", "rarity": "rare", "colors": ["G"], "type": "Enchantment", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 1.5, "avgNorm": -1.576, "controversy": 0.1753624817342638},
+            {"name": "Fractal Anomaly", "setCode": "SOS", "rarity": "uncommon", "colors": ["U"], "type": "Instant", "manaCost": "{U}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 1.5, "avgNorm": -1.576, "controversy": 0.1753624817342638},
+            {"name": "Fix What's Broken", "setCode": "SOS", "rarity": "rare", "colors": ["W", "B"], "type": "Sorcery", "manaCost": "{2}{W}{B}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 2.0, "avgNorm": -1.7, "controversy": null},
+            {"name": "Glorious Decay", "setCode": "SOS", "rarity": "common", "colors": ["G"], "type": "Instant", "manaCost": "{1}{G}", "ratings": {"ds": {"raw": 2.0, "norm": -1.061}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 1.5, "avgNorm": -1.7, "controversy": 0.9043895731375943},
+            {"name": "Mica, Reader of Ruins", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Lgd. Creature", "manaCost": "{3}{R}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 2, "norm": -1.7}}, "avgRaw": 2.0, "avgNorm": -1.7, "controversy": null},
+            {"name": "Angels Grace", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Crop Rotation", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Culling the Weak", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Dinas Guidance", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Fix Whats Broken", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Glimpse of Nature", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Jeskas Will", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Library of Leng", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Living End", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Pongify", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Pyretic Ritual", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Return the Favor", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Return to the Ranks", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Vampiric Tutor", "setCode": "SOS", "rarity": null, "colors": [], "type": "", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": null, "norm": null}}, "avgRaw": 0.0, "avgNorm": -1.843, "controversy": null},
+            {"name": "Arcane Omens", "setCode": "SOS", "rarity": "uncommon", "colors": ["B"], "type": "Sorcery", "manaCost": "{4}{B}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 1.0, "avgNorm": -1.896, "controversy": 0.6279108216936541},
+            {"name": "Harsh Annotation", "setCode": "SOS", "rarity": "uncommon", "colors": ["W"], "type": "Instant", "manaCost": "{1}{W}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 1.0, "avgNorm": -1.896, "controversy": 0.6279108216936541},
+            {"name": "Procrastinate", "setCode": "SOS", "rarity": "common", "colors": ["U"], "type": "Sorcery", "manaCost": "{X}{U}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 1.0, "avgNorm": -1.896, "controversy": 0.6279108216936541},
+            {"name": "Zaffai and the Tempests", "setCode": "SOS", "rarity": "rare", "colors": ["U", "R"], "type": "Lgd. Creature", "manaCost": "{5}{U}{R}", "ratings": {"ds": {"raw": 1.0, "norm": -1.452}, "cs": {"raw": 0, "norm": -2.98}}, "avgRaw": 0.5, "avgNorm": -2.216, "controversy": 1.0804591616530446},
+            {"name": "Archaic's Agony", "setCode": "SOS", "rarity": "uncommon", "colors": ["R"], "type": "Sorcery", "manaCost": "{4}{R}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 1.0, "avgNorm": -2.34, "controversy": null},
+            {"name": "Page, Loose Leaf", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Lgd. Artifact Creature", "manaCost": "{2}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 1, "norm": -2.34}}, "avgRaw": 1.0, "avgNorm": -2.34, "controversy": null},
+            {"name": "Petrified Hamlet", "setCode": "SOS", "rarity": "rare", "colors": [], "type": "Land", "manaCost": "", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": 0, "norm": -2.98}}, "avgRaw": 0.0, "avgNorm": -2.412, "controversy": 0.8039804102091045},
+            {"name": "Pox Plague", "setCode": "SOS", "rarity": "rare", "colors": ["B"], "type": "Sorcery", "manaCost": "{B}{B}{B}{B}{B}", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": 0, "norm": -2.98}}, "avgRaw": 0.0, "avgNorm": -2.412, "controversy": 0.8039804102091045},
+            {"name": "Resonating Lute", "setCode": "SOS", "rarity": "rare", "colors": ["U", "R"], "type": "Artifact", "manaCost": "{2}{U}{R}", "ratings": {"ds": {"raw": 0.0, "norm": -1.843}, "cs": {"raw": 0, "norm": -2.98}}, "avgRaw": 0.0, "avgNorm": -2.412, "controversy": 0.8039804102091045},
+            {"name": "Dina's Guidance", "setCode": "SOS", "rarity": "rare", "colors": ["B", "G"], "type": "Instant", "manaCost": "{1}{B}{G}", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": 0, "norm": -2.98}}, "avgRaw": 0.0, "avgNorm": -2.98, "controversy": null},
+            {"name": "Forest", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Basic Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": null, "norm": null}}, "avgRaw": null, "avgNorm": null, "controversy": null},
+            {"name": "Island", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Basic Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": null, "norm": null}}, "avgRaw": null, "avgNorm": null, "controversy": null},
+            {"name": "Mountain", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Basic Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": null, "norm": null}}, "avgRaw": null, "avgNorm": null, "controversy": null},
+            {"name": "Plains", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Basic Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": null, "norm": null}}, "avgRaw": null, "avgNorm": null, "controversy": null},
+            {"name": "Swamp", "setCode": "SOS", "rarity": "common", "colors": [], "type": "Basic Land", "manaCost": "", "ratings": {"ds": {"raw": null, "norm": null}, "cs": {"raw": null, "norm": null}}, "avgRaw": null, "avgNorm": null, "controversy": null}
+        ];
+
+        // ============================================================
+        // Constants
+        // ============================================================
+        const IMAGE_COLUMN_SCALE = 1.5;
+        const RARITY_ORDER = { common: 1, uncommon: 2, rare: 3, mythic: 4 };
+        const RARITY_LABELS = { common: 'C', uncommon: 'U', rare: 'R', mythic: 'M' };
+
+        let activeCardLink = null;
+        const cardImageCache = new Map();
+        const columnWidthState = { baseWidths: null, imagesScaled: false };
+        const sortState = { key: 'avg_norm', direction: 'desc' };
+
+        // ============================================================
+        // Generated from SET_CONFIG — sortKeyMap
+        // ============================================================
+        const sortKeyMap = {
+            name: 'name',
+            set_code: 'setCode',
+            rarity: 'rarityRank',
+            color_identity: 'colorIdentity',
+            type: 'type',
+            mana_cost: 'manaCost',
+            avg_norm: 'avgNorm',
+            avg_raw: 'avgRaw',
+            controversy: 'controversy'
+        };
+        for (const rater of SET_CONFIG.raters) {
+            sortKeyMap[rater.id + '_raw'] = rater.id + 'Raw';
+            sortKeyMap[rater.id + '_norm'] = rater.id + 'Norm';
+        }
+
+        // ============================================================
+        // Utility functions
+        // ============================================================
+        function getRarityRank(rarity) {
+            if (!rarity) return null;
+            const key = String(rarity).toLowerCase();
+            return RARITY_ORDER[key] ?? null;
+        }
+
+        function formatRarity(rarity) {
+            if (!rarity) return '-';
+            const key = String(rarity).toLowerCase();
+            return RARITY_LABELS[key] ?? rarity;
+        }
+
+        function getTypeCode(fullType) {
+            if (!fullType) return '-';
+            const t = String(fullType).toLowerCase();
+            if (t.includes('creature')) return 'C';
+            if (t.includes('instant')) return 'I';
+            if (t.includes('sorcery')) return 'S';
+            if (t.includes('artifact')) return 'A';
+            if (t.includes('enchantment')) return 'E';
+            if (t.includes('land')) return 'L';
+            if (t.includes('planeswalker')) return 'P';
+            return '?';
+        }
+
+        function getScoreClass(value) {
+            if (!Number.isFinite(value)) return '';
+            if (value >= 1.5) return 'score-excellent';
+            if (value >= 0.5) return 'score-good';
+            if (value > -0.5) return 'score-neutral';
+            if (value >= -1.5) return 'score-poor';
+            return 'score-very-poor';
+        }
+
+        function getControversyClass(value) {
+            if (!Number.isFinite(value)) return '';
+            if (value < 0.5) return 'controversy-low';
+            if (value < 1.0) return 'controversy-medium';
+            return 'controversy-high';
+        }
+
+        function buildRaterLink(rater, cardName) {
+            if (!rater.linkPattern) return null;
+            if (typeof rater.linkPattern === 'function') {
+                return rater.linkPattern(cardName);
+            }
+            return rater.linkPattern;
+        }
+
+        // ============================================================
+        // Scryfall image fetching
+        // ============================================================
+        function fetchCardImageUrl(cardName) {
+            if (cardImageCache.has(cardName)) {
+                return Promise.resolve(cardImageCache.get(cardName));
+            }
+            return fetch('https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(cardName))
+                .then(r => r.json())
+                .then(card => {
+                    const url = (card.image_uris && card.image_uris.normal) || null;
+                    cardImageCache.set(cardName, url);
+                    return url;
+                })
+                .catch(() => { cardImageCache.set(cardName, null); return null; });
+        }
+
+        // ============================================================
+        // initializePage — generates all rater-dependent HTML
+        // ============================================================
+        function initializePage() {
+            const raters = SET_CONFIG.raters;
+            const numRaters = raters.length;
+
+            // Page title and header
+            document.title = SET_CONFIG.setCode + ' - ' + SET_CONFIG.subtitle;
+            document.getElementById('pageTitle').textContent = SET_CONFIG.fullName;
+            document.getElementById('pageSubtitle').textContent = SET_CONFIG.subtitle;
+
+            // Header gradient
+            if (SET_CONFIG.headerGradient) {
+                const header = document.getElementById('pageHeader');
+                header.style.background = 'linear-gradient(135deg, ' + SET_CONFIG.headerGradient[0] + ' 0%, ' + SET_CONFIG.headerGradient[1] + ' 100%)';
+                const beforeStyle = document.createElement('style');
+                beforeStyle.textContent = 'header::before { background: linear-gradient(135deg, ' + SET_CONFIG.headerGradient[0] + ' 0%, ' + SET_CONFIG.headerGradient[1] + ' 100%); }';
+                document.head.appendChild(beforeStyle);
+            }
+
+            // Info banner
+            let bannerHtml = SET_CONFIG.infoBanner || '';
+            if (SET_CONFIG.colorWheelUrl) {
+                bannerHtml += '<p style="margin-top: 12px;">• You might also like my <a href="' + SET_CONFIG.colorWheelUrl + '" target="_blank" rel="noopener">interactive color wheel of the set archetypes</a></p>';
+            }
+            document.getElementById('infoBanner').innerHTML = bannerHtml;
+
+            // OG meta tags
+            document.querySelector('meta[property="og:title"]').content = SET_CONFIG.setCode + ' - ' + SET_CONFIG.subtitle;
+            document.querySelector('meta[property="og:description"]').content = 'Interactive z-score normalized ratings viewer for ' + SET_CONFIG.fullName;
+
+            // Colgroup: 6 fixed + 2 per rater + 1 avg_raw = 6 + 2*N + 1
+            const colgroup = document.getElementById('tableColgroup');
+            colgroup.innerHTML = '';
+            const fixedCols = [
+                { cls: 'col-name' },
+                { cls: 'col-set' },
+                { cls: 'col-score col-rarity' },
+                { cls: 'col-score col-colors' },
+                { cls: 'col-type' },
+                { cls: 'col-mana-cost' },
+                { cls: 'col-score col-avg-norm' },
+                { cls: 'col-score col-controversy' }
+            ];
+            fixedCols.forEach(c => {
+                const col = document.createElement('col');
+                col.className = c.cls;
+                colgroup.appendChild(col);
+            });
+            // Per-rater columns (raw + norm)
+            for (let i = 0; i < numRaters; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const col = document.createElement('col');
+                    col.className = 'col-score';
+                    colgroup.appendChild(col);
+                }
+            }
+            // Avg Raw column
+            const avgRawCol = document.createElement('col');
+            avgRawCol.className = 'col-score';
+            colgroup.appendChild(avgRawCol);
+
+            // Thead
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = '';
+
+            // Row 1: fixed headers + rater group headers + avg raw
+            const row1 = document.createElement('tr');
+            const fixedHeaders = [
+                { text: 'Card Name', sortKey: 'name', colIndex: 0, resizable: true },
+                { text: 'Set', sortKey: 'set_code', colIndex: 1, resizable: true, cls: 'col-set' },
+                { text: 'Rarity', sortKey: 'rarity', colIndex: 2, resizable: true, cls: 'col-rarity' },
+                { text: 'Colors', sortKey: 'color_identity', colIndex: 3, resizable: true, cls: 'col-colors' },
+                { text: 'Type', sortKey: 'type', colIndex: 4, resizable: true, cls: 'col-type' },
+                { text: 'Mana', sortKey: 'mana_cost', colIndex: 5, resizable: true, cls: 'col-mana-cost' },
+                { text: 'Avg Norm', sortKey: 'avg_norm', colIndex: 6, resizable: true, cls: 'col-avg-norm' },
+                { text: 'Controversy', sortKey: 'controversy', colIndex: 7, resizable: true, cls: 'col-controversy' }
+            ];
+
+            fixedHeaders.forEach(h => {
+                const th = document.createElement('th');
+                th.rowSpan = 2;
+                th.className = 'sortable' + (h.cls ? ' ' + h.cls : '');
+                th.dataset.sortKey = h.sortKey;
+                th.dataset.colIndex = h.colIndex;
+                if (h.resizable) th.dataset.resizable = 'true';
+                th.innerHTML = h.text + '<span class="sort-indicator">\u25B2</span>';
+                row1.appendChild(th);
+            });
+
+            // Rater group headers (colspan=2 each)
+            const raterStartCol = 8; // first rater column index (6 fixed + 2 = 8)
+            raters.forEach((rater, i) => {
+                const th = document.createElement('th');
+                th.colSpan = 2;
+                th.className = 'source-header group-start group-end';
+                if (rater.url) {
+                    th.innerHTML = '<a href="' + rater.url + '" target="_blank" title="View ' + rater.name + ' review">' + rater.name + '</a>';
+                } else {
+                    th.textContent = rater.name;
+                }
+                row1.appendChild(th);
+            });
+
+            // Avg Raw header
+            const avgRawColIndex = raterStartCol + numRaters * 2;
+            const avgRawTh = document.createElement('th');
+            avgRawTh.rowSpan = 2;
+            avgRawTh.className = 'sortable';
+            avgRawTh.dataset.sortKey = 'avg_raw';
+            avgRawTh.dataset.colIndex = avgRawColIndex;
+            avgRawTh.dataset.resizable = 'true';
+            avgRawTh.innerHTML = 'Avg Raw<span class="sort-indicator">\u25B2</span>';
+            row1.appendChild(avgRawTh);
+
+            thead.appendChild(row1);
+
+            // Row 2: Raw/Norm sub-headers for each rater
+            const row2 = document.createElement('tr');
+            raters.forEach((rater, i) => {
+                const rawColIndex = raterStartCol + i * 2;
+                const normColIndex = rawColIndex + 1;
+
+                const rawTh = document.createElement('th');
+                rawTh.className = 'sortable group-start';
+                rawTh.dataset.sortKey = rater.id + '_raw';
+                rawTh.dataset.colIndex = rawColIndex;
+                rawTh.innerHTML = 'Raw<span class="sort-indicator">\u25B2</span>';
+                row2.appendChild(rawTh);
+
+                const normTh = document.createElement('th');
+                normTh.className = 'sortable group-end';
+                normTh.dataset.sortKey = rater.id + '_norm';
+                normTh.dataset.colIndex = normColIndex;
+                normTh.innerHTML = 'Norm<span class="sort-indicator">\u25B2</span>';
+                row2.appendChild(normTh);
+            });
+            thead.appendChild(row2);
+
+            // Sort dropdown: add per-rater options
+            const sortBy = document.getElementById('sortBy');
+            raters.forEach(rater => {
+                const rawOpt = document.createElement('option');
+                rawOpt.value = rater.id + '_raw';
+                rawOpt.textContent = rater.abbreviation + ' Raw';
+                sortBy.appendChild(rawOpt);
+
+                const normOpt = document.createElement('option');
+                normOpt.value = rater.id + '_norm';
+                normOpt.textContent = rater.abbreviation + ' Norm';
+                sortBy.appendChild(normOpt);
+            });
+
+            // Footer
+            const footer = document.getElementById('pageFooter');
+            const abbreviations = raters.map(r => r.abbreviation + ' = ' + r.name).join(', ');
+            footer.innerHTML = '<p><strong>Rater Abbreviations:</strong> ' + abbreviations + '</p>' +
+                '<p>Data normalized using Z-score method. Card images powered by Scryfall API. Hover over card names to see card images.</p>' +
+                '<p id="versionInfo"></p>';
+        }
+
+        // ============================================================
+        // createTableRow — dynamic, iterates SET_CONFIG.raters
+        // ============================================================
+        function createTableRow(card) {
+            const raters = SET_CONFIG.raters;
+            const row = document.createElement('tr');
+
+            // Dataset attributes for sorting
+            row.dataset.name = card.name;
+            row.dataset.setCode = card.setCode || '';
+            row.dataset.rarity = card.rarity || '';
+            row.dataset.colorIdentity = card.colors.join('') || 'C';
+            row.dataset.type = card.type || '';
+            row.dataset.manaCost = card.manaCost || '';
+            row.dataset.rarityRank = getRarityRank(card.rarity) ?? '';
+            row.dataset.avgNorm = Number.isFinite(card.avgNorm) ? card.avgNorm : '';
+            row.dataset.avgRaw = Number.isFinite(card.avgRaw) ? card.avgRaw : '';
+            row.dataset.controversy = Number.isFinite(card.controversy) ? card.controversy : '';
+
+            // Per-rater dataset attrs
+            for (const rater of raters) {
+                const r = card.ratings[rater.id] || {};
+                row.dataset[rater.id + 'Raw'] = Number.isFinite(r.raw) ? r.raw : '';
+                row.dataset[rater.id + 'Norm'] = Number.isFinite(r.norm) ? r.norm : '';
+            }
+
+            // Build cell HTML
+            // Scryfall URL: use card.scryfallUrl or construct a search URL
+            const scryfallUrl = card.scryfallUrl || ('https://scryfall.com/search?q=' + encodeURIComponent('"' + card.name + '"'));
+            let html = '<td><a href="' + scryfallUrl + '" target="_blank" title="View on Scryfall">' + card.name + '</a></td>';
+
+            html += '<td class="col-set">' + (card.setCode || '') + '</td>';
+
+            html += '<td class="col-rarity">' + formatRarity(card.rarity) + '</td>';
+
+            const colorText = card.colors.join('') || 'C';
+            html += '<td class="col-colors" data-colors="' + card.colors.join('') + '">' + colorText + '</td>';
+
+            const typeCode = getTypeCode(card.type);
+            html += '<td class="col-type compact" data-full-type="' + (card.type || '') + '" title="' + (card.type || '') + '">' + typeCode + '</td>';
+            html += '<td class="col-mana-cost">' + (card.manaCost || '-') + '</td>';
+
+            const avgNormClass = getScoreClass(card.avgNorm);
+            const contClass = getControversyClass(card.controversy);
+            const avgNormText = Number.isFinite(card.avgNorm)
+                ? (card.avgNorm >= 0 ? '+' : '') + card.avgNorm.toFixed(2) : '-';
+            const contText = Number.isFinite(card.controversy) ? card.controversy.toFixed(2) : '-';
+            html += '<td class="' + avgNormClass + ' col-avg-norm">' + avgNormText + '</td>';
+            html += '<td class="' + contClass + ' col-controversy">' + contText + '</td>';
+
+            // Per-rater raw/norm pairs
+            for (const rater of raters) {
+                const r = card.ratings[rater.id] || {};
+                const rawVal = r.raw;
+                const normVal = r.norm;
+                const rawClass = getScoreClass(normVal);  // Color by norm score
+                const normClass = getScoreClass(normVal);
+                const rawText = Number.isFinite(rawVal) ? rawVal.toFixed(2) : '-';
+                const normText = Number.isFinite(normVal) ? (normVal >= 0 ? '+' : '') + normVal.toFixed(2) : '-';
+
+                let rawCell = rawText;
+                let normCell = normText;
+
+                // If rater has a linkPattern, wrap in link
+                if (rater.linkPattern) {
+                    const link = buildRaterLink(rater, card.name);
+                    if (Number.isFinite(rawVal)) {
+                        rawCell = '<a class="score-link" href="' + link + '" target="_blank" title="Open ' + rater.name + ' review">' + rawText + '</a>';
+                    }
+                    if (Number.isFinite(normVal)) {
+                        normCell = '<a class="score-link" href="' + link + '" target="_blank" title="Open ' + rater.name + ' review">' + normText + '</a>';
+                    }
+                }
+
+                html += '<td class="' + rawClass + ' group-start">' + rawCell + '</td>';
+                html += '<td class="' + normClass + ' group-end">' + normCell + '</td>';
+            }
+
+            // Avg Raw
+            const avgRawClass = getScoreClass(card.avgRaw);
+            const avgRawText = Number.isFinite(card.avgRaw) ? card.avgRaw.toFixed(2) : '-';
+            html += '<td class="' + avgRawClass + '">' + avgRawText + '</td>';
+
+            row.innerHTML = html;
+            return row;
+        }
+
+        // ============================================================
+        // Sort, filter, display functions
+        // ============================================================
+        function sortTable() {
+            const tbody = document.getElementById('tableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const sortKey = sortState.key;
+                if (sortKey === 'name') {
+                    const aVal = a.dataset.name.toLowerCase();
+                    const bVal = b.dataset.name.toLowerCase();
+                    if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                if (sortKey === 'color_identity' || sortKey === 'type' || sortKey === 'mana_cost' || sortKey === 'set_code') {
+                    const datasetKey = sortKeyMap[sortKey];
+                    const aVal = (a.dataset[datasetKey] || '').toLowerCase();
+                    const bVal = (b.dataset[datasetKey] || '').toLowerCase();
+                    if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                const datasetKey = sortKeyMap[sortKey];
+                const aRaw = parseFloat(a.dataset[datasetKey]);
+                const bRaw = parseFloat(b.dataset[datasetKey]);
+                const aVal = Number.isFinite(aRaw) ? aRaw : (sortState.direction === 'asc' ? Infinity : -Infinity);
+                const bVal = Number.isFinite(bRaw) ? bRaw : (sortState.direction === 'asc' ? Infinity : -Infinity);
+                if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            updateInlineImages();
+            updateSortIndicators();
+        }
+
+        function getSelectedRarities() {
+            const selected = new Set();
+            document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+                if (toggle.checked) selected.add(toggle.dataset.rarity);
+            });
+            return selected;
+        }
+
+        function setRarityFilters(enabled) {
+            document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+                toggle.checked = enabled;
+            });
+            applyFilters();
+        }
+
+        function getSelectedColors() {
+            const selected = new Set();
+            document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+                if (toggle.checked) selected.add(toggle.dataset.color);
+            });
+            return selected;
+        }
+
+        function setColorFilters(enabled) {
+            document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+                toggle.checked = enabled;
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const selectedRarities = getSelectedRarities();
+            const selectedColors = getSelectedColors();
+            const rows = document.getElementById('tableBody').querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const cardName = row.dataset.name.toLowerCase();
+                const rarity = row.dataset.rarity || '';
+                const colorsTd = row.cells[2];
+                const cardColors = colorsTd ? (colorsTd.dataset.colors || '') : '';
+
+                const matchesName = cardName.includes(searchTerm);
+                const matchesRarity = selectedRarities.size > 0 && selectedRarities.has(rarity);
+
+                let matchesColor = true;
+                if (selectedColors.size > 0) {
+                    if (cardColors.length === 0) {
+                        matchesColor = selectedColors.has('C');
+                    } else {
+                        matchesColor = Array.from(cardColors).some(color => selectedColors.has(color));
+                    }
+                }
+
+                row.style.display = matchesName && matchesRarity && matchesColor ? '' : 'none';
+            });
+            updateInlineImages();
+        }
+
+        // ============================================================
+        // Card image tooltip
+        // ============================================================
+        function showCardImage(e) {
+            const link = e.currentTarget;
+            const cardName = link.textContent;
+            const tooltip = document.getElementById('cardTooltip');
+            activeCardLink = link;
+
+            fetchCardImageUrl(cardName).then(url => {
+                if (!url || activeCardLink !== link) return;
+                tooltip.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = cardName;
+                tooltip.appendChild(img);
+                tooltip.style.display = 'block';
+                img.addEventListener('load', updateTooltipPosition);
+                updateTooltipPosition();
+            });
+        }
+
+        function hideCardImage() {
+            activeCardLink = null;
+            document.getElementById('cardTooltip').style.display = 'none';
+        }
+
+        function updateTooltipPosition() {
+            const tooltip = document.getElementById('cardTooltip');
+            if (!activeCardLink || tooltip.style.display !== 'block') return;
+
+            const margin = 8;
+            const rect = activeCardLink.getBoundingClientRect();
+            const tooltipWidth = tooltip.offsetWidth;
+            const tooltipHeight = tooltip.offsetHeight;
+
+            let left = rect.left;
+            if (left + tooltipWidth > window.innerWidth - margin) left = window.innerWidth - margin - tooltipWidth;
+            if (left < margin) left = margin;
+
+            let top = rect.top - tooltipHeight - margin;
+            if (top < margin) top = rect.bottom + margin;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+
+        // ============================================================
+        // Inline card images
+        // ============================================================
+        function ensureRowImage(row) {
+            const cardName = row.dataset.name;
+            if (!cardName) return;
+            const cell = row.querySelector('td:first-child');
+            if (!cell) return;
+
+            let container = cell.querySelector('.card-image');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'card-image';
+                cell.appendChild(container);
+            }
+            if (container.dataset.loaded === 'true') return;
+            container.dataset.loaded = 'pending';
+
+            fetchCardImageUrl(cardName).then(url => {
+                if (!url) return;
+                if (!container.querySelector('img')) {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = cardName;
+                    container.appendChild(img);
+                }
+                container.dataset.loaded = 'true';
+            });
+        }
+
+        function updateInlineImages() {
+            const toggle = document.getElementById('toggleImages');
+            const enabled = toggle && toggle.checked;
+            document.body.classList.toggle('show-images', enabled);
+
+            if (enabled && !columnWidthState.imagesScaled) {
+                applyImageColumnScale(true);
+                columnWidthState.imagesScaled = true;
+            }
+            if (!enabled && columnWidthState.imagesScaled) {
+                applyImageColumnScale(false);
+                columnWidthState.imagesScaled = false;
+            }
+            if (!enabled) return;
+
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.style.display === 'none') return;
+                ensureRowImage(row);
+            });
+        }
+
+        function updateSortIndicators() {
+            document.querySelectorAll('th[data-sort-key]').forEach(th => {
+                const indicator = th.querySelector('.sort-indicator');
+                if (!indicator) return;
+                if (th.dataset.sortKey === sortState.key) {
+                    th.classList.add('sorted');
+                    indicator.textContent = sortState.direction === 'asc' ? '\u25B2' : '\u25BC';
+                } else {
+                    th.classList.remove('sorted');
+                    indicator.textContent = '\u25B2';
+                }
+            });
+        }
+
+        function updateRarityHighlight() {
+            const toggle = document.getElementById('toggleRarity');
+            document.body.classList.toggle('rarity-color', toggle && toggle.checked);
+        }
+
+        function updateTypeDisplay() {
+            const toggle = document.getElementById('toggleTypeDisplay');
+            const isExpanded = toggle && toggle.checked;
+            document.querySelectorAll('td.col-type').forEach(cell => {
+                if (isExpanded) {
+                    cell.classList.remove('compact');
+                    cell.textContent = cell.dataset.fullType || '-';
+                } else {
+                    cell.classList.add('compact');
+                    cell.textContent = getTypeCode(cell.dataset.fullType);
+                }
+            });
+        }
+
+        // ============================================================
+        // Column resizing
+        // ============================================================
+        function setColumnWidth(index, width) {
+            const cols = document.getElementById('ratingsTable').querySelectorAll('col');
+            const col = cols[index];
+            if (col) {
+                col.style.width = width + 'px';
+                col.style.minWidth = width + 'px';
+            }
+        }
+
+        function captureBaseWidths() {
+            const table = document.getElementById('ratingsTable');
+            const cols = table.querySelectorAll('col');
+            columnWidthState.baseWidths = Array.from(cols).map((col, index) => {
+                const header = table.querySelector('th[data-col-index="' + index + '"]');
+                return header ? header.offsetWidth : 0;
+            });
+        }
+
+        function applyImageColumnScale(enabled) {
+            if (!columnWidthState.baseWidths) captureBaseWidths();
+            const scale = enabled ? IMAGE_COLUMN_SCALE : 1;
+            columnWidthState.baseWidths.forEach((width, index) => {
+                const targetWidth = index === 0 ? Math.round(width * scale) : width;
+                setColumnWidth(index, targetWidth);
+            });
+        }
+
+        function setupColumnResizers() {
+            const table = document.getElementById('ratingsTable');
+            const headers = table.querySelectorAll('th[data-resizable="true"]');
+
+            headers.forEach(th => {
+                if (th.querySelector('.col-resizer')) return;
+                const colIndex = parseInt(th.dataset.colIndex, 10);
+                if (Number.isNaN(colIndex)) return;
+
+                const resizer = document.createElement('div');
+                resizer.className = 'col-resizer';
+                th.appendChild(resizer);
+
+                let startX = 0, startWidth = 0;
+
+                const onMouseMove = event => {
+                    const delta = event.pageX - startX;
+                    const minWidth = colIndex === 0 ? 160 : 35;
+                    const newWidth = Math.max(minWidth, startWidth + delta);
+                    setColumnWidth(colIndex, newWidth);
+                    if (!columnWidthState.baseWidths) captureBaseWidths();
+                    if (document.body.classList.contains('show-images') && colIndex === 0) {
+                        columnWidthState.baseWidths[colIndex] = newWidth / IMAGE_COLUMN_SCALE;
+                    } else {
+                        columnWidthState.baseWidths[colIndex] = newWidth;
+                    }
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    th.classList.remove('resizing');
+                };
+
+                resizer.addEventListener('mousedown', event => {
+                    event.preventDefault();
+                    startX = event.pageX;
+                    startWidth = th.offsetWidth;
+                    th.classList.add('resizing');
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            });
+        }
+
+        function setVersionInfo() {
+            const el = document.getElementById('versionInfo');
+            if (el) el.textContent = 'Viewer version ' + SET_CONFIG.version;
+        }
+
+        // ============================================================
+        // Initialize table with pre-computed data
+        // ============================================================
+        function initializeTable(data) {
+            const tbody = document.getElementById('tableBody');
+            data.forEach(card => {
+                tbody.appendChild(createTableRow(card));
+            });
+
+            // Tooltip event listeners
+            document.querySelectorAll('td:first-child a').forEach(link => {
+                link.addEventListener('mouseenter', showCardImage);
+                link.addEventListener('mouseleave', hideCardImage);
+                link.parentElement.parentElement.addEventListener('mousemove', updateTooltipPosition);
+            });
+
+            // Set initial sort
+            const sortBySelect = document.getElementById('sortBy');
+            const directionSelect = document.getElementById('direction');
+            if (sortBySelect && sortBySelect.querySelector('option[value="' + sortState.key + '"]')) {
+                sortBySelect.value = sortState.key;
+            }
+            if (directionSelect) directionSelect.value = sortState.direction;
+
+            sortTable();
+            applyFilters();
+            updateRarityHighlight();
+        }
+
+        // ============================================================
+        // Event listeners
+        // ============================================================
+        const sortBySelect = document.getElementById('sortBy');
+        const directionSelect = document.getElementById('direction');
+        if (sortBySelect) {
+            sortBySelect.addEventListener('change', () => {
+                sortState.key = sortBySelect.value;
+                sortTable();
+            });
+        }
+        if (directionSelect) {
+            directionSelect.addEventListener('change', () => {
+                sortState.direction = directionSelect.value;
+                sortTable();
+            });
+        }
+        document.getElementById('searchBox').addEventListener('input', applyFilters);
+        document.getElementById('toggleImages').addEventListener('change', updateInlineImages);
+
+        const rarityToggle = document.getElementById('toggleRarity');
+        if (rarityToggle) rarityToggle.addEventListener('change', updateRarityHighlight);
+
+        const typeToggle = document.getElementById('toggleTypeDisplay');
+        if (typeToggle) typeToggle.addEventListener('change', updateTypeDisplay);
+
+        document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
+            toggle.addEventListener('change', applyFilters);
+        });
+        document.querySelectorAll('.rarity-filter-action').forEach(button => {
+            button.addEventListener('click', () => setRarityFilters(button.dataset.action === 'all'));
+        });
+        document.querySelectorAll('.color-filter-toggle').forEach(toggle => {
+            toggle.addEventListener('change', applyFilters);
+        });
+        document.querySelectorAll('.color-filter-action').forEach(button => {
+            button.addEventListener('click', () => setColorFilters(button.dataset.action === 'all'));
+        });
+
+        // ============================================================
+        // Main: initialize page and load data
+        // ============================================================
+        initializePage();
+        setVersionInfo();
+        setupColumnResizers();
+
+        // Header click sorting
+        document.querySelectorAll('th[data-sort-key]').forEach(th => {
+            th.addEventListener('click', event => {
+                if (event.target.classList.contains('col-resizer')) return;
+                const key = th.dataset.sortKey;
+                if (sortState.key === key) {
+                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortState.key = key;
+                    sortState.direction = 'desc';
+                }
+                if (sortBySelect && sortBySelect.querySelector('option[value="' + key + '"]')) {
+                    sortBySelect.value = key;
+                }
+                if (directionSelect) directionSelect.value = sortState.direction;
+                sortTable();
+            });
+        });
+
+        // Load data: CARD_DATA is pre-computed, just map and render
+        const cardData = CARD_DATA.map(card => ({
+            ...card,
+            colorIdentity: card.colors.join('') || 'C',
+            rarityRank: RARITY_ORDER[card.rarity] || 0
+        }));
+        initializeTable(cardData);
+    </script>
+</body>
+</html>
