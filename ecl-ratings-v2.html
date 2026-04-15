@@ -181,6 +181,84 @@
             margin: 0 8px;
         }
 
+        /* ── Combobox filters ─────────────────────────────────── */
+        .combobox-filters {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .combobox-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .combobox-group > span {
+            font-size: 0.88em;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+        .combobox-wrap { position: relative; }
+        .combobox-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            background: #fff;
+            font-size: 0.85em;
+            cursor: pointer;
+            min-width: 80px;
+            justify-content: space-between;
+            white-space: nowrap;
+        }
+        .combobox-btn:hover { border-color: #667eea; }
+        .combobox-btn.open { border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.15); }
+        .cb-arrow { font-size: 0.65em; opacity: 0.5; }
+        .combobox-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+            z-index: 300;
+            min-width: 150px;
+            max-height: 240px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .combobox-dropdown.open { display: block; }
+        .combobox-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .combobox-item:hover { background: #f0f4ff; }
+        .combobox-item input { margin: 0; cursor: pointer; }
+        .combobox-select-all {
+            display: block;
+            width: 100%;
+            padding: 4px 12px;
+            font-size: 0.8em;
+            color: #667eea;
+            border: none;
+            border-top: 1px solid #eee;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+        }
+        .combobox-select-all:hover { background: #f0f4ff; }
+
         .type-display-toggle {
             display: inline-flex;
             gap: 4px;
@@ -547,27 +625,32 @@
                 <input type="checkbox" id="toggleTypeDisplay">
                 <label for="toggleTypeDisplay">Show full typeline</label>
             </div>
-            <div class="separator"></div>
-            <div class="rarity-filter">
-                <span>Rarity:</span>
-                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="common" checked> C</label>
-                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="uncommon" checked> U</label>
-                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="rare" checked> R</label>
-                <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="mythic" checked> M</label>
-                <button type="button" class="rarity-filter-action" data-action="all">All</button>
-                <button type="button" class="rarity-filter-action" data-action="none">None</button>
+            <div id="checkboxFilters" style="display:contents">
+                <div class="separator"></div>
+                <div class="rarity-filter">
+                    <span>Rarity:</span>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="common" checked> C</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="uncommon" checked> U</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="rare" checked> R</label>
+                    <label><input type="checkbox" class="rarity-filter-toggle" data-rarity="mythic" checked> M</label>
+                    <button type="button" class="rarity-filter-action" data-action="all">All</button>
+                    <button type="button" class="rarity-filter-action" data-action="none">None</button>
+                </div>
+                <div class="separator"></div>
+                <div class="color-filter">
+                    <span>Colors:</span>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="W" checked title="White"> W</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="U" checked title="Blue"> U</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="B" checked title="Black"> B</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="R" checked title="Red"> R</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="G" checked title="Green"> G</label>
+                    <label><input type="checkbox" class="color-filter-toggle" data-color="C" checked title="Colorless"> C</label>
+                    <button type="button" class="color-filter-action" data-action="all">All</button>
+                    <button type="button" class="color-filter-action" data-action="none">None</button>
+                </div>
             </div>
-            <div class="separator"></div>
-            <div class="color-filter">
-                <span>Colors:</span>
-                <label><input type="checkbox" class="color-filter-toggle" data-color="W" checked title="White"> W</label>
-                <label><input type="checkbox" class="color-filter-toggle" data-color="U" checked title="Blue"> U</label>
-                <label><input type="checkbox" class="color-filter-toggle" data-color="B" checked title="Black"> B</label>
-                <label><input type="checkbox" class="color-filter-toggle" data-color="R" checked title="Red"> R</label>
-                <label><input type="checkbox" class="color-filter-toggle" data-color="G" checked title="Green"> G</label>
-                <label><input type="checkbox" class="color-filter-toggle" data-color="C" checked title="Colorless"> C</label>
-                <button type="button" class="color-filter-action" data-action="all">All</button>
-                <button type="button" class="color-filter-action" data-action="none">None</button>
+            <div id="comboboxFilters" class="combobox-filters" style="display:none">
+                <!-- Populated by initComboboxFilters() -->
             </div>
         </div>
 
@@ -1411,6 +1494,119 @@
             updateSortIndicators();
         }
 
+        // ============================================================
+        // Combobox filters (used when SET_CONFIG.filterStyle === 'combobox')
+        // ============================================================
+        const cbFilterState = { set: null, rarity: null, type: null, colors: null };
+
+        function buildCombobox(filterId, labelText, options) {
+            // options: [{value, label}]
+            const group = document.createElement('div');
+            group.className = 'combobox-group';
+
+            const lbl = document.createElement('span');
+            lbl.textContent = labelText + ':';
+            group.appendChild(lbl);
+
+            const wrap = document.createElement('div');
+            wrap.className = 'combobox-wrap';
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'combobox-btn';
+            btn.innerHTML = '<span class="cb-text">All</span><span class="cb-arrow">\u25BE</span>';
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'combobox-dropdown';
+
+            options.forEach(opt => {
+                const item = document.createElement('label');
+                item.className = 'combobox-item';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = opt.value;
+                cb.checked = true;
+                cb.addEventListener('change', () => syncCbState(filterId, dropdown, btn));
+                item.appendChild(cb);
+                item.appendChild(document.createTextNode('\u00a0' + opt.label));
+                dropdown.appendChild(item);
+            });
+
+            const selectAll = document.createElement('button');
+            selectAll.type = 'button';
+            selectAll.className = 'combobox-select-all';
+            selectAll.textContent = 'Select all';
+            selectAll.addEventListener('click', e => {
+                e.stopPropagation();
+                dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = true; });
+                syncCbState(filterId, dropdown, btn);
+            });
+            dropdown.appendChild(selectAll);
+
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const wasOpen = dropdown.classList.contains('open');
+                document.querySelectorAll('.combobox-dropdown.open').forEach(d => d.classList.remove('open'));
+                document.querySelectorAll('.combobox-btn.open').forEach(b => b.classList.remove('open'));
+                if (!wasOpen) { dropdown.classList.add('open'); btn.classList.add('open'); }
+            });
+
+            wrap.appendChild(btn);
+            wrap.appendChild(dropdown);
+            group.appendChild(wrap);
+            return group;
+        }
+
+        function syncCbState(filterId, dropdown, btn) {
+            const all = [...dropdown.querySelectorAll('input[type="checkbox"]')];
+            const checked = all.filter(cb => cb.checked).map(cb => cb.value);
+            const allSelected = checked.length === all.length;
+            cbFilterState[filterId] = allSelected ? null : new Set(checked);
+            const textEl = btn.querySelector('.cb-text');
+            if (allSelected) textEl.textContent = 'All';
+            else if (checked.length === 0) textEl.textContent = 'None';
+            else if (checked.length <= 3) textEl.textContent = checked.join(', ');
+            else textEl.textContent = checked.length + ' selected';
+            applyFilters();
+        }
+
+        function initComboboxFilters(cardData) {
+            if (SET_CONFIG.filterStyle !== 'combobox') return;
+            document.getElementById('checkboxFilters').style.display = 'none';
+            const container = document.getElementById('comboboxFilters');
+            container.style.display = 'flex';
+
+            // Set options (dynamic from data)
+            const sets = [...new Set(cardData.map(c => c.setCode).filter(Boolean))].sort();
+
+            // Rarity in logical order
+            const rarityOrder = ['common', 'uncommon', 'rare', 'mythic'];
+            const rarities = rarityOrder.filter(r => cardData.some(c => c.rarity === r));
+
+            // Type: match against known type words to keep order clean
+            const knownTypes = ['Creature', 'Instant', 'Sorcery', 'Enchantment', 'Artifact', 'Land', 'Planeswalker', 'Battle'];
+            const types = knownTypes.filter(t => cardData.some(c => (c.type || '').includes(t)));
+
+            // Colors: fixed order, only include those present
+            const colorDefs = [
+                { value: 'W', label: 'White' }, { value: 'U', label: 'Blue' },
+                { value: 'B', label: 'Black' }, { value: 'R', label: 'Red' },
+                { value: 'G', label: 'Green' }, { value: 'C', label: 'Colorless' }
+            ];
+            const colorPresent = new Set(cardData.flatMap(c => c.colors.length ? c.colors : ['C']));
+            const colors = colorDefs.filter(c => colorPresent.has(c.value));
+
+            container.appendChild(buildCombobox('set',    'Set',    sets.map(s => ({ value: s, label: s }))));
+            container.appendChild(buildCombobox('rarity', 'Rarity', rarities.map(r => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }))));
+            container.appendChild(buildCombobox('type',   'Type',   types.map(t => ({ value: t, label: t }))));
+            container.appendChild(buildCombobox('colors', 'Colors', colors));
+
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.combobox-dropdown.open').forEach(d => d.classList.remove('open'));
+                document.querySelectorAll('.combobox-btn.open').forEach(b => b.classList.remove('open'));
+            });
+        }
+
         function getSelectedRarities() {
             const selected = new Set();
             document.querySelectorAll('.rarity-filter-toggle').forEach(toggle => {
@@ -1443,29 +1639,49 @@
 
         function applyFilters() {
             const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            const selectedRarities = getSelectedRarities();
-            const selectedColors = getSelectedColors();
-            const rows = document.getElementById('tableBody').querySelectorAll('tr');
+            const useCombobox = SET_CONFIG.filterStyle === 'combobox';
+            let selectedRarities, selectedColors;
+            if (!useCombobox) {
+                selectedRarities = getSelectedRarities();
+                selectedColors = getSelectedColors();
+            }
 
+            const rows = document.getElementById('tableBody').querySelectorAll('tr');
             rows.forEach(row => {
                 const cardName = row.dataset.name.toLowerCase();
                 const rarity = row.dataset.rarity || '';
-                const colorsTd = row.cells[2];
-                const cardColors = colorsTd ? (colorsTd.dataset.colors || '') : '';
+                const colorIdentity = row.dataset.colorIdentity || 'C';
+                const cardType = row.dataset.type || '';
+                const setCode = row.dataset.setCode || '';
 
                 const matchesName = cardName.includes(searchTerm);
-                const matchesRarity = selectedRarities.size > 0 && selectedRarities.has(rarity);
+                let matchesRarity, matchesColor, matchesSet, matchesType;
 
-                let matchesColor = true;
-                if (selectedColors.size > 0) {
-                    if (cardColors.length === 0) {
+                if (useCombobox) {
+                    matchesSet    = !cbFilterState.set    || cbFilterState.set.has(setCode);
+                    matchesRarity = !cbFilterState.rarity || cbFilterState.rarity.has(rarity);
+                    matchesType   = !cbFilterState.type   || [...cbFilterState.type].some(t => cardType.includes(t));
+                    if (!cbFilterState.colors) {
+                        matchesColor = true;
+                    } else if (colorIdentity === 'C' || colorIdentity === '') {
+                        matchesColor = cbFilterState.colors.has('C');
+                    } else {
+                        matchesColor = Array.from(colorIdentity).some(c => cbFilterState.colors.has(c));
+                    }
+                } else {
+                    matchesSet  = true;
+                    matchesType = true;
+                    matchesRarity = selectedRarities.size > 0 && selectedRarities.has(rarity);
+                    if (selectedColors.size === 0) {
+                        matchesColor = true;
+                    } else if (colorIdentity === 'C' || colorIdentity === '') {
                         matchesColor = selectedColors.has('C');
                     } else {
-                        matchesColor = Array.from(cardColors).some(color => selectedColors.has(color));
+                        matchesColor = Array.from(colorIdentity).some(c => selectedColors.has(c));
                     }
                 }
 
-                row.style.display = matchesName && matchesRarity && matchesColor ? '' : 'none';
+                row.style.display = (matchesName && matchesRarity && matchesColor && matchesSet && matchesType) ? '' : 'none';
             });
             updateInlineImages();
         }
@@ -1782,6 +1998,7 @@
             rarityRank: RARITY_ORDER[card.rarity] || 0
         }));
         initializeTable(cardData);
+        initComboboxFilters(cardData);
     </script>
 </body>
 </html>
