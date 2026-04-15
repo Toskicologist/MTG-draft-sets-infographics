@@ -205,16 +205,29 @@
             max-width: 2ch;
         }
 
-        col.col-set { width: 3.5ch; min-width: 3.5ch; }
+        col.col-set { width: 4.5ch; min-width: 4.5ch; }
 
         .col-set, td.col-set {
-            width: 3.5ch;
-            max-width: 4.5ch;
+            width: 4.5ch;
+            max-width: 5.5ch;
             text-align: center;
-            font-size: 0.8em;
-            color: #777;
             white-space: nowrap;
         }
+
+        .set-badge {
+            display: inline-block;
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: #dde3f0;
+            color: #555;
+        }
+        .set-badge.set-sos  { background: #e0d4f7; color: #5b2d9e; }
+        .set-badge.set-soa  { background: #cdf0ee; color: #1a7a75; }
+        .set-badge.set-ecl  { background: #d4e4f7; color: #1a4f8e; }
+        .set-badge.set-spg  { background: #fdf0cc; color: #7a5a00; }
 
         .col-rarity, td.col-rarity {
             width: 3ch;
@@ -1045,7 +1058,7 @@
             }
 
             // Info banner
-            const preamble = 'What makes a card a 7 or 7.5? C or C+? Different reviewers use scores differently. Some would say that we should accept that value is inherently subjective, but they\'re cowards \u2014 we can use the magic of mathematics! In the table below I\'ve compiled several different reviewers, converted their scores to a normalized value using a <a href="https://en.wikipedia.org/wiki/Standard_score" target="_blank" rel="noopener">z-score</a>, averaged them and calculated the cards with the most variation between reviews.';
+            const preamble = 'What makes a card a 7 or 7.5? C or C+? Different reviewers use scores differently. Some would say that we should accept that value is inherently subjective, but they\'re cowards, we can use the magic of mathematics!<br>In the table below I\'ve compiled several different reviewers, converted their scores to a normalized value using a <a href="https://en.wikipedia.org/wiki/Standard_score" target="_blank" rel="noopener">z-score</a>, averaged them and calculated the cards with the most variation between reviews.';
             let bannerHtml = '<p style="margin-bottom: 10px;">' + preamble + '</p>' + (SET_CONFIG.infoBanner || '');
             if (SET_CONFIG.colorWheelUrl) {
                 bannerHtml += '<p style="margin-top: 12px;">• You might also like my <a href="' + SET_CONFIG.colorWheelUrl + '" target="_blank" rel="noopener">interactive color wheel of the set archetypes</a></p>';
@@ -1299,7 +1312,9 @@
             const scryfallUrl = card.scryfallUrl || ('https://scryfall.com/search?q=' + encodeURIComponent('"' + card.name + '"'));
             let html = '<td><a href="' + scryfallUrl + '" target="_blank" title="View on Scryfall">' + card.name + '</a></td>';
 
-            html += '<td class="col-set">' + (card.setCode || '') + '</td>';
+            const setCode = card.setCode || '';
+            const setBadgeClass = 'set-badge set-' + setCode.toLowerCase();
+            html += '<td class="col-set">' + (setCode ? '<span class="' + setBadgeClass + '">' + setCode + '</span>' : '') + '</td>';
 
             html += '<td class="col-rarity">' + formatRarity(card.rarity) + '</td>';
 
