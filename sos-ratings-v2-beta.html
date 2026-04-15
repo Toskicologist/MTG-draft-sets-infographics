@@ -1135,18 +1135,42 @@
         // ============================================================
         // Scryfall image fetching
         // ============================================================
-        function fetchCardImageUrl(cardName) {
-            if (cardImageCache.has(cardName)) {
-                return Promise.resolve(cardImageCache.get(cardName));
+        function fetchCardImageUrl(cardName, setCode) {
+            // For bonus/special printings, pin to the specific set so we get the right art.
+            // Fall back to name-only if the set-specific request fails.
+            const SET_CODES_PINNED = new Set(['soa', 'spg']);
+            const setLower = (setCode || '').toLowerCase();
+            const cacheKey = setLower && SET_CODES_PINNED.has(setLower)
+                ? cardName + '::' + setLower
+                : cardName;
+
+            if (cardImageCache.has(cacheKey)) {
+                return Promise.resolve(cardImageCache.get(cacheKey));
             }
-            return fetch('https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(cardName))
+
+            const buildUrl = (name, set) =>
+                'https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(name) +
+                (set ? '&set=' + encodeURIComponent(set) : '');
+
+            const primaryUrl = buildUrl(cardName, SET_CODES_PINNED.has(setLower) ? setLower : null);
+
+            return fetch(primaryUrl)
                 .then(r => r.json())
                 .then(card => {
-                    const url = (card.image_uris && card.image_uris.normal) || null;
-                    cardImageCache.set(cardName, url);
+                    if (card.object === 'error' && SET_CODES_PINNED.has(setLower)) {
+                        // Set-pinned request failed; fall back to name-only
+                        return fetch(buildUrl(cardName, null)).then(r => r.json());
+                    }
+                    return card;
+                })
+                .then(card => {
+                    const url = (card.image_uris && card.image_uris.normal)
+                        || (card.card_faces && card.card_faces[0].image_uris && card.card_faces[0].image_uris.normal)
+                        || null;
+                    cardImageCache.set(cacheKey, url);
                     return url;
                 })
-                .catch(() => { cardImageCache.set(cardName, null); return null; });
+                .catch(() => { cardImageCache.set(cacheKey, null); return null; });
         }
 
         // ============================================================
@@ -1754,10 +1778,12 @@
         function showCardImage(e) {
             const link = e.currentTarget;
             const cardName = link.textContent;
+            const row = link.closest('tr');
+            const setCode = row ? row.dataset.setCode : '';
             const tooltip = document.getElementById('cardTooltip');
             activeCardLink = link;
 
-            fetchCardImageUrl(cardName).then(url => {
+            fetchCardImageUrl(cardName, setCode).then(url => {
                 if (!url || activeCardLink !== link) return;
                 tooltip.innerHTML = '';
                 const img = document.createElement('img');
@@ -1800,6 +1826,7 @@
         // ============================================================
         function ensureRowImage(row) {
             const cardName = row.dataset.name;
+            const setCode = row.dataset.setCode || '';
             if (!cardName) return;
             const cell = row.querySelector('td:first-child');
             if (!cell) return;
@@ -1813,7 +1840,7 @@
             if (container.dataset.loaded === 'true') return;
             container.dataset.loaded = 'pending';
 
-            fetchCardImageUrl(cardName).then(url => {
+            fetchCardImageUrl(cardName, setCode).then(url => {
                 if (!url) return;
                 if (!container.querySelector('img')) {
                     const img = document.createElement('img');
