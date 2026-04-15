@@ -594,7 +594,7 @@
             infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
             raters: [
             { id: "cgb", name: "Card Game Base", abbreviation: "CGB", url: "https://cardgamebase.com/lorwyn-eclipsed-draft-tier-list/" },
-            { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-ecl-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-ecl-limited-set-review/#:~:text=${encodeURIComponent(name)}` },
+            { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-ecl-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-ecl-limited-set-review/#:~:text=${encodeURIComponent(name)}`, description: "Card-by-card limited set review", patreon: "https://www.patreon.com/cw/draftsim" },
             { id: "lr", name: "Limited Resources", abbreviation: "LR", url: "https://lrcast.com/limited-resources-836-lorwyn-eclipsed-set-review-commons-and-uncommons/" },
             { id: "llu1", name: "Limited Level-Ups (1)", abbreviation: "LLU1", url: "https://limitedlevelups.libsyn.com/" },
             { id: "llu2", name: "Limited Level-Ups (2)", abbreviation: "LLU2", url: "https://limitedlevelups.libsyn.com/" },
