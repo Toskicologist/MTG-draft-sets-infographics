@@ -732,8 +732,9 @@
 
             table           { font-size: 0.78em; }
             col.col-name    { width: 65px; min-width: 55px; }
-            td:first-child  { min-width: 55px; max-width: 65px; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; position: sticky; left: 0; z-index: 2; }
-            td:first-child a { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+            /* Keep td as table-cell (not -webkit-box) so position:sticky works in Firefox mobile */
+            td:first-child  { min-width: 55px; max-width: 65px; white-space: normal; overflow: hidden; position: sticky; left: 0; z-index: 2; }
+            td:first-child a { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; text-overflow: ellipsis; }
             col.col-score   { width: 4ch; min-width: 4ch; }
 
             /* Reduce mana cost text size to prevent row overflow */
@@ -878,8 +879,8 @@
             setCode: "SOS",
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison",
-            version: "2.1.5",
-            timestamp: "2026-04-16T20:43:37.452169Z",
+            version: "2.1.6",
+            timestamp: "2026-04-16T20:47:22.323140Z",
             filterStyle: "combobox",
             headerGradient: ["rgba(75, 0, 130, 0.78)", "rgba(186, 85, 211, 0.78)"],
             headerImageUrl: "mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png",
