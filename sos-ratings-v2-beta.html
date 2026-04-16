@@ -594,6 +594,81 @@
             font-size: 0.9em;
             line-height: 1.6;
         }
+
+        /* ============================================================
+           MOBILE RESPONSIVE OVERRIDES — Tablet/Mobile (max-width: 768px)
+           All rules are additive; desktop layout unchanged.
+           ============================================================ */
+
+        @media (max-width: 768px) {
+
+            .container { border-radius: 0; box-shadow: none; }
+            .header-content { padding: 20px 16px 16px; }
+            header h1 { font-size: 1.6em; }
+            header p#pageSubtitle { font-size: 0.95em; }
+
+            /* Fix header-meta overflow: remove min-width: 50%, switch to full-width block */
+            .header-meta { display: block; min-width: 0; max-width: 100%; box-sizing: border-box; width: 100%; }
+
+            /* Reduce 30px side padding everywhere to reclaim horizontal space */
+            .info-banner    { padding-left: 12px; padding-right: 12px; }
+            .sources-panel  { padding-left: 12px; padding-right: 12px; }
+            .controls       { padding-left: 12px; padding-right: 12px; gap: 10px; }
+            .table-wrapper  { padding-left: 8px; padding-right: 8px; }
+            footer          { padding-left: 12px; padding-right: 12px; }
+
+            table           { font-size: 0.82em; }
+            col.col-name    { width: 160px; min-width: 80px; }
+            col.col-score   { width: 4.5ch; min-width: 4.5ch; }
+
+            /* Sticky column fix: replace background:inherit with explicit colors.
+               'inherit' fails on mobile WebKit — the sticky cell composites on its own GPU
+               layer and the inherited TR background doesn't reliably paint over scrolled columns. */
+            td:first-child                           { min-width: 130px; max-width: 160px; background: #ffffff; }
+            tr:nth-child(even) td:first-child        { background: #fafbfc; }
+            tr:hover td:first-child                  { background: #f8f9fa; }
+            tr:nth-child(even):hover td:first-child  { background: #f0f2f5; }
+
+            /* Rarity-color mode — match rgba values from lines 540–543 */
+            body.rarity-color tr[data-rarity="common"]   td:first-child { background-color: rgba(86, 180, 233, 0.28) !important; }
+            body.rarity-color tr[data-rarity="uncommon"] td:first-child { background-color: rgba(0, 158, 115, 0.22) !important; }
+            body.rarity-color tr[data-rarity="rare"]     td:first-child { background-color: rgba(230, 159, 0, 0.25) !important; }
+            body.rarity-color tr[data-rarity="mythic"]   td:first-child { background-color: rgba(213, 94, 0, 0.25) !important; }
+
+            th .col-resizer { display: none; }
+            .combobox-filters { gap: 8px; }
+            .sort-group select { max-width: 160px; font-size: 0.88em; }
+        }
+
+        /* ============================================================
+           MOBILE RESPONSIVE OVERRIDES — Phone (max-width: 480px)
+           Further compression for smallest viewports.
+           ============================================================ */
+
+        @media (max-width: 480px) {
+
+            .info-banner   { padding-left: 8px; padding-right: 8px; font-size: 0.88em; }
+            .sources-panel { padding-left: 8px; padding-right: 8px; }
+            .controls      { padding-left: 8px; padding-right: 8px; gap: 8px; }
+            .table-wrapper { padding-left: 4px; padding-right: 4px; }
+
+            table           { font-size: 0.78em; }
+            col.col-name    { width: 130px; min-width: 70px; }
+            td:first-child  { min-width: 110px; max-width: 130px; }
+            col.col-score   { width: 4ch; min-width: 4ch; }
+
+            header h1       { font-size: 1.35em; }
+            .header-content { padding: 14px 10px 12px; }
+
+            /* Stack each sort control full-width */
+            .sort-group { flex-basis: 100%; }
+            .sort-group select, .sort-group input { width: 100%; max-width: 100%; box-sizing: border-box; }
+
+            .combobox-btn { min-width: 60px; padding: 3px 7px; font-size: 0.82em; }
+
+            /* Suppress hover tooltip on phone (mouse-only feature) */
+            .card-tooltip { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -1951,6 +2026,7 @@
         }
 
         function applyImageColumnScale(enabled) {
+            if (window.matchMedia('(max-width: 768px)').matches) return;  // Skip on mobile—CSS media queries handle sizing
             if (!columnWidthState.baseWidths) captureBaseWidths();
             const scale = enabled ? IMAGE_COLUMN_SCALE : 1;
             columnWidthState.baseWidths.forEach((width, index) => {
@@ -1960,6 +2036,7 @@
         }
 
         function setupColumnResizers() {
+            if (window.matchMedia('(max-width: 768px)').matches) return;  // Skip on mobile—touch drag-resize not functional
             const table = document.getElementById('ratingsTable');
             const headers = table.querySelectorAll('th[data-resizable="true"]');
 
