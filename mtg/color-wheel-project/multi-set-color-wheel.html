@@ -971,11 +971,13 @@ function MultiSetColorWheel() {
                 <div className="archetype-grid" style={{ display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
                   {secondaryPairs.map(([pair, data]) => {
+                    const WEDGE_COLORS = { Jeskai: 'W\u222AU\u222AR', Sultai: 'U\u222AB\u222AG', Mardu: 'B\u222AR\u222AW', Temur: 'R\u222AG\u222AU', Abzan: 'G\u222AW\u222AB' };
                     const { bg, fg } = getLabelColors(pair[0], pair[1]);
                     const sc = currentSet.scryfallCodes[0];
                     const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
                     const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
                     const wedgeUrl = data.wedge ? `https://scryfall.com/search?q=set%3A${sc}+id%3C${data.wedge}` : null;
+                    const wedgeLabel = data.wedge ? `${data.wedge} (${WEDGE_COLORS[data.wedge]})` : null;
                     return (
                       <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                         border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
@@ -1009,7 +1011,7 @@ function MultiSetColorWheel() {
                             <a href={wedgeUrl} target="_blank" rel="noopener noreferrer"
                                style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
                                  textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                              {data.wedge}
+                              {wedgeLabel}
                             </a>
                           )}
                         </div>
