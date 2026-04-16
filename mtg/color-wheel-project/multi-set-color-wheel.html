@@ -586,27 +586,39 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
             <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}><i className={manaClasses[color]} /></div>
             <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>{color}: {d.name}</div>
             {isSOSSet && topCards ? (
-              <div style={{ fontSize: '0.65rem', lineHeight: '1.4', marginBottom: '8px', textAlign: 'left', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+              <div style={{ fontSize: '0.65rem', lineHeight: '1.4', marginBottom: '8px', textAlign: 'left' }}>
                 <div style={{ marginBottom: '3px' }}>
                   <span style={{ fontWeight: '700' }}>Top commons:</span><br />
-                  {topCards.commons.map((card, i) => [
-                    <CardLink key={`c-${i}`} cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />,
-                    i < topCards.commons.length - 1 ? ', ' : null
-                  ])}
+                  <span style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
+                    {topCards.commons.map((card, i) => (
+                      <span key={`c-${i}`}>
+                        <CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />
+                        {i < topCards.commons.length - 1 && <span>,&nbsp;</span>}
+                      </span>
+                    ))}
+                  </span>
                 </div>
                 <div style={{ marginBottom: '3px' }}>
                   <span style={{ fontWeight: '700' }}>Top uncommons:</span><br />
-                  {topCards.uncommons.map((card, i) => [
-                    <CardLink key={`u-${i}`} cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />,
-                    i < topCards.uncommons.length - 1 ? ', ' : null
-                  ])}
+                  <span style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
+                    {topCards.uncommons.map((card, i) => (
+                      <span key={`u-${i}`}>
+                        <CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />
+                        {i < topCards.uncommons.length - 1 && <span>,&nbsp;</span>}
+                      </span>
+                    ))}
+                  </span>
                 </div>
                 <div>
                   <span style={{ fontWeight: '700' }}>Top rares/mythics:</span><br />
-                  {topCards.rares.map((card, i) => [
-                    <CardLink key={`r-${i}`} cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />,
-                    i < topCards.rares.length - 1 ? ', ' : null
-                  ])}
+                  <span style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
+                    {topCards.rares.map((card, i) => (
+                      <span key={`r-${i}`}>
+                        <CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />
+                        {i < topCards.rares.length - 1 && <span>,&nbsp;</span>}
+                      </span>
+                    ))}
+                  </span>
                 </div>
               </div>
             ) : (
