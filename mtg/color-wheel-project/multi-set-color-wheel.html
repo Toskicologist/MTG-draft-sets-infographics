@@ -206,11 +206,11 @@ const SET_DATA = {
       G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms with Pests and infusion-boosted spells. Quandrix grows creatures with +1/+1 counters via increment as you cast bigger and bigger spells." }
     },
     labels: {
-      WU: { text: "Off-College" },
-      UB: { text: "Off-College" },
-      BR: { text: "Off-College" },
-      RG: { text: "Off-College" },
-      GW: { text: "Off-College" },
+      WU: { text: "Off-College", sub: "Jeskai (WUR) Wedge", wedge: "Jeskai" },
+      UB: { text: "Off-College", sub: "Sultai (UBG) Wedge", wedge: "Sultai" },
+      BR: { text: "Off-College", sub: "Mardu (BRW) Wedge", wedge: "Mardu" },
+      RG: { text: "Off-College", sub: "Temur (RGU) Wedge", wedge: "Temur" },
+      GW: { text: "Off-College", sub: "Abzan (GWB) Wedge", wedge: "Abzan" },
       WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee", mechanicDef: "Repartee — Triggered abilities that trigger whenever you cast an instant or sorcery spell targeting a creature." },
       UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus", mechanicDef: "Opus — Abilities that trigger when you cast an instant or sorcery, with an enhanced effect if five or more mana was spent to cast it." },
       BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion", mechanicDef: "Infusion — Abilities that trigger or gain bonuses if you've gained life this turn." },
@@ -958,8 +958,14 @@ function MultiSetColorWheel() {
                   paddingBottom: '8px', borderBottom: '2px solid #9CA3AF' }}>
                   Off-Arch / Secondary
                 </h2>
+                <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '8px' }}>
+                  These pairs have no dedicated archetype. You will very rarely be playing them, but the set has a decent amount of{' '}
+                  <a href="https://scryfall.com/search?q=%28otag%3Amana-producer+OR+type%3Aland+OR+otag%3Aramp%29+set%3Asos&unique=cards&as=grid&order=edhrec&dir=" target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>color fixing</a>
+                  {' '}so 3 color is doable.
+                </p>
                 <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-                  These pairs have no dedicated archetype.
+                  The most likely 3 color combinations for this set are the 'wedges', with one 'central' color and its two 'enemy' colors (the ones opposite it on the color wheel). e.g. red, plus its enemies blue and white is Jeskai.{' '}
+                  <a href="https://mtg.fandom.com/wiki/Wedge" target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>Wedge</a>
                 </p>
                 <div className="archetype-grid" style={{ display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
@@ -968,11 +974,13 @@ function MultiSetColorWheel() {
                     const sc = currentSet.scryfallCodes[0];
                     const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
                     const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+                    const wedgeUrl = data.wedge ? `https://scryfall.com/search?q=set%3A${sc}+id%3C${data.wedge}` : null;
                     return (
                       <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                         border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                        <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>
+                          {pair}: {data.text}{data.sub ? ` — ${data.sub.replace('\n', ' / ')}` : ''}
+                        </div>
                         <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
                         {data.sourceText && (
                           <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
@@ -984,16 +992,25 @@ function MultiSetColorWheel() {
                         )}
                         <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
                         <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                          <a href={exactUrl} target="_blank" rel="noopener noreferrer"
-                             style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                               textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                            {pair[0]}&amp;{pair[1]}
-                          </a>
+                          {!data.wedge && (
+                            <a href={exactUrl} target="_blank" rel="noopener noreferrer"
+                               style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
+                                 textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                              {pair[0]}&amp;{pair[1]}
+                            </a>
+                          )}
                           <a href={orUrl} target="_blank" rel="noopener noreferrer"
                              style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
                                textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
                             {pair[0]}&#x222A;{pair[1]}
                           </a>
+                          {wedgeUrl && (
+                            <a href={wedgeUrl} target="_blank" rel="noopener noreferrer"
+                               style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
+                                 textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                              {data.wedge}
+                            </a>
+                          )}
                         </div>
                       </div>
                     );
