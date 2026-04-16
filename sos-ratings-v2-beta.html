@@ -3,6 +3,11 @@
   Generated pages embed SET_CONFIG + CARD_DATA via build_page.py.
 
   CHANGELOG:
+  v2.1.0-beta.4 (2026-04-16) — Mobile UX improvements for SOS beta (continued).
+    UI: Fix header abbreviations (R/C/T/M) display using ::before pseudo-elements.
+    UI: Fix card name text wrapping to properly show 2 lines on mobile.
+    UI: Make column width adjustments actually resize name column and image.
+
   v2.1.0-beta.3 (2026-04-16) — Mobile UX improvements for SOS beta.
     UI: Reduce card name column width to 50% on phones, enable 2-line text wrapping.
     UI: Add mobile column resize dialog with range sliders (shows only on tablets/phones).
@@ -865,7 +870,7 @@
             setCode: "SOS",
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison \u2014 Beta",
-            version: "2.1.0-beta.3",
+            version: "2.1.0-beta.4",
             filterStyle: "combobox",
             dataKey: "sos",
             outputSuffix: "-beta",
@@ -2111,8 +2116,16 @@
             const cols = document.getElementById('ratingsTable').querySelectorAll('col');
             const col = cols[index];
             if (col) {
-                col.style.width = width + 'px';
-                col.style.minWidth = width + 'px';
+                col.style.setProperty('width', width + 'px', 'important');
+                col.style.setProperty('min-width', width + 'px', 'important');
+            }
+            // Also set on td cells for name column (affects wrapping)
+            if (index === 0) {
+                const cells = document.querySelectorAll('td:first-child');
+                cells.forEach(cell => {
+                    cell.style.setProperty('min-width', width + 'px', 'important');
+                    cell.style.setProperty('max-width', width + 'px', 'important');
+                });
             }
         }
 
