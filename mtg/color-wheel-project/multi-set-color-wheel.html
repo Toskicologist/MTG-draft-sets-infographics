@@ -589,21 +589,24 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
               <div style={{ fontSize: '0.65rem', lineHeight: '1.4', marginBottom: '8px', textAlign: 'left', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
                 <div style={{ marginBottom: '3px' }}>
                   <span style={{ fontWeight: '700' }}>Top commons:</span><br />
-                  {topCards.commons.map((card, i) => (
-                    <span key={i}><CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />{i < topCards.commons.length - 1 ? ', ' : ''}</span>
-                  ))}
+                  {topCards.commons.map((card, i) => [
+                    <CardLink key={`c-${i}`} cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />,
+                    i < topCards.commons.length - 1 ? ', ' : null
+                  ])}
                 </div>
                 <div style={{ marginBottom: '3px' }}>
                   <span style={{ fontWeight: '700' }}>Top uncommons:</span><br />
-                  {topCards.uncommons.map((card, i) => (
-                    <span key={i}><CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />{i < topCards.uncommons.length - 1 ? ', ' : ''}</span>
-                  ))}
+                  {topCards.uncommons.map((card, i) => [
+                    <CardLink key={`u-${i}`} cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />,
+                    i < topCards.uncommons.length - 1 ? ', ' : null
+                  ])}
                 </div>
                 <div>
                   <span style={{ fontWeight: '700' }}>Top rares/mythics:</span><br />
-                  {topCards.rares.map((card, i) => (
-                    <span key={i}><CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />{i < topCards.rares.length - 1 ? ', ' : ''}</span>
-                  ))}
+                  {topCards.rares.map((card, i) => [
+                    <CardLink key={`r-${i}`} cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />,
+                    i < topCards.rares.length - 1 ? ', ' : null
+                  ])}
                 </div>
               </div>
             ) : (
