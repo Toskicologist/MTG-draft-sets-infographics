@@ -704,11 +704,17 @@
 
         @media (max-width: 768px) {
             /* Abbreviated headers: R, C, T, M for Rarity, Colors, Type, Mana (save space on tablets+) */
-            /* Keep original text size, just cut off with ellipsis if needed */
-            th.col-rarity { min-width: 2em; max-width: 3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            th.col-colors { min-width: 2em; max-width: 3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            th.col-type { min-width: 2em; max-width: 3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            th.col-mana-cost { min-width: 2em; max-width: 3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            th.col-rarity { font-size: 0; width: 1.2em; }
+            th.col-rarity::before { content: 'R'; font-size: 1em; display: inline-block; }
+
+            th.col-colors { font-size: 0; width: 1.2em; }
+            th.col-colors::before { content: 'C'; font-size: 1em; display: inline-block; }
+
+            th.col-type { font-size: 0; width: 1.2em; }
+            th.col-type::before { content: 'T'; font-size: 1em; display: inline-block; }
+
+            th.col-mana-cost { font-size: 0; width: 1.2em; }
+            th.col-mana-cost::before { content: 'M'; font-size: 1em; display: inline-block; }
         }
 
         @media (max-width: 480px) {
@@ -881,7 +887,7 @@
             { id: "cs", name: "Casual_Spike", abbreviation: "CS", url: "https://www.reddit.com/r/lrcast/comments/1sim2r1/sos_limited_overview/", description: "SOS limited overview posted on r/lrcast" },
             { id: "llu_a", name: "LLU Alex", abbreviation: "LLU-A", url: "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208", description: "Alex's SOS tier list" },
             { id: "llu_m", name: "LLU Marc", abbreviation: "LLU-M", url: "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c", description: "Marc's SOS tier list" }
-            ]
+            ],
             timestamp: "2026-04-16T18:18:13.472910Z",
         };
         const CARD_DATA = [
