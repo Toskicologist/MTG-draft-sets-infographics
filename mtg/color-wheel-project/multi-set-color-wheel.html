@@ -527,35 +527,27 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   );
 };
 
-const CardLink = ({ cardName, setCode, color, fg, bg }) => {
-  const [showImage, setShowImage] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
-
-  const scryfallUrl = `https://scryfall.com/search?q=set%3A${setCode}+"${cardName.split(' // ')[0]}"`;
-
-  const handleMouseEnter = () => {
-    // Build Scryfall API image URL for mouseover preview
-    const encoded = encodeURIComponent(`!"${cardName.split(' // ')[0]}"`);
-    const apiUrl = `https://api.scryfall.com/cards/search?q=${encoded}+set:${setCode}&unique=prints`;
-    setImageUrl(`https://api.scryfall.com/cards/search?q=${encoded}+set:${setCode}`);
-    setShowImage(true);
-  };
-
+const CardLink = ({ cardName, setCode, fg }) => {
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const frontName = cardName.split(' // ')[0];
+  const imgSrc = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}&set=${setCode}&format=image&version=normal`;
+  const scryfallUrl = `https://scryfall.com/search?q=set%3A${setCode}+%22${encodeURIComponent(frontName)}%22`;
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <span style={{ display: 'inline' }}>
       <a href={scryfallUrl} target="_blank" rel="noopener noreferrer"
-         onMouseEnter={handleMouseEnter} onMouseLeave={() => setShowImage(false)}
-         style={{ color: fg, textDecoration: 'underline', cursor: 'pointer', fontSize: '0.7rem' }}>
+         style={{ color: fg, textDecoration: 'underline' }}
+         onMouseEnter={e => { setHovered(true); setPos({ x: e.clientX, y: e.clientY }); }}
+         onMouseMove={e => setPos({ x: e.clientX, y: e.clientY })}
+         onMouseLeave={() => setHovered(false)}>
         {cardName}
       </a>
-      {showImage && (
-        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px', zIndex: 100,
-          backgroundColor: '#000', border: '2px solid ' + fg, borderRadius: '3px', padding: '2px' }}>
-          <img src={`https://api.scryfall.com/cards/search?q=!"${cardName.split(' // ')[0]}"+set:${setCode}&format=json`}
-               alt={cardName} style={{ maxWidth: '150px', height: 'auto', borderRadius: '2px' }} onError={() => {}} />
-        </div>
+      {hovered && (
+        <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 9999, pointerEvents: 'none' }}>
+          <img src={imgSrc} alt={cardName} style={{ width: '150px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', display: 'block' }} />
+        </span>
       )}
-    </div>
+    </span>
   );
 };
 
@@ -586,40 +578,18 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
             <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}><i className={manaClasses[color]} /></div>
             <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>{color}: {d.name}</div>
             {isSOSSet && topCards ? (
-              <div style={{ fontSize: '0.65rem', lineHeight: '1.4', marginBottom: '8px', textAlign: 'left' }}>
-                <div style={{ marginBottom: '3px' }}>
-                  <span style={{ fontWeight: '700' }}>Top commons:</span><br />
-                  <span style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
-                    {topCards.commons.map((card, i) => (
-                      <span key={`c-${i}`}>
-                        <CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />
-                        {i < topCards.commons.length - 1 && <span>,&nbsp;</span>}
-                      </span>
+              <div style={{ fontSize: '0.65rem', lineHeight: '1.6', marginBottom: '8px', textAlign: 'left' }}>
+                {[['Top commons', topCards.commons], ['Top uncommons', topCards.uncommons], ['Top rares/mythics', topCards.rares]].map(([label, cards]) => (
+                  <div key={label} style={{ marginBottom: '2px' }}>
+                    <span style={{ fontWeight: '700' }}>{label}:</span>{' '}
+                    {cards.map((card, i) => (
+                      <React.Fragment key={i}>
+                        <CardLink cardName={card} setCode={sc} fg={fg} />
+                        {i < cards.length - 1 ? ', ' : ''}
+                      </React.Fragment>
                     ))}
-                  </span>
-                </div>
-                <div style={{ marginBottom: '3px' }}>
-                  <span style={{ fontWeight: '700' }}>Top uncommons:</span><br />
-                  <span style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
-                    {topCards.uncommons.map((card, i) => (
-                      <span key={`u-${i}`}>
-                        <CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />
-                        {i < topCards.uncommons.length - 1 && <span>,&nbsp;</span>}
-                      </span>
-                    ))}
-                  </span>
-                </div>
-                <div>
-                  <span style={{ fontWeight: '700' }}>Top rares/mythics:</span><br />
-                  <span style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
-                    {topCards.rares.map((card, i) => (
-                      <span key={`r-${i}`}>
-                        <CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />
-                        {i < topCards.rares.length - 1 && <span>,&nbsp;</span>}
-                      </span>
-                    ))}
-                  </span>
-                </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>{d.description}</div>
