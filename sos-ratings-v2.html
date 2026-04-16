@@ -3,6 +3,17 @@
   Generated pages embed SET_CONFIG + CARD_DATA via build_page.py.
 
   CHANGELOG:
+  v2.1.0-beta.4 (2026-04-16) — Mobile UX improvements for SOS beta (continued).
+    UI: Fix header abbreviations (R/C/T/M) display using ::before pseudo-elements.
+    UI: Fix card name text wrapping to properly show 2 lines on mobile.
+    UI: Make column width adjustments actually resize name column and image.
+
+  v2.1.0-beta.3 (2026-04-16) — Mobile UX improvements for SOS beta.
+    UI: Reduce card name column width to 50% on phones, enable 2-line text wrapping.
+    UI: Add mobile column resize dialog with range sliders (shows only on tablets/phones).
+    UI: Abbreviated table headers (R/C/T/M) visible on tablets (768px) and phones.
+    UI: Force email address wrapping in subtitle on mobile.
+
   v2.1.0 (2026-04-16) — Promoted combobox filters to default (filterStyle: "combobox" in config).
     Security: added rel="noopener noreferrer" to all target="_blank" links in sources panel.
     Security: escape card name/type values in HTML attribute context.
@@ -23,10 +34,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><!-- SET_TITLE --></title>
-    <meta property="og:title" content="">
-    <meta property="og:description" content="">
+    <meta property="og:title" content="SOS - Normalized Ratings Comparison">
+    <meta property="og:description" content="What makes a card a 7 or 7.5? C or C+? Different reviewers use scores differently. Some would say that we should accept that value is inherently subjective, but they're cowards, we can use the magic of mathematics!">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html">
+    <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018%2C%202026%2C%2010_33_59%20PM.png">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018%2C%202026%2C%2010_33_59%20PM.png">
     <style>
         * {
             margin: 0;
@@ -85,6 +99,8 @@
             font-size: 1.1em;
             opacity: 0.95;
             margin-bottom: 0;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .header-meta {
@@ -97,9 +113,11 @@
             text-align: left;
             display: inline-block;
             min-width: 50%;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
-        .header-meta a { color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 2px; }
+        .header-meta a { color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
         .header-meta a:hover { color: #fff; }
         .header-meta .meta-row { display: block; }
         .header-meta .meta-label { font-weight: 600; opacity: 0.8; margin-right: 4px; }
@@ -165,6 +183,20 @@
             display: flex;
             gap: 8px;
             align-items: center;
+        }
+
+        .mobile-resize-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .mobile-resize-btn:hover {
+            background: #5568d3;
         }
 
         .rarity-filter label, .color-filter label {
@@ -585,6 +617,34 @@
             max-height: 400px;
         }
 
+        /* ============================================================
+           Mobile column resize dialog
+           ============================================================ */
+        .resize-dialog { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; }
+        .resize-dialog-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); }
+        .resize-dialog-content {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 90%; max-width: 400px; z-index: 10000;
+            display: flex; flex-direction: column;
+        }
+        .resize-dialog-header { padding: 16px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .resize-dialog-header h3 { margin: 0; font-size: 1.1em; }
+        .resize-dialog-close {
+            background: none; border: none; font-size: 1.8em; cursor: pointer; color: #666;
+            padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+        }
+        .resize-dialog-close:hover { color: #000; }
+        .resize-dialog-body { padding: 16px; overflow-y: auto; max-height: 60vh; }
+        .resize-dialog-footer { padding: 12px 16px; border-top: 1px solid #ddd; display: flex; justify-content: flex-end; }
+        .resize-dialog-reset { padding: 8px 12px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .resize-dialog-reset:hover { background: #e0e0e0; }
+
+        .resize-col-control { margin-bottom: 14px; }
+        .resize-col-control label { display: block; margin-bottom: 4px; font-weight: 600; color: #333; font-size: 0.9em; }
+        .resize-col-control input[type="range"] { width: 100%; }
+        .resize-col-control .resize-col-value { display: inline-block; margin-left: 8px; color: #666; font-size: 0.85em; min-width: 40px; text-align: right; }
+
         footer {
             padding: 20px 30px;
             background: #f8f9fa;
@@ -645,7 +705,25 @@
            Further compression for smallest viewports.
            ============================================================ */
 
+        @media (max-width: 768px) {
+            /* Abbreviated headers: R, C, T, M for Rarity, Colors, Type, Mana (save space on tablets+) */
+            /* col element width takes precedence over th width, so must override both */
+            col.col-rarity, col.col-colors, col.col-type, col.col-mana-cost { width: 2ch; min-width: 2ch; }
+            th.col-rarity { font-size: 0; }
+            th.col-rarity::before { content: 'R'; font-size: 1rem; display: inline-block; }
+
+            th.col-colors { font-size: 0; }
+            th.col-colors::before { content: 'C'; font-size: 1rem; display: inline-block; }
+
+            th.col-type { font-size: 0; }
+            th.col-type::before { content: 'T'; font-size: 1rem; display: inline-block; }
+
+            th.col-mana-cost { font-size: 0; }
+            th.col-mana-cost::before { content: 'M'; font-size: 1rem; display: inline-block; }
+        }
+
         @media (max-width: 480px) {
+            /* Phone: further space savings */
 
             .info-banner   { padding-left: 8px; padding-right: 8px; font-size: 0.88em; }
             .sources-panel { padding-left: 8px; padding-right: 8px; }
@@ -653,8 +731,9 @@
             .table-wrapper { padding-left: 4px; padding-right: 4px; }
 
             table           { font-size: 0.78em; }
-            col.col-name    { width: 130px; min-width: 70px; }
-            td:first-child  { min-width: 110px; max-width: 130px; }
+            col.col-name    { width: 65px; min-width: 55px; }
+            td:first-child  { min-width: 55px; max-width: 65px; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+            td:first-child a { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-overflow: unset; overflow: visible; }
             col.col-score   { width: 4ch; min-width: 4ch; }
 
             header h1       { font-size: 1.35em; }
@@ -715,6 +794,9 @@
                 <input type="checkbox" id="toggleRarity">
                 <label for="toggleRarity">Rarity colors</label>
             </div>
+            <button id="openResizeDialog" class="mobile-resize-btn" type="button" style="display: none;">
+                Adjust Columns
+            </button>
             <div class="type-display-toggle">
                 <input type="checkbox" id="toggleTypeDisplay">
                 <label for="toggleTypeDisplay">Show full typeline</label>
@@ -768,6 +850,23 @@
 
     <div class="card-tooltip" id="cardTooltip"></div>
 
+    <!-- Mobile column resize dialog -->
+    <div id="resizeDialog" class="resize-dialog" style="display: none;">
+        <div class="resize-dialog-content">
+            <div class="resize-dialog-header">
+                <h3>Adjust Column Widths</h3>
+                <button class="resize-dialog-close" type="button">&times;</button>
+            </div>
+            <div class="resize-dialog-body" id="resizeDialogBody">
+                <!-- Sliders will be populated here -->
+            </div>
+            <div class="resize-dialog-footer">
+                <button class="resize-dialog-reset" type="button">Reset to Default</button>
+            </div>
+        </div>
+        <div class="resize-dialog-overlay"></div>
+    </div>
+
     <script>
         // ============================================================
         // SET_CONFIG and CARD_DATA are injected by build_page.py
@@ -777,20 +876,21 @@
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison",
             version: "2.1.0",
+            timestamp: "2026-04-16T20:05:37.449413Z",
             filterStyle: "combobox",
             headerGradient: ["rgba(75, 0, 130, 0.78)", "rgba(186, 85, 211, 0.78)"],
             headerImageUrl: "mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png",
             colorWheelUrl: null,
             projectLinks: [{"text": "Draft Archetypes Color Wheel", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/"}, {"text": "ECL Ratings", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings-v2.html"}, {"text": "17Lands scores quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/"}, {"text": "Card knowledge quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/anki.html"}],
-            infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
+            infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score (letters converted to numbers). <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
             raterGroups: [{"name": "Limited Level Ups", "url": "https://www.youtube.com/@limitedlevel-ups/videos", "patreon": "https://www.patreon.com/limitedlevelups", "raterIds": ["llu_a", "llu_m"], "description": "Limited format podcast and YouTube channel covering set reviews and draft strategy."}],
             raters: [
-            { id: "cgb", name: "Card Game Base", abbreviation: "CGB", url: "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/", description: "SOS limited tier list (A+ to F grades, converted to 0\u201312 numeric scale)" },
+            { id: "cgb", name: "Card Game Base", abbreviation: "CGB", url: "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/", description: "SOS limited tier list" },
             { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-sos-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-sos-limited-set-review/#:~:text=${encodeURIComponent(name)}`, description: "Card-by-card limited set review", patreon: "https://www.patreon.com/cw/draftsim" },
             { id: "cs", name: "Casual_Spike", abbreviation: "CS", url: "https://www.reddit.com/r/lrcast/comments/1sim2r1/sos_limited_overview/", description: "SOS limited overview posted on r/lrcast" },
             { id: "llu_a", name: "LLU Alex", abbreviation: "LLU-A", url: "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208", description: "Alex's SOS tier list" },
             { id: "llu_m", name: "LLU Marc", abbreviation: "LLU-M", url: "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c", description: "Marc's SOS tier list" }
-            ]
+            ],
         };
         const CARD_DATA = [
             {"name": "Emeritus of Ideation // Ancestral Recall", "setCode": "SOS", "rarity": "mythic", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}{U} // {U}", "ratings": {"cgb": {"raw": 11, "norm": 2.601}, "ds": {"raw": 10.0, "norm": 2.056}, "cs": {"raw": 8, "norm": 2.167}, "llu_a": {"raw": 8, "norm": 2.094}, "llu_m": {"raw": 8, "norm": 2.112}}, "avgRaw": 9.0, "avgNorm": 2.206, "controversy": 0.224},
@@ -1363,7 +1463,18 @@
 
             // OG meta tags
             document.querySelector('meta[property="og:title"]').content = SET_CONFIG.setCode + ' - ' + SET_CONFIG.subtitle;
-            document.querySelector('meta[property="og:description"]').content = 'Interactive z-score normalized ratings viewer for ' + SET_CONFIG.fullName;
+
+            // Description: use the "What makes a card..." text
+            const descriptionText = 'What makes a card a 7 or 7.5? C or C+? Different reviewers use scores differently. Some would say that we should accept that value is inherently subjective, but they\'re cowards, we can use the magic of mathematics!';
+            document.querySelector('meta[property="og:description"]').content = descriptionText;
+
+            // Image: use the banner image from config
+            if (SET_CONFIG.headerImageUrl) {
+                const imgMeta = document.createElement('meta');
+                imgMeta.setAttribute('property', 'og:image');
+                imgMeta.content = SET_CONFIG.headerImageUrl;
+                document.head.appendChild(imgMeta);
+            }
 
             // Colgroup: 6 fixed + 2 per rater + 1 avg_raw = 6 + 2*N + 1
             const colgroup = document.getElementById('tableColgroup');
@@ -2008,8 +2119,16 @@
             const cols = document.getElementById('ratingsTable').querySelectorAll('col');
             const col = cols[index];
             if (col) {
-                col.style.width = width + 'px';
-                col.style.minWidth = width + 'px';
+                col.style.setProperty('width', width + 'px', 'important');
+                col.style.setProperty('min-width', width + 'px', 'important');
+            }
+            // Also set on td cells for name column (affects wrapping)
+            if (index === 0) {
+                const cells = document.querySelectorAll('td:first-child');
+                cells.forEach(cell => {
+                    cell.style.setProperty('min-width', width + 'px', 'important');
+                    cell.style.setProperty('max-width', width + 'px', 'important');
+                });
             }
         }
 
@@ -2081,6 +2200,117 @@
         function setVersionInfo() {
             const el = document.getElementById('versionInfo');
             if (el) el.textContent = 'Viewer version ' + SET_CONFIG.version;
+        }
+
+        // ============================================================
+        // Mobile column resize dialog (only on tablets/phones)
+        // ============================================================
+        function setupMobileResizeDialog() {
+            if (!window.matchMedia('(max-width: 768px)').matches) return;
+
+            const resizeBtn = document.getElementById('openResizeDialog');
+            const resizeDialog = document.getElementById('resizeDialog');
+            const closeBtn = document.querySelector('.resize-dialog-close');
+            const resetBtn = document.querySelector('.resize-dialog-reset');
+            const overlay = document.querySelector('.resize-dialog-overlay');
+            const body = document.querySelector('.resize-dialog-body');
+
+            // Show button on mobile
+            resizeBtn.style.display = 'block';
+
+            // Store default widths (in CSS pixels)
+            const defaultWidths = {
+                0: 160,   // Name column tablet, 130 on phone
+                2: 40,    // Rarity
+                3: 40,    // Colors
+                4: 40,    // Type
+                5: 40,    // Mana
+                6: 50,    // Avg Norm
+                7: 60     // Controversy
+            };
+
+            // Column names for dialog
+            const colNames = {
+                0: 'Card Name',
+                2: 'Rarity (R)',
+                3: 'Colors (C)',
+                4: 'Type (T)',
+                5: 'Mana (M)',
+                6: 'Avg Norm',
+                7: 'Controversy'
+            };
+
+            function populateDialog() {
+                body.innerHTML = '';
+                [0, 2, 3, 4, 5, 6, 7].forEach(colIndex => {
+                    const table = document.getElementById('ratingsTable');
+                    const col = table.querySelector('col:nth-child(' + (colIndex + 1) + ')');
+                    const currentWidth = col ? parseInt(window.getComputedStyle(col).width, 10) : defaultWidths[colIndex];
+
+                    const div = document.createElement('div');
+                    div.className = 'resize-col-control';
+
+                    const label = document.createElement('label');
+                    label.textContent = colNames[colIndex];
+
+                    const input = document.createElement('input');
+                    input.type = 'range';
+                    input.min = colIndex === 0 ? 100 : 25;
+                    input.max = colIndex === 0 ? 250 : 100;
+                    input.value = currentWidth;
+                    input.dataset.colIndex = colIndex;
+
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'resize-col-value';
+                    valueSpan.textContent = currentWidth + 'px';
+
+                    input.addEventListener('input', event => {
+                        const newWidth = parseInt(event.target.value, 10);
+                        valueSpan.textContent = newWidth + 'px';
+                        setColumnWidth(colIndex, newWidth);
+                        if (!columnWidthState.baseWidths) captureBaseWidths();
+                        columnWidthState.baseWidths[colIndex] = newWidth;
+                    });
+
+                    label.appendChild(valueSpan);
+                    div.appendChild(label);
+                    div.appendChild(input);
+                    body.appendChild(div);
+                });
+            }
+
+            function openDialog() {
+                populateDialog();
+                resizeDialog.style.display = 'block';
+            }
+
+            function closeDialog() {
+                resizeDialog.style.display = 'none';
+            }
+
+            function resetWidths() {
+                [0, 2, 3, 4, 5, 6, 7].forEach(colIndex => {
+                    const width = window.matchMedia('(max-width: 480px)').matches
+                        ? (colIndex === 0 ? 130 : 40)
+                        : defaultWidths[colIndex];
+                    setColumnWidth(colIndex, width);
+                    if (!columnWidthState.baseWidths) captureBaseWidths();
+                    columnWidthState.baseWidths[colIndex] = width;
+                });
+                populateDialog();
+            }
+
+            resizeBtn.addEventListener('click', openDialog);
+            closeBtn.addEventListener('click', closeDialog);
+            overlay.addEventListener('click', closeDialog);
+            resetBtn.addEventListener('click', resetWidths);
+
+            // Close on Escape key
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && resizeDialog.style.display === 'block') {
+                    closeDialog();
+                }
+            });
         }
 
         // ============================================================
@@ -2157,6 +2387,7 @@
         initializePage();
         setVersionInfo();
         setupColumnResizers();
+        setupMobileResizeDialog();
 
         // Header click sorting
         document.querySelectorAll('th[data-sort-key]').forEach(th => {
