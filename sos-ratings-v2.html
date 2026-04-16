@@ -878,8 +878,8 @@
             setCode: "SOS",
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison",
-            version: "2.1.4",
-            timestamp: "2026-04-16T20:38:05.913044Z",
+            version: "2.1.5",
+            timestamp: "2026-04-16T20:43:37.452169Z",
             filterStyle: "combobox",
             headerGradient: ["rgba(75, 0, 130, 0.78)", "rgba(186, 85, 211, 0.78)"],
             headerImageUrl: "mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png",
@@ -1397,7 +1397,10 @@
             const headerMeta = document.getElementById('headerMeta');
             if (headerMeta) {
                 const version = SET_CONFIG.version || '';
-                const today = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+                const built = SET_CONFIG.timestamp
+                    ? new Date(SET_CONFIG.timestamp).toLocaleString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' })
+                    : new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+                const today = built;
 
                 // Project links
                 const projectLinks = SET_CONFIG.projectLinks || [];
