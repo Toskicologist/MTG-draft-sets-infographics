@@ -699,17 +699,17 @@
 
         @media (max-width: 768px) {
             /* Abbreviated headers: R, C, T, M for Rarity, Colors, Type, Mana (save space on tablets+) */
-            th.col-rarity { color: transparent; font-size: 0; }
-            th.col-rarity::after { content: 'R'; font-size: 1em; color: #333; margin: 0; }
+            th.col-rarity { font-size: 0; width: 1.2em; }
+            th.col-rarity::before { content: 'R'; font-size: 1em; display: inline-block; }
 
-            th.col-colors { color: transparent; font-size: 0; }
-            th.col-colors::after { content: 'C'; font-size: 1em; color: #333; margin: 0; }
+            th.col-colors { font-size: 0; width: 1.2em; }
+            th.col-colors::before { content: 'C'; font-size: 1em; display: inline-block; }
 
-            th.col-type { color: transparent; font-size: 0; }
-            th.col-type::after { content: 'T'; font-size: 1em; color: #333; margin: 0; }
+            th.col-type { font-size: 0; width: 1.2em; }
+            th.col-type::before { content: 'T'; font-size: 1em; display: inline-block; }
 
-            th.col-mana-cost { color: transparent; font-size: 0; }
-            th.col-mana-cost::after { content: 'M'; font-size: 1em; color: #333; margin: 0; }
+            th.col-mana-cost { font-size: 0; width: 1.2em; }
+            th.col-mana-cost::before { content: 'M'; font-size: 1em; display: inline-block; }
         }
 
         @media (max-width: 480px) {
@@ -723,6 +723,7 @@
             table           { font-size: 0.78em; }
             col.col-name    { width: 65px; min-width: 55px; }
             td:first-child  { min-width: 55px; max-width: 65px; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+            td:first-child a { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-overflow: unset; overflow: visible; }
             col.col-score   { width: 4ch; min-width: 4ch; }
 
             header h1       { font-size: 1.35em; }
