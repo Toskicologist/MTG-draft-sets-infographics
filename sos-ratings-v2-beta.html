@@ -1836,10 +1836,12 @@
             const selectAll = document.createElement('button');
             selectAll.type = 'button';
             selectAll.className = 'combobox-select-all';
-            selectAll.textContent = 'Select all';
+            selectAll.textContent = 'Unselect all';
             selectAll.addEventListener('click', e => {
                 e.stopPropagation();
-                dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = true; });
+                const allCbs = dropdown.querySelectorAll('input[type="checkbox"]');
+                const allChecked = [...allCbs].every(cb => cb.checked);
+                allCbs.forEach(cb => { cb.checked = !allChecked; });
                 syncCbState(filterId, dropdown, btn);
             });
             dropdown.appendChild(selectAll);
@@ -1868,6 +1870,9 @@
             else if (checked.length === 0) textEl.textContent = 'None';
             else if (checked.length <= 3) textEl.textContent = checked.join(', ');
             else textEl.textContent = checked.length + ' selected';
+            // Keep the select/unselect toggle label in sync
+            const toggleBtn = dropdown.querySelector('.combobox-select-all');
+            if (toggleBtn) toggleBtn.textContent = allSelected ? 'Unselect all' : 'Select all';
             applyFilters();
         }
 
