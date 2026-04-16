@@ -3,6 +3,12 @@
   Generated pages embed SET_CONFIG + CARD_DATA via build_page.py.
 
   CHANGELOG:
+  v2.1.0-beta.3 (2026-04-16) — Mobile UX improvements for SOS beta.
+    UI: Reduce card name column width to 50% on phones, enable 2-line text wrapping.
+    UI: Add mobile column resize dialog with range sliders (shows only on tablets/phones).
+    UI: Abbreviated table headers (R/C/T/M) visible on tablets (768px) and phones.
+    UI: Force email address wrapping in subtitle on mobile.
+
   v2.1.0 (2026-04-16) — Promoted combobox filters to default (filterStyle: "combobox" in config).
     Security: added rel="noopener noreferrer" to all target="_blank" links in sources panel.
     Security: escape card name/type values in HTML attribute context.
@@ -858,7 +864,7 @@
             setCode: "SOS",
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison \u2014 Beta",
-            version: "2.1.0-beta.2",
+            version: "2.1.0-beta.3",
             filterStyle: "combobox",
             dataKey: "sos",
             outputSuffix: "-beta",
