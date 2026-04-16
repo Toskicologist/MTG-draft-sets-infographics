@@ -704,17 +704,17 @@
 
         @media (max-width: 768px) {
             /* Abbreviated headers: R, C, T, M for Rarity, Colors, Type, Mana (save space on tablets+) */
-            th.col-rarity { font-size: 0; width: 1.2em; }
-            th.col-rarity::before { content: 'R'; font-size: 1em; display: inline-block; }
+            th.col-rarity { color: transparent; min-width: 1.2em; }
+            th.col-rarity::before { content: 'R'; color: #333; font-weight: 600; }
 
-            th.col-colors { font-size: 0; width: 1.2em; }
-            th.col-colors::before { content: 'C'; font-size: 1em; display: inline-block; }
+            th.col-colors { color: transparent; min-width: 1.2em; }
+            th.col-colors::before { content: 'C'; color: #333; font-weight: 600; }
 
-            th.col-type { font-size: 0; width: 1.2em; }
-            th.col-type::before { content: 'T'; font-size: 1em; display: inline-block; }
+            th.col-type { color: transparent; min-width: 1.2em; }
+            th.col-type::before { content: 'T'; color: #333; font-weight: 600; }
 
-            th.col-mana-cost { font-size: 0; width: 1.2em; }
-            th.col-mana-cost::before { content: 'M'; font-size: 1em; display: inline-block; }
+            th.col-mana-cost { color: transparent; min-width: 1.2em; }
+            th.col-mana-cost::before { content: 'M'; color: #333; font-weight: 600; }
         }
 
         @media (max-width: 480px) {
@@ -870,7 +870,7 @@
             setCode: "SOS",
             fullName: "Secrets of Strixhaven",
             subtitle: "Normalized Ratings Comparison \u2014 Beta",
-            version: "2.1.0-beta.4",
+            version: "2.1.0-beta.5",
             filterStyle: "combobox",
             dataKey: "sos",
             outputSuffix: "-beta",
@@ -882,12 +882,13 @@
             infoBanner: 'How to read this table: <strong>Raw</strong> is each rater\'s original score. <strong>Norm</strong> is the Z-score normalized rating (mean=0, σ=1). <strong>Avg Norm</strong> averages all raters\' normalized scores. <strong>Controversy</strong> measures how much raters disagree (higher = more disagreement). Colored cells: <span class="score-excellent">excellent (≥1.5)</span>, <span class="score-good">good (0.5–1.5)</span>, <span class="score-neutral">neutral (-0.5–0.5)</span>, <span class="score-poor">poor (-1.5–-0.5)</span>, <span class="score-very-poor">very poor (≤-1.5)</span>.',
             raterGroups: [{"name": "Limited Level Ups", "url": "https://www.youtube.com/@limitedlevel-ups/videos", "patreon": "https://www.patreon.com/limitedlevelups", "raterIds": ["llu_a", "llu_m"], "description": "Limited format podcast and YouTube channel covering set reviews and draft strategy."}],
             raters: [
-            { id: "cgb", name: "Card Game Base", abbreviation: "CGB", url: "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/", description: "SOS limited tier list (A+ to F grades, converted to 0\u201312 numeric scale)" },
+            { id: "cgb", name: "Card Game Base", abbreviation: "CGB", url: "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/", description: "SOS limited tier list (A+ to F grades, converted to 0\u00e2\u20ac\u201c12 numeric scale)" },
             { id: "ds", name: "Draftsim", abbreviation: "DS", url: "https://draftsim.com/mtg-sos-limited-set-review/", linkPattern: name => `https://draftsim.com/mtg-sos-limited-set-review/#:~:text=${encodeURIComponent(name)}`, description: "Card-by-card limited set review", patreon: "https://www.patreon.com/cw/draftsim" },
             { id: "cs", name: "Casual_Spike", abbreviation: "CS", url: "https://www.reddit.com/r/lrcast/comments/1sim2r1/sos_limited_overview/", description: "SOS limited overview posted on r/lrcast" },
             { id: "llu_a", name: "LLU Alex", abbreviation: "LLU-A", url: "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208", description: "Alex's SOS tier list" },
             { id: "llu_m", name: "LLU Marc", abbreviation: "LLU-M", url: "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c", description: "Marc's SOS tier list" }
             ]
+            timestamp: "2026-04-16T18:16:12.750607Z",
         };
         const CARD_DATA = [
             {"name": "Emeritus of Ideation // Ancestral Recall", "setCode": "SOS", "rarity": "mythic", "colors": ["U"], "type": "Creature", "manaCost": "{3}{U}{U} // {U}", "ratings": {"cgb": {"raw": 11, "norm": 2.601}, "ds": {"raw": 10.0, "norm": 2.056}, "cs": {"raw": 8, "norm": 2.167}, "llu_a": {"raw": 8, "norm": 2.094}, "llu_m": {"raw": 8, "norm": 2.112}}, "avgRaw": 9.0, "avgNorm": 2.206, "controversy": 0.224},
