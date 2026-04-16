@@ -693,13 +693,17 @@
 
         @media (max-width: 768px) {
             /* Abbreviated headers: R, C, T, M for Rarity, Colors, Type, Mana (save space on tablets+) */
-            th.col-rarity, th.col-colors, th.col-type, th.col-mana-cost {
-                font-size: 0 !important;
-            }
-            th.col-rarity::after { content: 'R'; font-size: 1em; }
-            th.col-colors::after { content: 'C'; font-size: 1em; }
-            th.col-type::after { content: 'T'; font-size: 1em; }
-            th.col-mana-cost::after { content: 'M'; font-size: 1em; }
+            th.col-rarity { color: transparent; font-size: 0; }
+            th.col-rarity::after { content: 'R'; font-size: 1em; color: #333; margin: 0; }
+
+            th.col-colors { color: transparent; font-size: 0; }
+            th.col-colors::after { content: 'C'; font-size: 1em; color: #333; margin: 0; }
+
+            th.col-type { color: transparent; font-size: 0; }
+            th.col-type::after { content: 'T'; font-size: 1em; color: #333; margin: 0; }
+
+            th.col-mana-cost { color: transparent; font-size: 0; }
+            th.col-mana-cost::after { content: 'M'; font-size: 1em; color: #333; margin: 0; }
         }
 
         @media (max-width: 480px) {
