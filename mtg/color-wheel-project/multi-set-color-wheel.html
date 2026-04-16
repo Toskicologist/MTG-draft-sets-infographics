@@ -80,6 +80,35 @@ const { useState, useEffect, useRef } = React;
 
 // ─── SET DATA ────────────────────────────────────────────────────────────────
 
+// Top cards by color and rarity for SOS (from 17lands data)
+const SOS_TOP_CARDS = {
+  W: {
+    commons: ['Ajani\'s Response', 'Elite Interceptor // Rejoinder', 'Dig Site Inventory'],
+    uncommons: ['Group Project', 'Soaring Stoneglider', 'Stand Up for Yourself'],
+    rares: ['Emeritus of Truce // Swords to Plowshares', 'Stirring Hopesinger', 'Antiquities on the Loose'],
+  },
+  U: {
+    commons: ['Run Behind', 'Banishing Betrayal', 'Deluge Virtuoso'],
+    uncommons: ['Matterbending Mage', 'Muse Seeker', 'Encouraging Aviator // Jump'],
+    rares: ['Emeritus of Ideation // Ancestral Recall', 'Jadzi, Steward of Fate // Oracle\'s Gift', 'Echocasting Symposium'],
+  },
+  B: {
+    commons: ['Last Gasp', 'Wander Off', 'Burrog Banemaker'],
+    uncommons: ['Forum Necroscribe', 'Foolish Fate', 'Lecturing Scornmage'],
+    rares: ['Ral Zarek, Guest Lecturer', 'Withering Curse', 'Emeritus of Woe // Demonic Tutor'],
+  },
+  R: {
+    commons: ['Unsubtle Mockery', 'Tome Blast', 'Rubble Rouser'],
+    uncommons: ['Impractical Joke', 'Garrison Excavator', 'Charging Strifeknight'],
+    rares: ['Improvisation Capstone', 'Molten-Core Maestro', 'Flashback'],
+  },
+  G: {
+    commons: ['Studious First-Year // Rampant Growth', 'Burrog Barrage', 'Noxious Newt'],
+    uncommons: ['Additive Evolution', 'Environmental Scientist', 'Topiary Lecturer'],
+    rares: ['Germination Practicum', 'Emeritus of Abundance // Regrowth', 'Vastlands Scavenger // Bind to Life'],
+  },
+};
+
 const SET_DATA = {
   ECL: {
     key: 'ECL',
@@ -206,11 +235,11 @@ const SET_DATA = {
       G: { name: "Green", description: "Home to Witherbloom (BG) and Quandrix (GU). Witherbloom overwhelms with Pests and infusion-boosted spells. Quandrix grows creatures with +1/+1 counters via increment as you cast bigger and bigger spells." }
     },
     labels: {
-      WU: { text: "Off-College", sub: "Jeskai (WUR) Wedge", wedge: "Jeskai" },
-      UB: { text: "Off-College", sub: "Sultai (UBG) Wedge", wedge: "Sultai" },
-      BR: { text: "Off-College", sub: "Mardu (BRW) Wedge", wedge: "Mardu" },
-      RG: { text: "Off-College", sub: "Temur (RGU) Wedge", wedge: "Temur" },
-      GW: { text: "Off-College", sub: "Abzan (GWB) Wedge", wedge: "Abzan" },
+      WU: { text: "Off-College", sub: "Jeskai (WUR) Wedge", wedge: "Jeskai", details: "Home to Silverquill (WB) and Prismari (UR). Silverquill targets creatures with repartee spells—combat tricks or removal—to press the attack. Prismari loads up on instants and sorceries, earning opus bonuses for spending 5+ mana." },
+      UB: { text: "Off-College", sub: "Sultai (UBG) Wedge", wedge: "Sultai", details: "Home to Prismari (UR) and Witherbloom (BG). Prismari loads up on instants and sorceries, earning opus bonuses for spending 5+ mana. Witherbloom builds a Pest army and converts lifegain into infusion-boosted spell effects." },
+      BR: { text: "Off-College", sub: "Mardu (BRW) Wedge", wedge: "Mardu", details: "Home to Witherbloom (BG) and Lorehold (RW). Witherbloom builds a Pest army and converts lifegain into infusion-boosted spell effects. Lorehold fills the graveyard and excavates it with flashback for history-making plays." },
+      RG: { text: "Off-College", sub: "Temur (RGU) Wedge", wedge: "Temur", details: "Home to Lorehold (RW) and Quandrix (GU). Lorehold digs up the graveyard with flashback for powerful recursive aggression. Quandrix grows creatures via increment—casting spells with mana value exceeding creature stats." },
+      GW: { text: "Off-College", sub: "Abzan (GWB) Wedge", wedge: "Abzan", details: "Home to Quandrix (GU) and Silverquill (WB). Quandrix grows creatures with +1/+1 counters via increment as you cast bigger and bigger spells. Silverquill targets creatures with repartee spells—combat tricks or removal—to press the attack." },
       WB: { text: "Silverquill", sub: "Repartee\nAggro", details: "Cards with repartee trigger when you target creatures—complement your own with combat tricks or target opponents' creatures with removal. Balance creatures to target and spells to target them with. Creatures with prepared spells like Scathing Shadelock are especially valuable.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "repartee", mechanicDef: "Repartee — Triggered abilities that trigger whenever you cast an instant or sorcery spell targeting a creature." },
       UR: { text: "Prismari", sub: "Opus\nSpellcasting", details: "The opus mechanic rewards casting instants and sorceries for 5+ mana with showstopping bonuses. Use mana producers like Abstract Paintmage and Rapturous Moment to fuel big plays. Cards with X in their mana cost work early or late for full opus benefit.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "opus", mechanicDef: "Opus — Abilities that trigger when you cast an instant or sorcery, with an enhanced effect if five or more mana was spent to cast it." },
       BG: { text: "Witherbloom", sub: "Infusion\nSwarm", details: "Turn your life into your opponent's death with infusion, which triggers when you gain life. Pest tokens attack and trigger your infusion cards. Pestbrood Sloth and Lluwen, Exchange Student are skilled at sourcing Pests.", sourceText: "WotC Prerelease Guide", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-prerelease-guide", mechanic: "infusion", mechanicDef: "Infusion — Abilities that trigger or gain bonuses if you've gained life this turn." },
@@ -498,9 +527,43 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   );
 };
 
-const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHover, onColorLeave }) => {
+const CardLink = ({ cardName, setCode, color, fg, bg }) => {
+  const [showImage, setShowImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+
+  const scryfallUrl = `https://scryfall.com/search?q=set%3A${setCode}+"${cardName.split(' // ')[0]}"`;
+
+  const handleMouseEnter = () => {
+    // Build Scryfall API image URL for mouseover preview
+    const encoded = encodeURIComponent(`!"${cardName.split(' // ')[0]}"`);
+    const apiUrl = `https://api.scryfall.com/cards/search?q=${encoded}+set:${setCode}&unique=prints`;
+    setImageUrl(`https://api.scryfall.com/cards/search?q=${encoded}+set:${setCode}`);
+    setShowImage(true);
+  };
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <a href={scryfallUrl} target="_blank" rel="noopener noreferrer"
+         onMouseEnter={handleMouseEnter} onMouseLeave={() => setShowImage(false)}
+         style={{ color: fg, textDecoration: 'underline', cursor: 'pointer', fontSize: '0.7rem' }}>
+        {cardName}
+      </a>
+      {showImage && (
+        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px', zIndex: 100,
+          backgroundColor: '#000', border: '2px solid ' + fg, borderRadius: '3px', padding: '2px' }}>
+          <img src={`https://api.scryfall.com/cards/search?q=!"${cardName.split(' // ')[0]}"+set:${setCode}&format=json`}
+               alt={cardName} style={{ maxWidth: '150px', height: 'auto', borderRadius: '2px' }} onError={() => {}} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHover, onColorLeave, currentSet }) => {
   const sc = scryfallCodes[0];
   const colorMap = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
+  const isSOSSet = currentSet.key === 'SOS';
+
   return (
     <div id="colors" className="color-grid" style={{
       display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
@@ -512,6 +575,8 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
         const inclUrl = `https://scryfall.com/search?q=set%3A${sc}+id>%3D${color}`;
         const bg = baseHex[color], fg = color === 'W' ? '#000000' : '#FFFFFF';
         const isHovered = hoveredColor === color;
+        const topCards = isSOSSet ? SOS_TOP_CARDS[color] : null;
+
         return (
           <div key={color} onMouseEnter={() => onColorHover(color)} onMouseLeave={onColorLeave}
                style={{ backgroundColor: bg, color: fg, padding: '12px', borderRadius: '6px', textAlign: 'center',
@@ -520,7 +585,30 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
                  transition: 'all 0.2s ease', cursor: 'pointer' }}>
             <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}><i className={manaClasses[color]} /></div>
             <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>{color}: {d.name}</div>
-            <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>{d.description}</div>
+            {isSOSSet && topCards ? (
+              <div style={{ fontSize: '0.65rem', lineHeight: '1.4', marginBottom: '8px', textAlign: 'left', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                <div style={{ marginBottom: '3px' }}>
+                  <span style={{ fontWeight: '700' }}>Top commons:</span><br />
+                  {topCards.commons.map((card, i) => (
+                    <span key={i}><CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />{i < topCards.commons.length - 1 ? ', ' : ''}</span>
+                  ))}
+                </div>
+                <div style={{ marginBottom: '3px' }}>
+                  <span style={{ fontWeight: '700' }}>Top uncommons:</span><br />
+                  {topCards.uncommons.map((card, i) => (
+                    <span key={i}><CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />{i < topCards.uncommons.length - 1 ? ', ' : ''}</span>
+                  ))}
+                </div>
+                <div>
+                  <span style={{ fontWeight: '700' }}>Top rares/mythics:</span><br />
+                  {topCards.rares.map((card, i) => (
+                    <span key={i}><CardLink cardName={card} setCode={sc} color={color} fg={fg} bg={bg} />{i < topCards.rares.length - 1 ? ', ' : ''}</span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>{d.description}</div>
+            )}
             <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>Scryfall:</div>
             <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
               <a href={exactUrl} target="_blank" rel="noopener noreferrer"
@@ -826,6 +914,7 @@ function MultiSetColorWheel() {
         hoveredColor={hoveredColor}
         onColorHover={handleColorHover}
         onColorLeave={handleColorLeave}
+        currentSet={currentSet}
       />
 
       {/* Archetypes Section */}
