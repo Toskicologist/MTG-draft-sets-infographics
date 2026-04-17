@@ -1,8 +1,9 @@
 <!--
   Strixhaven SOS Top Cards by Color
-  v1.1.0 (2026-04-17, 12:15 UTC) — Redesigned with card grid display using Scryfall image API
-  v1.0.1 (2026-04-17, 11:39 UTC) — Added deployment timestamp tracking
-  v1.0.0 (2026-04-17) — Initial release with Scryfall image fetching
+  v1.2.0 (2026-04-17, 12:45 UTC) — Replaced API calls with baked-in Scryfall image URLs from local oracle data
+  v1.1.0 (2026-04-17, 12:15 UTC) — Redesigned with card grid display
+  v1.0.1 (2026-04-17, 11:39 UTC) — Added deployment/load timestamps
+  v1.0.0 (2026-04-17) — Initial release
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -11,11 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strixhaven SOS Top Cards by Color</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -50,17 +47,17 @@
 
         .version-info {
             text-align: center;
-            font-size: 0.85em;
+            font-size: 0.82em;
             color: #999;
             margin-bottom: 40px;
-            padding: 10px;
+            padding: 8px 16px;
             background: #f5f5f5;
             border-radius: 4px;
+            display: inline-block;
+            width: 100%;
         }
 
-        .color-section {
-            margin-bottom: 50px;
-        }
+        .color-section { margin-bottom: 50px; }
 
         .color-header {
             display: flex;
@@ -71,690 +68,426 @@
         }
 
         .color-dot {
-            width: 40px;
-            height: 40px;
+            width: 36px; height: 36px;
             border-radius: 50%;
-            margin-right: 20px;
-            border: 2px solid #fff;
+            margin-right: 16px;
             flex-shrink: 0;
+            border: 2px solid rgba(0,0,0,0.1);
         }
+        .color-dot.white  { background: #f9f6ee; border-color: #aaa; }
+        .color-dot.blue   { background: #4a90e2; }
+        .color-dot.black  { background: #333; }
+        .color-dot.red    { background: #e74c3c; }
+        .color-dot.green  { background: #27ae60; }
 
-        .color-dot.white { background: #f5f5dc; border-color: #333; }
-        .color-dot.blue { background: #4a90e2; }
-        .color-dot.black { background: #2a2a2a; }
-        .color-dot.red { background: #e74c3c; }
-        .color-dot.green { background: #27ae60; }
-
-        .color-header h2 {
-            font-size: 2em;
-            color: #1e3c72;
-        }
-
-        .color-header.white { border-color: #f5f5dc; }
-        .color-header.blue { border-color: #4a90e2; }
-        .color-header.black { border-color: #666; }
-        .color-header.red { border-color: #e74c3c; }
+        .color-header h2  { font-size: 1.8em; color: #1e3c72; }
+        .color-header.white { border-color: #ccc; }
+        .color-header.blue  { border-color: #4a90e2; }
+        .color-header.black { border-color: #555; }
+        .color-header.red   { border-color: #e74c3c; }
         .color-header.green { border-color: #27ae60; }
 
-        .rarity-group {
-            margin-bottom: 40px;
-        }
+        .rarity-group { margin-bottom: 35px; }
 
         .rarity-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #1e3c72;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ddd;
+            font-size: 1.05em;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
         }
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
         }
 
         .card-item {
-            background: white;
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
         }
 
         .card-item:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .card-item a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
         }
 
         .card-image-wrapper {
             width: 100%;
-            height: 280px;
             background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            aspect-ratio: 5 / 7;
             overflow: hidden;
         }
 
         .card-image {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            border-radius: 4px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .card-info {
-            padding: 15px;
+            padding: 12px;
             background: #fafafa;
         }
 
         .card-name {
             font-weight: 600;
-            font-size: 0.95em;
-            margin-bottom: 8px;
+            font-size: 0.9em;
+            margin-bottom: 6px;
             color: #1e3c72;
             line-height: 1.3;
         }
 
-        .card-score {
-            font-size: 0.85em;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .score-value {
-            color: #27ae60;
-            font-weight: 700;
-        }
-
-        .score-value.negative {
-            color: #e74c3c;
-        }
+        .card-score { font-size: 0.82em; color: #777; }
+        .score-value          { color: #27ae60; font-weight: 700; }
+        .score-value.negative { color: #e74c3c; }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .cards-grid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 15px;
-            }
-
-            .card-image-wrapper {
-                height: 240px;
-            }
+            .container { padding: 16px; }
+            h1 { font-size: 1.6em; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Strixhaven SOS Top Cards by Color</h1>
-        <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Data from SOS normalized reviews</p>
-        <div class="version-info">
-            <strong id="version">v1.1.0</strong> • Deployed: <strong id="deployTime">2026-04-17, 12:15 UTC</strong> • Loaded: <strong id="loadTime"></strong>
+<div class="container">
+    <h1>Strixhaven SOS — Top Cards by Color</h1>
+    <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Ranked by SOS normalized score (avgNorm)</p>
+    <div class="version-info">
+        <strong>v1.2.0</strong> &nbsp;·&nbsp; Deployed: <strong>2026-04-17, 12:45 UTC</strong> &nbsp;·&nbsp; Loaded: <strong id="loadTime"></strong>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ WHITE -->
+    <div class="color-section">
+        <div class="color-header white">
+            <div class="color-dot white"></div>
+            <h2>White</h2>
         </div>
 
-        <!-- WHITE -->
-        <div class="color-section">
-            <div class="color-header white">
-                <div class="color-dot white"></div>
-                <h2>White</h2>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Commons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?exact=Ajani%27s%20Response&set=stx&format=image" alt="Ajani's Response" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Ajani's Response</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.220</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Elite%20Interceptor&set=stx&format=image" alt="Elite Interceptor // Rejoinder" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Elite Interceptor // Rejoinder</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.131</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Dig%20Site%20Inventory&set=stx&format=image" alt="Dig Site Inventory" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Dig Site Inventory</div>
-                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Uncommons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Group%20Project&set=stx&format=image" alt="Group Project" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Group Project</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.327</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Soaring%20Stoneglider&set=stx&format=image" alt="Soaring Stoneglider" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Soaring Stoneglider</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.202</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Stand%20Up%20for%20Yourself&set=stx&format=image" alt="Stand Up for Yourself" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Stand Up for Yourself</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Rares & Mythics</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Truce&set=stx&format=image" alt="Emeritus of Truce // Swords to Plowshares" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Emeritus of Truce // Swords to Plowshares</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.784</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Stirring%20Hopesinger&set=stx&format=image" alt="Stirring Hopesinger" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Stirring Hopesinger</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.553</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Antiquities%20on%20the%20Loose&set=stx&format=image" alt="Antiquities on the Loose" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Antiquities on the Loose</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.429</span></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="rarity-group">
+            <div class="rarity-title">Commons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/6/ajanis-response" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920" alt="Ajani's Response" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Ajani's Response</div><div class="card-score">avgNorm: <span class="score-value">0.220</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/12/elite-interceptor-rejoinder" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992" alt="Elite Interceptor // Rejoinder" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Elite Interceptor // Rejoinder</div><div class="card-score">avgNorm: <span class="score-value">0.131</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/10/dig-site-inventory" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980" alt="Dig Site Inventory" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Dig Site Inventory</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
+                </a></div>
             </div>
         </div>
 
-        <!-- BLUE -->
-        <div class="color-section">
-            <div class="color-header blue">
-                <div class="color-dot blue"></div>
-                <h2>Blue</h2>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Commons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Run%20Behind&set=stx&format=image" alt="Run Behind" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Run Behind</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.131</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Banishing%20Betrayal&set=stx&format=image" alt="Banishing Betrayal" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Banishing Betrayal</div>
-                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Deluge%20Virtuoso&set=stx&format=image" alt="Deluge Virtuoso" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Deluge Virtuoso</div>
-                            <div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Uncommons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Matterbending%20Mage&set=stx&format=image" alt="Matterbending Mage" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Matterbending Mage</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.718</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Muse%20Seeker&set=stx&format=image" alt="Muse Seeker" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Muse Seeker</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.362</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Encouraging%20Aviator&set=stx&format=image" alt="Encouraging Aviator // Jump" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Encouraging Aviator // Jump</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Rares & Mythics</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Ideation&set=stx&format=image" alt="Emeritus of Ideation // Ancestral Recall" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Emeritus of Ideation // Ancestral Recall</div>
-                            <div class="card-score">avgNorm: <span class="score-value">2.104</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Jadzi%20Steward&set=stx&format=image" alt="Jadzi, Steward of Fate // Oracle's Gift" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Jadzi, Steward of Fate // Oracle's Gift</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.820</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Echocasting%20Symposium&set=stx&format=image" alt="Echocasting Symposium" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Echocasting Symposium</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.002</span></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="rarity-group">
+            <div class="rarity-title">Uncommons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/17/group-project" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026" alt="Group Project" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Group Project</div><div class="card-score">avgNorm: <span class="score-value">0.327</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/32/soaring-stoneglider" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/f/2fbe446b-60fd-43da-8358-985392293af8.jpg?1775937136" alt="Soaring Stoneglider" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Soaring Stoneglider</div><div class="card-score">avgNorm: <span class="score-value">0.202</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/34/stand-up-for-yourself" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/7/b756ca13-b904-4510-9bbb-5bc2864abfbd.jpg?1775937151" alt="Stand Up for Yourself" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Stand Up for Yourself</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
+                </a></div>
             </div>
         </div>
 
-        <!-- BLACK -->
-        <div class="color-section">
-            <div class="color-header black">
-                <div class="color-dot black"></div>
-                <h2>Black</h2>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Commons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Last%20Gasp&set=stx&format=image" alt="Last Gasp" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Last Gasp</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.522</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Wander%20Off&set=stx&format=image" alt="Wander Off" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Wander Off</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Burrog%20Banemaker&set=stx&format=image" alt="Burrog Banemaker" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Burrog Banemaker</div>
-                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Uncommons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Forum%20Necroscribe&set=stx&format=image" alt="Forum Necroscribe" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Forum Necroscribe</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.718</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Foolish%20Fate&set=stx&format=image" alt="Foolish Fate" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Foolish Fate</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.682</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Lecturing%20Scornmage&set=stx&format=image" alt="Lecturing Scornmage" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Lecturing Scornmage</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.522</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Rares & Mythics</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Ral%20Zarek&set=stx&format=image" alt="Ral Zarek, Guest Lecturer" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Ral Zarek, Guest Lecturer</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.500</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Withering%20Curse&set=stx&format=image" alt="Withering Curse" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Withering Curse</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.233</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Woe&set=stx&format=image" alt="Emeritus of Woe // Demonic Tutor" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Emeritus of Woe // Demonic Tutor</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.073</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RED -->
-        <div class="color-section">
-            <div class="color-header red">
-                <div class="color-dot red"></div>
-                <h2>Red</h2>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Commons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Unsubtle%20Mockery&set=stx&format=image" alt="Unsubtle Mockery" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Unsubtle Mockery</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Tome%20Blast&set=stx&format=image" alt="Tome Blast" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Tome Blast</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.131</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Rubble%20Rouser&set=stx&format=image" alt="Rubble Rouser" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Rubble Rouser</div>
-                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Uncommons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Impractical%20Joke&set=stx&format=image" alt="Impractical Joke" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Impractical Joke</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.682</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Garrison%20Excavator&set=stx&format=image" alt="Garrison Excavator" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Garrison Excavator</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.557</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Charging%20Strifeknight&set=stx&format=image" alt="Charging Strifeknight" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Charging Strifeknight</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.398</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Rares & Mythics</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Improvisation%20Capstone&set=stx&format=image" alt="Improvisation Capstone" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Improvisation Capstone</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.553</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Molten-Core%20Maestro&set=stx&format=image" alt="Molten-Core Maestro" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Molten-Core Maestro</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.877</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Flashback&set=stx&format=image" alt="Flashback" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Flashback</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.860</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- GREEN -->
-        <div class="color-section">
-            <div class="color-header green">
-                <div class="color-dot green"></div>
-                <h2>Green</h2>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Commons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Studious%20First-Year&set=stx&format=image" alt="Studious First-Year // Rampant Growth" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Studious First-Year // Rampant Growth</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.522</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Burrog%20Barrage&set=stx&format=image" alt="Burrog Barrage" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Burrog Barrage</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Noxious%20Newt&set=stx&format=image" alt="Noxious Newt" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Noxious Newt</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.006</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Uncommons</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Additive%20Evolution&set=stx&format=image" alt="Additive Evolution" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Additive Evolution</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.038</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Environmental%20Scientist&set=stx&format=image" alt="Environmental Scientist" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Environmental Scientist</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.877</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Topiary%20Lecturer&set=stx&format=image" alt="Topiary Lecturer" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Topiary Lecturer</div>
-                            <div class="card-score">avgNorm: <span class="score-value">0.557</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rarity-group">
-                <div class="rarity-title">Rares & Mythics</div>
-                <div class="cards-grid">
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Germination%20Practicum&set=stx&format=image" alt="Germination Practicum" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Germination Practicum</div>
-                            <div class="card-score">avgNorm: <span class="score-value">2.104</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Abundance&set=stx&format=image" alt="Emeritus of Abundance // Regrowth" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Emeritus of Abundance // Regrowth</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.624</span></div>
-                        </div>
-                    </div>
-                    <div class="card-item">
-                        <div class="card-image-wrapper">
-                            <img src="https://api.scryfall.com/cards/named?fuzzy=Vastlands%20Scavenger&set=stx&format=image" alt="Vastlands Scavenger // Bind to Life" class="card-image">
-                        </div>
-                        <div class="card-info">
-                            <div class="card-name">Vastlands Scavenger // Bind to Life</div>
-                            <div class="card-score">avgNorm: <span class="score-value">1.233</span></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="rarity-group">
+            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/13/emeritus-of-truce-swords-to-plowshares" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999" alt="Emeritus of Truce // Swords to Plowshares" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Emeritus of Truce // Swords to Plowshares</div><div class="card-score">avgNorm: <span class="score-value">1.784</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/35/stirring-hopesinger" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157" alt="Stirring Hopesinger" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Stirring Hopesinger</div><div class="card-score">avgNorm: <span class="score-value">1.553</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/7/antiquities-on-the-loose" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960" alt="Antiquities on the Loose" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Antiquities on the Loose</div><div class="card-score">avgNorm: <span class="score-value">1.429</span></div></div>
+                </a></div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Set load timestamp on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            const timestamp = now.toLocaleString('en-GB', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                timeZone: 'UTC',
-                timeZoneName: 'short'
-            });
-            document.getElementById('loadTime').textContent = timestamp;
-        });
-    </script>
+    <!-- ══════════════════════════════════════════════ BLUE -->
+    <div class="color-section">
+        <div class="color-header blue">
+            <div class="color-dot blue"></div>
+            <h2>Blue</h2>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Commons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/66/run-behind" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369" alt="Run Behind" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Run Behind</div><div class="card-score">avgNorm: <span class="score-value">0.131</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/38/banishing-betrayal" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176" alt="Banishing Betrayal" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Banishing Betrayal</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/42/deluge-virtuoso" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202" alt="Deluge Virtuoso" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Deluge Virtuoso</div><div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Uncommons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/59/matterbending-mage" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321" alt="Matterbending Mage" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Matterbending Mage</div><div class="card-score">avgNorm: <span class="score-value">0.718</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/60/muse-seeker" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328" alt="Muse Seeker" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Muse Seeker</div><div class="card-score">avgNorm: <span class="score-value">0.362</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/46/encouraging-aviator-jump" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230" alt="Encouraging Aviator // Jump" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Encouraging Aviator // Jump</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/45/emeritus-of-ideation-ancestral-recall" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223" alt="Emeritus of Ideation // Ancestral Recall" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Emeritus of Ideation // Ancestral Recall</div><div class="card-score">avgNorm: <span class="score-value">2.104</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/55/jadzi-steward-of-fate-oracles-gift" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293" alt="Jadzi, Steward of Fate // Oracle's Gift" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Jadzi, Steward of Fate // Oracle's Gift</div><div class="card-score">avgNorm: <span class="score-value">1.820</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/44/echocasting-symposium" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216" alt="Echocasting Symposium" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Echocasting Symposium</div><div class="card-score">avgNorm: <span class="score-value">1.002</span></div></div>
+                </a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ BLACK -->
+    <div class="color-section">
+        <div class="color-header black">
+            <div class="color-dot black"></div>
+            <h2>Black</h2>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Commons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/86/last-gasp" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510" alt="Last Gasp" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Last Gasp</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/104/wander-off" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/d/3d409512-50b9-4a38-91b0-19ba25227992.jpg?1775937643" alt="Wander Off" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Wander Off</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/75/burrog-banemaker" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433" alt="Burrog Banemaker" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Burrog Banemaker</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Uncommons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/84/forum-necroscribe" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497" alt="Forum Necroscribe" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Forum Necroscribe</div><div class="card-score">avgNorm: <span class="score-value">0.718</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/83/foolish-fate" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489" alt="Foolish Fate" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Foolish Fate</div><div class="card-score">avgNorm: <span class="score-value">0.682</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/87/lecturing-scornmage" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516" alt="Lecturing Scornmage" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Lecturing Scornmage</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/97/ral-zarek-guest-lecturer" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587" alt="Ral Zarek, Guest Lecturer" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Ral Zarek, Guest Lecturer</div><div class="card-score">avgNorm: <span class="score-value">1.500</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/105/withering-curse" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655" alt="Withering Curse" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Withering Curse</div><div class="card-score">avgNorm: <span class="score-value">1.233</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/80/emeritus-of-woe-demonic-tutor" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1775937469" alt="Emeritus of Woe // Demonic Tutor" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Emeritus of Woe // Demonic Tutor</div><div class="card-score">avgNorm: <span class="score-value">1.073</span></div></div>
+                </a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ RED -->
+    <div class="color-section">
+        <div class="color-header red">
+            <div class="color-dot red"></div>
+            <h2>Red</h2>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Commons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/136/unsubtle-mockery" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921" alt="Unsubtle Mockery" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Unsubtle Mockery</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/135/tome-blast" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/2/72a3b17d-1e00-48e9-8402-c81bacd595a7.jpg?1775937914" alt="Tome Blast" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Tome Blast</div><div class="card-score">avgNorm: <span class="score-value">0.131</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/128/rubble-rouser" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860" alt="Rubble Rouser" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Rubble Rouser</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Uncommons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/119/impractical-joke" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777" alt="Impractical Joke" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Impractical Joke</div><div class="card-score">avgNorm: <span class="score-value">0.682</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/116/garrison-excavator" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750" alt="Garrison Excavator" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Garrison Excavator</div><div class="card-score">avgNorm: <span class="score-value">0.557</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/110/charging-strifeknight" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699" alt="Charging Strifeknight" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Charging Strifeknight</div><div class="card-score">avgNorm: <span class="score-value">0.398</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/120/improvisation-capstone" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787" alt="Improvisation Capstone" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Improvisation Capstone</div><div class="card-score">avgNorm: <span class="score-value">1.553</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/125/molten-core-maestro" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832" alt="Molten-Core Maestro" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Molten-Core Maestro</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/115/flashback" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742" alt="Flashback" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Flashback</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
+                </a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ GREEN -->
+    <div class="color-section">
+        <div class="color-header green">
+            <div class="color-dot green"></div>
+            <h2>Green</h2>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Commons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/162/studious-first-year-rampant-growth" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1775938109" alt="Studious First-Year // Rampant Growth" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Studious First-Year // Rampant Growth</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/141/burrog-barrage" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957" alt="Burrog Barrage" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Burrog Barrage</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/155/noxious-newt" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060" alt="Noxious Newt" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Noxious Newt</div><div class="card-score">avgNorm: <span class="score-value">0.006</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Uncommons</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/139/additive-evolution" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943" alt="Additive Evolution" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Additive Evolution</div><div class="card-score">avgNorm: <span class="score-value">1.038</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/147/environmental-scientist" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001" alt="Environmental Scientist" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Environmental Scientist</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/165/topiary-lecturer" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg?1776000370" alt="Topiary Lecturer" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Topiary Lecturer</div><div class="card-score">avgNorm: <span class="score-value">0.557</span></div></div>
+                </a></div>
+            </div>
+        </div>
+
+        <div class="rarity-group">
+            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="cards-grid">
+                <div class="card-item"><a href="https://scryfall.com/card/sos/149/germination-practicum" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016" alt="Germination Practicum" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Germination Practicum</div><div class="card-score">avgNorm: <span class="score-value">2.104</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/145/emeritus-of-abundance-regrowth" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986" alt="Emeritus of Abundance // Regrowth" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Emeritus of Abundance // Regrowth</div><div class="card-score">avgNorm: <span class="score-value">1.624</span></div></div>
+                </a></div>
+                <div class="card-item"><a href="https://scryfall.com/card/sos/166/vastlands-scavenger-bind-to-life" target="_blank" rel="noopener">
+                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.jpg?1775938136" alt="Vastlands Scavenger // Bind to Life" class="card-image" loading="lazy"></div>
+                    <div class="card-info"><div class="card-name">Vastlands Scavenger // Bind to Life</div><div class="card-score">avgNorm: <span class="score-value">1.233</span></div></div>
+                </a></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loadTime').textContent = new Date().toLocaleString('en-GB', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        timeZone: 'UTC', timeZoneName: 'short'
+    });
+</script>
 </body>
 </html>
