@@ -1,3 +1,7 @@
+<!--
+  Strixhaven SOS Top Cards by Color
+  v1.0.0 (2026-04-17) — Initial release with Scryfall image fetching
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -241,6 +245,9 @@
     <div class="container">
         <h1>Strixhaven SOS Top Cards by Color</h1>
         <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Data from SOS normalized reviews</p>
+        <p style="text-align: center; font-size: 0.85em; color: #999; margin-top: 10px;">
+            <span id="version">v1.0.0</span> • Loaded: <span id="timestamp"></span>
+        </p>
 
         <div class="controls">
             <button onclick="fetchAllImages()">Show Images</button>
@@ -701,6 +708,22 @@
     </div>
 
     <script>
+        // Set timestamp on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const timestamp = now.toLocaleString('en-GB', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZone: 'UTC',
+                timeZoneName: 'short'
+            });
+            document.getElementById('timestamp').textContent = timestamp;
+        });
+
         const cardImages = new Map();
         const cardImageCache = new Map();
 
