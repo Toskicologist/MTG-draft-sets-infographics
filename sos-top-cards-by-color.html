@@ -702,6 +702,7 @@
 
     <script>
         const cardImages = new Map();
+        const cardImageCache = new Map();
 
         async function fetchCardImage(cardName, event) {
             event.preventDefault();
@@ -713,16 +714,16 @@
 
         async function getCardFromScryfall(cardName) {
             try {
-                // For double-faced cards, just search by the full name
-                const url = `https://api.scryfall.com/cards/search?q="${cardName}"+set:stx&unique=prints`;
-                console.log(`Fetching: ${url}`);
+                // Use Scryfall's /named endpoint with fuzzy matching (same as ratings page)
+                const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}&set=stx`;
                 const response = await fetch(url);
-                const data = await response.json();
+                const card = await response.json();
 
-                if (data.data && data.data.length > 0) {
-                    const card = data.data[0];
-                    const imageUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal;
-                    console.log(`Found ${cardName}: ${imageUrl}`);
+                if (card.object === 'card') {
+                    const imageUrl = (card.image_uris && card.image_uris.normal)
+                        || (card.card_faces && card.card_faces[0].image_uris && card.card_faces[0].image_uris.normal)
+                        || null;
+
                     if (imageUrl) {
                         cardImages.set(cardName, {
                             name: card.name,
@@ -731,8 +732,6 @@
                         });
                         renderImages();
                     }
-                } else {
-                    console.log(`No results for ${cardName}`);
                 }
             } catch (error) {
                 console.error(`Error fetching ${cardName}:`, error);
