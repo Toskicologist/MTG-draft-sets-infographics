@@ -44,8 +44,7 @@
             border-bottom: 2px solid #e0e0e0;
         }
         .chart-container { position: relative; height: 400px; margin-bottom: 48px; }
-        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px; }
-        .chart-box { }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 48px; }
         .chart-box h3 { font-size: 1.05em; color: #1e3c72; margin-bottom: 12px; text-align: center; }
         .chart-box .chart-container { height: 320px; margin-bottom: 0; }
 
@@ -73,8 +72,9 @@
         .tab.active { background: #1e3c72; color: white; }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
+        .pool-note { font-size: 0.82em; color: #888; font-style: italic; }
 
-        @media (max-width: 700px) {
+        @media (max-width: 900px) {
             .chart-row { grid-template-columns: 1fr; }
         }
     </style>
@@ -88,13 +88,13 @@
         Set has 91 commons, 100 uncommons, 60 rares, 20 mythics.
         Weighted average reflects how likely you are to <em>actually open</em> a card of each rarity.
         Commons count ~4.6× more than uncommons per card, and ~10× more than a given rare.
+        <br><strong>College Pools</strong> = both mono colours + dual-colour cards combined (e.g. Silverquill pool = all W + all B + all WB cards).
     </div>
 
     <!-- Tab switcher -->
     <div class="tab-row">
         <button class="tab active" onclick="switchTab('rarity')">By Rarity</button>
         <button class="tab" onclick="switchTab('weighted')">Weighted Overall</button>
-        <button class="tab" onclick="switchTab('pool')">College Pools</button>
     </div>
 
     <!-- TAB: By Rarity -->
@@ -106,65 +106,29 @@
         </div>
         <div class="section-title">Single Colours</div>
         <div class="chart-container"><canvas id="chartColors"></canvas></div>
-        <div class="section-title">Colleges</div>
+        <div class="section-title">Colleges <span class="pool-note">(dual-colour cards only)</span></div>
         <div class="chart-container"><canvas id="chartPairs"></canvas></div>
+        <div class="section-title">College Pools <span class="pool-note">(mono A + mono B + dual AB)</span></div>
+        <div class="chart-container"><canvas id="chartPoolRarity"></canvas></div>
     </div>
 
     <!-- TAB: Weighted Overall -->
     <div id="tab-weighted" class="tab-panel">
-        <div class="section-title">Weighted Average Score — Single Colours vs Colleges</div>
+        <div class="section-title">Weighted Average Score</div>
         <div class="chart-row">
             <div class="chart-box">
                 <h3>Single Colours</h3>
                 <div class="chart-container"><canvas id="chartWColors"></canvas></div>
             </div>
             <div class="chart-box">
-                <h3>Colleges</h3>
+                <h3>Colleges <span class="pool-note" style="font-size:0.78em">(dual only)</span></h3>
                 <div class="chart-container"><canvas id="chartWPairs"></canvas></div>
             </div>
+            <div class="chart-box">
+                <h3>College Pools <span class="pool-note" style="font-size:0.78em">(full pool)</span></h3>
+                <div class="chart-container"><canvas id="chartWPool"></canvas></div>
+            </div>
         </div>
-    </div>
-
-    <!-- TAB: College Pools -->
-    <div id="tab-pool" class="tab-panel">
-        <p class="subtitle" style="margin-bottom:16px;">Each college pool = both mono colours + dual-colour cards combined (e.g. Silverquill = all W + all B + all WB cards).</p>
-        <div class="legend">
-            <div class="legend-item"><div class="legend-swatch" style="background:#94a3b8"></div>Commons</div>
-            <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div>Uncommons</div>
-            <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div>Rares &amp; Mythics</div>
-        </div>
-        <div class="section-title">By Rarity</div>
-        <div class="chart-container"><canvas id="chartPoolRarity"></canvas></div>
-        <div class="section-title">Weighted Overall</div>
-        <div class="chart-container" style="height:300px"><canvas id="chartPoolWeighted"></canvas></div>
-        <div class="section-title">College Pool Table</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>College</th>
-                    <th>Pool</th>
-                    <th>Rarity</th>
-                    <th class="num">Avg Score</th>
-                    <th class="num">Cards (n)</th>
-                    <th class="bar-cell">Score</th>
-                </tr>
-            </thead>
-            <tbody id="poolTableBody"></tbody>
-        </table>
-        <div class="section-title">Weighted Overall — College Pools</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>College</th>
-                    <th>Pool</th>
-                    <th class="num">Weighted Avg</th>
-                    <th class="num">Simple Avg</th>
-                    <th class="num">Total Cards</th>
-                    <th class="bar-cell">Weighted Score</th>
-                </tr>
-            </thead>
-            <tbody id="poolWeightedTableBody"></tbody>
-        </table>
     </div>
 
     <!-- Full Data Table -->
@@ -173,6 +137,7 @@
         <thead>
             <tr>
                 <th>Group</th>
+                <th>Category</th>
                 <th>Rarity</th>
                 <th class="num">Avg Score</th>
                 <th class="num">Cards (n)</th>
@@ -188,6 +153,7 @@
         <thead>
             <tr>
                 <th>Group</th>
+                <th>Category</th>
                 <th class="num">Weighted Avg</th>
                 <th class="num">Simple Avg</th>
                 <th class="num">Total Cards</th>
@@ -201,55 +167,69 @@
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────────
 const rarityData = [
-    { group:'White',       rarity:'C',  avg:-0.388, n:12 },
-    { group:'White',       rarity:'U',  avg:-0.266, n:12 },
-    { group:'White',       rarity:'RM', avg: 0.964, n: 8 },
-    { group:'Blue',        rarity:'C',  avg:-0.631, n:12 },
-    { group:'Blue',        rarity:'U',  avg:-0.254, n:12 },
-    { group:'Blue',        rarity:'RM', avg: 0.643, n:10 },
-    { group:'Black',       rarity:'C',  avg:-0.397, n:12 },
-    { group:'Black',       rarity:'U',  avg:-0.048, n:12 },
-    { group:'Black',       rarity:'RM', avg: 0.533, n:10 },
-    { group:'Red',         rarity:'C',  avg:-0.361, n:12 },
-    { group:'Red',         rarity:'U',  avg:-0.216, n:12 },
-    { group:'Red',         rarity:'RM', avg: 0.390, n: 7 },
-    { group:'Green',       rarity:'C',  avg:-0.595, n:12 },
-    { group:'Green',       rarity:'U',  avg: 0.153, n:12 },
-    { group:'Green',       rarity:'RM', avg: 0.552, n: 7 },
-    { group:'Silverquill', rarity:'C',  avg:-0.569, n: 3 },
-    { group:'Silverquill', rarity:'U',  avg: 0.555, n: 7 },
-    { group:'Silverquill', rarity:'RM', avg: 0.213, n: 5 },
-    { group:'Prismari',    rarity:'C',  avg:-0.023, n: 3 },
-    { group:'Prismari',    rarity:'U',  avg: 0.291, n: 7 },
-    { group:'Prismari',    rarity:'RM', avg: 0.027, n: 6 },
-    { group:'Witherbloom', rarity:'C',  avg: 0.101, n: 3 },
-    { group:'Witherbloom', rarity:'U',  avg: 0.273, n: 7 },
-    { group:'Witherbloom', rarity:'RM', avg: 0.617, n: 6 },
-    { group:'Lorehold',    rarity:'C',  avg:-0.177, n: 3 },
-    { group:'Lorehold',    rarity:'U',  avg: 0.164, n: 7 },
-    { group:'Lorehold',    rarity:'RM', avg: 0.984, n: 5 },
-    { group:'Quandrix',    rarity:'C',  avg:-0.124, n: 3 },
-    { group:'Quandrix',    rarity:'U',  avg: 0.197, n: 7 },
-    { group:'Quandrix',    rarity:'RM', avg: 1.169, n: 5 },
+    { group:'White',       cat:'Single',  rarity:'C',  avg:-0.388, n:12 },
+    { group:'White',       cat:'Single',  rarity:'U',  avg:-0.266, n:12 },
+    { group:'White',       cat:'Single',  rarity:'RM', avg: 0.964, n: 8 },
+    { group:'Blue',        cat:'Single',  rarity:'C',  avg:-0.631, n:12 },
+    { group:'Blue',        cat:'Single',  rarity:'U',  avg:-0.254, n:12 },
+    { group:'Blue',        cat:'Single',  rarity:'RM', avg: 0.643, n:10 },
+    { group:'Black',       cat:'Single',  rarity:'C',  avg:-0.397, n:12 },
+    { group:'Black',       cat:'Single',  rarity:'U',  avg:-0.048, n:12 },
+    { group:'Black',       cat:'Single',  rarity:'RM', avg: 0.533, n:10 },
+    { group:'Red',         cat:'Single',  rarity:'C',  avg:-0.361, n:12 },
+    { group:'Red',         cat:'Single',  rarity:'U',  avg:-0.216, n:12 },
+    { group:'Red',         cat:'Single',  rarity:'RM', avg: 0.390, n: 7 },
+    { group:'Green',       cat:'Single',  rarity:'C',  avg:-0.595, n:12 },
+    { group:'Green',       cat:'Single',  rarity:'U',  avg: 0.153, n:12 },
+    { group:'Green',       cat:'Single',  rarity:'RM', avg: 0.552, n: 7 },
+    { group:'Silverquill', cat:'College', rarity:'C',  avg:-0.569, n: 3 },
+    { group:'Silverquill', cat:'College', rarity:'U',  avg: 0.555, n: 7 },
+    { group:'Silverquill', cat:'College', rarity:'RM', avg: 0.213, n: 5 },
+    { group:'Prismari',    cat:'College', rarity:'C',  avg:-0.023, n: 3 },
+    { group:'Prismari',    cat:'College', rarity:'U',  avg: 0.291, n: 7 },
+    { group:'Prismari',    cat:'College', rarity:'RM', avg: 0.027, n: 6 },
+    { group:'Witherbloom', cat:'College', rarity:'C',  avg: 0.101, n: 3 },
+    { group:'Witherbloom', cat:'College', rarity:'U',  avg: 0.273, n: 7 },
+    { group:'Witherbloom', cat:'College', rarity:'RM', avg: 0.617, n: 6 },
+    { group:'Lorehold',    cat:'College', rarity:'C',  avg:-0.177, n: 3 },
+    { group:'Lorehold',    cat:'College', rarity:'U',  avg: 0.164, n: 7 },
+    { group:'Lorehold',    cat:'College', rarity:'RM', avg: 0.984, n: 5 },
+    { group:'Quandrix',    cat:'College', rarity:'C',  avg:-0.124, n: 3 },
+    { group:'Quandrix',    cat:'College', rarity:'U',  avg: 0.197, n: 7 },
+    { group:'Quandrix',    cat:'College', rarity:'RM', avg: 1.169, n: 5 },
+    { group:'Silverquill', cat:'Pool',    rarity:'C',  avg:-0.412, n:27 },
+    { group:'Silverquill', cat:'Pool',    rarity:'U',  avg: 0.004, n:31 },
+    { group:'Silverquill', cat:'Pool',    rarity:'RM', avg: 0.613, n:23 },
+    { group:'Prismari',    cat:'Pool',    rarity:'C',  avg:-0.443, n:27 },
+    { group:'Prismari',    cat:'Pool',    rarity:'U',  avg:-0.116, n:31 },
+    { group:'Prismari',    cat:'Pool',    rarity:'RM', avg: 0.405, n:23 },
+    { group:'Witherbloom', cat:'Pool',    rarity:'C',  avg:-0.429, n:27 },
+    { group:'Witherbloom', cat:'Pool',    rarity:'U',  avg: 0.102, n:31 },
+    { group:'Witherbloom', cat:'Pool',    rarity:'RM', avg: 0.561, n:23 },
+    { group:'Lorehold',    cat:'Pool',    rarity:'C',  avg:-0.352, n:27 },
+    { group:'Lorehold',    cat:'Pool',    rarity:'U',  avg:-0.149, n:31 },
+    { group:'Lorehold',    cat:'Pool',    rarity:'RM', avg: 0.768, n:20 },
+    { group:'Quandrix',    cat:'Pool',    rarity:'C',  avg:-0.559, n:27 },
+    { group:'Quandrix',    cat:'Pool',    rarity:'U',  avg: 0.005, n:31 },
+    { group:'Quandrix',    cat:'Pool',    rarity:'RM', avg: 0.734, n:22 },
 ];
 
-// Play booster draw weights per card (slots / set_size)
-// 91 commons (6 slots), 100 uncommons (3 slots), 60 rares (6/7 slot), 20 mythics (1/7 slot)
-const drawWeight = { C: 6/91, U: 3/100, R: (6/7)/60, M: (1/7)/20 };
-// Simplified to RM combined weight (average of R and M)
-const drawWeightRM = { C: 6/91, U: 3/100, RM: ((6/7)/60 + (1/7)/20) / 2 };
-
 const weightedData = [
-    { group:'White',       wAvg:-0.243, sAvg:-0.004, n:32 },
-    { group:'Blue',        wAvg:-0.404, sAvg:-0.123, n:34 },
-    { group:'Black',       wAvg:-0.222, sAvg:-0.000, n:34 },
-    { group:'Red',         wAvg:-0.274, sAvg:-0.135, n:31 },
-    { group:'Green',       wAvg:-0.313, sAvg:-0.046, n:31 },
-    { group:'Silverquill', wAvg: 0.028, sAvg: 0.216, n:15 },
-    { group:'Prismari',    wAvg: 0.108, sAvg: 0.133, n:16 },
-    { group:'Witherbloom', wAvg: 0.225, sAvg: 0.370, n:16 },
-    { group:'Lorehold',    wAvg: 0.120, sAvg: 0.369, n:15 },
-    { group:'Quandrix',    wAvg: 0.190, sAvg: 0.457, n:15 },
+    { group:'White',       cat:'Single',  pool:'W',     wAvg:-0.243, sAvg:-0.004, n:32 },
+    { group:'Blue',        cat:'Single',  pool:'U',     wAvg:-0.404, sAvg:-0.123, n:34 },
+    { group:'Black',       cat:'Single',  pool:'B',     wAvg:-0.222, sAvg:-0.000, n:34 },
+    { group:'Red',         cat:'Single',  pool:'R',     wAvg:-0.274, sAvg:-0.135, n:31 },
+    { group:'Green',       cat:'Single',  pool:'G',     wAvg:-0.313, sAvg:-0.046, n:31 },
+    { group:'Silverquill', cat:'College', pool:'WB',    wAvg: 0.028, sAvg: 0.216, n:15 },
+    { group:'Prismari',    cat:'College', pool:'UR',    wAvg: 0.108, sAvg: 0.133, n:16 },
+    { group:'Witherbloom', cat:'College', pool:'BG',    wAvg: 0.225, sAvg: 0.370, n:16 },
+    { group:'Lorehold',    cat:'College', pool:'RW',    wAvg: 0.120, sAvg: 0.369, n:15 },
+    { group:'Quandrix',    cat:'College', pool:'GU',    wAvg: 0.190, sAvg: 0.457, n:15 },
+    { group:'Silverquill', cat:'Pool',    pool:'W+B+WB', wAvg:-0.191, sAvg: 0.038, n:81 },
+    { group:'Prismari',    cat:'Pool',    pool:'U+R+UR', wAvg:-0.267, sAvg:-0.077, n:81 },
+    { group:'Witherbloom', cat:'Pool',    pool:'B+G+BG', wAvg:-0.188, sAvg: 0.055, n:81 },
+    { group:'Lorehold',    cat:'Pool',    pool:'R+W+RW', wAvg:-0.198, sAvg: 0.016, n:78 },
+    { group:'Quandrix',    cat:'Pool',    pool:'G+U+GU', wAvg:-0.272, sAvg: 0.015, n:80 },
 ];
 
 const colorGroups = ['White','Blue','Black','Red','Green'];
@@ -261,8 +241,9 @@ const cU  = 'rgba(59,130,246,0.85)';  const bU  = 'rgba(29,78,216,1)';
 const cRM = 'rgba(245,158,11,0.85)';  const bRM = 'rgba(180,83,9,1)';
 
 // ── Grouped bar charts (by rarity) ───────────────────────────────────────────
-function buildRarityChart(canvasId, groups) {
-    const get = (g, r) => { const d = rarityData.find(x => x.group===g && x.rarity===r); return d ? d.avg : null; };
+// cat: 'Single' | 'College' | 'Pool'
+function buildRarityChart(canvasId, groups, cat) {
+    const get = (g, r) => { const d = rarityData.find(x => x.group===g && x.rarity===r && x.cat===cat); return d ? d.avg : null; };
     new Chart(document.getElementById(canvasId), {
         type: 'bar',
         data: {
@@ -279,7 +260,7 @@ function buildRarityChart(canvasId, groups) {
                 legend:{ display:false },
                 tooltip:{ callbacks:{ label: ctx => {
                     const r = ['C','U','RM'][ctx.datasetIndex];
-                    const d = rarityData.find(x=>x.group===groups[ctx.dataIndex]&&x.rarity===r);
+                    const d = rarityData.find(x=>x.group===groups[ctx.dataIndex]&&x.rarity===r&&x.cat===cat);
                     return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)} (n=${d?.n??'?'})`;
                 }}}
             },
@@ -292,10 +273,11 @@ function buildRarityChart(canvasId, groups) {
 }
 
 // ── Weighted overall charts ───────────────────────────────────────────────────
-function buildWeightedChart(canvasId, groups) {
-    const d = groups.map(g => weightedData.find(x=>x.group===g));
-    const colors = d.map(x => x.wAvg >= 0 ? 'rgba(39,174,96,0.8)' : 'rgba(231,76,60,0.8)');
-    const borders = d.map(x => x.wAvg >= 0 ? 'rgba(39,174,96,1)' : 'rgba(231,76,60,1)');
+function buildWeightedChart(canvasId, cat) {
+    const groups = cat === 'Single' ? colorGroups : pairGroups;
+    const d = groups.map(g => weightedData.find(x=>x.group===g&&x.cat===cat));
+    const colors  = d.map(x => x.wAvg >= 0 ? 'rgba(39,174,96,0.8)'  : 'rgba(231,76,60,0.8)');
+    const borders = d.map(x => x.wAvg >= 0 ? 'rgba(39,174,96,1)'    : 'rgba(231,76,60,1)');
     new Chart(document.getElementById(canvasId), {
         type: 'bar',
         data: {
@@ -325,21 +307,30 @@ function buildWeightedChart(canvasId, groups) {
     });
 }
 
-buildRarityChart('chartColors', colorGroups);
-buildRarityChart('chartPairs',  pairGroups);
-buildWeightedChart('chartWColors', colorGroups);
-buildWeightedChart('chartWPairs',  pairGroups);
+buildRarityChart('chartColors',     colorGroups, 'Single');
+buildRarityChart('chartPairs',      pairGroups,  'College');
+buildRarityChart('chartPoolRarity', pairGroups,  'Pool');
+buildWeightedChart('chartWColors', 'Single');
+buildWeightedChart('chartWPairs',  'College');
+buildWeightedChart('chartWPool',   'Pool');
 
-// ── Rarity table ─────────────────────────────────────────────────────────────
+// ── Full Data Table ───────────────────────────────────────────────────────────
 const tbody = document.getElementById('tableBody');
 const allVals = rarityData.map(d=>d.avg);
 const minV = Math.min(...allVals), maxV = Math.max(...allVals), range = maxV - minV;
 const zeroPos = ((-minV)/range)*100;
+const catOrder = {Single:0, College:1, Pool:2};
 const orderG = [...colorGroups,...pairGroups];
 const orderR = {C:0,U:1,RM:2};
-const sorted = [...rarityData].sort((a,b)=> orderG.indexOf(a.group)-orderG.indexOf(b.group)||orderR[a.rarity]-orderR[b.rarity]);
 const wLabel = {C:'6/91 ≈ 0.066', U:'3/100 = 0.030', RM:'~0.012 avg'};
 const rLabel = {C:'Commons', U:'Uncommons', RM:'Rares & Mythics'};
+const catLabel = {Single:'Single colour', College:'College (dual only)', Pool:'College pool'};
+
+const sorted = [...rarityData].sort((a,b)=>
+    catOrder[a.cat]-catOrder[b.cat] ||
+    orderG.indexOf(a.group)-orderG.indexOf(b.group) ||
+    orderR[a.rarity]-orderR[b.rarity]
+);
 
 sorted.forEach(d=>{
     const pct  = ((d.avg-minV)/range)*100;
@@ -351,6 +342,7 @@ sorted.forEach(d=>{
     tbody.insertAdjacentHTML('beforeend',`
         <tr>
             <td>${d.group}</td>
+            <td style="font-size:0.82em;color:#888">${catLabel[d.cat]}</td>
             <td><span class="badge badge-${d.rarity}">${rLabel[d.rarity]}</span></td>
             <td class="num ${cls}">${d.avg>=0?'+':''}${d.avg.toFixed(3)}</td>
             <td class="num">${d.n}</td>
@@ -359,13 +351,16 @@ sorted.forEach(d=>{
         </tr>`);
 });
 
-// ── Weighted overall table ────────────────────────────────────────────────────
+// ── Weighted Overall Table ────────────────────────────────────────────────────
 const wtbody = document.getElementById('weightedTableBody');
 const wVals  = weightedData.map(d=>d.wAvg);
 const wMin   = Math.min(...wVals), wMax = Math.max(...wVals), wRange = wMax-wMin;
 const wZero  = ((-wMin)/wRange)*100;
 
-[...weightedData].sort((a,b)=>orderG.indexOf(a.group)-orderG.indexOf(b.group)).forEach(d=>{
+[...weightedData].sort((a,b)=>
+    catOrder[a.cat]-catOrder[b.cat] ||
+    orderG.indexOf(a.group)-orderG.indexOf(b.group)
+).forEach(d=>{
     const pct   = ((d.wAvg-wMin)/wRange)*100;
     const isPos = d.wAvg >= 0;
     const bLeft  = isPos ? wZero : pct;
@@ -375,6 +370,7 @@ const wZero  = ((-wMin)/wRange)*100;
     wtbody.insertAdjacentHTML('beforeend',`
         <tr>
             <td>${d.group}</td>
+            <td style="font-size:0.82em;color:#888">${catLabel[d.cat]}${d.pool?' ('+d.pool+')':''}</td>
             <td class="num ${cls}">${d.wAvg>=0?'+':''}${d.wAvg.toFixed(3)}</td>
             <td class="num" style="color:#888">${d.sAvg>=0?'+':''}${d.sAvg.toFixed(3)}</td>
             <td class="num">${d.n}</td>
@@ -382,148 +378,10 @@ const wZero  = ((-wMin)/wRange)*100;
         </tr>`);
 });
 
-// ── College Pool Data ─────────────────────────────────────────────────────────
-// Each pool = mono-colour A + mono-colour B + dual-colour AB cards combined
-const poolData = [
-    { college:'Silverquill', pool:'W+B+WB', rarity:'C',  avg:-0.412, n:27 },
-    { college:'Silverquill', pool:'W+B+WB', rarity:'U',  avg: 0.004, n:31 },
-    { college:'Silverquill', pool:'W+B+WB', rarity:'RM', avg: 0.613, n:23 },
-    { college:'Prismari',    pool:'U+R+UR', rarity:'C',  avg:-0.443, n:27 },
-    { college:'Prismari',    pool:'U+R+UR', rarity:'U',  avg:-0.116, n:31 },
-    { college:'Prismari',    pool:'U+R+UR', rarity:'RM', avg: 0.405, n:23 },
-    { college:'Witherbloom', pool:'B+G+BG', rarity:'C',  avg:-0.429, n:27 },
-    { college:'Witherbloom', pool:'B+G+BG', rarity:'U',  avg: 0.102, n:31 },
-    { college:'Witherbloom', pool:'B+G+BG', rarity:'RM', avg: 0.561, n:23 },
-    { college:'Lorehold',    pool:'R+W+RW', rarity:'C',  avg:-0.352, n:27 },
-    { college:'Lorehold',    pool:'R+W+RW', rarity:'U',  avg:-0.149, n:31 },
-    { college:'Lorehold',    pool:'R+W+RW', rarity:'RM', avg: 0.768, n:20 },
-    { college:'Quandrix',    pool:'G+U+GU', rarity:'C',  avg:-0.559, n:27 },
-    { college:'Quandrix',    pool:'G+U+GU', rarity:'U',  avg: 0.005, n:31 },
-    { college:'Quandrix',    pool:'G+U+GU', rarity:'RM', avg: 0.734, n:22 },
-];
-
-const poolWeightedData = [
-    { college:'Silverquill', pool:'W+B+WB', wAvg:-0.191, sAvg: 0.038, n:81 },
-    { college:'Prismari',    pool:'U+R+UR', wAvg:-0.267, sAvg:-0.077, n:81 },
-    { college:'Witherbloom', pool:'B+G+BG', wAvg:-0.188, sAvg: 0.055, n:81 },
-    { college:'Lorehold',    pool:'R+W+RW', wAvg:-0.198, sAvg: 0.016, n:78 },
-    { college:'Quandrix',    pool:'G+U+GU', wAvg:-0.272, sAvg: 0.015, n:80 },
-];
-
-const poolPalette = {
-    Silverquill: 'rgba(168,85,247,0.8)',
-    Prismari:    'rgba(249,115,22,0.8)',
-    Witherbloom: 'rgba(132,204,22,0.8)',
-    Lorehold:    'rgba(245,158,11,0.8)',
-    Quandrix:    'rgba(6,182,212,0.8)',
-};
-
-// By-rarity grouped bar chart for pools
-(function() {
-    const colleges = ['Silverquill','Prismari','Witherbloom','Lorehold','Quandrix'];
-    const get = (col, r) => { const d = poolData.find(x=>x.college===col&&x.rarity===r); return d?d.avg:null; };
-    new Chart(document.getElementById('chartPoolRarity'), {
-        type: 'bar',
-        data: {
-            labels: colleges,
-            datasets: [
-                { label:'Commons',         data: colleges.map(c=>get(c,'C')),  backgroundColor:cC,  borderColor:bC,  borderWidth:1 },
-                { label:'Uncommons',       data: colleges.map(c=>get(c,'U')),  backgroundColor:cU,  borderColor:bU,  borderWidth:1 },
-                { label:'Rares & Mythics', data: colleges.map(c=>get(c,'RM')), backgroundColor:cRM, borderColor:bRM, borderWidth:1 },
-            ]
-        },
-        options: {
-            responsive:true, maintainAspectRatio:false,
-            plugins: {
-                legend:{ display:false },
-                tooltip:{ callbacks:{ label: ctx => {
-                    const r = ['C','U','RM'][ctx.datasetIndex];
-                    const d = poolData.find(x=>x.college===colleges[ctx.dataIndex]&&x.rarity===r);
-                    return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)} (n=${d?.n??'?'})`;
-                }}}
-            },
-            scales: {
-                x:{ grid:{ display:false } },
-                y:{ title:{ display:true, text:'Avg avgNorm score', color:'#666' }, grid:{ color:'rgba(0,0,0,0.06)' }, ticks:{ callback:v=>v.toFixed(2) } }
-            }
-        }
-    });
-
-    // Weighted bar chart
-    const wdata = poolWeightedData;
-    const wcolors = colleges.map(c => { const d=wdata.find(x=>x.college===c); return d.wAvg>=0?'rgba(39,174,96,0.8)':'rgba(231,76,60,0.8)'; });
-    const wborders = colleges.map(c => { const d=wdata.find(x=>x.college===c); return d.wAvg>=0?'rgba(39,174,96,1)':'rgba(231,76,60,1)'; });
-    new Chart(document.getElementById('chartPoolWeighted'), {
-        type: 'bar',
-        data: {
-            labels: colleges,
-            datasets: [{ label:'Weighted Avg (full pool)', data: colleges.map(c=>wdata.find(x=>x.college===c).wAvg), backgroundColor:wcolors, borderColor:wborders, borderWidth:1 }]
-        },
-        options: {
-            responsive:true, maintainAspectRatio:false,
-            plugins: {
-                legend:{ display:false },
-                tooltip:{ callbacks:{ label: ctx => {
-                    const x = wdata[ctx.dataIndex];
-                    return ` Weighted: ${x.wAvg.toFixed(3)}  |  Simple: ${x.sAvg.toFixed(3)}  (n=${x.n})`;
-                }}}
-            },
-            scales: {
-                x:{ grid:{ display:false } },
-                y:{ title:{ display:true, text:'Weighted avg score', color:'#666' }, grid:{ color:'rgba(0,0,0,0.06)' }, ticks:{ callback:v=>v.toFixed(2) } }
-            }
-        }
-    });
-
-    // Pool rarity table
-    const allPoolVals = poolData.map(d=>d.avg);
-    const pMin = Math.min(...allPoolVals), pMax = Math.max(...allPoolVals), pRange = pMax-pMin;
-    const pZero = ((-pMin)/pRange)*100;
-    const ptbody = document.getElementById('poolTableBody');
-    const poolOrder = ['Silverquill','Prismari','Witherbloom','Lorehold','Quandrix'];
-    [...poolData].sort((a,b)=>poolOrder.indexOf(a.college)-poolOrder.indexOf(b.college)||{C:0,U:1,RM:2}[a.rarity]-{C:0,U:1,RM:2}[b.rarity]).forEach(d=>{
-        const pct = ((d.avg-pMin)/pRange)*100;
-        const isPos = d.avg>=0;
-        const bLeft = isPos?pZero:pct, bWidth = isPos?pct-pZero:pZero-pct;
-        const bColor = isPos?'#27ae60':'#e74c3c';
-        const cls = isPos?'pos':'neg';
-        ptbody.insertAdjacentHTML('beforeend',`
-            <tr>
-                <td>${d.college}</td>
-                <td style="font-size:0.82em;color:#888">${d.pool}</td>
-                <td><span class="badge badge-${d.rarity}">${rLabel[d.rarity]}</span></td>
-                <td class="num ${cls}">${d.avg>=0?'+':''}${d.avg.toFixed(3)}</td>
-                <td class="num">${d.n}</td>
-                <td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="left:${bLeft.toFixed(1)}%;width:${bWidth.toFixed(1)}%;background:${bColor}"></div></div></td>
-            </tr>`);
-    });
-
-    // Pool weighted table
-    const pwVals = poolWeightedData.map(d=>d.wAvg);
-    const pwMin = Math.min(...pwVals), pwMax = Math.max(...pwVals), pwRange = pwMax-pwMin;
-    const pwZero = ((-pwMin)/pwRange)*100;
-    const pwtbody = document.getElementById('poolWeightedTableBody');
-    [...poolWeightedData].sort((a,b)=>poolOrder.indexOf(a.college)-poolOrder.indexOf(b.college)).forEach(d=>{
-        const pct = ((d.wAvg-pwMin)/pwRange)*100;
-        const isPos = d.wAvg>=0;
-        const bLeft = isPos?pwZero:pct, bWidth = isPos?pct-pwZero:pwZero-pct;
-        const bColor = isPos?'#27ae60':'#e74c3c';
-        const cls = isPos?'pos':'neg';
-        pwtbody.insertAdjacentHTML('beforeend',`
-            <tr>
-                <td>${d.college}</td>
-                <td style="font-size:0.82em;color:#888">${d.pool}</td>
-                <td class="num ${cls}">${d.wAvg>=0?'+':''}${d.wAvg.toFixed(3)}</td>
-                <td class="num" style="color:#888">${d.sAvg>=0?'+':''}${d.sAvg.toFixed(3)}</td>
-                <td class="num">${d.n}</td>
-                <td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="left:${bLeft.toFixed(1)}%;width:${bWidth.toFixed(1)}%;background:${bColor}"></div></div></td>
-            </tr>`);
-    });
-})();
-
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(name) {
-    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.textContent.toLowerCase().includes(name==='rarity'?'rarity':name==='weighted'?'weight':'pool')));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',
+        t.textContent.toLowerCase().includes(name==='rarity'?'rarity':'weight')));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('tab-'+name).classList.add('active');
 }
