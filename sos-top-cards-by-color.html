@@ -1,5 +1,6 @@
 <!--
   Strixhaven SOS Top Cards by Color
+  v1.1.0 (2026-04-17, 12:15 UTC) — Redesigned with card grid display using Scryfall image API
   v1.0.1 (2026-04-17, 11:39 UTC) — Added deployment timestamp tracking
   v1.0.0 (2026-04-17) — Initial release with Scryfall image fetching
 -->
@@ -17,29 +18,44 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #1a1a1a;
-            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
             padding: 20px;
-            line-height: 1.6;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         h1 {
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5em;
+            color: #1e3c72;
         }
 
         .subtitle {
             text-align: center;
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+
+        .version-info {
+            text-align: center;
+            font-size: 0.85em;
             color: #999;
-            margin-bottom: 30px;
-            font-size: 0.95em;
+            margin-bottom: 40px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
         }
 
         .color-section {
@@ -49,28 +65,29 @@
         .color-header {
             display: flex;
             align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 3px solid;
+            margin-bottom: 30px;
             padding-bottom: 15px;
+            border-bottom: 3px solid;
         }
 
         .color-dot {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            margin-right: 15px;
+            margin-right: 20px;
             border: 2px solid #fff;
+            flex-shrink: 0;
         }
 
         .color-dot.white { background: #f5f5dc; border-color: #333; }
         .color-dot.blue { background: #4a90e2; }
-        .color-dot.black { background: #2a2a2a; border-color: #999; }
+        .color-dot.black { background: #2a2a2a; }
         .color-dot.red { background: #e74c3c; }
         .color-dot.green { background: #27ae60; }
 
         .color-header h2 {
-            font-size: 1.8em;
-            font-weight: 600;
+            font-size: 2em;
+            color: #1e3c72;
         }
 
         .color-header.white { border-color: #f5f5dc; }
@@ -80,164 +97,100 @@
         .color-header.green { border-color: #27ae60; }
 
         .rarity-group {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .rarity-title {
-            font-size: 1.1em;
+            font-size: 1.2em;
             font-weight: 600;
-            color: #bbb;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #2a2a2a;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        th {
-            background: #333;
-            padding: 12px 15px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #444;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #3a3a3a;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover {
-            background: #333;
-        }
-
-        a {
-            color: #4a90e2;
-            text-decoration: none;
-            transition: color 0.2s;
-            cursor: pointer;
-        }
-
-        a:hover {
-            color: #5ba3ff;
-            text-decoration: underline;
-        }
-
-        .score {
-            font-weight: 500;
-            color: #aaa;
-            text-align: right;
-        }
-
-        .score-positive {
-            color: #27ae60;
-        }
-
-        .score-negative {
-            color: #e74c3c;
-        }
-
-        .img-container {
-            margin-top: 30px;
+        .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
         }
 
-        .card-img {
-            border-radius: 4px;
+        .card-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
-        }
-
-        .card-img:hover {
-            transform: scale(1.02);
-        }
-
-        .card-img img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .card-img-placeholder {
-            background: #333;
-            padding: 20px;
-            text-align: center;
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .controls {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        button {
-            background: #4a90e2;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
+            transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
-            font-size: 1em;
+        }
+
+        .card-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .card-image-wrapper {
+            width: 100%;
+            height: 280px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .card-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .card-info {
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .card-name {
             font-weight: 600;
-            transition: background 0.2s;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: #1e3c72;
+            line-height: 1.3;
         }
 
-        button:hover {
-            background: #5ba3ff;
-        }
-
-        button:active {
-            opacity: 0.9;
-        }
-
-        .loading {
-            text-align: center;
+        .card-score {
+            font-size: 0.85em;
             color: #666;
-            margin: 20px 0;
+            font-weight: 500;
         }
 
-        .error {
+        .score-value {
+            color: #27ae60;
+            font-weight: 700;
+        }
+
+        .score-value.negative {
             color: #e74c3c;
-            text-align: center;
-            margin: 20px 0;
         }
 
         @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
             h1 {
                 font-size: 1.8em;
             }
 
-            .color-header h2 {
-                font-size: 1.4em;
+            .cards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 15px;
             }
 
-            table {
-                font-size: 0.9em;
-            }
-
-            td, th {
-                padding: 8px 10px;
-            }
-
-            .img-container {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            .card-image-wrapper {
+                height: 240px;
             }
         }
     </style>
@@ -246,16 +199,9 @@
     <div class="container">
         <h1>Strixhaven SOS Top Cards by Color</h1>
         <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Data from SOS normalized reviews</p>
-        <p style="text-align: center; font-size: 0.85em; color: #999; margin-top: 10px;">
-            <span id="version">v1.0.1</span> • Deployed: <span id="deployTime">2026-04-17, 11:39 UTC</span> • Loaded: <span id="loadTime"></span>
-        </p>
-
-        <div class="controls">
-            <button onclick="fetchAllImages()">Show Images</button>
-            <button onclick="clearImages()">Clear Images</button>
+        <div class="version-info">
+            <strong id="version">v1.1.0</strong> • Deployed: <strong id="deployTime">2026-04-17, 12:15 UTC</strong> • Loaded: <strong id="loadTime"></strong>
         </div>
-
-        <div id="images-container"></div>
 
         <!-- WHITE -->
         <div class="color-section">
@@ -266,84 +212,101 @@
 
             <div class="rarity-group">
                 <div class="rarity-title">Commons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Ajani's Response</a></td>
-                            <td class="score score-positive">0.220</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Elite Interceptor // Rejoinder</a></td>
-                            <td class="score score-positive">0.131</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Dig Site Inventory</a></td>
-                            <td class="score score-negative">-0.029</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?exact=Ajani%27s%20Response&set=stx&format=image" alt="Ajani's Response" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Ajani's Response</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.220</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Elite%20Interceptor&set=stx&format=image" alt="Elite Interceptor // Rejoinder" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Elite Interceptor // Rejoinder</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.131</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Dig%20Site%20Inventory&set=stx&format=image" alt="Dig Site Inventory" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Dig Site Inventory</div>
+                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Uncommons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Group Project</a></td>
-                            <td class="score score-positive">0.327</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Soaring Stoneglider</a></td>
-                            <td class="score score-positive">0.202</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Stand Up for Yourself</a></td>
-                            <td class="score score-positive">0.167</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Group%20Project&set=stx&format=image" alt="Group Project" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Group Project</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.327</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Soaring%20Stoneglider&set=stx&format=image" alt="Soaring Stoneglider" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Soaring Stoneglider</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.202</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Stand%20Up%20for%20Yourself&set=stx&format=image" alt="Stand Up for Yourself" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Stand Up for Yourself</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Rares & Mythics</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="width: 80px;">Rarity</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Truce // Swords to Plowshares</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.784</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Stirring Hopesinger</a></td>
-                            <td>R</td>
-                            <td class="score score-positive">1.553</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Antiquities on the Loose</a></td>
-                            <td>R</td>
-                            <td class="score score-positive">1.429</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Truce&set=stx&format=image" alt="Emeritus of Truce // Swords to Plowshares" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Emeritus of Truce // Swords to Plowshares</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.784</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Stirring%20Hopesinger&set=stx&format=image" alt="Stirring Hopesinger" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Stirring Hopesinger</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.553</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Antiquities%20on%20the%20Loose&set=stx&format=image" alt="Antiquities on the Loose" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Antiquities on the Loose</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.429</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -356,84 +319,101 @@
 
             <div class="rarity-group">
                 <div class="rarity-title">Commons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Run Behind</a></td>
-                            <td class="score score-positive">0.131</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Banishing Betrayal</a></td>
-                            <td class="score score-negative">-0.029</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Deluge Virtuoso</a></td>
-                            <td class="score score-negative">-0.189</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Run%20Behind&set=stx&format=image" alt="Run Behind" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Run Behind</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.131</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Banishing%20Betrayal&set=stx&format=image" alt="Banishing Betrayal" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Banishing Betrayal</div>
+                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Deluge%20Virtuoso&set=stx&format=image" alt="Deluge Virtuoso" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Deluge Virtuoso</div>
+                            <div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Uncommons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Matterbending Mage</a></td>
-                            <td class="score score-positive">0.718</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Muse Seeker</a></td>
-                            <td class="score score-positive">0.362</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Encouraging Aviator // Jump</a></td>
-                            <td class="score score-positive">0.167</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Matterbending%20Mage&set=stx&format=image" alt="Matterbending Mage" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Matterbending Mage</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.718</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Muse%20Seeker&set=stx&format=image" alt="Muse Seeker" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Muse Seeker</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.362</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Encouraging%20Aviator&set=stx&format=image" alt="Encouraging Aviator // Jump" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Encouraging Aviator // Jump</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Rares & Mythics</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="width: 80px;">Rarity</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Ideation // Ancestral Recall</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">2.104</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Jadzi, Steward of Fate // Oracle's Gift</a></td>
-                            <td>R</td>
-                            <td class="score score-positive">1.820</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Echocasting Symposium</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.002</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Ideation&set=stx&format=image" alt="Emeritus of Ideation // Ancestral Recall" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Emeritus of Ideation // Ancestral Recall</div>
+                            <div class="card-score">avgNorm: <span class="score-value">2.104</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Jadzi%20Steward&set=stx&format=image" alt="Jadzi, Steward of Fate // Oracle's Gift" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Jadzi, Steward of Fate // Oracle's Gift</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.820</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Echocasting%20Symposium&set=stx&format=image" alt="Echocasting Symposium" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Echocasting Symposium</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.002</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -446,84 +426,101 @@
 
             <div class="rarity-group">
                 <div class="rarity-title">Commons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Last Gasp</a></td>
-                            <td class="score score-positive">0.522</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Wander Off</a></td>
-                            <td class="score score-positive">0.167</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Burrog Banemaker</a></td>
-                            <td class="score score-negative">-0.029</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Last%20Gasp&set=stx&format=image" alt="Last Gasp" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Last Gasp</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.522</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Wander%20Off&set=stx&format=image" alt="Wander Off" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Wander Off</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Burrog%20Banemaker&set=stx&format=image" alt="Burrog Banemaker" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Burrog Banemaker</div>
+                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Uncommons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Forum Necroscribe</a></td>
-                            <td class="score score-positive">0.718</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Foolish Fate</a></td>
-                            <td class="score score-positive">0.682</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Lecturing Scornmage</a></td>
-                            <td class="score score-positive">0.522</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Forum%20Necroscribe&set=stx&format=image" alt="Forum Necroscribe" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Forum Necroscribe</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.718</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Foolish%20Fate&set=stx&format=image" alt="Foolish Fate" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Foolish Fate</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.682</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Lecturing%20Scornmage&set=stx&format=image" alt="Lecturing Scornmage" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Lecturing Scornmage</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.522</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Rares & Mythics</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="width: 80px;">Rarity</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Ral Zarek, Guest Lecturer</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.500</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Withering Curse</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.233</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Woe // Demonic Tutor</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.073</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Ral%20Zarek&set=stx&format=image" alt="Ral Zarek, Guest Lecturer" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Ral Zarek, Guest Lecturer</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.500</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Withering%20Curse&set=stx&format=image" alt="Withering Curse" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Withering Curse</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.233</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Woe&set=stx&format=image" alt="Emeritus of Woe // Demonic Tutor" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Emeritus of Woe // Demonic Tutor</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.073</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -536,84 +533,101 @@
 
             <div class="rarity-group">
                 <div class="rarity-title">Commons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Unsubtle Mockery</a></td>
-                            <td class="score score-positive">0.167</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Tome Blast</a></td>
-                            <td class="score score-positive">0.131</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Rubble Rouser</a></td>
-                            <td class="score score-negative">-0.029</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Unsubtle%20Mockery&set=stx&format=image" alt="Unsubtle Mockery" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Unsubtle Mockery</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Tome%20Blast&set=stx&format=image" alt="Tome Blast" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Tome Blast</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.131</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Rubble%20Rouser&set=stx&format=image" alt="Rubble Rouser" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Rubble Rouser</div>
+                            <div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Uncommons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Impractical Joke</a></td>
-                            <td class="score score-positive">0.682</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Garrison Excavator</a></td>
-                            <td class="score score-positive">0.557</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Charging Strifeknight</a></td>
-                            <td class="score score-positive">0.398</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Impractical%20Joke&set=stx&format=image" alt="Impractical Joke" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Impractical Joke</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.682</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Garrison%20Excavator&set=stx&format=image" alt="Garrison Excavator" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Garrison Excavator</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.557</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Charging%20Strifeknight&set=stx&format=image" alt="Charging Strifeknight" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Charging Strifeknight</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.398</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Rares & Mythics</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="width: 80px;">Rarity</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Improvisation Capstone</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.553</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Molten-Core Maestro</a></td>
-                            <td>R</td>
-                            <td class="score score-positive">0.877</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Flashback</a></td>
-                            <td>R</td>
-                            <td class="score score-positive">0.860</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Improvisation%20Capstone&set=stx&format=image" alt="Improvisation Capstone" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Improvisation Capstone</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.553</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Molten-Core%20Maestro&set=stx&format=image" alt="Molten-Core Maestro" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Molten-Core Maestro</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.877</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Flashback&set=stx&format=image" alt="Flashback" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Flashback</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.860</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -626,84 +640,101 @@
 
             <div class="rarity-group">
                 <div class="rarity-title">Commons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Studious First-Year // Rampant Growth</a></td>
-                            <td class="score score-positive">0.522</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Burrog Barrage</a></td>
-                            <td class="score score-positive">0.167</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Noxious Newt</a></td>
-                            <td class="score score-positive">0.006</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Studious%20First-Year&set=stx&format=image" alt="Studious First-Year // Rampant Growth" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Studious First-Year // Rampant Growth</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.522</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Burrog%20Barrage&set=stx&format=image" alt="Burrog Barrage" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Burrog Barrage</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.167</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Noxious%20Newt&set=stx&format=image" alt="Noxious Newt" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Noxious Newt</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.006</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Uncommons</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Additive Evolution</a></td>
-                            <td class="score score-positive">1.038</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Environmental Scientist</a></td>
-                            <td class="score score-positive">0.877</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Topiary Lecturer</a></td>
-                            <td class="score score-positive">0.557</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Additive%20Evolution&set=stx&format=image" alt="Additive Evolution" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Additive Evolution</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.038</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Environmental%20Scientist&set=stx&format=image" alt="Environmental Scientist" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Environmental Scientist</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.877</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Topiary%20Lecturer&set=stx&format=image" alt="Topiary Lecturer" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Topiary Lecturer</div>
+                            <div class="card-score">avgNorm: <span class="score-value">0.557</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="rarity-group">
                 <div class="rarity-title">Rares & Mythics</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Card</th>
-                            <th style="width: 80px;">Rarity</th>
-                            <th style="text-align: right;">avgNorm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Germination Practicum</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">2.104</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Abundance // Regrowth</a></td>
-                            <td>M</td>
-                            <td class="score score-positive">1.624</td>
-                        </tr>
-                        <tr>
-                            <td><a onclick="fetchCardImage(this.textContent, event)">Vastlands Scavenger // Bind to Life</a></td>
-                            <td>R</td>
-                            <td class="score score-positive">1.233</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="cards-grid">
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Germination%20Practicum&set=stx&format=image" alt="Germination Practicum" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Germination Practicum</div>
+                            <div class="card-score">avgNorm: <span class="score-value">2.104</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Emeritus%20of%20Abundance&set=stx&format=image" alt="Emeritus of Abundance // Regrowth" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Emeritus of Abundance // Regrowth</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.624</span></div>
+                        </div>
+                    </div>
+                    <div class="card-item">
+                        <div class="card-image-wrapper">
+                            <img src="https://api.scryfall.com/cards/named?fuzzy=Vastlands%20Scavenger&set=stx&format=image" alt="Vastlands Scavenger // Bind to Life" class="card-image">
+                        </div>
+                        <div class="card-info">
+                            <div class="card-name">Vastlands Scavenger // Bind to Life</div>
+                            <div class="card-score">avgNorm: <span class="score-value">1.233</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -724,87 +755,6 @@
             });
             document.getElementById('loadTime').textContent = timestamp;
         });
-
-        const cardImages = new Map();
-        const cardImageCache = new Map();
-
-        async function fetchCardImage(cardName, event) {
-            event.preventDefault();
-            if (!cardImages.has(cardName)) {
-                await getCardFromScryfall(cardName);
-            }
-            scrollToImages();
-        }
-
-        async function getCardFromScryfall(cardName) {
-            try {
-                // Use Scryfall's /named endpoint with fuzzy matching (same as ratings page)
-                const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}&set=stx`;
-                const response = await fetch(url);
-                const card = await response.json();
-
-                if (card.object === 'card') {
-                    const imageUrl = (card.image_uris && card.image_uris.normal)
-                        || (card.card_faces && card.card_faces[0].image_uris && card.card_faces[0].image_uris.normal)
-                        || null;
-
-                    if (imageUrl) {
-                        cardImages.set(cardName, {
-                            name: card.name,
-                            imageUrl: imageUrl,
-                            scryfallUrl: card.scryfall_uri
-                        });
-                        renderImages();
-                    }
-                }
-            } catch (error) {
-                console.error(`Error fetching ${cardName}:`, error);
-            }
-        }
-
-        async function fetchAllImages() {
-            const cards = Array.from(document.querySelectorAll('a[onclick*="fetchCardImage"]')).map(a => a.textContent);
-            const uniqueCards = [...new Set(cards)];
-
-            document.getElementById('images-container').innerHTML = '<div class="loading">Fetching images...</div>';
-
-            for (const card of uniqueCards) {
-                if (!cardImages.has(card)) {
-                    await getCardFromScryfall(card);
-                }
-            }
-            renderImages();
-        }
-
-        function renderImages() {
-            const container = document.getElementById('images-container');
-            if (cardImages.size === 0) {
-                container.innerHTML = '';
-                return;
-            }
-
-            let html = '<div class="img-container">';
-            cardImages.forEach((card, name) => {
-                html += `
-                    <div class="card-img">
-                        <a href="${card.scryfallUrl}" target="_blank" title="Open on Scryfall">
-                            <img src="${card.imageUrl}" alt="${card.name}">
-                        </a>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function clearImages() {
-            cardImages.clear();
-            document.getElementById('images-container').innerHTML = '';
-        }
-
-        function scrollToImages() {
-            document.getElementById('images-container').scrollIntoView({ behavior: 'smooth' });
-        }
     </script>
 </body>
 </html>
