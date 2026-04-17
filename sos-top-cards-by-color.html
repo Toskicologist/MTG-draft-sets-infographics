@@ -1,5 +1,6 @@
 <!--
   Strixhaven SOS Top Cards by Color
+  v1.0.1 (2026-04-17, 11:39 UTC) — Added deployment timestamp tracking
   v1.0.0 (2026-04-17) — Initial release with Scryfall image fetching
 -->
 <!DOCTYPE html>
@@ -246,7 +247,7 @@
         <h1>Strixhaven SOS Top Cards by Color</h1>
         <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Data from SOS normalized reviews</p>
         <p style="text-align: center; font-size: 0.85em; color: #999; margin-top: 10px;">
-            <span id="version">v1.0.0</span> • Loaded: <span id="timestamp"></span>
+            <span id="version">v1.0.1</span> • Deployed: <span id="deployTime">2026-04-17, 11:39 UTC</span> • Loaded: <span id="loadTime"></span>
         </p>
 
         <div class="controls">
@@ -708,7 +709,7 @@
     </div>
 
     <script>
-        // Set timestamp on page load
+        // Set load timestamp on page load
         document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             const timestamp = now.toLocaleString('en-GB', {
@@ -721,7 +722,7 @@
                 timeZone: 'UTC',
                 timeZoneName: 'short'
             });
-            document.getElementById('timestamp').textContent = timestamp;
+            document.getElementById('loadTime').textContent = timestamp;
         });
 
         const cardImages = new Map();
