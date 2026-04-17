@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS Average Scores by Color & Rarity</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #1e3c72; font-size: 2em; margin-bottom: 6px; text-align: center; }
+        .subtitle { text-align: center; color: #777; margin-bottom: 12px; font-size: 0.95em; }
+        .method-note {
+            text-align: center;
+            background: #f0f4ff;
+            border: 1px solid #c7d4f5;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 0.85em;
+            color: #444;
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+        .method-note strong { color: #1e3c72; }
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1e3c72;
+            margin: 36px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .chart-container { position: relative; height: 400px; margin-bottom: 48px; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px; }
+        .chart-box { }
+        .chart-box h3 { font-size: 1.05em; color: #1e3c72; margin-bottom: 12px; text-align: center; }
+        .chart-box .chart-container { height: 320px; margin-bottom: 0; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 48px; }
+        th { background: #1e3c72; color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+        th.num { text-align: right; }
+        td { padding: 9px 14px; border-bottom: 1px solid #eee; }
+        td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        tr:nth-child(even) td { background: #f9f9f9; }
+        tr:hover td { background: #f0f4ff; }
+        .pos { color: #27ae60; font-weight: 600; }
+        .neg { color: #e74c3c; font-weight: 600; }
+        .bar-cell { min-width: 120px; }
+        .bar-bg { background: #eee; border-radius: 3px; height: 12px; position: relative; }
+        .bar-fill { height: 100%; border-radius: 3px; position: absolute; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 700; }
+        .badge-C  { background: #e8e8e8; color: #555; }
+        .badge-U  { background: #dbeafe; color: #1d4ed8; }
+        .badge-RM { background: #fef3c7; color: #92400e; }
+        .legend { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.88em; color: #555; }
+        .legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+        .tab-row { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tab { padding: 7px 18px; border: 2px solid #1e3c72; border-radius: 20px; cursor: pointer; font-size: 0.9em; font-weight: 600; color: #1e3c72; background: white; transition: all 0.2s; }
+        .tab.active { background: #1e3c72; color: white; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        @media (max-width: 700px) {
+            .chart-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>SOS Average Scores by Color &amp; Rarity</h1>
+    <p class="subtitle">Mean avgNorm score across all rated cards in each category</p>
+    <div class="method-note">
+        <strong>Weighting method:</strong> Play Booster slots — 6 commons, 3 uncommons, 1 rare (×6/7) or mythic (×1/7) per pack.
+        Set has 91 commons, 100 uncommons, 60 rares, 20 mythics.
+        Weighted average reflects how likely you are to <em>actually open</em> a card of each rarity.
+        Commons count ~4.6× more than uncommons per card, and ~10× more than a given rare.
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="tab-row">
+        <button class="tab active" onclick="switchTab('rarity')">By Rarity</button>
+        <button class="tab" onclick="switchTab('weighted')">Weighted Overall</button>
+    </div>
+
+    <!-- TAB: By Rarity -->
+    <div id="tab-rarity" class="tab-panel active">
+        <div class="legend">
+            <div class="legend-item"><div class="legend-swatch" style="background:#94a3b8"></div>Commons</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div>Uncommons</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div>Rares &amp; Mythics</div>
+        </div>
+        <div class="section-title">Single Colours</div>
+        <div class="chart-container"><canvas id="chartColors"></canvas></div>
+        <div class="section-title">Colleges</div>
+        <div class="chart-container"><canvas id="chartPairs"></canvas></div>
+    </div>
+
+    <!-- TAB: Weighted Overall -->
+    <div id="tab-weighted" class="tab-panel">
+        <div class="section-title">Weighted Average Score — Single Colours vs Colleges</div>
+        <div class="chart-row">
+            <div class="chart-box">
+                <h3>Single Colours</h3>
+                <div class="chart-container"><canvas id="chartWColors"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <h3>Colleges</h3>
+                <div class="chart-container"><canvas id="chartWPairs"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Data Table -->
+    <div class="section-title">Full Data Table</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Rarity</th>
+                <th class="num">Avg Score</th>
+                <th class="num">Cards (n)</th>
+                <th class="num">Draw weight</th>
+                <th class="bar-cell">Score</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <div class="section-title">Weighted Overall Table</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th class="num">Weighted Avg</th>
+                <th class="num">Simple Avg</th>
+                <th class="num">Total Cards</th>
+                <th class="bar-cell">Weighted Score</th>
+            </tr>
+        </thead>
+        <tbody id="weightedTableBody"></tbody>
+    </table>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const rarityData = [
+    { group:'White',       rarity:'C',  avg:-0.388, n:12 },
+    { group:'White',       rarity:'U',  avg:-0.266, n:12 },
+    { group:'White',       rarity:'RM', avg: 0.964, n: 8 },
+    { group:'Blue',        rarity:'C',  avg:-0.631, n:12 },
+    { group:'Blue',        rarity:'U',  avg:-0.254, n:12 },
+    { group:'Blue',        rarity:'RM', avg: 0.643, n:10 },
+    { group:'Black',       rarity:'C',  avg:-0.397, n:12 },
+    { group:'Black',       rarity:'U',  avg:-0.048, n:12 },
+    { group:'Black',       rarity:'RM', avg: 0.533, n:10 },
+    { group:'Red',         rarity:'C',  avg:-0.361, n:12 },
+    { group:'Red',         rarity:'U',  avg:-0.216, n:12 },
+    { group:'Red',         rarity:'RM', avg: 0.390, n: 7 },
+    { group:'Green',       rarity:'C',  avg:-0.595, n:12 },
+    { group:'Green',       rarity:'U',  avg: 0.153, n:12 },
+    { group:'Green',       rarity:'RM', avg: 0.552, n: 7 },
+    { group:'Silverquill', rarity:'C',  avg:-0.569, n: 3 },
+    { group:'Silverquill', rarity:'U',  avg: 0.555, n: 7 },
+    { group:'Silverquill', rarity:'RM', avg: 0.213, n: 5 },
+    { group:'Prismari',    rarity:'C',  avg:-0.023, n: 3 },
+    { group:'Prismari',    rarity:'U',  avg: 0.291, n: 7 },
+    { group:'Prismari',    rarity:'RM', avg: 0.027, n: 6 },
+    { group:'Witherbloom', rarity:'C',  avg: 0.101, n: 3 },
+    { group:'Witherbloom', rarity:'U',  avg: 0.273, n: 7 },
+    { group:'Witherbloom', rarity:'RM', avg: 0.617, n: 6 },
+    { group:'Lorehold',    rarity:'C',  avg:-0.177, n: 3 },
+    { group:'Lorehold',    rarity:'U',  avg: 0.164, n: 7 },
+    { group:'Lorehold',    rarity:'RM', avg: 0.984, n: 5 },
+    { group:'Quandrix',    rarity:'C',  avg:-0.124, n: 3 },
+    { group:'Quandrix',    rarity:'U',  avg: 0.197, n: 7 },
+    { group:'Quandrix',    rarity:'RM', avg: 1.169, n: 5 },
+];
+
+// Play booster draw weights per card (slots / set_size)
+// 91 commons (6 slots), 100 uncommons (3 slots), 60 rares (6/7 slot), 20 mythics (1/7 slot)
+const drawWeight = { C: 6/91, U: 3/100, R: (6/7)/60, M: (1/7)/20 };
+// Simplified to RM combined weight (average of R and M)
+const drawWeightRM = { C: 6/91, U: 3/100, RM: ((6/7)/60 + (1/7)/20) / 2 };
+
+const weightedData = [
+    { group:'White',       wAvg:-0.243, sAvg:-0.004, n:32 },
+    { group:'Blue',        wAvg:-0.404, sAvg:-0.123, n:34 },
+    { group:'Black',       wAvg:-0.222, sAvg:-0.000, n:34 },
+    { group:'Red',         wAvg:-0.274, sAvg:-0.135, n:31 },
+    { group:'Green',       wAvg:-0.313, sAvg:-0.046, n:31 },
+    { group:'Silverquill', wAvg: 0.028, sAvg: 0.216, n:15 },
+    { group:'Prismari',    wAvg: 0.108, sAvg: 0.133, n:16 },
+    { group:'Witherbloom', wAvg: 0.225, sAvg: 0.370, n:16 },
+    { group:'Lorehold',    wAvg: 0.120, sAvg: 0.369, n:15 },
+    { group:'Quandrix',    wAvg: 0.190, sAvg: 0.457, n:15 },
+];
+
+const colorGroups = ['White','Blue','Black','Red','Green'];
+const pairGroups  = ['Silverquill','Prismari','Witherbloom','Lorehold','Quandrix'];
+
+// ── Chart colours ─────────────────────────────────────────────────────────────
+const cC  = 'rgba(148,163,184,0.85)'; const bC  = 'rgba(100,116,139,1)';
+const cU  = 'rgba(59,130,246,0.85)';  const bU  = 'rgba(29,78,216,1)';
+const cRM = 'rgba(245,158,11,0.85)';  const bRM = 'rgba(180,83,9,1)';
+
+// ── Grouped bar charts (by rarity) ───────────────────────────────────────────
+function buildRarityChart(canvasId, groups) {
+    const get = (g, r) => { const d = rarityData.find(x => x.group===g && x.rarity===r); return d ? d.avg : null; };
+    new Chart(document.getElementById(canvasId), {
+        type: 'bar',
+        data: {
+            labels: groups,
+            datasets: [
+                { label:'Commons',         data: groups.map(g=>get(g,'C')),  backgroundColor:cC,  borderColor:bC,  borderWidth:1 },
+                { label:'Uncommons',       data: groups.map(g=>get(g,'U')),  backgroundColor:cU,  borderColor:bU,  borderWidth:1 },
+                { label:'Rares & Mythics', data: groups.map(g=>get(g,'RM')), backgroundColor:cRM, borderColor:bRM, borderWidth:1 },
+            ]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: {
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => {
+                    const r = ['C','U','RM'][ctx.datasetIndex];
+                    const d = rarityData.find(x=>x.group===groups[ctx.dataIndex]&&x.rarity===r);
+                    return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)} (n=${d?.n??'?'})`;
+                }}}
+            },
+            scales: {
+                x:{ grid:{ display:false } },
+                y:{ title:{ display:true, text:'Avg avgNorm score', color:'#666' }, grid:{ color:'rgba(0,0,0,0.06)' }, ticks:{ callback: v=>v.toFixed(2) } }
+            }
+        }
+    });
+}
+
+// ── Weighted overall charts ───────────────────────────────────────────────────
+function buildWeightedChart(canvasId, groups) {
+    const d = groups.map(g => weightedData.find(x=>x.group===g));
+    const colors = d.map(x => x.wAvg >= 0 ? 'rgba(39,174,96,0.8)' : 'rgba(231,76,60,0.8)');
+    const borders = d.map(x => x.wAvg >= 0 ? 'rgba(39,174,96,1)' : 'rgba(231,76,60,1)');
+    new Chart(document.getElementById(canvasId), {
+        type: 'bar',
+        data: {
+            labels: groups,
+            datasets: [{
+                label: 'Weighted Avg Score',
+                data: d.map(x=>x.wAvg),
+                backgroundColor: colors,
+                borderColor: borders,
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: {
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => {
+                    const x = d[ctx.dataIndex];
+                    return ` Weighted: ${x.wAvg.toFixed(3)}  |  Simple: ${x.sAvg.toFixed(3)}  (n=${x.n})`;
+                }}}
+            },
+            scales: {
+                x:{ grid:{ display:false } },
+                y:{ title:{ display:true, text:'Weighted avg score', color:'#666' }, grid:{ color:'rgba(0,0,0,0.06)' }, ticks:{ callback:v=>v.toFixed(2) } }
+            }
+        }
+    });
+}
+
+buildRarityChart('chartColors', colorGroups);
+buildRarityChart('chartPairs',  pairGroups);
+buildWeightedChart('chartWColors', colorGroups);
+buildWeightedChart('chartWPairs',  pairGroups);
+
+// ── Rarity table ─────────────────────────────────────────────────────────────
+const tbody = document.getElementById('tableBody');
+const allVals = rarityData.map(d=>d.avg);
+const minV = Math.min(...allVals), maxV = Math.max(...allVals), range = maxV - minV;
+const zeroPos = ((-minV)/range)*100;
+const orderG = [...colorGroups,...pairGroups];
+const orderR = {C:0,U:1,RM:2};
+const sorted = [...rarityData].sort((a,b)=> orderG.indexOf(a.group)-orderG.indexOf(b.group)||orderR[a.rarity]-orderR[b.rarity]);
+const wLabel = {C:'6/91 ≈ 0.066', U:'3/100 = 0.030', RM:'~0.012 avg'};
+const rLabel = {C:'Commons', U:'Uncommons', RM:'Rares & Mythics'};
+
+sorted.forEach(d=>{
+    const pct  = ((d.avg-minV)/range)*100;
+    const isPos = d.avg >= 0;
+    const barLeft  = isPos ? zeroPos : pct;
+    const barWidth = isPos ? pct-zeroPos : zeroPos-pct;
+    const barColor = isPos ? '#27ae60' : '#e74c3c';
+    const cls = isPos ? 'pos' : 'neg';
+    tbody.insertAdjacentHTML('beforeend',`
+        <tr>
+            <td>${d.group}</td>
+            <td><span class="badge badge-${d.rarity}">${rLabel[d.rarity]}</span></td>
+            <td class="num ${cls}">${d.avg>=0?'+':''}${d.avg.toFixed(3)}</td>
+            <td class="num">${d.n}</td>
+            <td class="num" style="font-size:0.8em;color:#888">${wLabel[d.rarity]}</td>
+            <td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="left:${barLeft.toFixed(1)}%;width:${barWidth.toFixed(1)}%;background:${barColor}"></div></div></td>
+        </tr>`);
+});
+
+// ── Weighted overall table ────────────────────────────────────────────────────
+const wtbody = document.getElementById('weightedTableBody');
+const wVals  = weightedData.map(d=>d.wAvg);
+const wMin   = Math.min(...wVals), wMax = Math.max(...wVals), wRange = wMax-wMin;
+const wZero  = ((-wMin)/wRange)*100;
+
+[...weightedData].sort((a,b)=>orderG.indexOf(a.group)-orderG.indexOf(b.group)).forEach(d=>{
+    const pct   = ((d.wAvg-wMin)/wRange)*100;
+    const isPos = d.wAvg >= 0;
+    const bLeft  = isPos ? wZero : pct;
+    const bWidth = isPos ? pct-wZero : wZero-pct;
+    const bColor = isPos ? '#27ae60' : '#e74c3c';
+    const cls = isPos ? 'pos' : 'neg';
+    wtbody.insertAdjacentHTML('beforeend',`
+        <tr>
+            <td>${d.group}</td>
+            <td class="num ${cls}">${d.wAvg>=0?'+':''}${d.wAvg.toFixed(3)}</td>
+            <td class="num" style="color:#888">${d.sAvg>=0?'+':''}${d.sAvg.toFixed(3)}</td>
+            <td class="num">${d.n}</td>
+            <td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="left:${bLeft.toFixed(1)}%;width:${bWidth.toFixed(1)}%;background:${bColor}"></div></div></td>
+        </tr>`);
+});
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.textContent.toLowerCase().includes(name==='rarity'?'rarity':'weight')));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+}
+</script>
+</body>
+</html>
