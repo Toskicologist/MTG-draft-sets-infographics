@@ -1,5 +1,6 @@
 <!--
   Strixhaven SOS Top Cards by Color
+  v1.4.0 (2026-04-17, 14:00 UTC) — Added "top 3 of N" count to each rarity group heading
   v1.3.0 (2026-04-17, 13:30 UTC) — Added college (two-colour pair) sections: Silverquill, Prismari, Witherbloom, Lorehold, Quandrix
   v1.2.0 (2026-04-17, 12:45 UTC) — Replaced API calls with baked-in Scryfall image URLs from local oracle data
   v1.1.0 (2026-04-17, 12:15 UTC) — Redesigned with card grid display
@@ -97,6 +98,16 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rarity-count {
+            font-size: 0.78em;
+            font-weight: 500;
+            color: #999;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         .cards-grid {
@@ -206,7 +217,7 @@
     <h1>Strixhaven SOS — Top Cards by Color</h1>
     <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Ranked by SOS normalized score (avgNorm)</p>
     <div class="version-info">
-        <strong>v1.3.0</strong> &nbsp;·&nbsp; Deployed: <strong>2026-04-17, 13:30 UTC</strong> &nbsp;·&nbsp; Loaded: <strong id="loadTime"></strong>
+        <strong>v1.4.0</strong> &nbsp;·&nbsp; Deployed: <strong>2026-04-17, 14:00 UTC</strong> &nbsp;·&nbsp; Loaded: <strong id="loadTime"></strong>
     </div>
 
     <!-- ══════════════════════════════════════════════ WHITE -->
@@ -217,7 +228,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/6/ajanis-response" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920" alt="Ajani's Response" class="card-image" loading="lazy"></div>
@@ -235,7 +246,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/17/group-project" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026" alt="Group Project" class="card-image" loading="lazy"></div>
@@ -253,7 +264,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 8</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/13/emeritus-of-truce-swords-to-plowshares" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999" alt="Emeritus of Truce // Swords to Plowshares" class="card-image" loading="lazy"></div>
@@ -279,7 +290,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/66/run-behind" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369" alt="Run Behind" class="card-image" loading="lazy"></div>
@@ -297,7 +308,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/59/matterbending-mage" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321" alt="Matterbending Mage" class="card-image" loading="lazy"></div>
@@ -315,7 +326,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 10</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/45/emeritus-of-ideation-ancestral-recall" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223" alt="Emeritus of Ideation // Ancestral Recall" class="card-image" loading="lazy"></div>
@@ -341,7 +352,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/86/last-gasp" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510" alt="Last Gasp" class="card-image" loading="lazy"></div>
@@ -359,7 +370,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/84/forum-necroscribe" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497" alt="Forum Necroscribe" class="card-image" loading="lazy"></div>
@@ -377,7 +388,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 10</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/97/ral-zarek-guest-lecturer" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587" alt="Ral Zarek, Guest Lecturer" class="card-image" loading="lazy"></div>
@@ -403,7 +414,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/136/unsubtle-mockery" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921" alt="Unsubtle Mockery" class="card-image" loading="lazy"></div>
@@ -421,7 +432,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/119/impractical-joke" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777" alt="Impractical Joke" class="card-image" loading="lazy"></div>
@@ -439,7 +450,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/120/improvisation-capstone" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787" alt="Improvisation Capstone" class="card-image" loading="lazy"></div>
@@ -465,7 +476,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/162/studious-first-year-rampant-growth" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1775938109" alt="Studious First-Year // Rampant Growth" class="card-image" loading="lazy"></div>
@@ -483,7 +494,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/139/additive-evolution" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943" alt="Additive Evolution" class="card-image" loading="lazy"></div>
@@ -501,7 +512,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/149/germination-practicum" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016" alt="Germination Practicum" class="card-image" loading="lazy"></div>
@@ -530,7 +541,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/196/inkling-mascot" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360" alt="Inkling Mascot" class="card-image" loading="lazy"></div>
@@ -548,7 +559,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/234/stirring-honormancer" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/e/ee84b04d-78fc-416f-9166-72e5417c3e17.jpg?1775938634" alt="Stirring Honormancer" class="card-image" loading="lazy"></div>
@@ -566,7 +577,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 5</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/205/moment-of-reckoning" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423" alt="Moment of Reckoning" class="card-image" loading="lazy"></div>
@@ -592,7 +603,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/232/stadium-tidalmage" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/6/a689289e-7141-4950-8a87-82e9bd6846fe.jpg?1775938619" alt="Stadium Tidalmage" class="card-image" loading="lazy"></div>
@@ -610,7 +621,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/235/stress-dream" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641" alt="Stress Dream" class="card-image" loading="lazy"></div>
@@ -628,7 +639,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 6</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/231/splatter-technique" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612" alt="Splatter Technique" class="card-image" loading="lazy"></div>
@@ -654,7 +665,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/192/grapple-with-death" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332" alt="Grapple with Death" class="card-image" loading="lazy"></div>
@@ -672,7 +683,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/199/lluwen-exchange-student-pest-friend" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382" alt="Lluwen, Exchange Student // Pest Friend" class="card-image" loading="lazy"></div>
@@ -690,7 +701,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 6</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/214/professor-dellian-fel" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486" alt="Professor Dellian Fel" class="card-image" loading="lazy"></div>
@@ -716,7 +727,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/243/wilt-in-the-heat" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697" alt="Wilt in the Heat" class="card-image" loading="lazy"></div>
@@ -734,7 +745,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/210/practiced-scrollsmith" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459" alt="Practiced Scrollsmith" class="card-image" loading="lazy"></div>
@@ -752,7 +763,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 5</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/201/lorehold-the-historian" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396" alt="Lorehold, the Historian" class="card-image" loading="lazy"></div>
@@ -778,7 +789,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Commons</div>
+            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/186/embrace-the-paradox" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288" alt="Embrace the Paradox" class="card-image" loading="lazy"></div>
@@ -796,7 +807,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Uncommons</div>
+            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/190/fractal-tender" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318" alt="Fractal Tender" class="card-image" loading="lazy"></div>
@@ -814,7 +825,7 @@
         </div>
 
         <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics</div>
+            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 5</span></div>
             <div class="cards-grid">
                 <div class="card-item"><a href="https://scryfall.com/card/sos/175/berta-wise-extrapolator" target="_blank" rel="noopener">
                     <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201" alt="Berta, Wise Extrapolator" class="card-image" loading="lazy"></div>
