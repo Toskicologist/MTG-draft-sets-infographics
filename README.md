@@ -16,4 +16,5 @@ Interactive Magic: The Gathering draft analytics, quizzes, and visualization too
 - **[Format Comparison Tool](https://toskicologist.github.io/MTG-draft-sets-infographics/format-comparison.html)** — Compare card values across different formats
 - **[Pauper Card List](https://toskicologist.github.io/MTG-draft-sets-infographics/pauper-card-list.html)** — Searchable Pauper format card reference
 - **[ECL Cheatsheet](https://toskicologist.github.io/MTG-draft-sets-infographics/ECL-CHEATSHEET.html)** — Quick reference guide for Lorwyn Eclipsed
+- **[Strixhaven SOS Top Cards](https://toskicologist.github.io/MTG-draft-sets-infographics/sos-top-cards-by-color.html)** — Top commons, uncommons, and rares/mythics by color from SOS set reviews
 
