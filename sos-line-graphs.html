@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS Scores by Card — Line Graphs</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #1e3c72; font-size: 2em; margin-bottom: 6px; text-align: center; }
+        .subtitle { text-align: center; color: #777; margin-bottom: 32px; font-size: 0.95em; }
+        .section-title {
+            font-size: 1.3em; font-weight: 700; color: #1e3c72;
+            margin: 40px 0 16px; padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .chart-wrap {
+            position: relative;
+            height: 380px;
+            margin-bottom: 48px;
+        }
+        .legend-row {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .legend-btn {
+            padding: 4px 12px; border-radius: 12px; border: 2px solid;
+            cursor: pointer; font-size: 0.82em; font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .legend-btn.hidden { opacity: 0.35; }
+        .rarity-legend {
+            display: flex; gap: 20px; justify-content: center;
+            margin-bottom: 8px; font-size: 0.83em; color: #777;
+        }
+        .rarity-swatch {
+            display: inline-block; width: 30px; height: 3px;
+            vertical-align: middle; margin-right: 4px; border-radius: 2px;
+        }
+        .note {
+            text-align: center; font-size: 0.8em; color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        /* Card image popup */
+        #card-popup {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+            overflow: hidden;
+        }
+        #card-popup img {
+            display: block;
+            width: 200px;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>SOS — Individual Card Scores</h1>
+    <p class="subtitle">Each point is one card, sorted by rarity then mana value. Shaded bands mark rarity sections.</p>
+
+    <div class="rarity-legend">
+        <span><span class="rarity-swatch" style="background:#94a3b8;display:inline-block;height:10px;width:10px;border-radius:2px;"></span>Commons region</span>
+        <span><span class="rarity-swatch" style="background:#3b82f6;display:inline-block;height:10px;width:10px;border-radius:2px;"></span>Uncommons region</span>
+        <span><span class="rarity-swatch" style="background:#f59e0b;display:inline-block;height:10px;width:10px;border-radius:2px;"></span>Rares region</span>
+        <span><span class="rarity-swatch" style="background:#a855f7;display:inline-block;height:10px;width:10px;border-radius:2px;"></span>Mythics region</span>
+    </div>
+    <p class="note">Click colour names to show/hide. Hover points for card names.</p>
+
+    <div class="section-title">Single Colours</div>
+    <div class="legend-row" id="legendColors"></div>
+    <div class="chart-wrap"><canvas id="chartColors"></canvas></div>
+
+    <div class="section-title">Colleges</div>
+    <div class="legend-row" id="legendPairs"></div>
+    <div class="chart-wrap"><canvas id="chartPairs"></canvas></div>
+<div id="card-popup"><img id="card-popup-img" src="" alt=""></div>
+</div>
+
+<script>
+const imageMap = {"Stirring Honormancer":"https://cards.scryfall.io/normal/front/e/e/ee84b04d-78fc-416f-9166-72e5417c3e17.jpg?1775938634","Professor Dellian Fel":"https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486","The Dawning Archaic":"https://cards.scryfall.io/normal/front/7/a/7a451985-37e1-44d8-839b-dc1e88df5c96.jpg?1775936921","Wisdom of Ages":"https://cards.scryfall.io/normal/front/b/2/b227ef04-33e4-44e8-a357-0ea3dfe5d49b.jpg?1775937405","Informed Inkwright":"https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046","Forum of Amity":"https://cards.scryfall.io/normal/front/1/d/1de6c6cc-0c55-4997-8623-d7f796bd9ab8.jpg?1775938787","Withering Curse":"https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655","Charging Strifeknight":"https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699","Quandrix Charm":"https://cards.scryfall.io/normal/front/3/1/318486e0-f255-40f5-8150-dc272eec9d7d.jpg?1775938509","Living History":"https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797","Zimone's Experiment":"https://cards.scryfall.io/normal/front/a/6/a6597852-4267-4ea6-a391-f927e4833be2.jpg?1775938156","Emeritus of Ideation // Ancestral Recall":"https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223","Tackle Artist":"https://cards.scryfall.io/normal/front/b/8/b87e2474-98c1-4c1a-91ed-340b72d31653.jpg?1775937898","Deluge Virtuoso":"https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202","Rapturous Moment":"https://cards.scryfall.io/normal/front/2/1/21afe19d-881a-48cb-863e-22942bea5ebe.jpg?1775938524","Summoned Dromedary":"https://cards.scryfall.io/normal/front/4/4/44d0277c-ca82-4334-a15a-cd67a9db0d02.jpg?1775937170","Ascendant Dustspeaker":"https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359","Mica, Reader of Ruins":"https://cards.scryfall.io/normal/front/9/4/949ad3ff-9e80-493c-a3ae-146b919bfcd7.jpg?1775937824","Conciliator's Duelist":"https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257","Daydream":"https://cards.scryfall.io/normal/front/e/2/e2b16cb2-b8b2-45df-9695-3c16e9d89e28.jpg?1775936973","Skycoach Conductor // All Aboard":"https://cards.scryfall.io/normal/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.jpg?1775937376","Choreographed Sparks":"https://cards.scryfall.io/normal/front/0/c/0cda4235-4dce-48fe-a8a5-2a952dedbe25.jpg?1775937707","Berta, Wise Extrapolator":"https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201","Noxious Newt":"https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060","Quill-Blade Laureate // Twofold Intent":"https://cards.scryfall.io/normal/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.jpg?1775937102","Spellbook Seeker // Careful Study":"https://cards.scryfall.io/normal/front/c/c/cc44eaa4-59a4-419e-b1d1-d92f354ff588.jpg?1775937383","Rancorous Archaic":"https://cards.scryfall.io/normal/front/2/5/2565e16a-ed31-4867-adb8-f1633d580397.jpg?1775936927","Transcendent Archaic":"https://cards.scryfall.io/normal/front/1/6/1624c680-502b-474a-b9b2-888fe3ca008c.jpg?1775936948","Deathcap Glade":"https://cards.scryfall.io/normal/front/7/8/78897104-80e1-4d8a-9958-145b40f679e8.jpg?1775938766","Quandrix, the Proof":"https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517","Eternal Student":"https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483","Fix What's Broken":"https://cards.scryfall.io/normal/front/c/0/c0cd1d71-8e4a-4e00-80cd-83aec231fa57.jpg?1775938304","Chase Inspiration":"https://cards.scryfall.io/normal/front/0/6/06f9f257-c7ef-44b7-8b2b-f038fba900af.jpg?1775937195","Page, Loose Leaf":"https://cards.scryfall.io/normal/front/8/c/8c6fecfd-8241-4cf0-b1eb-19472b99e0ed.jpg?1775938744","Sanar, Unfinished Genius // Wild Idea":"https://cards.scryfall.io/normal/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.jpg?1775938553","Steal the Show":"https://cards.scryfall.io/normal/front/7/a/7ac6649f-980e-4404-9c05-458c30578ecc.jpg?1775937875","Growth Curve":"https://cards.scryfall.io/normal/front/1/6/1675a445-86ae-413b-b95a-a1c254a7f252.jpg?1775938339","Group Project":"https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026","Terramorphic Expanse":"https://cards.scryfall.io/normal/front/9/a/9a4c5629-fadd-42b9-850f-9f8586a2ca50.jpg?1775938853","Ancestral Anger":"https://cards.scryfall.io/normal/front/6/c/6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad.jpg?1775937666","Burrog Barrage":"https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957","Geometer's Arthropod":"https://cards.scryfall.io/normal/front/e/c/ec0f3613-1edc-40e8-8f26-2e5ef13be55e.jpg?1775938325","Abigale, Poet Laureate // Heroic Stanza":"https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164","Burrog Banemaker":"https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433","Suspend Aggression":"https://cards.scryfall.io/normal/front/1/3/135c0696-d86d-4e48-988c-5c218de451fc.jpg?1775938648","Emeritus of Woe // Demonic Tutor":"https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1775937469","Scathing Shadelock // Venomous Words":"https://cards.scryfall.io/normal/front/0/3/03e664cd-c3a6-4263-b2d8-dd99058fb8ec.jpg?1775937593","Nita, Forum Conciliator":"https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431","Wild Hypothesis":"https://cards.scryfall.io/normal/front/0/4/04fdfabc-c247-4384-a5bb-f49035f8aae0.jpg?1775938142","Jadzi, Steward of Fate // Oracle's Gift":"https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293","Dissection Practice":"https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462","Strife Scholar // Awaken the Ages":"https://cards.scryfall.io/normal/front/8/d/8de79312-2046-425e-9919-49afe19be81b.jpg?1775937883","Essenceknit Scholar":"https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295","Thunderdrum Soloist":"https://cards.scryfall.io/normal/front/5/9/590d1d95-ed13-4121-899f-f5a2d8a6617a.jpg?1775937905","Shattered Sanctum":"https://cards.scryfall.io/normal/front/5/a/5aa0c810-3b7d-4661-979e-e84fb327742d.jpg?1775938816","Comforting Counsel":"https://cards.scryfall.io/normal/front/5/2/5223a04f-6b47-4379-80ce-8489c4a91734.jpg?1775937970","Emeritus of Truce // Swords to Plowshares":"https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999","Pterafractyl":"https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495","Visionary's Dance":"https://cards.scryfall.io/normal/front/8/4/846a0e79-a530-429e-8f7f-4b87f1b0156e.jpg?1776000377","Mind into Matter":"https://cards.scryfall.io/normal/front/0/a/0a7f0fdf-1d4b-4458-a19c-274611e8a59a.jpg?1775938403","Postmortem Professor":"https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558","Spectacular Skywhale":"https://cards.scryfall.io/normal/front/c/9/c90366d5-b4ba-4772-a3c5-f138bbe7f305.jpg?1775938597","Ennis, Debate Moderator":"https://cards.scryfall.io/normal/front/d/2/d2ef31b4-24fa-4443-9f05-c8e99c3522e5.jpg?1775937005","Great Hall of the Biblioplex":"https://cards.scryfall.io/normal/front/4/2/42d92674-2664-411c-b9c5-b04da7c845f4.jpg?1775938794","Additive Evolution":"https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943","Unsubtle Mockery":"https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921","Lorehold Charm":"https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389","Encouraging Aviator // Jump":"https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230","Spirit Mascot":"https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg?1775938605","Borrowed Knowledge":"https://cards.scryfall.io/normal/front/a/3/a3226e14-554d-47c9-b8b6-dfeb53cc41ba.jpg?1775938224","Bogwater Lumaret":"https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216","Tragedy Feaster":"https://cards.scryfall.io/normal/front/b/9/b93cbaad-8ed8-4a1d-b95a-20a616dfedc9.jpg?1775937623","Scolding Administrator":"https://cards.scryfall.io/normal/front/6/9/69757177-aefa-44a6-81db-5ae9b5d2f117.jpg?1775938562","Emeritus of Abundance // Regrowth":"https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986","Tome Blast":"https://cards.scryfall.io/normal/front/7/2/72a3b17d-1e00-48e9-8402-c81bacd595a7.jpg?1775937914","Diary of Dreams":"https://cards.scryfall.io/normal/front/e/e/ee1e0a96-af80-444e-a456-5b256cf60625.jpg?1775938731","Campus Composer // Aqueous Aria":"https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1775937189","Textbook Tabulator":"https://cards.scryfall.io/normal/front/5/6/56f54fee-b48d-4582-8982-ca4c7b8ef553.jpg?1776000387","Zealous Lorecaster":"https://cards.scryfall.io/normal/front/3/6/36ab2130-9f21-4d30-873a-aa72d3d15fa8.jpg?1775937928","Pursue the Past":"https://cards.scryfall.io/normal/front/4/5/4584d5f7-b1f1-4c8e-80c5-ad35e44a968e.jpg?1775938502","Interjection":"https://cards.scryfall.io/normal/front/0/5/0534cff6-299c-4155-b318-eb7581989e8a.jpg?1775937061","Paradox Gardens":"https://cards.scryfall.io/normal/front/d/b/dbc3447e-1329-4ea1-b4ca-b321b0ffec8f.jpg?1775938801","Expressive Firedancer":"https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734","Antiquities on the Loose":"https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960","Imperious Inkmage":"https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353","Maelstrom Artisan // Rocket Volley":"https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1775937805","Pestbrood Sloth":"https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073","Rubble Rouser":"https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860","Old-Growth Educator":"https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg?1775938438","Arnyn, Deathbloom Botanist":"https://cards.scryfall.io/normal/front/6/1/6168b472-0930-4db5-9920-407340b99050.jpg?1775937426","Elemental Mascot":"https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280","Dreamroot Cascade":"https://cards.scryfall.io/normal/front/e/f/ef662b92-5a7f-48c9-bcc1-14b55e091aef.jpg?1775938773","Muse's Encouragement":"https://cards.scryfall.io/normal/front/c/5/c59e0004-1d6a-42a1-8ce4-31da2af2e1bf.jpg?1775937336","Titan's Grave":"https://cards.scryfall.io/normal/front/a/9/a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21.jpg?1775938861","Potioner's Trove":"https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752","Heated Argument":"https://cards.scryfall.io/normal/front/0/0/0038d212-3d95-4f98-8c2e-7b2404d0ced7.jpg?1775937767","Eager Glyphmage":"https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986","Foolish Fate":"https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489","Tenured Concocter":"https://cards.scryfall.io/normal/front/3/7/376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc.jpg?1775938116","Archaic's Agony":"https://cards.scryfall.io/normal/front/8/d/8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275.jpg?1775937675","Practiced Offense":"https://cards.scryfall.io/normal/front/7/9/79c7cf94-c0a1-432d-90d7-7f0599c2e7a8.jpg?1775937087","Stand Up for Yourself":"https://cards.scryfall.io/normal/front/b/7/b756ca13-b904-4510-9bbb-5bc2864abfbd.jpg?1775937151","Vibrant Outburst":"https://cards.scryfall.io/normal/front/f/9/f9ba68ef-6efc-4249-8b74-e33f47173902.jpg?1775938674","Soaring Stoneglider":"https://cards.scryfall.io/normal/front/2/f/2fbe446b-60fd-43da-8358-985392293af8.jpg?1775937136","Molten-Core Maestro":"https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832","Social Snub":"https://cards.scryfall.io/normal/front/a/0/a04b6900-0436-4920-a0d4-c0186d605ae3.jpg?1775938590","Goblin Glasswright // Craft with Pride":"https://cards.scryfall.io/normal/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.jpg?1775937759","Banishing Betrayal":"https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176","Hardened Academic":"https://cards.scryfall.io/normal/front/0/6/06c9e8a7-2840-4cff-90af-c6636e598f78.jpg?1775938346","Adventurous Eater // Have a Bite":"https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412","End of the Hunt":"https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476","Rehearsed Debater":"https://cards.scryfall.io/normal/front/f/c/fc6a1425-6733-42a2-94d9-605966398092.jpg?1775937116","Snarl Song":"https://cards.scryfall.io/normal/front/f/c/fc4c7fa2-aebb-4636-9afd-f1010c923316.jpg?1775938101","Skycoach Waypoint":"https://cards.scryfall.io/normal/front/6/7/6747657b-5ce4-4dbd-b924-ca1f7119faf7.jpg?1775938823","Cost of Brilliance":"https://cards.scryfall.io/normal/front/3/a/3a46816b-9f75-4c72-9ec6-cded6a4a0d01.jpg?1775937447","Island":"https://cards.scryfall.io/normal/front/7/7/77b88bb8-6bd9-4632-b937-89468fcb5e6a.jpg?1775938923","Shopkeeper's Bane":"https://cards.scryfall.io/normal/front/9/7/97f7fbb9-228c-4a74-975b-38d3b6cecb32.jpg?1775938087","Aziza, Mage Tower Captain":"https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194","Lluwen, Exchange Student // Pest Friend":"https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382","Thornfist Striker":"https://cards.scryfall.io/normal/front/f/6/f6cb838e-a06a-46ae-a30f-e5192178c1cc.jpg?1775938123","Snooping Page":"https://cards.scryfall.io/normal/front/7/3/73d06987-8686-461b-b260-9a4fee6a3b32.jpg?1775938584","Run Behind":"https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369","Mountain":"https://cards.scryfall.io/normal/front/a/6/a642c7b1-d4d1-4125-a66d-560438e5ee51.jpg?1775938951","Leech Collector // Bloodletting":"https://cards.scryfall.io/normal/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.jpg?1775937525","Ral Zarek, Guest Lecturer":"https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587","Killian's Confidence":"https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369","Hungry Graffalon":"https://cards.scryfall.io/normal/front/0/3/030b1272-5990-4bc9-8fc1-82cc05602060.jpg?1775938030","Flow State":"https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249","Inkling Mascot":"https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360","Essence Scatter":"https://cards.scryfall.io/normal/front/3/2/32840097-0531-4c43-b6a8-e76c17420b04.jpg?1775937236","Glorious Decay":"https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023","Lecturing Scornmage":"https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516","Tam, Observant Sequencer // Deep Sight":"https://cards.scryfall.io/normal/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.jpg?1775938655","Fractal Tender":"https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318","Plains":"https://cards.scryfall.io/normal/front/d/8/d85d0f25-a24a-4de0-9b8b-93fb5017bce9.jpg?1775938910","Resonating Lute":"https://cards.scryfall.io/normal/front/6/e/6ef168d6-28f2-4c24-9bfa-82c35663b729.jpg?1775938538","Startled Relic Sloth":"https://cards.scryfall.io/normal/front/f/1/f143fd41-58c3-45a0-bef8-e9e4b4a502a5.jpg?1775938628","Dig Site Inventory":"https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980","Artistic Process":"https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683","Infirmary Healer // Stream of Life":"https://cards.scryfall.io/normal/front/9/1/911442e3-3003-4683-a766-e791e9553667.jpg?1775938036","Duel Tactics":"https://cards.scryfall.io/normal/front/8/f/8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8.jpg?1775937718","Prismari, the Inspiration":"https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472","Rabid Attack":"https://cards.scryfall.io/normal/front/f/5/f5e67560-3135-4b27-a344-5859edf8bcd9.jpg?1775937579","Spiritcall Enthusiast // Scrollboost":"https://cards.scryfall.io/normal/front/c/0/c0b85569-2cb3-4b64-b0fe-418195c4dab0.jpg?1775937144","Splatter Technique":"https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612","Kirol, History Buff // Pack a Punch":"https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375","Paradox Surveyor":"https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445","Tester of the Tangential":"https://cards.scryfall.io/normal/front/b/b/bbd708ec-eef4-4f45-99dd-60e1cec4b991.jpg?1775937389","Stadium Tidalmage":"https://cards.scryfall.io/normal/front/a/6/a689289e-7141-4950-8a87-82e9bd6846fe.jpg?1775938619","Honorbound Page // Forum's Favor":"https://cards.scryfall.io/normal/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.jpg?1775937039","Hydro-Channeler":"https://cards.scryfall.io/normal/front/0/9/099f8400-d70a-48ef-8ff6-645eae97e072.jpg?1775937286","Divergent Equation":"https://cards.scryfall.io/normal/front/2/6/26295e25-f1bf-4665-ba00-dad35c49bbc2.jpg?1775937210","Improvisation Capstone":"https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787","Aberrant Manawurm":"https://cards.scryfall.io/normal/front/7/9/797131cf-d80d-4050-bebd-2ce1d7fae5d0.jpg?1775937935","Cheerful Osteomancer // Raise Dead":"https://cards.scryfall.io/normal/front/3/c/3c34660c-25e3-4ff5-9b2b-5554ded2bcc3.jpg?1775937441","Proctor's Gaze":"https://cards.scryfall.io/normal/front/b/1/b127d543-0a90-4af6-9410-94d5cd30389e.jpg?1775938479","Cuboid Colony":"https://cards.scryfall.io/normal/front/6/3/6384d135-7780-4d75-9e95-71bce506948e.jpg?1775938265","Impractical Joke":"https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777","Planar Engineering":"https://cards.scryfall.io/normal/front/c/8/c83b96a3-ddfd-4d11-8a85-5bf62087cbb9.jpg?1775938080","Stormcarved Coast":"https://cards.scryfall.io/normal/front/b/d/bd3ae4fa-4c97-410a-8c0a-bd203342595d.jpg?1775938837","Mage Tower Referee":"https://cards.scryfall.io/normal/front/1/c/1ceb704a-97a8-49f9-b799-30f001404144.jpg?1775938737","Applied Geometry":"https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180","Harsh Annotation":"https://cards.scryfall.io/normal/front/e/0/e07a8fc7-c11c-4469-a31d-0abf40e57bbf.jpg?1775937033","Brush Off":"https://cards.scryfall.io/normal/front/1/5/151eab82-d20f-433b-b3bb-1d44e2871d5c.jpg?1775937183","Zaffai and the Tempests":"https://cards.scryfall.io/normal/front/5/b/5bdbf507-6fd7-49f6-b437-8f2ce2d0eb0f.jpg?1775938717","Shattered Acolyte":"https://cards.scryfall.io/normal/front/d/c/dc0517ca-b271-49a1-a286-c20f4e5b9309.jpg?1775937130","Fractalize":"https://cards.scryfall.io/normal/front/e/3/e3c3b19b-01b6-4f5a-b428-513b778c5d89.jpg?1775937264","Practiced Scrollsmith":"https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459","Echocasting Symposium":"https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216","Graduation Day":"https://cards.scryfall.io/normal/front/d/b/db1cea01-123e-4b23-8b98-f94cabce3912.jpg?1775937020","Petrified Hamlet":"https://cards.scryfall.io/normal/front/3/5/355dd460-b0e9-41f2-a058-b7f7e39ac387.jpg?1775938807","Colossus of the Blood Age":"https://cards.scryfall.io/normal/front/b/f/bfa7f0a4-6b65-4e53-ba00-848df260d8e3.jpg?1775938248","Blech, Loafing Pest":"https://cards.scryfall.io/normal/front/f/5/f588fa50-7cc5-41ba-90df-2d252eb5c785.jpg?1775938208","Send in the Pest":"https://cards.scryfall.io/normal/front/2/8/283b508b-89f0-4c23-9686-b049e402b73c.jpg?1775937607","Fractal Anomaly":"https://cards.scryfall.io/normal/front/e/1/e1975a61-aef0-49a6-a6d6-c3a37e2e2b22.jpg?1775937257","Masterful Flourish":"https://cards.scryfall.io/normal/front/8/d/8d93d14d-7760-4af2-a237-2df326dd28d3.jpg?1775937531","Molten Note":"https://cards.scryfall.io/normal/front/5/0/506f69aa-7dc4-4dd7-990a-7371fc1762c0.jpg?1775938416","Traumatic Critique":"https://cards.scryfall.io/normal/front/2/a/2a812fa7-4599-4e25-97db-20ffc6bc0b26.jpg?1775938668","Witherbloom Charm":"https://cards.scryfall.io/normal/front/2/5/254437f7-7a8a-4b11-9cea-e8e7ea23c59e.jpg?1775938703","Slumbering Trudge":"https://cards.scryfall.io/normal/front/3/a/3a925370-58ac-4181-9acc-db7b0e0abf17.jpg?1775938094","Joined Researchers // Secret Rendezvous":"https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069","Moseo, Vein's New Dean":"https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545","Moment of Reckoning":"https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423","Silverquill, the Disputant":"https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577","Prismari Charm":"https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465","Mathemagics":"https://cards.scryfall.io/normal/front/c/d/cd3cc172-5609-4bc8-9d84-50680fed6df9.jpg?1775937314","Ulna Alley Shopkeep":"https://cards.scryfall.io/normal/front/c/2/c25e1ae5-f17c-4eee-98f1-5681981af31c.jpg?1775937633","Orysa, Tide Choreographer":"https://cards.scryfall.io/normal/front/0/1/010ed379-63f5-452c-9cd4-00d51647c0e3.jpg?1775937343","Stone Docent":"https://cards.scryfall.io/normal/front/c/2/c2abfffb-bf36-44af-9a27-6e109e4d77dd.jpg?1775937164","Muse Seeker":"https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328","Melancholic Poet":"https://cards.scryfall.io/normal/front/d/8/d8309815-7035-47a5-acf2-2b2ac1e65037.jpg?1775937538","Pull from the Grave":"https://cards.scryfall.io/normal/front/d/7/d73612fe-8992-4650-a7e3-c7b662da6a03.jpg?1775937572","Quick Study":"https://cards.scryfall.io/normal/front/2/d/2d4f0bc7-da7c-4749-a24c-b01f3eb5860c.jpg?1775937363","Render Speechless":"https://cards.scryfall.io/normal/front/2/5/25bbb1c7-14e8-444f-ab98-e95f50927460.jpg?1775938531","Owlin Historian":"https://cards.scryfall.io/normal/front/5/f/5fe99be0-e1ec-485e-82f8-02eba7b82441.jpg?1775937078","Pox Plague":"https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566","Grave Researcher // Reanimate":"https://cards.scryfall.io/normal/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.jpg?1775937504","Ajani's Response":"https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920","Scheming Silvertongue // Sign in Blood":"https://cards.scryfall.io/normal/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.jpg?1775937600","Primary Research":"https://cards.scryfall.io/normal/front/f/6/f6fdb814-45c6-4d14-afff-7f5bd1bd10a1.jpg?1775937094","Rapier Wit":"https://cards.scryfall.io/normal/front/9/7/97b50521-5a0f-4dbd-8e15-f0f0d059c258.jpg?1775937109","Cauldron of Essence":"https://cards.scryfall.io/normal/front/b/7/b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd.jpg?1775938230","Embrace the Paradox":"https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288","Wildgrowth Archaic":"https://cards.scryfall.io/normal/front/0/e/0e6e2188-7203-4d10-a838-27233f283cd5.jpg?1775938149","Tablet of Discovery":"https://cards.scryfall.io/normal/front/1/3/13059664-a940-4a66-8100-0c90b884bab4.jpg?1775937891","Wander Off":"https://cards.scryfall.io/normal/front/3/d/3d409512-50b9-4a38-91b0-19ba25227992.jpg?1775937643","Seize the Spoils":"https://cards.scryfall.io/normal/front/4/d/4ddf4e34-a1f9-4636-942d-0a08e9f94320.jpg?1775937868","Silverquill Charm":"https://cards.scryfall.io/normal/front/3/e/3eb73579-f1c6-4762-81d2-9568ab501fac.jpg?1775938570","Mindful Biomancer":"https://cards.scryfall.io/normal/front/2/c/2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53.jpg?1775938052","Lumaret's Favor":"https://cards.scryfall.io/normal/front/c/5/c5e7c856-8b71-44e6-8998-0b0b3ff0ef99.jpg?1775938045","Harmonized Trio // Brainstorm":"https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?1775937273","Swamp":"https://cards.scryfall.io/normal/front/5/1/51fe930f-2b5a-4b1e-9007-6ee74fb44715.jpg?1775938936","Ambitious Augmenter":"https://cards.scryfall.io/normal/front/8/5/85629088-2007-4db5-9397-bac12a3d7498.jpg?1775937950","Forum Necroscribe":"https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497","Sundering Archaic":"https://cards.scryfall.io/normal/front/c/3/c35b57e4-2358-46c0-8f09-cd27c10eaf2d.jpg?1775936933","Mana Sculpt":"https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307","Root Manipulation":"https://cards.scryfall.io/normal/front/5/3/5390a79c-bc4b-4edb-a845-0d3514986401.jpg?1775938546","Together as One":"https://cards.scryfall.io/normal/front/a/c/ac2a8a66-e38c-42ab-83e1-d2d99ee48861.jpg?1775936940","Decorum Dissertation":"https://cards.scryfall.io/normal/front/f/4/f4ab2d9b-c73d-478d-aac7-4d3bb24296d2.jpg?1775937454","Colorstorm Stallion":"https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240","Chelonian Tackle":"https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964","Dina's Guidance":"https://cards.scryfall.io/normal/front/7/7/775c1e50-08a4-413f-ab0f-f1c2a79cfe94.jpg?1775938273","Vicious Rivalry":"https://cards.scryfall.io/normal/front/6/f/6fa9cd18-3181-4373-ab65-49bf9de9487f.jpg?1775938681","Inkshape Demonstrator":"https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053","Landscape Painter // Vibrant Idea":"https://cards.scryfall.io/normal/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.jpg?1775937300","Topiary Lecturer":"https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg?1776000370","Emil, Vastlands Roamer":"https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993","Strixhaven Skycoach":"https://cards.scryfall.io/normal/front/8/7/87741fbb-b426-4f83-a358-587b0907f081.jpg?1775938759","Poisoner's Apprentice":"https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552","Lorehold, the Historian":"https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396","Erode":"https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013","Blazing Firesinger // Seething Song":"https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691","Efflorescence":"https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979","Homesickness":"https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280","Flashback":"https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742","Germination Practicum":"https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016","Fields of Strife":"https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780","Oracle's Restoration":"https://cards.scryfall.io/normal/front/0/8/0863a19d-4511-4a78-98dd-d194afd1c39b.jpg?1775938067","Ark of Hunger":"https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187","Sundown Pass":"https://cards.scryfall.io/normal/front/b/3/b34000e9-ff20-4fb4-9d0b-03a172a92457.jpg?1775938845","Teacher's Pest":"https://cards.scryfall.io/normal/front/e/a/eaa358ac-761d-4507-aa15-3d4684027207.jpg?1775938661","Mind Roots":"https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410","Biblioplex Tomekeeper":"https://cards.scryfall.io/normal/front/b/f/bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba.jpg?1775938724","Arcane Omens":"https://cards.scryfall.io/normal/front/d/3/d357d997-9d4e-4ade-81f2-37629853f13a.jpg?1775937419","Restoration Seminar":"https://cards.scryfall.io/normal/front/9/e/9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6.jpg?1775937123","Grapple with Death":"https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332","Witherbloom, the Balancer":"https://cards.scryfall.io/normal/front/e/d/ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0.jpg?1775938710","Garrison Excavator":"https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750","Pest Mascot":"https://cards.scryfall.io/normal/front/d/8/d882beb9-6766-4818-afbb-f6fd7a2d5b70.jpg?1775938452","Matterbending Mage":"https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321","Procrastinate":"https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356","Stress Dream":"https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641","Abstract Paintmage":"https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173","Rearing Embermare":"https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851","Spectacle Summit":"https://cards.scryfall.io/normal/front/a/0/a0a66f7b-eab4-45da-8895-c2c2c7eb05f8.jpg?1775938830","Follow the Lumarets":"https://cards.scryfall.io/normal/front/f/9/f9488480-2b6c-40bc-a93e-29fb1292a2e4.jpg?1775938009","Fractal Mascot":"https://cards.scryfall.io/normal/front/c/f/cf5b19e3-eed1-4b36-9756-660ffb3baa08.jpg?1775938311","Exhibition Tidecaller":"https://cards.scryfall.io/normal/front/a/5/a58c364e-d0c5-41b9-8c8b-2e5a99468cc7.jpg?1775937242","Environmental Scientist":"https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001","Last Gasp":"https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510","Magmablood Archaic":"https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816","Pigment Wrangler // Striking Palette":"https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841","Wilt in the Heat":"https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697","Emeritus of Conflict // Lightning Bolt":"https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1775937726","Pensive Professor":"https://cards.scryfall.io/normal/front/6/6/66d47940-84f9-4479-8562-45e5148435d4.jpg?1775937349","Vastlands Scavenger // Bind to Life":"https://cards.scryfall.io/normal/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.jpg?1775938136","Studious First-Year // Rampant Growth":"https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1775938109","Forest":"https://cards.scryfall.io/normal/front/f/1/f169dfb2-e4c8-46e9-8591-e51bb82da082.jpg?1775938964","Sneering Shadewriter":"https://cards.scryfall.io/normal/front/4/b/4b4c120e-abe9-4f11-a7e4-bc3f723da4b2.jpg?1775937615","Stirring Hopesinger":"https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157","Elite Interceptor // Rejoinder":"https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992"};
+
+const cardData = {"White": [{"name": "Dig Site Inventory", "rarity": "C", "cmc": 1, "avgNorm": -0.029}, {"name": "Elite Interceptor // Rejoinder", "rarity": "C", "cmc": 1, "avgNorm": 0.131}, {"name": "Interjection", "rarity": "C", "cmc": 1, "avgNorm": -0.544}, {"name": "Rapier Wit", "rarity": "C", "cmc": 2, "avgNorm": -0.669}, {"name": "Shattered Acolyte", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Stone Docent", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Owlin Historian", "rarity": "C", "cmc": 3, "avgNorm": -1.06}, {"name": "Rehearsed Debater", "rarity": "C", "cmc": 3, "avgNorm": -0.385}, {"name": "Eager Glyphmage", "rarity": "C", "cmc": 4, "avgNorm": -0.189}, {"name": "Honorbound Page // Forum's Favor", "rarity": "C", "cmc": 4, "avgNorm": -0.776}, {"name": "Ajani's Response", "rarity": "C", "cmc": 5, "avgNorm": 0.22}, {"name": "Ascendant Dustspeaker", "rarity": "C", "cmc": 5, "avgNorm": -0.581}, {"name": "Daydream", "rarity": "U", "cmc": 1, "avgNorm": -0.474}, {"name": "Graduation Day", "rarity": "U", "cmc": 1, "avgNorm": -0.669}, {"name": "Ennis, Debate Moderator", "rarity": "U", "cmc": 2, "avgNorm": -0.42}, {"name": "Group Project", "rarity": "U", "cmc": 2, "avgNorm": 0.327}, {"name": "Harsh Annotation", "rarity": "U", "cmc": 2, "avgNorm": -1.896}, {"name": "Quill-Blade Laureate // Twofold Intent", "rarity": "U", "cmc": 2, "avgNorm": 0.131}, {"name": "Soaring Stoneglider", "rarity": "U", "cmc": 3, "avgNorm": 0.202}, {"name": "Spiritcall Enthusiast // Scrollboost", "rarity": "U", "cmc": 3, "avgNorm": -0.029}, {"name": "Stand Up for Yourself", "rarity": "U", "cmc": 3, "avgNorm": 0.167}, {"name": "Inkshape Demonstrator", "rarity": "U", "cmc": 4, "avgNorm": -0.029}, {"name": "Summoned Dromedary", "rarity": "U", "cmc": 4, "avgNorm": -0.029}, {"name": "Primary Research", "rarity": "U", "cmc": 5, "avgNorm": -0.474}, {"name": "Erode", "rarity": "R", "cmc": 1, "avgNorm": 1.073}, {"name": "Informed Inkwright", "rarity": "R", "cmc": 2, "avgNorm": 1.429}, {"name": "Joined Researchers // Secret Rendezvous", "rarity": "R", "cmc": 2, "avgNorm": -0.385}, {"name": "Antiquities on the Loose", "rarity": "R", "cmc": 3, "avgNorm": 1.429}, {"name": "Practiced Offense", "rarity": "R", "cmc": 3, "avgNorm": 1.038}, {"name": "Stirring Hopesinger", "rarity": "R", "cmc": 3, "avgNorm": 1.553}, {"name": "Emeritus of Truce // Swords to Plowshares", "rarity": "M", "cmc": 3, "avgNorm": 1.784}, {"name": "Restoration Seminar", "rarity": "M", "cmc": 7, "avgNorm": -0.207}], "Blue": [{"name": "Chase Inspiration", "rarity": "C", "cmc": 1, "avgNorm": -1.256}, {"name": "Procrastinate", "rarity": "C", "cmc": 1, "avgNorm": -1.896}, {"name": "Banishing Betrayal", "rarity": "C", "cmc": 2, "avgNorm": -0.029}, {"name": "Essence Scatter", "rarity": "C", "cmc": 2, "avgNorm": -0.474}, {"name": "Hydro-Channeler", "rarity": "C", "cmc": 2, "avgNorm": -0.225}, {"name": "Landscape Painter // Vibrant Idea", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Deluge Virtuoso", "rarity": "C", "cmc": 3, "avgNorm": -0.189}, {"name": "Quick Study", "rarity": "C", "cmc": 3, "avgNorm": -0.385}, {"name": "Textbook Tabulator", "rarity": "C", "cmc": 3, "avgNorm": -1.381}, {"name": "Run Behind", "rarity": "C", "cmc": 4, "avgNorm": 0.131}, {"name": "Spellbook Seeker // Careful Study", "rarity": "C", "cmc": 4, "avgNorm": -0.42}, {"name": "Muse's Encouragement", "rarity": "C", "cmc": 5, "avgNorm": -1.06}, {"name": "Divergent Equation", "rarity": "U", "cmc": 1, "avgNorm": -1.381}, {"name": "Fractal Anomaly", "rarity": "U", "cmc": 1, "avgNorm": -1.576}, {"name": "Fractalize", "rarity": "U", "cmc": 1, "avgNorm": -0.616}, {"name": "Flow State", "rarity": "U", "cmc": 2, "avgNorm": 0.131}, {"name": "Muse Seeker", "rarity": "U", "cmc": 2, "avgNorm": 0.362}, {"name": "Tester of the Tangential", "rarity": "U", "cmc": 2, "avgNorm": -0.153}, {"name": "Encouraging Aviator // Jump", "rarity": "U", "cmc": 3, "avgNorm": 0.167}, {"name": "Matterbending Mage", "rarity": "U", "cmc": 3, "avgNorm": 0.718}, {"name": "Brush Off", "rarity": "U", "cmc": 4, "avgNorm": -0.544}, {"name": "Campus Composer // Aqueous Aria", "rarity": "U", "cmc": 4, "avgNorm": 0.131}, {"name": "Orysa, Tide Choreographer", "rarity": "U", "cmc": 5, "avgNorm": -0.1}, {"name": "Homesickness", "rarity": "U", "cmc": 6, "avgNorm": -0.189}, {"name": "Exhibition Tidecaller", "rarity": "R", "cmc": 1, "avgNorm": 0.877}, {"name": "Harmonized Trio // Brainstorm", "rarity": "R", "cmc": 1, "avgNorm": 0.842}, {"name": "Jadzi, Steward of Fate // Oracle's Gift", "rarity": "R", "cmc": 3, "avgNorm": 1.82}, {"name": "Mana Sculpt", "rarity": "R", "cmc": 3, "avgNorm": 0.682}, {"name": "Pensive Professor", "rarity": "R", "cmc": 3, "avgNorm": 0.682}, {"name": "Skycoach Conductor // All Aboard", "rarity": "R", "cmc": 3, "avgNorm": 0.913}, {"name": "Wisdom of Ages", "rarity": "R", "cmc": 7, "avgNorm": -1.504}, {"name": "Mathemagics", "rarity": "M", "cmc": 2, "avgNorm": -0.989}, {"name": "Emeritus of Ideation // Ancestral Recall", "rarity": "M", "cmc": 5, "avgNorm": 2.104}, {"name": "Echocasting Symposium", "rarity": "M", "cmc": 6, "avgNorm": 1.002}], "Black": [{"name": "Burrog Banemaker", "rarity": "C", "cmc": 1, "avgNorm": -0.029}, {"name": "Masterful Flourish", "rarity": "C", "cmc": 1, "avgNorm": -0.936}, {"name": "Last Gasp", "rarity": "C", "cmc": 2, "avgNorm": 0.522}, {"name": "Melancholic Poet", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Send in the Pest", "rarity": "C", "cmc": 2, "avgNorm": -0.029}, {"name": "Adventurous Eater // Have a Bite", "rarity": "C", "cmc": 3, "avgNorm": -0.385}, {"name": "Cost of Brilliance", "rarity": "C", "cmc": 3, "avgNorm": -0.865}, {"name": "Pull from the Grave", "rarity": "C", "cmc": 3, "avgNorm": -0.865}, {"name": "Ulna Alley Shopkeep", "rarity": "C", "cmc": 3, "avgNorm": -0.936}, {"name": "Cheerful Osteomancer // Raise Dead", "rarity": "C", "cmc": 4, "avgNorm": -0.474}, {"name": "Wander Off", "rarity": "C", "cmc": 4, "avgNorm": 0.167}, {"name": "Sneering Shadewriter", "rarity": "C", "cmc": 5, "avgNorm": -0.544}, {"name": "Dissection Practice", "rarity": "U", "cmc": 1, "avgNorm": 0.167}, {"name": "Lecturing Scornmage", "rarity": "U", "cmc": 1, "avgNorm": 0.522}, {"name": "End of the Hunt", "rarity": "U", "cmc": 2, "avgNorm": -0.029}, {"name": "Leech Collector // Bloodletting", "rarity": "U", "cmc": 2, "avgNorm": 0.327}, {"name": "Rabid Attack", "rarity": "U", "cmc": 2, "avgNorm": -0.616}, {"name": "Arnyn, Deathbloom Botanist", "rarity": "U", "cmc": 3, "avgNorm": -0.1}, {"name": "Foolish Fate", "rarity": "U", "cmc": 3, "avgNorm": 0.682}, {"name": "Poisoner's Apprentice", "rarity": "U", "cmc": 3, "avgNorm": 0.22}, {"name": "Eternal Student", "rarity": "U", "cmc": 4, "avgNorm": 0.202}, {"name": "Arcane Omens", "rarity": "U", "cmc": 5, "avgNorm": -1.896}, {"name": "Scathing Shadelock // Venomous Words", "rarity": "U", "cmc": 5, "avgNorm": -0.776}, {"name": "Forum Necroscribe", "rarity": "U", "cmc": 6, "avgNorm": 0.718}, {"name": "Postmortem Professor", "rarity": "R", "cmc": 2, "avgNorm": 0.327}, {"name": "Scheming Silvertongue // Sign in Blood", "rarity": "R", "cmc": 2, "avgNorm": 0.877}, {"name": "Grave Researcher // Reanimate", "rarity": "R", "cmc": 3, "avgNorm": 1.038}, {"name": "Moseo, Vein's New Dean", "rarity": "R", "cmc": 3, "avgNorm": 0.86}, {"name": "Tragedy Feaster", "rarity": "R", "cmc": 4, "avgNorm": 1.038}, {"name": "Pox Plague", "rarity": "R", "cmc": 5, "avgNorm": -2.412}, {"name": "Ral Zarek, Guest Lecturer", "rarity": "M", "cmc": 3, "avgNorm": 1.5}, {"name": "Withering Curse", "rarity": "M", "cmc": 3, "avgNorm": 1.233}, {"name": "Emeritus of Woe // Demonic Tutor", "rarity": "M", "cmc": 4, "avgNorm": 1.073}, {"name": "Decorum Dissertation", "rarity": "M", "cmc": 5, "avgNorm": -0.207}], "Red": [{"name": "Ancestral Anger", "rarity": "C", "cmc": 1, "avgNorm": -0.669}, {"name": "Expressive Firedancer", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Goblin Glasswright // Craft with Pride", "rarity": "C", "cmc": 2, "avgNorm": -0.189}, {"name": "Tome Blast", "rarity": "C", "cmc": 2, "avgNorm": 0.131}, {"name": "Rubble Rouser", "rarity": "C", "cmc": 3, "avgNorm": -0.029}, {"name": "Seize the Spoils", "rarity": "C", "cmc": 3, "avgNorm": -0.865}, {"name": "Strife Scholar // Awaken the Ages", "rarity": "C", "cmc": 3, "avgNorm": -0.349}, {"name": "Unsubtle Mockery", "rarity": "C", "cmc": 3, "avgNorm": 0.167}, {"name": "Tackle Artist", "rarity": "C", "cmc": 4, "avgNorm": -0.385}, {"name": "Heated Argument", "rarity": "C", "cmc": 5, "avgNorm": -0.544}, {"name": "Rearing Embermare", "rarity": "C", "cmc": 5, "avgNorm": -0.865}, {"name": "Zealous Lorecaster", "rarity": "C", "cmc": 6, "avgNorm": -0.349}, {"name": "Duel Tactics", "rarity": "U", "cmc": 1, "avgNorm": -0.189}, {"name": "Impractical Joke", "rarity": "U", "cmc": 1, "avgNorm": 0.682}, {"name": "Living History", "rarity": "U", "cmc": 2, "avgNorm": -0.544}, {"name": "Thunderdrum Soloist", "rarity": "U", "cmc": 2, "avgNorm": 0.327}, {"name": "Blazing Firesinger // Seething Song", "rarity": "U", "cmc": 3, "avgNorm": 0.006}, {"name": "Charging Strifeknight", "rarity": "U", "cmc": 3, "avgNorm": 0.398}, {"name": "Tablet of Discovery", "rarity": "U", "cmc": 3, "avgNorm": -0.278}, {"name": "Garrison Excavator", "rarity": "U", "cmc": 4, "avgNorm": 0.557}, {"name": "Mica, Reader of Ruins", "rarity": "U", "cmc": 4, "avgNorm": -1.7}, {"name": "Archaic's Agony", "rarity": "U", "cmc": 5, "avgNorm": -2.34}, {"name": "Artistic Process", "rarity": "U", "cmc": 5, "avgNorm": 0.362}, {"name": "Pigment Wrangler // Striking Palette", "rarity": "U", "cmc": 5, "avgNorm": 0.131}, {"name": "Flashback", "rarity": "R", "cmc": 1, "avgNorm": 0.86}, {"name": "Choreographed Sparks", "rarity": "R", "cmc": 2, "avgNorm": -0.811}, {"name": "Molten-Core Maestro", "rarity": "R", "cmc": 2, "avgNorm": 0.877}, {"name": "Maelstrom Artisan // Rocket Volley", "rarity": "R", "cmc": 3, "avgNorm": -0.598}, {"name": "Steal the Show", "rarity": "R", "cmc": 3, "avgNorm": 0.327}, {"name": "Emeritus of Conflict // Lightning Bolt", "rarity": "M", "cmc": 2, "avgNorm": 0.522}, {"name": "Improvisation Capstone", "rarity": "M", "cmc": 7, "avgNorm": 1.553}], "Green": [{"name": "Oracle's Restoration", "rarity": "C", "cmc": 1, "avgNorm": -1.06}, {"name": "Studious First-Year // Rampant Growth", "rarity": "C", "cmc": 1, "avgNorm": 0.522}, {"name": "Wild Hypothesis", "rarity": "C", "cmc": 1, "avgNorm": -1.06}, {"name": "Burrog Barrage", "rarity": "C", "cmc": 2, "avgNorm": 0.167}, {"name": "Follow the Lumarets", "rarity": "C", "cmc": 2, "avgNorm": -0.669}, {"name": "Glorious Decay", "rarity": "C", "cmc": 2, "avgNorm": -1.7}, {"name": "Mindful Biomancer", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Noxious Newt", "rarity": "C", "cmc": 2, "avgNorm": 0.006}, {"name": "Efflorescence", "rarity": "C", "cmc": 3, "avgNorm": -0.74}, {"name": "Shopkeeper's Bane", "rarity": "C", "cmc": 3, "avgNorm": -0.42}, {"name": "Hungry Graffalon", "rarity": "C", "cmc": 4, "avgNorm": -1.184}, {"name": "Tenured Concocter", "rarity": "C", "cmc": 5, "avgNorm": -0.616}, {"name": "Environmental Scientist", "rarity": "U", "cmc": 2, "avgNorm": 0.877}, {"name": "Infirmary Healer // Stream of Life", "rarity": "U", "cmc": 2, "avgNorm": -0.385}, {"name": "Lumaret's Favor", "rarity": "U", "cmc": 2, "avgNorm": -0.42}, {"name": "Chelonian Tackle", "rarity": "U", "cmc": 3, "avgNorm": 0.006}, {"name": "Emil, Vastlands Roamer", "rarity": "U", "cmc": 3, "avgNorm": 0.54}, {"name": "Thornfist Striker", "rarity": "U", "cmc": 3, "avgNorm": 0.522}, {"name": "Topiary Lecturer", "rarity": "U", "cmc": 3, "avgNorm": 0.557}, {"name": "Aberrant Manawurm", "rarity": "U", "cmc": 4, "avgNorm": 0.202}, {"name": "Pestbrood Sloth", "rarity": "U", "cmc": 4, "avgNorm": 0.362}, {"name": "Zimone's Experiment", "rarity": "U", "cmc": 4, "avgNorm": -1.06}, {"name": "Additive Evolution", "rarity": "U", "cmc": 5, "avgNorm": 1.038}, {"name": "Snarl Song", "rarity": "U", "cmc": 6, "avgNorm": -0.402}, {"name": "Ambitious Augmenter", "rarity": "R", "cmc": 1, "avgNorm": 1.073}, {"name": "Slumbering Trudge", "rarity": "R", "cmc": 1, "avgNorm": 0.006}, {"name": "Comforting Counsel", "rarity": "R", "cmc": 2, "avgNorm": -1.576}, {"name": "Vastlands Scavenger // Bind to Life", "rarity": "R", "cmc": 3, "avgNorm": 1.233}, {"name": "Planar Engineering", "rarity": "R", "cmc": 4, "avgNorm": -0.598}, {"name": "Emeritus of Abundance // Regrowth", "rarity": "M", "cmc": 3, "avgNorm": 1.624}, {"name": "Germination Practicum", "rarity": "M", "cmc": 5, "avgNorm": 2.104}], "Silverquill": [{"name": "Inkling Mascot", "rarity": "C", "cmc": 2, "avgNorm": -0.385}, {"name": "Imperious Inkmage", "rarity": "C", "cmc": 3, "avgNorm": -0.581}, {"name": "Render Speechless", "rarity": "C", "cmc": 4, "avgNorm": -0.74}, {"name": "Killian's Confidence", "rarity": "U", "cmc": 2, "avgNorm": 0.54}, {"name": "Scolding Administrator", "rarity": "U", "cmc": 2, "avgNorm": 0.327}, {"name": "Silverquill Charm", "rarity": "U", "cmc": 2, "avgNorm": 0.557}, {"name": "Abigale, Poet Laureate // Heroic Stanza", "rarity": "U", "cmc": 3, "avgNorm": 0.86}, {"name": "Snooping Page", "rarity": "U", "cmc": 3, "avgNorm": 0.522}, {"name": "Social Snub", "rarity": "U", "cmc": 3, "avgNorm": 0.202}, {"name": "Stirring Honormancer", "rarity": "U", "cmc": 4, "avgNorm": 0.877}, {"name": "Nita, Forum Conciliator", "rarity": "R", "cmc": 3, "avgNorm": -1.06}, {"name": "Conciliator's Duelist", "rarity": "R", "cmc": 4, "avgNorm": 0.86}, {"name": "Fix What's Broken", "rarity": "R", "cmc": 4, "avgNorm": -1.7}, {"name": "Moment of Reckoning", "rarity": "R", "cmc": 7, "avgNorm": 2.104}, {"name": "Silverquill, the Disputant", "rarity": "M", "cmc": 4, "avgNorm": 0.86}], "Prismari": [{"name": "Elemental Mascot", "rarity": "C", "cmc": 3, "avgNorm": -0.065}, {"name": "Stadium Tidalmage", "rarity": "C", "cmc": 4, "avgNorm": 0.095}, {"name": "Visionary's Dance", "rarity": "C", "cmc": 7, "avgNorm": -0.1}, {"name": "Abstract Paintmage", "rarity": "U", "cmc": 2, "avgNorm": 0.042}, {"name": "Prismari Charm", "rarity": "U", "cmc": 2, "avgNorm": 0.167}, {"name": "Sanar, Unfinished Genius // Wild Idea", "rarity": "U", "cmc": 2, "avgNorm": 0.22}, {"name": "Vibrant Outburst", "rarity": "U", "cmc": 2, "avgNorm": 0.718}, {"name": "Spectacular Skywhale", "rarity": "U", "cmc": 4, "avgNorm": 0.167}, {"name": "Stress Dream", "rarity": "U", "cmc": 5, "avgNorm": 1.073}, {"name": "Rapturous Moment", "rarity": "U", "cmc": 6, "avgNorm": -0.349}, {"name": "Traumatic Critique", "rarity": "R", "cmc": 2, "avgNorm": 1.268}, {"name": "Colorstorm Stallion", "rarity": "R", "cmc": 3, "avgNorm": 1.233}, {"name": "Resonating Lute", "rarity": "R", "cmc": 4, "avgNorm": -2.412}, {"name": "Splatter Technique", "rarity": "R", "cmc": 5, "avgNorm": 1.429}, {"name": "Zaffai and the Tempests", "rarity": "R", "cmc": 7, "avgNorm": -2.216}, {"name": "Prismari, the Inspiration", "rarity": "M", "cmc": 7, "avgNorm": 0.86}], "Witherbloom": [{"name": "Bogwater Lumaret", "rarity": "C", "cmc": 2, "avgNorm": -0.029}, {"name": "Grapple with Death", "rarity": "C", "cmc": 3, "avgNorm": 0.522}, {"name": "Pest Mascot", "rarity": "C", "cmc": 3, "avgNorm": -0.189}, {"name": "Essenceknit Scholar", "rarity": "U", "cmc": 2, "avgNorm": 0.718}, {"name": "Teacher's Pest", "rarity": "U", "cmc": 2, "avgNorm": 0.22}, {"name": "Witherbloom Charm", "rarity": "U", "cmc": 2, "avgNorm": 0.682}, {"name": "Mind Roots", "rarity": "U", "cmc": 3, "avgNorm": 0.042}, {"name": "Lluwen, Exchange Student // Pest Friend", "rarity": "U", "cmc": 4, "avgNorm": 0.86}, {"name": "Old-Growth Educator", "rarity": "U", "cmc": 4, "avgNorm": 0.167}, {"name": "Root Manipulation", "rarity": "U", "cmc": 5, "avgNorm": -0.776}, {"name": "Blech, Loafing Pest", "rarity": "R", "cmc": 3, "avgNorm": 1.18}, {"name": "Cauldron of Essence", "rarity": "R", "cmc": 3, "avgNorm": 1.109}, {"name": "Dina's Guidance", "rarity": "R", "cmc": 3, "avgNorm": -2.98}, {"name": "Vicious Rivalry", "rarity": "R", "cmc": 4, "avgNorm": 1.268}, {"name": "Professor Dellian Fel", "rarity": "M", "cmc": 4, "avgNorm": 1.944}, {"name": "Witherbloom, the Balancer", "rarity": "M", "cmc": 8, "avgNorm": 1.18}], "Lorehold": [{"name": "Pursue the Past", "rarity": "C", "cmc": 2, "avgNorm": -0.189}, {"name": "Spirit Mascot", "rarity": "C", "cmc": 2, "avgNorm": -0.865}, {"name": "Wilt in the Heat", "rarity": "C", "cmc": 4, "avgNorm": 0.522}, {"name": "Kirol, History Buff // Pack a Punch", "rarity": "U", "cmc": 2, "avgNorm": 0.54}, {"name": "Lorehold Charm", "rarity": "U", "cmc": 2, "avgNorm": -0.225}, {"name": "Molten Note", "rarity": "U", "cmc": 2, "avgNorm": 0.167}, {"name": "Practiced Scrollsmith", "rarity": "U", "cmc": 2, "avgNorm": 1.038}, {"name": "Borrowed Knowledge", "rarity": "U", "cmc": 4, "avgNorm": -1.576}, {"name": "Startled Relic Sloth", "rarity": "U", "cmc": 4, "avgNorm": 0.327}, {"name": "Colossus of the Blood Age", "rarity": "U", "cmc": 6, "avgNorm": 0.877}, {"name": "Aziza, Mage Tower Captain", "rarity": "R", "cmc": 2, "avgNorm": 0.86}, {"name": "Hardened Academic", "rarity": "R", "cmc": 2, "avgNorm": 0.842}, {"name": "Suspend Aggression", "rarity": "R", "cmc": 3, "avgNorm": 0.522}, {"name": "Ark of Hunger", "rarity": "R", "cmc": 4, "avgNorm": 0.877}, {"name": "Lorehold, the Historian", "rarity": "M", "cmc": 5, "avgNorm": 1.82}], "Quandrix": [{"name": "Pterafractyl", "rarity": "C", "cmc": 2, "avgNorm": -0.189}, {"name": "Embrace the Paradox", "rarity": "C", "cmc": 5, "avgNorm": 0.006}, {"name": "Fractal Mascot", "rarity": "C", "cmc": 6, "avgNorm": -0.189}, {"name": "Cuboid Colony", "rarity": "U", "cmc": 2, "avgNorm": 0.202}, {"name": "Growth Curve", "rarity": "U", "cmc": 2, "avgNorm": -0.544}, {"name": "Paradox Surveyor", "rarity": "U", "cmc": 2, "avgNorm": 0.522}, {"name": "Quandrix Charm", "rarity": "U", "cmc": 2, "avgNorm": 0.202}, {"name": "Proctor's Gaze", "rarity": "U", "cmc": 4, "avgNorm": 0.22}, {"name": "Tam, Observant Sequencer // Deep Sight", "rarity": "U", "cmc": 4, "avgNorm": 0.22}, {"name": "Fractal Tender", "rarity": "U", "cmc": 5, "avgNorm": 0.557}, {"name": "Geometer's Arthropod", "rarity": "R", "cmc": 2, "avgNorm": -0.1}, {"name": "Mind into Matter", "rarity": "R", "cmc": 2, "avgNorm": 1.198}, {"name": "Applied Geometry", "rarity": "R", "cmc": 4, "avgNorm": 1.429}, {"name": "Berta, Wise Extrapolator", "rarity": "R", "cmc": 4, "avgNorm": 1.82}, {"name": "Quandrix, the Proof", "rarity": "M", "cmc": 6, "avgNorm": 1.5}]};
+
+const colorGroups = ['White','Blue','Black','Red','Green'];
+const pairGroups  = ['Silverquill','Prismari','Witherbloom','Lorehold','Quandrix'];
+
+const palette = {
+    White:       { line:'#aaaaaa', bg:'rgba(170,170,170,0.15)' },
+    Blue:        { line:'#3b82f6', bg:'rgba(59,130,246,0.15)' },
+    Black:       { line:'#6b7280', bg:'rgba(107,114,128,0.15)' },
+    Red:         { line:'#ef4444', bg:'rgba(239,68,68,0.15)' },
+    Green:       { line:'#22c55e', bg:'rgba(34,197,94,0.15)' },
+    Silverquill: { line:'#a855f7', bg:'rgba(168,85,247,0.15)' },
+    Prismari:    { line:'#f97316', bg:'rgba(249,115,22,0.15)' },
+    Witherbloom: { line:'#84cc16', bg:'rgba(132,204,22,0.15)' },
+    Lorehold:    { line:'#f59e0b', bg:'rgba(245,158,11,0.15)' },
+    Quandrix:    { line:'#06b6d4', bg:'rgba(6,182,212,0.15)' },
+};
+
+// Rarity band colours
+const rarityBg = { C:'rgba(148,163,184,0.10)', U:'rgba(59,130,246,0.10)', R:'rgba(245,158,11,0.10)', M:'rgba(168,85,247,0.10)' };
+
+function buildAnnotations(cards) {
+    const annotations = {};
+    let lastRarity = null;
+    let start = 0;
+    cards.forEach((c, i) => {
+        if (c.rarity !== lastRarity) {
+            if (lastRarity !== null) {
+                annotations['band_' + lastRarity + '_' + start] = {
+                    type: 'box',
+                    xMin: start - 0.5,
+                    xMax: i - 0.5,
+                    backgroundColor: rarityBg[lastRarity],
+                    borderWidth: 0,
+                    drawTime: 'beforeDatasetsDraw',
+                };
+                // rarity label
+                annotations['label_' + lastRarity + '_' + start] = {
+                    type: 'label',
+                    xValue: (start + i - 1) / 2,
+                    yValue: 2.3,
+                    content: { C:'Commons', U:'Uncommons', R:'Rares', M:'Mythics' }[lastRarity],
+                    color: '#999',
+                    font: { size: 10 },
+                };
+            }
+            lastRarity = c.rarity;
+            start = i;
+        }
+    });
+    // final band
+    if (lastRarity) {
+        annotations['band_' + lastRarity + '_' + start] = {
+            type: 'box',
+            xMin: start - 0.5,
+            xMax: cards.length - 0.5,
+            backgroundColor: rarityBg[lastRarity],
+            borderWidth: 0,
+            drawTime: 'beforeDatasetsDraw',
+        };
+        annotations['label_' + lastRarity + '_' + start] = {
+            type: 'label',
+            xValue: (start + cards.length - 1) / 2,
+            yValue: 2.3,
+            content: { C:'Commons', U:'Uncommons', R:'Rares', M:'Mythics' }[lastRarity],
+            color: '#999',
+            font: { size: 10 },
+        };
+        // vertical dividers at rarity boundaries
+        Object.values(annotations).filter(a=>a.type==='box').forEach((a, idx, arr) => {
+            if (idx > 0) {
+                annotations['line_' + idx] = {
+                    type: 'line',
+                    xMin: a.xMin,
+                    xMax: a.xMin,
+                    borderColor: 'rgba(0,0,0,0.15)',
+                    borderWidth: 1,
+                    borderDash: [4, 3],
+                };
+            }
+        });
+    }
+    return annotations;
+}
+
+function buildChart(canvasId, legendId, groups) {
+    // Build a merged x-axis from all cards across all groups in this section
+    // Each group has its own series placed at its own indices
+    // We build one dataset per group, each with nulls where the group has no card at that x position
+    // Actually: each group has different cards, so each gets its own x-axis positions
+    // Chart.js line: we use separate datasets each with their own labels=indices
+    // We'll use a single shared x-axis = max card count, each dataset sparse
+
+    // Each dataset has points at its own indices 0..n-1
+    // Use scatter mode with x=index so each group overlays cleanly
+    // But for a clean line chart, just use separate datasets with their own label arrays
+
+    // Simple approach: each group is a separate dataset, x = card index within that group.
+    // All datasets share the same x scale (0 to max cards). Cards align by index position.
+    // Labels = generated as empty strings, tooltips show card name.
+
+    const maxLen = Math.max(...groups.map(g => cardData[g].length));
+    const labels = Array.from({length: maxLen}, (_, i) => i);
+
+    const datasets = groups.map(group => {
+        const cards = cardData[group];
+        const pts = Array(maxLen).fill(null);
+        cards.forEach((c, i) => { pts[i] = c.avgNorm; });
+        return {
+            label: group,
+            data: pts,
+            borderColor: palette[group].line,
+            backgroundColor: palette[group].bg,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            borderWidth: 2,
+            tension: 0.2,
+            spanGaps: false,
+        };
+    });
+
+    // Use first group's cards for annotations (or the longest group)
+    const refGroup = groups.reduce((a,b) => cardData[a].length >= cardData[b].length ? a : b);
+    const refCards = cardData[refGroup];
+    const annotations = buildAnnotations(refCards);
+    // zero line
+    annotations.zeroLine = {
+        type: 'line', yMin: 0, yMax: 0,
+        borderColor: 'rgba(0,0,0,0.25)', borderWidth: 1, borderDash: [2,2],
+    };
+
+    const chart = new Chart(document.getElementById(canvasId), {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'nearest', intersect: true },
+            plugins: {
+                legend: { display: false },
+                annotation: { annotations },
+                tooltip: {
+                    callbacks: {
+                        title: ctx => {
+                            const group = ctx[0].dataset.label;
+                            const idx   = ctx[0].dataIndex;
+                            const card  = cardData[group][idx];
+                            return card ? `${card.name} (${card.rarity}, ${card.cmc} mana)` : '';
+                        },
+                        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}`,
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { display: false },
+                    grid: { display: false },
+                    title: { display: true, text: 'Cards (C → U → R → M, sorted by mana value)', color: '#888', font: { size: 11 } }
+                },
+                y: {
+                    min: -3.2, max: 2.5,
+                    grid: { color: 'rgba(0,0,0,0.06)' },
+                    title: { display: true, text: 'avgNorm score', color: '#666' },
+                    ticks: { callback: v => v.toFixed(1) }
+                }
+            }
+        }
+    });
+
+    // Build toggle legend
+    const legendEl = document.getElementById(legendId);
+    groups.forEach((group, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'legend-btn';
+        btn.textContent = group;
+        btn.style.borderColor = palette[group].line;
+        btn.style.color = palette[group].line;
+        btn.style.background = 'white';
+        btn.onclick = () => {
+            const meta = chart.getDatasetMeta(i);
+            meta.hidden = !meta.hidden;
+            btn.classList.toggle('hidden', meta.hidden);
+            chart.update();
+        };
+        legendEl.appendChild(btn);
+    });
+    // Card image popup on point hover
+    (function setupPopup(canvasId, groups) {
+        const canvas = document.getElementById(canvasId);
+        const popup  = document.getElementById('card-popup');
+        const popImg = document.getElementById('card-popup-img');
+
+        canvas.addEventListener('mousemove', function(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const chartInst = Chart.getChart(canvas);
+            if (!chartInst) return;
+            const points = chartInst.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
+            if (points.length === 0) { popup.style.display = 'none'; return; }
+            const pt = points[0];
+            const group = chartInst.data.datasets[pt.datasetIndex].label;
+            const card  = cardData[group] && cardData[group][pt.index];
+            if (!card) { popup.style.display = 'none'; return; }
+            const imgUrl = imageMap[card.name];
+            if (!imgUrl) { popup.style.display = 'none'; return; }
+
+            popImg.src = imgUrl;
+            popup.style.display = 'block';
+            // Position: offset so it doesn't cover the cursor
+            let x = evt.clientX + 16;
+            let y = evt.clientY - 80;
+            if (x + 210 > window.innerWidth)  x = evt.clientX - 226;
+            if (y < 8) y = 8;
+            if (y + 280 > window.innerHeight) y = window.innerHeight - 285;
+            popup.style.left = x + 'px';
+            popup.style.top  = y + 'px';
+        });
+        canvas.addEventListener('mouseleave', function() { popup.style.display = 'none'; });
+    })(canvasId, groups);
+}
+
+buildChart('chartColors', 'legendColors', colorGroups);
+buildChart('chartPairs',  'legendPairs',  pairGroups);
+</script>
+</body>
+</html>
