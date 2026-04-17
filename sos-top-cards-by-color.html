@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strixhaven SOS Top Cards by Color</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .color-section {
+            margin-bottom: 50px;
+        }
+
+        .color-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid;
+            padding-bottom: 15px;
+        }
+
+        .color-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid #fff;
+        }
+
+        .color-dot.white { background: #f5f5dc; border-color: #333; }
+        .color-dot.blue { background: #4a90e2; }
+        .color-dot.black { background: #2a2a2a; border-color: #999; }
+        .color-dot.red { background: #e74c3c; }
+        .color-dot.green { background: #27ae60; }
+
+        .color-header h2 {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .color-header.white { border-color: #f5f5dc; }
+        .color-header.blue { border-color: #4a90e2; }
+        .color-header.black { border-color: #666; }
+        .color-header.red { border-color: #e74c3c; }
+        .color-header.green { border-color: #27ae60; }
+
+        .rarity-group {
+            margin-bottom: 30px;
+        }
+
+        .rarity-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #bbb;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #2a2a2a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #333;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #444;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #333;
+        }
+
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        a:hover {
+            color: #5ba3ff;
+            text-decoration: underline;
+        }
+
+        .score {
+            font-weight: 500;
+            color: #aaa;
+            text-align: right;
+        }
+
+        .score-positive {
+            color: #27ae60;
+        }
+
+        .score-negative {
+            color: #e74c3c;
+        }
+
+        .img-container {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .card-img {
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+
+        .card-img:hover {
+            transform: scale(1.02);
+        }
+
+        .card-img img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .card-img-placeholder {
+            background: #333;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #5ba3ff;
+        }
+
+        button:active {
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .color-header h2 {
+                font-size: 1.4em;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            td, th {
+                padding: 8px 10px;
+            }
+
+            .img-container {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Strixhaven SOS Top Cards by Color</h1>
+        <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Data from SOS normalized reviews</p>
+
+        <div class="controls">
+            <button onclick="fetchAllImages()">Show Images</button>
+            <button onclick="clearImages()">Clear Images</button>
+        </div>
+
+        <div id="images-container"></div>
+
+        <!-- WHITE -->
+        <div class="color-section">
+            <div class="color-header white">
+                <div class="color-dot white"></div>
+                <h2>White</h2>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Commons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Ajani's Response</a></td>
+                            <td class="score score-positive">0.220</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Elite Interceptor // Rejoinder</a></td>
+                            <td class="score score-positive">0.131</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Dig Site Inventory</a></td>
+                            <td class="score score-negative">-0.029</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Uncommons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Group Project</a></td>
+                            <td class="score score-positive">0.327</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Soaring Stoneglider</a></td>
+                            <td class="score score-positive">0.202</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Stand Up for Yourself</a></td>
+                            <td class="score score-positive">0.167</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Rares & Mythics</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="width: 80px;">Rarity</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Truce // Swords to Plowshares</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.784</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Stirring Hopesinger</a></td>
+                            <td>R</td>
+                            <td class="score score-positive">1.553</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Antiquities on the Loose</a></td>
+                            <td>R</td>
+                            <td class="score score-positive">1.429</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BLUE -->
+        <div class="color-section">
+            <div class="color-header blue">
+                <div class="color-dot blue"></div>
+                <h2>Blue</h2>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Commons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Run Behind</a></td>
+                            <td class="score score-positive">0.131</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Banishing Betrayal</a></td>
+                            <td class="score score-negative">-0.029</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Deluge Virtuoso</a></td>
+                            <td class="score score-negative">-0.189</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Uncommons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Matterbending Mage</a></td>
+                            <td class="score score-positive">0.718</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Muse Seeker</a></td>
+                            <td class="score score-positive">0.362</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Encouraging Aviator // Jump</a></td>
+                            <td class="score score-positive">0.167</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Rares & Mythics</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="width: 80px;">Rarity</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Ideation // Ancestral Recall</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">2.104</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Jadzi, Steward of Fate // Oracle's Gift</a></td>
+                            <td>R</td>
+                            <td class="score score-positive">1.820</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Echocasting Symposium</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.002</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BLACK -->
+        <div class="color-section">
+            <div class="color-header black">
+                <div class="color-dot black"></div>
+                <h2>Black</h2>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Commons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Last Gasp</a></td>
+                            <td class="score score-positive">0.522</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Wander Off</a></td>
+                            <td class="score score-positive">0.167</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Burrog Banemaker</a></td>
+                            <td class="score score-negative">-0.029</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Uncommons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Forum Necroscribe</a></td>
+                            <td class="score score-positive">0.718</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Foolish Fate</a></td>
+                            <td class="score score-positive">0.682</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Lecturing Scornmage</a></td>
+                            <td class="score score-positive">0.522</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Rares & Mythics</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="width: 80px;">Rarity</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Ral Zarek, Guest Lecturer</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.500</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Withering Curse</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.233</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Woe // Demonic Tutor</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.073</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RED -->
+        <div class="color-section">
+            <div class="color-header red">
+                <div class="color-dot red"></div>
+                <h2>Red</h2>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Commons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Unsubtle Mockery</a></td>
+                            <td class="score score-positive">0.167</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Tome Blast</a></td>
+                            <td class="score score-positive">0.131</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Rubble Rouser</a></td>
+                            <td class="score score-negative">-0.029</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Uncommons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Impractical Joke</a></td>
+                            <td class="score score-positive">0.682</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Garrison Excavator</a></td>
+                            <td class="score score-positive">0.557</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Charging Strifeknight</a></td>
+                            <td class="score score-positive">0.398</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Rares & Mythics</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="width: 80px;">Rarity</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Improvisation Capstone</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.553</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Molten-Core Maestro</a></td>
+                            <td>R</td>
+                            <td class="score score-positive">0.877</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Flashback</a></td>
+                            <td>R</td>
+                            <td class="score score-positive">0.860</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- GREEN -->
+        <div class="color-section">
+            <div class="color-header green">
+                <div class="color-dot green"></div>
+                <h2>Green</h2>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Commons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Studious First-Year // Rampant Growth</a></td>
+                            <td class="score score-positive">0.522</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Burrog Barrage</a></td>
+                            <td class="score score-positive">0.167</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Noxious Newt</a></td>
+                            <td class="score score-positive">0.006</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Uncommons</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Additive Evolution</a></td>
+                            <td class="score score-positive">1.038</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Environmental Scientist</a></td>
+                            <td class="score score-positive">0.877</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Topiary Lecturer</a></td>
+                            <td class="score score-positive">0.557</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="rarity-group">
+                <div class="rarity-title">Rares & Mythics</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th style="width: 80px;">Rarity</th>
+                            <th style="text-align: right;">avgNorm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Germination Practicum</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">2.104</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Emeritus of Abundance // Regrowth</a></td>
+                            <td>M</td>
+                            <td class="score score-positive">1.624</td>
+                        </tr>
+                        <tr>
+                            <td><a onclick="fetchCardImage(this.textContent, event)">Vastlands Scavenger // Bind to Life</a></td>
+                            <td>R</td>
+                            <td class="score score-positive">1.233</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cardImages = new Map();
+
+        async function fetchCardImage(cardName, event) {
+            event.preventDefault();
+            if (!cardImages.has(cardName)) {
+                await getCardFromScryfall(cardName);
+            }
+            scrollToImages();
+        }
+
+        async function getCardFromScryfall(cardName) {
+            try {
+                const query = cardName.replace(' // ', '|');
+                const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${cardName}"+set:stx&unique=prints`);
+                if (!response.ok) throw new Error('Card not found');
+                const data = await response.json();
+                if (data.data && data.data.length > 0) {
+                    const card = data.data[0];
+                    const imageUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal;
+                    if (imageUrl) {
+                        cardImages.set(cardName, {
+                            name: card.name,
+                            imageUrl: imageUrl,
+                            scryfallUrl: card.scryfall_uri
+                        });
+                        renderImages();
+                    }
+                }
+            } catch (error) {
+                console.error(`Error fetching ${cardName}:`, error);
+            }
+        }
+
+        async function fetchAllImages() {
+            const cards = Array.from(document.querySelectorAll('a[onclick*="fetchCardImage"]')).map(a => a.textContent);
+            const uniqueCards = [...new Set(cards)];
+
+            document.getElementById('images-container').innerHTML = '<div class="loading">Fetching images...</div>';
+
+            for (const card of uniqueCards) {
+                if (!cardImages.has(card)) {
+                    await getCardFromScryfall(card);
+                }
+            }
+            renderImages();
+        }
+
+        function renderImages() {
+            const container = document.getElementById('images-container');
+            if (cardImages.size === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="img-container">';
+            cardImages.forEach((card, name) => {
+                html += `
+                    <div class="card-img">
+                        <a href="${card.scryfallUrl}" target="_blank" title="Open on Scryfall">
+                            <img src="${card.imageUrl}" alt="${card.name}">
+                        </a>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function clearImages() {
+            cardImages.clear();
+            document.getElementById('images-container').innerHTML = '';
+        }
+
+        function scrollToImages() {
+            document.getElementById('images-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
