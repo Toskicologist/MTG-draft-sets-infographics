@@ -713,8 +713,7 @@
 
         async function getCardFromScryfall(cardName) {
             try {
-                const query = cardName.replace(' // ', '|');
-                const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${cardName}"+set:stx&unique=prints`);
+                const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)}+set:stx&unique=prints`);
                 if (!response.ok) throw new Error('Card not found');
                 const data = await response.json();
                 if (data.data && data.data.length > 0) {
