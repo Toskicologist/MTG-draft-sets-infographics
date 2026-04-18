@@ -1,12 +1,3 @@
-<!--
-  Strixhaven SOS Top Cards by Color
-  v1.4.0 (2026-04-17, 14:00 UTC) — Added "top 3 of N" count to each rarity group heading
-  v1.3.0 (2026-04-17, 13:30 UTC) — Added college (two-colour pair) sections: Silverquill, Prismari, Witherbloom, Lorehold, Quandrix
-  v1.2.0 (2026-04-17, 12:45 UTC) — Replaced API calls with baked-in Scryfall image URLs from local oracle data
-  v1.1.0 (2026-04-17, 12:15 UTC) — Redesigned with card grid display
-  v1.0.1 (2026-04-17, 11:39 UTC) — Added deployment/load timestamps
-  v1.0.0 (2026-04-17) — Initial release
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,843 +5,280 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strixhaven SOS Top Cards by Color</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
             padding: 20px;
-            min-height: 100vh;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         h1 {
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5em;
-            color: #1e3c72;
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
-            margin-bottom: 5px;
-            font-size: 1em;
-        }
-
-        .version-info {
-            text-align: center;
-            font-size: 0.82em;
             color: #999;
-            margin-bottom: 40px;
-            padding: 8px 16px;
-            background: #f5f5f5;
-            border-radius: 4px;
-            display: inline-block;
-            width: 100%;
+            margin-bottom: 30px;
+            font-size: 0.95em;
         }
 
-        .color-section { margin-bottom: 50px; }
+        .controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .controls label {
+            font-weight: 600;
+            color: #ccc;
+        }
+
+        .controls input {
+            padding: 8px 12px;
+            background: #333;
+            border: 1px solid #444;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-size: 1em;
+            width: 80px;
+        }
+
+        .controls input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: #3a3a3a;
+        }
+
+        .color-section {
+            margin-bottom: 50px;
+        }
 
         .color-header {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
+            margin-bottom: 25px;
             border-bottom: 3px solid;
+            padding-bottom: 15px;
         }
 
         .color-dot {
-            width: 36px; height: 36px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            margin-right: 16px;
-            flex-shrink: 0;
-            border: 2px solid rgba(0,0,0,0.1);
+            margin-right: 15px;
+            border: 2px solid #fff;
         }
-        .color-dot.white  { background: #f9f6ee; border-color: #aaa; }
-        .color-dot.blue   { background: #4a90e2; }
-        .color-dot.black  { background: #333; }
-        .color-dot.red    { background: #e74c3c; }
-        .color-dot.green  { background: #27ae60; }
 
-        .color-header h2  { font-size: 1.8em; color: #1e3c72; }
-        .color-header.white { border-color: #ccc; }
-        .color-header.blue  { border-color: #4a90e2; }
-        .color-header.black { border-color: #555; }
-        .color-header.red   { border-color: #e74c3c; }
+        .color-dot.white { background: #f5f5dc; border-color: #333; }
+        .color-dot.blue { background: #4a90e2; }
+        .color-dot.black { background: #2a2a2a; border-color: #999; }
+        .color-dot.red { background: #e74c3c; }
+        .color-dot.green { background: #27ae60; }
+        .color-dot.colorless { background: #999999; }
+
+        .color-header h2 {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .color-header.white { border-color: #f5f5dc; }
+        .color-header.blue { border-color: #4a90e2; }
+        .color-header.black { border-color: #666; }
+        .color-header.red { border-color: #e74c3c; }
         .color-header.green { border-color: #27ae60; }
+        .color-header.colorless { border-color: #999999; }
 
-        .rarity-group { margin-bottom: 35px; }
+        .rarity-group {
+            margin-bottom: 30px;
+        }
 
         .rarity-title {
-            font-size: 1.05em;
-            font-weight: 700;
-            color: #555;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #bbb;
+            margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .rarity-count {
-            font-size: 0.78em;
-            font-weight: 500;
-            color: #999;
-            text-transform: none;
-            letter-spacing: 0;
         }
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .card-item {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+        .card {
+            text-align: center;
         }
 
-        .card-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-
-        .card-item a {
-            display: block;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .card-image-wrapper {
+        .card img {
             width: 100%;
-            background: #f0f0f0;
-            aspect-ratio: 5 / 7;
-            overflow: hidden;
+            border-radius: 4px;
+            border: 2px solid #444;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
         }
 
-        .card-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .card-info {
-            padding: 12px;
-            background: #fafafa;
+        .card img:hover {
+            transform: scale(1.05);
+            border-color: #999;
         }
 
         .card-name {
-            font-weight: 600;
-            font-size: 0.9em;
-            margin-bottom: 6px;
-            color: #1e3c72;
-            line-height: 1.3;
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #ccc;
         }
 
-        .card-score { font-size: 0.82em; color: #777; }
-        .score-value          { color: #27ae60; font-weight: 700; }
-        .score-value.negative { color: #e74c3c; }
-
-        .colleges-heading {
-            font-size: 2em;
-            font-weight: 700;
-            color: #1e3c72;
-            text-align: center;
-            margin: 50px 0 10px;
-            padding-top: 40px;
-            border-top: 3px solid #ddd;
-        }
-        .colleges-sub {
-            text-align: center;
-            color: #888;
-            font-size: 0.95em;
-            margin-bottom: 40px;
+        .card-name a {
+            color: #4a90e2;
+            text-decoration: none;
         }
 
-        /* College pair dot: split circle */
-        .color-dot.pair {
-            background: var(--col1);
-            position: relative;
-            overflow: hidden;
-        }
-        .color-dot.pair::after {
-            content: '';
-            position: absolute;
-            right: 0; top: 0;
-            width: 50%; height: 100%;
-            background: var(--col2);
+        .card-name a:hover {
+            text-decoration: underline;
         }
 
-        .college-label {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #555;
-            margin-left: 4px;
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 16px; }
-            h1 { font-size: 1.6em; }
-            .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        }
-        @media (max-width: 480px) {
-            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+        .card-score {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Strixhaven SOS — Top Cards by Color</h1>
-    <p class="subtitle">Top 3 commons, uncommons, and rares/mythics per color • Ranked by SOS normalized score (avgNorm)</p>
-    <div class="version-info">
-        <strong>v1.4.0</strong> &nbsp;·&nbsp; Deployed: <strong>2026-04-17, 14:00 UTC</strong> &nbsp;·&nbsp; Loaded: <strong id="loadTime"></strong>
+    <div class="container">
+        <h1>Strixhaven SOS Top Cards by Color</h1>
+        <p class="subtitle">Ranked by normalized SOS score (avgNorm)</p>
+        <div class="controls">
+            <label for="cardCount">Show top</label>
+            <input type="number" id="cardCount" value="5" min="1" max="20">
+            <label for="cardCount">cards per rarity</label>
+        </div>
+        <div id="content"></div>
     </div>
 
-    <!-- ══════════════════════════════════════════════ WHITE -->
-    <div class="color-section">
-        <div class="color-header white">
-            <div class="color-dot white"></div>
-            <h2>White</h2>
-        </div>
+    <script>
+        const cardData = {"W": {"C": [{"name": "Ajani's Response", "avgNorm": 0.22, "rarity": "C"}, {"name": "Elite Interceptor // Rejoinder", "avgNorm": 0.131, "rarity": "C"}, {"name": "Dig Site Inventory", "avgNorm": -0.029, "rarity": "C"}, {"name": "Eager Glyphmage", "avgNorm": -0.189, "rarity": "C"}, {"name": "Rehearsed Debater", "avgNorm": -0.385, "rarity": "C"}, {"name": "Shattered Acolyte", "avgNorm": -0.385, "rarity": "C"}, {"name": "Stone Docent", "avgNorm": -0.385, "rarity": "C"}, {"name": "Interjection", "avgNorm": -0.544, "rarity": "C"}, {"name": "Ascendant Dustspeaker", "avgNorm": -0.581, "rarity": "C"}, {"name": "Rapier Wit", "avgNorm": -0.669, "rarity": "C"}, {"name": "Honorbound Page // Forum's Favor", "avgNorm": -0.776, "rarity": "C"}, {"name": "Owlin Historian", "avgNorm": -1.06, "rarity": "C"}], "U": [{"name": "Group Project", "avgNorm": 0.327, "rarity": "U"}, {"name": "Soaring Stoneglider", "avgNorm": 0.202, "rarity": "U"}, {"name": "Stand Up for Yourself", "avgNorm": 0.167, "rarity": "U"}, {"name": "Quill-Blade Laureate // Twofold Intent", "avgNorm": 0.131, "rarity": "U"}, {"name": "Inkshape Demonstrator", "avgNorm": -0.029, "rarity": "U"}, {"name": "Spiritcall Enthusiast // Scrollboost", "avgNorm": -0.029, "rarity": "U"}, {"name": "Summoned Dromedary", "avgNorm": -0.029, "rarity": "U"}, {"name": "Ennis, Debate Moderator", "avgNorm": -0.42, "rarity": "U"}, {"name": "Daydream", "avgNorm": -0.474, "rarity": "U"}, {"name": "Primary Research", "avgNorm": -0.474, "rarity": "U"}, {"name": "Graduation Day", "avgNorm": -0.669, "rarity": "U"}, {"name": "Harsh Annotation", "avgNorm": -1.896, "rarity": "U"}], "RareMythic": [{"name": "Emeritus of Truce // Swords to Plowshares", "avgNorm": 1.784, "rarity": "M"}, {"name": "Stirring Hopesinger", "avgNorm": 1.553, "rarity": "R"}, {"name": "Antiquities on the Loose", "avgNorm": 1.429, "rarity": "R"}, {"name": "Informed Inkwright", "avgNorm": 1.429, "rarity": "R"}, {"name": "Erode", "avgNorm": 1.073, "rarity": "R"}, {"name": "Practiced Offense", "avgNorm": 1.038, "rarity": "R"}, {"name": "Restoration Seminar", "avgNorm": -0.207, "rarity": "M"}, {"name": "Joined Researchers // Secret Rendezvous", "avgNorm": -0.385, "rarity": "R"}]}, "U": {"C": [{"name": "Run Behind", "avgNorm": 0.131, "rarity": "C"}, {"name": "Banishing Betrayal", "avgNorm": -0.029, "rarity": "C"}, {"name": "Deluge Virtuoso", "avgNorm": -0.189, "rarity": "C"}, {"name": "Hydro-Channeler", "avgNorm": -0.225, "rarity": "C"}, {"name": "Landscape Painter // Vibrant Idea", "avgNorm": -0.385, "rarity": "C"}, {"name": "Quick Study", "avgNorm": -0.385, "rarity": "C"}, {"name": "Spellbook Seeker // Careful Study", "avgNorm": -0.42, "rarity": "C"}, {"name": "Essence Scatter", "avgNorm": -0.474, "rarity": "C"}, {"name": "Muse's Encouragement", "avgNorm": -1.06, "rarity": "C"}, {"name": "Chase Inspiration", "avgNorm": -1.256, "rarity": "C"}, {"name": "Textbook Tabulator", "avgNorm": -1.381, "rarity": "C"}, {"name": "Procrastinate", "avgNorm": -1.896, "rarity": "C"}], "U": [{"name": "Matterbending Mage", "avgNorm": 0.718, "rarity": "U"}, {"name": "Muse Seeker", "avgNorm": 0.362, "rarity": "U"}, {"name": "Encouraging Aviator // Jump", "avgNorm": 0.167, "rarity": "U"}, {"name": "Campus Composer // Aqueous Aria", "avgNorm": 0.131, "rarity": "U"}, {"name": "Flow State", "avgNorm": 0.131, "rarity": "U"}, {"name": "Orysa, Tide Choreographer", "avgNorm": -0.1, "rarity": "U"}, {"name": "Tester of the Tangential", "avgNorm": -0.153, "rarity": "U"}, {"name": "Homesickness", "avgNorm": -0.189, "rarity": "U"}, {"name": "Brush Off", "avgNorm": -0.544, "rarity": "U"}, {"name": "Fractalize", "avgNorm": -0.616, "rarity": "U"}, {"name": "Divergent Equation", "avgNorm": -1.381, "rarity": "U"}, {"name": "Fractal Anomaly", "avgNorm": -1.576, "rarity": "U"}], "RareMythic": [{"name": "Emeritus of Ideation // Ancestral Recall", "avgNorm": 2.104, "rarity": "M"}, {"name": "Jadzi, Steward of Fate // Oracle's Gift", "avgNorm": 1.82, "rarity": "R"}, {"name": "Echocasting Symposium", "avgNorm": 1.002, "rarity": "M"}, {"name": "Skycoach Conductor // All Aboard", "avgNorm": 0.913, "rarity": "R"}, {"name": "Exhibition Tidecaller", "avgNorm": 0.877, "rarity": "R"}, {"name": "Harmonized Trio // Brainstorm", "avgNorm": 0.842, "rarity": "R"}, {"name": "Mana Sculpt", "avgNorm": 0.682, "rarity": "R"}, {"name": "Pensive Professor", "avgNorm": 0.682, "rarity": "R"}, {"name": "Mathemagics", "avgNorm": -0.989, "rarity": "M"}, {"name": "Wisdom of Ages", "avgNorm": -1.504, "rarity": "R"}]}, "B": {"C": [{"name": "Last Gasp", "avgNorm": 0.522, "rarity": "C"}, {"name": "Wander Off", "avgNorm": 0.167, "rarity": "C"}, {"name": "Burrog Banemaker", "avgNorm": -0.029, "rarity": "C"}, {"name": "Send in the Pest", "avgNorm": -0.029, "rarity": "C"}, {"name": "Adventurous Eater // Have a Bite", "avgNorm": -0.385, "rarity": "C"}, {"name": "Melancholic Poet", "avgNorm": -0.385, "rarity": "C"}, {"name": "Cheerful Osteomancer // Raise Dead", "avgNorm": -0.474, "rarity": "C"}, {"name": "Sneering Shadewriter", "avgNorm": -0.544, "rarity": "C"}, {"name": "Cost of Brilliance", "avgNorm": -0.865, "rarity": "C"}, {"name": "Pull from the Grave", "avgNorm": -0.865, "rarity": "C"}, {"name": "Masterful Flourish", "avgNorm": -0.936, "rarity": "C"}, {"name": "Ulna Alley Shopkeep", "avgNorm": -0.936, "rarity": "C"}], "U": [{"name": "Forum Necroscribe", "avgNorm": 0.718, "rarity": "U"}, {"name": "Foolish Fate", "avgNorm": 0.682, "rarity": "U"}, {"name": "Lecturing Scornmage", "avgNorm": 0.522, "rarity": "U"}, {"name": "Leech Collector // Bloodletting", "avgNorm": 0.327, "rarity": "U"}, {"name": "Poisoner's Apprentice", "avgNorm": 0.22, "rarity": "U"}, {"name": "Eternal Student", "avgNorm": 0.202, "rarity": "U"}, {"name": "Dissection Practice", "avgNorm": 0.167, "rarity": "U"}, {"name": "End of the Hunt", "avgNorm": -0.029, "rarity": "U"}, {"name": "Arnyn, Deathbloom Botanist", "avgNorm": -0.1, "rarity": "U"}, {"name": "Rabid Attack", "avgNorm": -0.616, "rarity": "U"}, {"name": "Scathing Shadelock // Venomous Words", "avgNorm": -0.776, "rarity": "U"}, {"name": "Arcane Omens", "avgNorm": -1.896, "rarity": "U"}], "RareMythic": [{"name": "Ral Zarek, Guest Lecturer", "avgNorm": 1.5, "rarity": "M"}, {"name": "Withering Curse", "avgNorm": 1.233, "rarity": "M"}, {"name": "Emeritus of Woe // Demonic Tutor", "avgNorm": 1.073, "rarity": "M"}, {"name": "Grave Researcher // Reanimate", "avgNorm": 1.038, "rarity": "R"}, {"name": "Tragedy Feaster", "avgNorm": 1.038, "rarity": "R"}, {"name": "Scheming Silvertongue // Sign in Blood", "avgNorm": 0.877, "rarity": "R"}, {"name": "Moseo, Vein's New Dean", "avgNorm": 0.86, "rarity": "R"}, {"name": "Postmortem Professor", "avgNorm": 0.327, "rarity": "R"}, {"name": "Decorum Dissertation", "avgNorm": -0.207, "rarity": "M"}, {"name": "Pox Plague", "avgNorm": -2.412, "rarity": "R"}]}, "R": {"C": [{"name": "Unsubtle Mockery", "avgNorm": 0.167, "rarity": "C"}, {"name": "Tome Blast", "avgNorm": 0.131, "rarity": "C"}, {"name": "Rubble Rouser", "avgNorm": -0.029, "rarity": "C"}, {"name": "Goblin Glasswright // Craft with Pride", "avgNorm": -0.189, "rarity": "C"}, {"name": "Strife Scholar // Awaken the Ages", "avgNorm": -0.349, "rarity": "C"}, {"name": "Zealous Lorecaster", "avgNorm": -0.349, "rarity": "C"}, {"name": "Expressive Firedancer", "avgNorm": -0.385, "rarity": "C"}, {"name": "Tackle Artist", "avgNorm": -0.385, "rarity": "C"}, {"name": "Heated Argument", "avgNorm": -0.544, "rarity": "C"}, {"name": "Ancestral Anger", "avgNorm": -0.669, "rarity": "C"}, {"name": "Rearing Embermare", "avgNorm": -0.865, "rarity": "C"}, {"name": "Seize the Spoils", "avgNorm": -0.865, "rarity": "C"}], "U": [{"name": "Impractical Joke", "avgNorm": 0.682, "rarity": "U"}, {"name": "Garrison Excavator", "avgNorm": 0.557, "rarity": "U"}, {"name": "Charging Strifeknight", "avgNorm": 0.398, "rarity": "U"}, {"name": "Artistic Process", "avgNorm": 0.362, "rarity": "U"}, {"name": "Thunderdrum Soloist", "avgNorm": 0.327, "rarity": "U"}, {"name": "Pigment Wrangler // Striking Palette", "avgNorm": 0.131, "rarity": "U"}, {"name": "Blazing Firesinger // Seething Song", "avgNorm": 0.006, "rarity": "U"}, {"name": "Duel Tactics", "avgNorm": -0.189, "rarity": "U"}, {"name": "Tablet of Discovery", "avgNorm": -0.278, "rarity": "U"}, {"name": "Living History", "avgNorm": -0.544, "rarity": "U"}, {"name": "Mica, Reader of Ruins", "avgNorm": -1.7, "rarity": "U"}, {"name": "Archaic's Agony", "avgNorm": -2.34, "rarity": "U"}], "RareMythic": [{"name": "Improvisation Capstone", "avgNorm": 1.553, "rarity": "M"}, {"name": "Molten-Core Maestro", "avgNorm": 0.877, "rarity": "R"}, {"name": "Flashback", "avgNorm": 0.86, "rarity": "R"}, {"name": "Emeritus of Conflict // Lightning Bolt", "avgNorm": 0.522, "rarity": "M"}, {"name": "Steal the Show", "avgNorm": 0.327, "rarity": "R"}, {"name": "Maelstrom Artisan // Rocket Volley", "avgNorm": -0.598, "rarity": "R"}, {"name": "Choreographed Sparks", "avgNorm": -0.811, "rarity": "R"}]}, "G": {"C": [{"name": "Studious First-Year // Rampant Growth", "avgNorm": 0.522, "rarity": "C"}, {"name": "Burrog Barrage", "avgNorm": 0.167, "rarity": "C"}, {"name": "Noxious Newt", "avgNorm": 0.006, "rarity": "C"}, {"name": "Mindful Biomancer", "avgNorm": -0.385, "rarity": "C"}, {"name": "Shopkeeper's Bane", "avgNorm": -0.42, "rarity": "C"}, {"name": "Tenured Concocter", "avgNorm": -0.616, "rarity": "C"}, {"name": "Follow the Lumarets", "avgNorm": -0.669, "rarity": "C"}, {"name": "Efflorescence", "avgNorm": -0.74, "rarity": "C"}, {"name": "Oracle's Restoration", "avgNorm": -1.06, "rarity": "C"}, {"name": "Wild Hypothesis", "avgNorm": -1.06, "rarity": "C"}, {"name": "Hungry Graffalon", "avgNorm": -1.184, "rarity": "C"}, {"name": "Glorious Decay", "avgNorm": -1.7, "rarity": "C"}], "U": [{"name": "Additive Evolution", "avgNorm": 1.038, "rarity": "U"}, {"name": "Environmental Scientist", "avgNorm": 0.877, "rarity": "U"}, {"name": "Topiary Lecturer", "avgNorm": 0.557, "rarity": "U"}, {"name": "Emil, Vastlands Roamer", "avgNorm": 0.54, "rarity": "U"}, {"name": "Thornfist Striker", "avgNorm": 0.522, "rarity": "U"}, {"name": "Pestbrood Sloth", "avgNorm": 0.362, "rarity": "U"}, {"name": "Aberrant Manawurm", "avgNorm": 0.202, "rarity": "U"}, {"name": "Chelonian Tackle", "avgNorm": 0.006, "rarity": "U"}, {"name": "Infirmary Healer // Stream of Life", "avgNorm": -0.385, "rarity": "U"}, {"name": "Snarl Song", "avgNorm": -0.402, "rarity": "U"}, {"name": "Lumaret's Favor", "avgNorm": -0.42, "rarity": "U"}, {"name": "Zimone's Experiment", "avgNorm": -1.06, "rarity": "U"}], "RareMythic": [{"name": "Germination Practicum", "avgNorm": 2.104, "rarity": "M"}, {"name": "Emeritus of Abundance // Regrowth", "avgNorm": 1.624, "rarity": "M"}, {"name": "Vastlands Scavenger // Bind to Life", "avgNorm": 1.233, "rarity": "R"}, {"name": "Ambitious Augmenter", "avgNorm": 1.073, "rarity": "R"}, {"name": "Slumbering Trudge", "avgNorm": 0.006, "rarity": "R"}, {"name": "Planar Engineering", "avgNorm": -0.598, "rarity": "R"}, {"name": "Comforting Counsel", "avgNorm": -1.576, "rarity": "R"}]}, "C": {"C": [{"name": "Terramorphic Expanse", "avgNorm": 0.006, "rarity": "C"}, {"name": "Fields of Strife", "avgNorm": -0.1, "rarity": "C"}, {"name": "Forum of Amity", "avgNorm": -0.1, "rarity": "C"}, {"name": "Paradox Gardens", "avgNorm": -0.1, "rarity": "C"}, {"name": "Spectacle Summit", "avgNorm": -0.1, "rarity": "C"}, {"name": "Titan's Grave", "avgNorm": -0.1, "rarity": "C"}, {"name": "Potioner's Trove", "avgNorm": -0.42, "rarity": "C"}, {"name": "Biblioplex Tomekeeper", "avgNorm": -0.581, "rarity": "C"}, {"name": "Mage Tower Referee", "avgNorm": -0.776, "rarity": "C"}, {"name": "Rancorous Archaic", "avgNorm": -1.381, "rarity": "C"}, {"name": "Page, Loose Leaf", "avgNorm": -2.34, "rarity": "C"}], "U": [{"name": "Strixhaven Skycoach", "avgNorm": 0.042, "rarity": "U"}, {"name": "Sundering Archaic", "avgNorm": -0.474, "rarity": "U"}, {"name": "Skycoach Waypoint", "avgNorm": -0.544, "rarity": "U"}, {"name": "Diary of Dreams", "avgNorm": -0.669, "rarity": "U"}, {"name": "Transcendent Archaic", "avgNorm": -0.793, "rarity": "U"}], "RareMythic": [{"name": "Magmablood Archaic", "avgNorm": 1.429, "rarity": "R"}, {"name": "Wildgrowth Archaic", "avgNorm": 1.268, "rarity": "R"}, {"name": "The Dawning Archaic", "avgNorm": 1.073, "rarity": "M"}, {"name": "Together as One", "avgNorm": 0.308, "rarity": "R"}, {"name": "Deathcap Glade", "avgNorm": 0.22, "rarity": "R"}, {"name": "Dreamroot Cascade", "avgNorm": 0.22, "rarity": "R"}, {"name": "Shattered Sanctum", "avgNorm": 0.22, "rarity": "R"}, {"name": "Stormcarved Coast", "avgNorm": 0.22, "rarity": "R"}, {"name": "Sundown Pass", "avgNorm": 0.22, "rarity": "R"}, {"name": "Great Hall of the Biblioplex", "avgNorm": -0.083, "rarity": "R"}, {"name": "Petrified Hamlet", "avgNorm": -2.412, "rarity": "R"}]}};
+        const imagemap = {"Stirring Honormancer": "https://cards.scryfall.io/normal/front/e/e/ee84b04d-78fc-416f-9166-72e5417c3e17.jpg?1775938634", "Professor Dellian Fel": "https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486", "The Dawning Archaic": "https://cards.scryfall.io/normal/front/7/a/7a451985-37e1-44d8-839b-dc1e88df5c96.jpg?1775936921", "Wisdom of Ages": "https://cards.scryfall.io/normal/front/b/2/b227ef04-33e4-44e8-a357-0ea3dfe5d49b.jpg?1775937405", "Informed Inkwright": "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046", "Forum of Amity": "https://cards.scryfall.io/normal/front/1/d/1de6c6cc-0c55-4997-8623-d7f796bd9ab8.jpg?1775938787", "Withering Curse": "https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655", "Charging Strifeknight": "https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699", "Quandrix Charm": "https://cards.scryfall.io/normal/front/3/1/318486e0-f255-40f5-8150-dc272eec9d7d.jpg?1775938509", "Living History": "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797", "Zimone's Experiment": "https://cards.scryfall.io/normal/front/a/6/a6597852-4267-4ea6-a391-f927e4833be2.jpg?1775938156", "Emeritus of Ideation // Ancestral Recall": "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223", "Tackle Artist": "https://cards.scryfall.io/normal/front/b/8/b87e2474-98c1-4c1a-91ed-340b72d31653.jpg?1775937898", "Deluge Virtuoso": "https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202", "Rapturous Moment": "https://cards.scryfall.io/normal/front/2/1/21afe19d-881a-48cb-863e-22942bea5ebe.jpg?1775938524", "Summoned Dromedary": "https://cards.scryfall.io/normal/front/4/4/44d0277c-ca82-4334-a15a-cd67a9db0d02.jpg?1775937170", "Ascendant Dustspeaker": "https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359", "Mica, Reader of Ruins": "https://cards.scryfall.io/normal/front/9/4/949ad3ff-9e80-493c-a3ae-146b919bfcd7.jpg?1775937824", "Conciliator's Duelist": "https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257", "Daydream": "https://cards.scryfall.io/normal/front/e/2/e2b16cb2-b8b2-45df-9695-3c16e9d89e28.jpg?1775936973", "Skycoach Conductor // All Aboard": "https://cards.scryfall.io/normal/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.jpg?1775937376", "Choreographed Sparks": "https://cards.scryfall.io/normal/front/0/c/0cda4235-4dce-48fe-a8a5-2a952dedbe25.jpg?1775937707", "Berta, Wise Extrapolator": "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201", "Noxious Newt": "https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060", "Quill-Blade Laureate // Twofold Intent": "https://cards.scryfall.io/normal/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.jpg?1775937102", "Spellbook Seeker // Careful Study": "https://cards.scryfall.io/normal/front/c/c/cc44eaa4-59a4-419e-b1d1-d92f354ff588.jpg?1775937383", "Rancorous Archaic": "https://cards.scryfall.io/normal/front/2/5/2565e16a-ed31-4867-adb8-f1633d580397.jpg?1775936927", "Transcendent Archaic": "https://cards.scryfall.io/normal/front/1/6/1624c680-502b-474a-b9b2-888fe3ca008c.jpg?1775936948", "Deathcap Glade": "https://cards.scryfall.io/normal/front/7/8/78897104-80e1-4d8a-9958-145b40f679e8.jpg?1775938766", "Quandrix, the Proof": "https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517", "Eternal Student": "https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483", "Fix What's Broken": "https://cards.scryfall.io/normal/front/c/0/c0cd1d71-8e4a-4e00-80cd-83aec231fa57.jpg?1775938304", "Chase Inspiration": "https://cards.scryfall.io/normal/front/0/6/06f9f257-c7ef-44b7-8b2b-f038fba900af.jpg?1775937195", "Page, Loose Leaf": "https://cards.scryfall.io/normal/front/8/c/8c6fecfd-8241-4cf0-b1eb-19472b99e0ed.jpg?1775938744", "Sanar, Unfinished Genius // Wild Idea": "https://cards.scryfall.io/normal/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.jpg?1775938553", "Steal the Show": "https://cards.scryfall.io/normal/front/7/a/7ac6649f-980e-4404-9c05-458c30578ecc.jpg?1775937875", "Growth Curve": "https://cards.scryfall.io/normal/front/1/6/1675a445-86ae-413b-b95a-a1c254a7f252.jpg?1775938339", "Group Project": "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026", "Terramorphic Expanse": "https://cards.scryfall.io/normal/front/9/a/9a4c5629-fadd-42b9-850f-9f8586a2ca50.jpg?1775938853", "Ancestral Anger": "https://cards.scryfall.io/normal/front/6/c/6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad.jpg?1775937666", "Burrog Barrage": "https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957", "Geometer's Arthropod": "https://cards.scryfall.io/normal/front/e/c/ec0f3613-1edc-40e8-8f26-2e5ef13be55e.jpg?1775938325", "Abigale, Poet Laureate // Heroic Stanza": "https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164", "Burrog Banemaker": "https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433", "Suspend Aggression": "https://cards.scryfall.io/normal/front/1/3/135c0696-d86d-4e48-988c-5c218de451fc.jpg?1775938648", "Emeritus of Woe // Demonic Tutor": "https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1775937469", "Scathing Shadelock // Venomous Words": "https://cards.scryfall.io/normal/front/0/3/03e664cd-c3a6-4263-b2d8-dd99058fb8ec.jpg?1775937593", "Nita, Forum Conciliator": "https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431", "Wild Hypothesis": "https://cards.scryfall.io/normal/front/0/4/04fdfabc-c247-4384-a5bb-f49035f8aae0.jpg?1775938142", "Jadzi, Steward of Fate // Oracle's Gift": "https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293", "Dissection Practice": "https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462", "Strife Scholar // Awaken the Ages": "https://cards.scryfall.io/normal/front/8/d/8de79312-2046-425e-9919-49afe19be81b.jpg?1775937883", "Essenceknit Scholar": "https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295", "Thunderdrum Soloist": "https://cards.scryfall.io/normal/front/5/9/590d1d95-ed13-4121-899f-f5a2d8a6617a.jpg?1775937905", "Shattered Sanctum": "https://cards.scryfall.io/normal/front/5/a/5aa0c810-3b7d-4661-979e-e84fb327742d.jpg?1775938816", "Comforting Counsel": "https://cards.scryfall.io/normal/front/5/2/5223a04f-6b47-4379-80ce-8489c4a91734.jpg?1775937970", "Emeritus of Truce // Swords to Plowshares": "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999", "Pterafractyl": "https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495", "Visionary's Dance": "https://cards.scryfall.io/normal/front/8/4/846a0e79-a530-429e-8f7f-4b87f1b0156e.jpg?1776000377", "Mind into Matter": "https://cards.scryfall.io/normal/front/0/a/0a7f0fdf-1d4b-4458-a19c-274611e8a59a.jpg?1775938403", "Postmortem Professor": "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558", "Spectacular Skywhale": "https://cards.scryfall.io/normal/front/c/9/c90366d5-b4ba-4772-a3c5-f138bbe7f305.jpg?1775938597", "Ennis, Debate Moderator": "https://cards.scryfall.io/normal/front/d/2/d2ef31b4-24fa-4443-9f05-c8e99c3522e5.jpg?1775937005", "Great Hall of the Biblioplex": "https://cards.scryfall.io/normal/front/4/2/42d92674-2664-411c-b9c5-b04da7c845f4.jpg?1775938794", "Additive Evolution": "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943", "Unsubtle Mockery": "https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921", "Lorehold Charm": "https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389", "Encouraging Aviator // Jump": "https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230", "Spirit Mascot": "https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg?1775938605", "Borrowed Knowledge": "https://cards.scryfall.io/normal/front/a/3/a3226e14-554d-47c9-b8b6-dfeb53cc41ba.jpg?1775938224", "Bogwater Lumaret": "https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216", "Tragedy Feaster": "https://cards.scryfall.io/normal/front/b/9/b93cbaad-8ed8-4a1d-b95a-20a616dfedc9.jpg?1775937623", "Scolding Administrator": "https://cards.scryfall.io/normal/front/6/9/69757177-aefa-44a6-81db-5ae9b5d2f117.jpg?1775938562", "Emeritus of Abundance // Regrowth": "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986", "Tome Blast": "https://cards.scryfall.io/normal/front/7/2/72a3b17d-1e00-48e9-8402-c81bacd595a7.jpg?1775937914", "Diary of Dreams": "https://cards.scryfall.io/normal/front/e/e/ee1e0a96-af80-444e-a456-5b256cf60625.jpg?1775938731", "Campus Composer // Aqueous Aria": "https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1775937189", "Textbook Tabulator": "https://cards.scryfall.io/normal/front/5/6/56f54fee-b48d-4582-8982-ca4c7b8ef553.jpg?1776000387", "Zealous Lorecaster": "https://cards.scryfall.io/normal/front/3/6/36ab2130-9f21-4d30-873a-aa72d3d15fa8.jpg?1775937928", "Pursue the Past": "https://cards.scryfall.io/normal/front/4/5/4584d5f7-b1f1-4c8e-80c5-ad35e44a968e.jpg?1775938502", "Interjection": "https://cards.scryfall.io/normal/front/0/5/0534cff6-299c-4155-b318-eb7581989e8a.jpg?1775937061", "Paradox Gardens": "https://cards.scryfall.io/normal/front/d/b/dbc3447e-1329-4ea1-b4ca-b321b0ffec8f.jpg?1775938801", "Expressive Firedancer": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734", "Antiquities on the Loose": "https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960", "Imperious Inkmage": "https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353", "Maelstrom Artisan // Rocket Volley": "https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1775937805", "Pestbrood Sloth": "https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073", "Rubble Rouser": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860", "Old-Growth Educator": "https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg?1775938438", "Arnyn, Deathbloom Botanist": "https://cards.scryfall.io/normal/front/6/1/6168b472-0930-4db5-9920-407340b99050.jpg?1775937426", "Elemental Mascot": "https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280", "Dreamroot Cascade": "https://cards.scryfall.io/normal/front/e/f/ef662b92-5a7f-48c9-bcc1-14b55e091aef.jpg?1775938773", "Muse's Encouragement": "https://cards.scryfall.io/normal/front/c/5/c59e0004-1d6a-42a1-8ce4-31da2af2e1bf.jpg?1775937336", "Titan's Grave": "https://cards.scryfall.io/normal/front/a/9/a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21.jpg?1775938861", "Potioner's Trove": "https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752", "Heated Argument": "https://cards.scryfall.io/normal/front/0/0/0038d212-3d95-4f98-8c2e-7b2404d0ced7.jpg?1775937767", "Eager Glyphmage": "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986", "Foolish Fate": "https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489", "Tenured Concocter": "https://cards.scryfall.io/normal/front/3/7/376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc.jpg?1775938116", "Archaic's Agony": "https://cards.scryfall.io/normal/front/8/d/8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275.jpg?1775937675", "Practiced Offense": "https://cards.scryfall.io/normal/front/7/9/79c7cf94-c0a1-432d-90d7-7f0599c2e7a8.jpg?1775937087", "Stand Up for Yourself": "https://cards.scryfall.io/normal/front/b/7/b756ca13-b904-4510-9bbb-5bc2864abfbd.jpg?1775937151", "Vibrant Outburst": "https://cards.scryfall.io/normal/front/f/9/f9ba68ef-6efc-4249-8b74-e33f47173902.jpg?1775938674", "Soaring Stoneglider": "https://cards.scryfall.io/normal/front/2/f/2fbe446b-60fd-43da-8358-985392293af8.jpg?1775937136", "Molten-Core Maestro": "https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832", "Social Snub": "https://cards.scryfall.io/normal/front/a/0/a04b6900-0436-4920-a0d4-c0186d605ae3.jpg?1775938590", "Goblin Glasswright // Craft with Pride": "https://cards.scryfall.io/normal/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.jpg?1775937759", "Banishing Betrayal": "https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176", "Hardened Academic": "https://cards.scryfall.io/normal/front/0/6/06c9e8a7-2840-4cff-90af-c6636e598f78.jpg?1775938346", "Adventurous Eater // Have a Bite": "https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412", "End of the Hunt": "https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476", "Rehearsed Debater": "https://cards.scryfall.io/normal/front/f/c/fc6a1425-6733-42a2-94d9-605966398092.jpg?1775937116", "Snarl Song": "https://cards.scryfall.io/normal/front/f/c/fc4c7fa2-aebb-4636-9afd-f1010c923316.jpg?1775938101", "Skycoach Waypoint": "https://cards.scryfall.io/normal/front/6/7/6747657b-5ce4-4dbd-b924-ca1f7119faf7.jpg?1775938823", "Cost of Brilliance": "https://cards.scryfall.io/normal/front/3/a/3a46816b-9f75-4c72-9ec6-cded6a4a0d01.jpg?1775937447", "Island": "https://cards.scryfall.io/normal/front/7/7/77b88bb8-6bd9-4632-b937-89468fcb5e6a.jpg?1775938923", "Shopkeeper's Bane": "https://cards.scryfall.io/normal/front/9/7/97f7fbb9-228c-4a74-975b-38d3b6cecb32.jpg?1775938087", "Aziza, Mage Tower Captain": "https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194", "Lluwen, Exchange Student // Pest Friend": "https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382", "Thornfist Striker": "https://cards.scryfall.io/normal/front/f/6/f6cb838e-a06a-46ae-a30f-e5192178c1cc.jpg?1775938123", "Snooping Page": "https://cards.scryfall.io/normal/front/7/3/73d06987-8686-461b-b260-9a4fee6a3b32.jpg?1775938584", "Run Behind": "https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369", "Mountain": "https://cards.scryfall.io/normal/front/a/6/a642c7b1-d4d1-4125-a66d-560438e5ee51.jpg?1775938951", "Leech Collector // Bloodletting": "https://cards.scryfall.io/normal/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.jpg?1775937525", "Ral Zarek, Guest Lecturer": "https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587", "Killian's Confidence": "https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369", "Hungry Graffalon": "https://cards.scryfall.io/normal/front/0/3/030b1272-5990-4bc9-8fc1-82cc05602060.jpg?1775938030", "Flow State": "https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249", "Inkling Mascot": "https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360", "Essence Scatter": "https://cards.scryfall.io/normal/front/3/2/32840097-0531-4c43-b6a8-e76c17420b04.jpg?1775937236", "Glorious Decay": "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023", "Lecturing Scornmage": "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516", "Tam, Observant Sequencer // Deep Sight": "https://cards.scryfall.io/normal/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.jpg?1775938655", "Fractal Tender": "https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318", "Plains": "https://cards.scryfall.io/normal/front/d/8/d85d0f25-a24a-4de0-9b8b-93fb5017bce9.jpg?1775938910", "Resonating Lute": "https://cards.scryfall.io/normal/front/6/e/6ef168d6-28f2-4c24-9bfa-82c35663b729.jpg?1775938538", "Startled Relic Sloth": "https://cards.scryfall.io/normal/front/f/1/f143fd41-58c3-45a0-bef8-e9e4b4a502a5.jpg?1775938628", "Dig Site Inventory": "https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980", "Artistic Process": "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683", "Infirmary Healer // Stream of Life": "https://cards.scryfall.io/normal/front/9/1/911442e3-3003-4683-a766-e791e9553667.jpg?1775938036", "Duel Tactics": "https://cards.scryfall.io/normal/front/8/f/8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8.jpg?1775937718", "Prismari, the Inspiration": "https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472", "Rabid Attack": "https://cards.scryfall.io/normal/front/f/5/f5e67560-3135-4b27-a344-5859edf8bcd9.jpg?1775937579", "Spiritcall Enthusiast // Scrollboost": "https://cards.scryfall.io/normal/front/c/0/c0b85569-2cb3-4b64-b0fe-418195c4dab0.jpg?1775937144", "Splatter Technique": "https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612", "Kirol, History Buff // Pack a Punch": "https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375", "Paradox Surveyor": "https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445", "Tester of the Tangential": "https://cards.scryfall.io/normal/front/b/b/bbd708ec-eef4-4f45-99dd-60e1cec4b991.jpg?1775937389", "Stadium Tidalmage": "https://cards.scryfall.io/normal/front/a/6/a689289e-7141-4950-8a87-82e9bd6846fe.jpg?1775938619", "Honorbound Page // Forum's Favor": "https://cards.scryfall.io/normal/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.jpg?1775937039", "Hydro-Channeler": "https://cards.scryfall.io/normal/front/0/9/099f8400-d70a-48ef-8ff6-645eae97e072.jpg?1775937286", "Divergent Equation": "https://cards.scryfall.io/normal/front/2/6/26295e25-f1bf-4665-ba00-dad35c49bbc2.jpg?1775937210", "Improvisation Capstone": "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787", "Aberrant Manawurm": "https://cards.scryfall.io/normal/front/7/9/797131cf-d80d-4050-bebd-2ce1d7fae5d0.jpg?1775937935", "Cheerful Osteomancer // Raise Dead": "https://cards.scryfall.io/normal/front/3/c/3c34660c-25e3-4ff5-9b2b-5554ded2bcc3.jpg?1775937441", "Proctor's Gaze": "https://cards.scryfall.io/normal/front/b/1/b127d543-0a90-4af6-9410-94d5cd30389e.jpg?1775938479", "Cuboid Colony": "https://cards.scryfall.io/normal/front/6/3/6384d135-7780-4d75-9e95-71bce506948e.jpg?1775938265", "Impractical Joke": "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777", "Planar Engineering": "https://cards.scryfall.io/normal/front/c/8/c83b96a3-ddfd-4d11-8a85-5bf62087cbb9.jpg?1775938080", "Stormcarved Coast": "https://cards.scryfall.io/normal/front/b/d/bd3ae4fa-4c97-410a-8c0a-bd203342595d.jpg?1775938837", "Mage Tower Referee": "https://cards.scryfall.io/normal/front/1/c/1ceb704a-97a8-49f9-b799-30f001404144.jpg?1775938737", "Applied Geometry": "https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180", "Harsh Annotation": "https://cards.scryfall.io/normal/front/e/0/e07a8fc7-c11c-4469-a31d-0abf40e57bbf.jpg?1775937033", "Brush Off": "https://cards.scryfall.io/normal/front/1/5/151eab82-d20f-433b-b3bb-1d44e2871d5c.jpg?1775937183", "Zaffai and the Tempests": "https://cards.scryfall.io/normal/front/5/b/5bdbf507-6fd7-49f6-b437-8f2ce2d0eb0f.jpg?1775938717", "Shattered Acolyte": "https://cards.scryfall.io/normal/front/d/c/dc0517ca-b271-49a1-a286-c20f4e5b9309.jpg?1775937130", "Fractalize": "https://cards.scryfall.io/normal/front/e/3/e3c3b19b-01b6-4f5a-b428-513b778c5d89.jpg?1775937264", "Practiced Scrollsmith": "https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459", "Echocasting Symposium": "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216", "Graduation Day": "https://cards.scryfall.io/normal/front/d/b/db1cea01-123e-4b23-8b98-f94cabce3912.jpg?1775937020", "Petrified Hamlet": "https://cards.scryfall.io/normal/front/3/5/355dd460-b0e9-41f2-a058-b7f7e39ac387.jpg?1775938807", "Colossus of the Blood Age": "https://cards.scryfall.io/normal/front/b/f/bfa7f0a4-6b65-4e53-ba00-848df260d8e3.jpg?1775938248", "Blech, Loafing Pest": "https://cards.scryfall.io/normal/front/f/5/f588fa50-7cc5-41ba-90df-2d252eb5c785.jpg?1775938208", "Send in the Pest": "https://cards.scryfall.io/normal/front/2/8/283b508b-89f0-4c23-9686-b049e402b73c.jpg?1775937607", "Fractal Anomaly": "https://cards.scryfall.io/normal/front/e/1/e1975a61-aef0-49a6-a6d6-c3a37e2e2b22.jpg?1775937257", "Masterful Flourish": "https://cards.scryfall.io/normal/front/8/d/8d93d14d-7760-4af2-a237-2df326dd28d3.jpg?1775937531", "Molten Note": "https://cards.scryfall.io/normal/front/5/0/506f69aa-7dc4-4dd7-990a-7371fc1762c0.jpg?1775938416", "Traumatic Critique": "https://cards.scryfall.io/normal/front/2/a/2a812fa7-4599-4e25-97db-20ffc6bc0b26.jpg?1775938668", "Witherbloom Charm": "https://cards.scryfall.io/normal/front/2/5/254437f7-7a8a-4b11-9cea-e8e7ea23c59e.jpg?1775938703", "Slumbering Trudge": "https://cards.scryfall.io/normal/front/3/a/3a925370-58ac-4181-9acc-db7b0e0abf17.jpg?1775938094", "Joined Researchers // Secret Rendezvous": "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069", "Moseo, Vein's New Dean": "https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545", "Moment of Reckoning": "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423", "Silverquill, the Disputant": "https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577", "Prismari Charm": "https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465", "Mathemagics": "https://cards.scryfall.io/normal/front/c/d/cd3cc172-5609-4bc8-9d84-50680fed6df9.jpg?1775937314", "Ulna Alley Shopkeep": "https://cards.scryfall.io/normal/front/c/2/c25e1ae5-f17c-4eee-98f1-5681981af31c.jpg?1775937633", "Orysa, Tide Choreographer": "https://cards.scryfall.io/normal/front/0/1/010ed379-63f5-452c-9cd4-00d51647c0e3.jpg?1775937343", "Stone Docent": "https://cards.scryfall.io/normal/front/c/2/c2abfffb-bf36-44af-9a27-6e109e4d77dd.jpg?1775937164", "Muse Seeker": "https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328", "Melancholic Poet": "https://cards.scryfall.io/normal/front/d/8/d8309815-7035-47a5-acf2-2b2ac1e65037.jpg?1775937538", "Pull from the Grave": "https://cards.scryfall.io/normal/front/d/7/d73612fe-8992-4650-a7e3-c7b662da6a03.jpg?1775937572", "Quick Study": "https://cards.scryfall.io/normal/front/2/d/2d4f0bc7-da7c-4749-a24c-b01f3eb5860c.jpg?1775937363", "Render Speechless": "https://cards.scryfall.io/normal/front/2/5/25bbb1c7-14e8-444f-ab98-e95f50927460.jpg?1775938531", "Owlin Historian": "https://cards.scryfall.io/normal/front/5/f/5fe99be0-e1ec-485e-82f8-02eba7b82441.jpg?1775937078", "Pox Plague": "https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566", "Grave Researcher // Reanimate": "https://cards.scryfall.io/normal/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.jpg?1775937504", "Ajani's Response": "https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920", "Scheming Silvertongue // Sign in Blood": "https://cards.scryfall.io/normal/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.jpg?1775937600", "Primary Research": "https://cards.scryfall.io/normal/front/f/6/f6fdb814-45c6-4d14-afff-7f5bd1bd10a1.jpg?1775937094", "Rapier Wit": "https://cards.scryfall.io/normal/front/9/7/97b50521-5a0f-4dbd-8e15-f0f0d059c258.jpg?1775937109", "Cauldron of Essence": "https://cards.scryfall.io/normal/front/b/7/b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd.jpg?1775938230", "Embrace the Paradox": "https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288", "Wildgrowth Archaic": "https://cards.scryfall.io/normal/front/0/e/0e6e2188-7203-4d10-a838-27233f283cd5.jpg?1775938149", "Tablet of Discovery": "https://cards.scryfall.io/normal/front/1/3/13059664-a940-4a66-8100-0c90b884bab4.jpg?1775937891", "Wander Off": "https://cards.scryfall.io/normal/front/3/d/3d409512-50b9-4a38-91b0-19ba25227992.jpg?1775937643", "Seize the Spoils": "https://cards.scryfall.io/normal/front/4/d/4ddf4e34-a1f9-4636-942d-0a08e9f94320.jpg?1775937868", "Silverquill Charm": "https://cards.scryfall.io/normal/front/3/e/3eb73579-f1c6-4762-81d2-9568ab501fac.jpg?1775938570", "Mindful Biomancer": "https://cards.scryfall.io/normal/front/2/c/2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53.jpg?1775938052", "Lumaret's Favor": "https://cards.scryfall.io/normal/front/c/5/c5e7c856-8b71-44e6-8998-0b0b3ff0ef99.jpg?1775938045", "Harmonized Trio // Brainstorm": "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?1775937273", "Swamp": "https://cards.scryfall.io/normal/front/5/1/51fe930f-2b5a-4b1e-9007-6ee74fb44715.jpg?1775938936", "Ambitious Augmenter": "https://cards.scryfall.io/normal/front/8/5/85629088-2007-4db5-9397-bac12a3d7498.jpg?1775937950", "Forum Necroscribe": "https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497", "Sundering Archaic": "https://cards.scryfall.io/normal/front/c/3/c35b57e4-2358-46c0-8f09-cd27c10eaf2d.jpg?1775936933", "Mana Sculpt": "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307", "Root Manipulation": "https://cards.scryfall.io/normal/front/5/3/5390a79c-bc4b-4edb-a845-0d3514986401.jpg?1775938546", "Together as One": "https://cards.scryfall.io/normal/front/a/c/ac2a8a66-e38c-42ab-83e1-d2d99ee48861.jpg?1775936940", "Decorum Dissertation": "https://cards.scryfall.io/normal/front/f/4/f4ab2d9b-c73d-478d-aac7-4d3bb24296d2.jpg?1775937454", "Colorstorm Stallion": "https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240", "Chelonian Tackle": "https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964", "Dina's Guidance": "https://cards.scryfall.io/normal/front/7/7/775c1e50-08a4-413f-ab0f-f1c2a79cfe94.jpg?1775938273", "Vicious Rivalry": "https://cards.scryfall.io/normal/front/6/f/6fa9cd18-3181-4373-ab65-49bf9de9487f.jpg?1775938681", "Inkshape Demonstrator": "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053", "Landscape Painter // Vibrant Idea": "https://cards.scryfall.io/normal/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.jpg?1775937300", "Topiary Lecturer": "https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg?1776000370", "Emil, Vastlands Roamer": "https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993", "Strixhaven Skycoach": "https://cards.scryfall.io/normal/front/8/7/87741fbb-b426-4f83-a358-587b0907f081.jpg?1775938759", "Poisoner's Apprentice": "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552", "Lorehold, the Historian": "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396", "Erode": "https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013", "Blazing Firesinger // Seething Song": "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691", "Efflorescence": "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979", "Homesickness": "https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280", "Flashback": "https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742", "Germination Practicum": "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016", "Fields of Strife": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780", "Oracle's Restoration": "https://cards.scryfall.io/normal/front/0/8/0863a19d-4511-4a78-98dd-d194afd1c39b.jpg?1775938067", "Ark of Hunger": "https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187", "Sundown Pass": "https://cards.scryfall.io/normal/front/b/3/b34000e9-ff20-4fb4-9d0b-03a172a92457.jpg?1775938845", "Teacher's Pest": "https://cards.scryfall.io/normal/front/e/a/eaa358ac-761d-4507-aa15-3d4684027207.jpg?1775938661", "Mind Roots": "https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410", "Biblioplex Tomekeeper": "https://cards.scryfall.io/normal/front/b/f/bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba.jpg?1775938724", "Arcane Omens": "https://cards.scryfall.io/normal/front/d/3/d357d997-9d4e-4ade-81f2-37629853f13a.jpg?1775937419", "Restoration Seminar": "https://cards.scryfall.io/normal/front/9/e/9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6.jpg?1775937123", "Grapple with Death": "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332", "Witherbloom, the Balancer": "https://cards.scryfall.io/normal/front/e/d/ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0.jpg?1775938710", "Garrison Excavator": "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750", "Pest Mascot": "https://cards.scryfall.io/normal/front/d/8/d882beb9-6766-4818-afbb-f6fd7a2d5b70.jpg?1775938452", "Matterbending Mage": "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321", "Procrastinate": "https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356", "Stress Dream": "https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641", "Abstract Paintmage": "https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173", "Rearing Embermare": "https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851", "Spectacle Summit": "https://cards.scryfall.io/normal/front/a/0/a0a66f7b-eab4-45da-8895-c2c2c7eb05f8.jpg?1775938830", "Follow the Lumarets": "https://cards.scryfall.io/normal/front/f/9/f9488480-2b6c-40bc-a93e-29fb1292a2e4.jpg?1775938009", "Fractal Mascot": "https://cards.scryfall.io/normal/front/c/f/cf5b19e3-eed1-4b36-9756-660ffb3baa08.jpg?1775938311", "Exhibition Tidecaller": "https://cards.scryfall.io/normal/front/a/5/a58c364e-d0c5-41b9-8c8b-2e5a99468cc7.jpg?1775937242", "Environmental Scientist": "https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001", "Last Gasp": "https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510", "Magmablood Archaic": "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816", "Pigment Wrangler // Striking Palette": "https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841", "Wilt in the Heat": "https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697", "Emeritus of Conflict // Lightning Bolt": "https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1775937726", "Pensive Professor": "https://cards.scryfall.io/normal/front/6/6/66d47940-84f9-4479-8562-45e5148435d4.jpg?1775937349", "Vastlands Scavenger // Bind to Life": "https://cards.scryfall.io/normal/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.jpg?1775938136", "Studious First-Year // Rampant Growth": "https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1775938109", "Forest": "https://cards.scryfall.io/normal/front/f/1/f169dfb2-e4c8-46e9-8591-e51bb82da082.jpg?1775938964", "Sneering Shadewriter": "https://cards.scryfall.io/normal/front/4/b/4b4c120e-abe9-4f11-a7e4-bc3f723da4b2.jpg?1775937615", "Stirring Hopesinger": "https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157", "Elite Interceptor // Rejoinder": "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992"};
 
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/6/ajanis-response" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920" alt="Ajani's Response" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Ajani's Response</div><div class="card-score">avgNorm: <span class="score-value">0.220</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/12/elite-interceptor-rejoinder" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992" alt="Elite Interceptor // Rejoinder" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Elite Interceptor // Rejoinder</div><div class="card-score">avgNorm: <span class="score-value">0.131</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/10/dig-site-inventory" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980" alt="Dig Site Inventory" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Dig Site Inventory</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
-                </a></div>
-            </div>
-        </div>
+        const colorConfig = {
+            'W': {'name': 'White', 'class': 'white'},
+            'U': {'name': 'Blue', 'class': 'blue'},
+            'B': {'name': 'Black', 'class': 'black'},
+            'R': {'name': 'Red', 'class': 'red'},
+            'G': {'name': 'Green', 'class': 'green'},
+            'C': {'name': 'Colorless', 'class': 'colorless'}
+        };
 
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/17/group-project" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026" alt="Group Project" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Group Project</div><div class="card-score">avgNorm: <span class="score-value">0.327</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/32/soaring-stoneglider" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/f/2fbe446b-60fd-43da-8358-985392293af8.jpg?1775937136" alt="Soaring Stoneglider" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Soaring Stoneglider</div><div class="card-score">avgNorm: <span class="score-value">0.202</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/34/stand-up-for-yourself" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/7/b756ca13-b904-4510-9bbb-5bc2864abfbd.jpg?1775937151" alt="Stand Up for Yourself" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Stand Up for Yourself</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
-                </a></div>
-            </div>
-        </div>
+        const rarityNames = {
+            'C': 'Commons',
+            'U': 'Uncommons',
+            'RareMythic': 'Rares & Mythics'
+        };
 
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 8</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/13/emeritus-of-truce-swords-to-plowshares" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999" alt="Emeritus of Truce // Swords to Plowshares" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Emeritus of Truce // Swords to Plowshares</div><div class="card-score">avgNorm: <span class="score-value">1.784</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/35/stirring-hopesinger" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157" alt="Stirring Hopesinger" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Stirring Hopesinger</div><div class="card-score">avgNorm: <span class="score-value">1.553</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/7/antiquities-on-the-loose" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960" alt="Antiquities on the Loose" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Antiquities on the Loose</div><div class="card-score">avgNorm: <span class="score-value">1.429</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
+        function renderCards(count) {
+            const content = document.getElementById('content');
+            content.innerHTML = '';
 
-    <!-- ══════════════════════════════════════════════ BLUE -->
-    <div class="color-section">
-        <div class="color-header blue">
-            <div class="color-dot blue"></div>
-            <h2>Blue</h2>
-        </div>
+            const colors = ['W', 'U', 'B', 'R', 'G', 'C'];
 
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/66/run-behind" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369" alt="Run Behind" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Run Behind</div><div class="card-score">avgNorm: <span class="score-value">0.131</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/38/banishing-betrayal" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176" alt="Banishing Betrayal" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Banishing Betrayal</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/42/deluge-virtuoso" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202" alt="Deluge Virtuoso" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Deluge Virtuoso</div><div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div></div>
-                </a></div>
-            </div>
-        </div>
+            for (const colorCode of colors) {
+                const config = colorConfig[colorCode];
+                const colorSection = document.createElement('div');
+                colorSection.className = 'color-section';
 
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/59/matterbending-mage" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321" alt="Matterbending Mage" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Matterbending Mage</div><div class="card-score">avgNorm: <span class="score-value">0.718</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/60/muse-seeker" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328" alt="Muse Seeker" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Muse Seeker</div><div class="card-score">avgNorm: <span class="score-value">0.362</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/46/encouraging-aviator-jump" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230" alt="Encouraging Aviator // Jump" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Encouraging Aviator // Jump</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                const header = document.createElement('div');
+                header.className = `color-header ${config.class}`;
+                header.innerHTML = `
+                    <div class="color-dot ${config.class}"></div>
+                    <h2>${config.name}</h2>
+                `;
+                colorSection.appendChild(header);
 
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 10</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/45/emeritus-of-ideation-ancestral-recall" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223" alt="Emeritus of Ideation // Ancestral Recall" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Emeritus of Ideation // Ancestral Recall</div><div class="card-score">avgNorm: <span class="score-value">2.104</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/55/jadzi-steward-of-fate-oracles-gift" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293" alt="Jadzi, Steward of Fate // Oracle's Gift" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Jadzi, Steward of Fate // Oracle's Gift</div><div class="card-score">avgNorm: <span class="score-value">1.820</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/44/echocasting-symposium" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216" alt="Echocasting Symposium" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Echocasting Symposium</div><div class="card-score">avgNorm: <span class="score-value">1.002</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
+                const rarities = ['C', 'U', 'RareMythic'];
 
-    <!-- ══════════════════════════════════════════════ BLACK -->
-    <div class="color-section">
-        <div class="color-header black">
-            <div class="color-dot black"></div>
-            <h2>Black</h2>
-        </div>
+                for (const rarity of rarities) {
+                    const cards = cardData[colorCode][rarity] || [];
+                    if (cards.length === 0) continue;
 
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/86/last-gasp" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510" alt="Last Gasp" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Last Gasp</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/104/wander-off" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/d/3d409512-50b9-4a38-91b0-19ba25227992.jpg?1775937643" alt="Wander Off" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Wander Off</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/75/burrog-banemaker" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433" alt="Burrog Banemaker" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Burrog Banemaker</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                    const sliced = cards.slice(0, count);
 
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/84/forum-necroscribe" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497" alt="Forum Necroscribe" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Forum Necroscribe</div><div class="card-score">avgNorm: <span class="score-value">0.718</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/83/foolish-fate" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489" alt="Foolish Fate" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Foolish Fate</div><div class="card-score">avgNorm: <span class="score-value">0.682</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/87/lecturing-scornmage" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516" alt="Lecturing Scornmage" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Lecturing Scornmage</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                    const rarityGroup = document.createElement('div');
+                    rarityGroup.className = 'rarity-group';
 
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 10</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/97/ral-zarek-guest-lecturer" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587" alt="Ral Zarek, Guest Lecturer" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Ral Zarek, Guest Lecturer</div><div class="card-score">avgNorm: <span class="score-value">1.500</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/105/withering-curse" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655" alt="Withering Curse" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Withering Curse</div><div class="card-score">avgNorm: <span class="score-value">1.233</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/80/emeritus-of-woe-demonic-tutor" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1775937469" alt="Emeritus of Woe // Demonic Tutor" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Emeritus of Woe // Demonic Tutor</div><div class="card-score">avgNorm: <span class="score-value">1.073</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
+                    const title = document.createElement('h3');
+                    title.className = 'rarity-title';
+                    title.textContent = rarityNames[rarity];
+                    rarityGroup.appendChild(title);
 
-    <!-- ══════════════════════════════════════════════ RED -->
-    <div class="color-section">
-        <div class="color-header red">
-            <div class="color-dot red"></div>
-            <h2>Red</h2>
-        </div>
+                    const grid = document.createElement('div');
+                    grid.className = 'cards-grid';
 
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/136/unsubtle-mockery" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921" alt="Unsubtle Mockery" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Unsubtle Mockery</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/135/tome-blast" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/2/72a3b17d-1e00-48e9-8402-c81bacd595a7.jpg?1775937914" alt="Tome Blast" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Tome Blast</div><div class="card-score">avgNorm: <span class="score-value">0.131</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/128/rubble-rouser" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860" alt="Rubble Rouser" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Rubble Rouser</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                    for (const card of sliced) {
+                        const cardEl = document.createElement('div');
+                        cardEl.className = 'card';
 
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/119/impractical-joke" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777" alt="Impractical Joke" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Impractical Joke</div><div class="card-score">avgNorm: <span class="score-value">0.682</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/116/garrison-excavator" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750" alt="Garrison Excavator" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Garrison Excavator</div><div class="card-score">avgNorm: <span class="score-value">0.557</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/110/charging-strifeknight" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699" alt="Charging Strifeknight" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Charging Strifeknight</div><div class="card-score">avgNorm: <span class="score-value">0.398</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                        const img = imagemap[card.name];
+                        const scryUrl = `https://scryfall.com/search?q=!${card.name.replace(/ /g, '+')}`;
 
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/120/improvisation-capstone" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787" alt="Improvisation Capstone" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Improvisation Capstone</div><div class="card-score">avgNorm: <span class="score-value">1.553</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/125/molten-core-maestro" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832" alt="Molten-Core Maestro" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Molten-Core Maestro</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/115/flashback" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742" alt="Flashback" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Flashback</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
+                        if (img) {
+                            cardEl.innerHTML = `
+                                <img src="${img}" alt="${card.name}" title="${card.name}">
+                                <div class="card-name"><a href="${scryUrl}" target="_blank">${card.name}</a></div>
+                                <div class="card-score">avgNorm: ${card.avgNorm.toFixed(3)}</div>
+                            `;
+                        } else {
+                            cardEl.innerHTML = `
+                                <div style="background: #333; padding: 20px; border-radius: 4px; min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #666;">${card.name}</span>
+                                </div>
+                                <div class="card-name"><a href="${scryUrl}" target="_blank">${card.name}</a></div>
+                                <div class="card-score">avgNorm: ${card.avgNorm.toFixed(3)}</div>
+                            `;
+                        }
 
-    <!-- ══════════════════════════════════════════════ GREEN -->
-    <div class="color-section">
-        <div class="color-header green">
-            <div class="color-dot green"></div>
-            <h2>Green</h2>
-        </div>
+                        grid.appendChild(cardEl);
+                    }
 
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/162/studious-first-year-rampant-growth" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1775938109" alt="Studious First-Year // Rampant Growth" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Studious First-Year // Rampant Growth</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/141/burrog-barrage" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957" alt="Burrog Barrage" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Burrog Barrage</div><div class="card-score">avgNorm: <span class="score-value">0.167</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/155/noxious-newt" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060" alt="Noxious Newt" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Noxious Newt</div><div class="card-score">avgNorm: <span class="score-value">0.006</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                    rarityGroup.appendChild(grid);
+                    colorSection.appendChild(rarityGroup);
+                }
 
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 12</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/139/additive-evolution" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943" alt="Additive Evolution" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Additive Evolution</div><div class="card-score">avgNorm: <span class="score-value">1.038</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/147/environmental-scientist" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001" alt="Environmental Scientist" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Environmental Scientist</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/165/topiary-lecturer" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg?1776000370" alt="Topiary Lecturer" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Topiary Lecturer</div><div class="card-score">avgNorm: <span class="score-value">0.557</span></div></div>
-                </a></div>
-            </div>
-        </div>
+                content.appendChild(colorSection);
+            }
+        }
 
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/149/germination-practicum" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016" alt="Germination Practicum" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Germination Practicum</div><div class="card-score">avgNorm: <span class="score-value">2.104</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/145/emeritus-of-abundance-regrowth" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986" alt="Emeritus of Abundance // Regrowth" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Emeritus of Abundance // Regrowth</div><div class="card-score">avgNorm: <span class="score-value">1.624</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/166/vastlands-scavenger-bind-to-life" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.jpg?1775938136" alt="Vastlands Scavenger // Bind to Life" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Vastlands Scavenger // Bind to Life</div><div class="card-score">avgNorm: <span class="score-value">1.233</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
-    <!-- ══════════════════════════════════════════════ COLLEGES -->
-    <h2 class="colleges-heading">Colleges</h2>
-    <p class="colleges-sub">Top cards per two-colour college archetype</p>
+        // Initial render
+        renderCards(5);
 
-    <!-- ══════════ SILVERQUILL (WB) -->
-    <div class="color-section">
-        <div class="color-header" style="border-color: #9b59b6;">
-            <div class="color-dot pair" style="--col1:#f9f6ee;--col2:#333; border-color:#aaa;"></div>
-            <h2>Silverquill <span class="college-label">W/B</span></h2>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/196/inkling-mascot" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360" alt="Inkling Mascot" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Inkling Mascot</div><div class="card-score">avgNorm: <span class="score-value negative">-0.385</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/195/imperious-inkmage" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353" alt="Imperious Inkmage" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Imperious Inkmage</div><div class="card-score">avgNorm: <span class="score-value negative">-0.581</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/220/render-speechless" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/5/25bbb1c7-14e8-444f-ab98-e95f50927460.jpg?1775938531" alt="Render Speechless" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Render Speechless</div><div class="card-score">avgNorm: <span class="score-value negative">-0.740</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/234/stirring-honormancer" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/e/ee84b04d-78fc-416f-9166-72e5417c3e17.jpg?1775938634" alt="Stirring Honormancer" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Stirring Honormancer</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/170/abigale-poet-laureate-heroic-stanza" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164" alt="Abigale, Poet Laureate // Heroic Stanza" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Abigale, Poet Laureate // Heroic Stanza</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/225/silverquill-charm" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/3/e/3eb73579-f1c6-4762-81d2-9568ab501fac.jpg?1775938570" alt="Silverquill Charm" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Silverquill Charm</div><div class="card-score">avgNorm: <span class="score-value">0.557</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 5</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/205/moment-of-reckoning" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423" alt="Moment of Reckoning" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Moment of Reckoning</div><div class="card-score">avgNorm: <span class="score-value">2.104</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/182/conciliators-duelist" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257" alt="Conciliator's Duelist" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Conciliator's Duelist</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/226/silverquill-the-disputant" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577" alt="Silverquill, the Disputant" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Silverquill, the Disputant</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════ PRISMARI (UR) -->
-    <div class="color-section">
-        <div class="color-header" style="border-color: #e67e22;">
-            <div class="color-dot pair" style="--col1:#e74c3c;--col2:#4a90e2;"></div>
-            <h2>Prismari <span class="college-label">U/R</span></h2>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/232/stadium-tidalmage" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/6/a689289e-7141-4950-8a87-82e9bd6846fe.jpg?1775938619" alt="Stadium Tidalmage" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Stadium Tidalmage</div><div class="card-score">avgNorm: <span class="score-value">0.095</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/185/elemental-mascot" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280" alt="Elemental Mascot" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Elemental Mascot</div><div class="card-score">avgNorm: <span class="score-value negative">-0.065</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/242/visionarys-dance" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/8/4/846a0e79-a530-429e-8f7f-4b87f1b0156e.jpg?1776000377" alt="Visionary's Dance" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Visionary's Dance</div><div class="card-score">avgNorm: <span class="score-value negative">-0.100</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/235/stress-dream" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641" alt="Stress Dream" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Stress Dream</div><div class="card-score">avgNorm: <span class="score-value">1.073</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/240/vibrant-outburst" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/9/f9ba68ef-6efc-4249-8b74-e33f47173902.jpg?1775938674" alt="Vibrant Outburst" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Vibrant Outburst</div><div class="card-score">avgNorm: <span class="score-value">0.718</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/223/sanar-unfinished-genius-wild-idea" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.jpg?1775938553" alt="Sanar, Unfinished Genius // Wild Idea" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Sanar, Unfinished Genius // Wild Idea</div><div class="card-score">avgNorm: <span class="score-value">0.220</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 6</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/231/splatter-technique" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612" alt="Splatter Technique" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Splatter Technique</div><div class="card-score">avgNorm: <span class="score-value">1.429</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/239/traumatic-critique" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/a/2a812fa7-4599-4e25-97db-20ffc6bc0b26.jpg?1775938668" alt="Traumatic Critique" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Traumatic Critique</div><div class="card-score">avgNorm: <span class="score-value">1.268</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/180/colorstorm-stallion" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240" alt="Colorstorm Stallion" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Colorstorm Stallion</div><div class="card-score">avgNorm: <span class="score-value">1.233</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════ WITHERBLOOM (BG) -->
-    <div class="color-section">
-        <div class="color-header" style="border-color: #2ecc71;">
-            <div class="color-dot pair" style="--col1:#333;--col2:#27ae60;"></div>
-            <h2>Witherbloom <span class="college-label">B/G</span></h2>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/192/grapple-with-death" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332" alt="Grapple with Death" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Grapple with Death</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/177/bogwater-lumaret" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216" alt="Bogwater Lumaret" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Bogwater Lumaret</div><div class="card-score">avgNorm: <span class="score-value negative">-0.029</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/209/pest-mascot" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/8/d882beb9-6766-4818-afbb-f6fd7a2d5b70.jpg?1775938452" alt="Pest Mascot" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Pest Mascot</div><div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/199/lluwen-exchange-student-pest-friend" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382" alt="Lluwen, Exchange Student // Pest Friend" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Lluwen, Exchange Student // Pest Friend</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/187/essenceknit-scholar" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295" alt="Essenceknit Scholar" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Essenceknit Scholar</div><div class="card-score">avgNorm: <span class="score-value">0.718</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/244/witherbloom-charm" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/2/5/254437f7-7a8a-4b11-9cea-e8e7ea23c59e.jpg?1775938703" alt="Witherbloom Charm" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Witherbloom Charm</div><div class="card-score">avgNorm: <span class="score-value">0.682</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 6</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/214/professor-dellian-fel" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486" alt="Professor Dellian Fel" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Professor Dellian Fel</div><div class="card-score">avgNorm: <span class="score-value">1.944</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/241/vicious-rivalry" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/f/6fa9cd18-3181-4373-ab65-49bf9de9487f.jpg?1775938681" alt="Vicious Rivalry" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Vicious Rivalry</div><div class="card-score">avgNorm: <span class="score-value">1.268</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/176/blech-loafing-pest" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/5/f588fa50-7cc5-41ba-90df-2d252eb5c785.jpg?1775938208" alt="Blech, Loafing Pest" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Blech, Loafing Pest</div><div class="card-score">avgNorm: <span class="score-value">1.180</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════ LOREHOLD (RW) -->
-    <div class="color-section">
-        <div class="color-header" style="border-color: #e67e22;">
-            <div class="color-dot pair" style="--col1:#e74c3c;--col2:#f9f6ee; border-color:#aaa;"></div>
-            <h2>Lorehold <span class="college-label">R/W</span></h2>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/243/wilt-in-the-heat" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697" alt="Wilt in the Heat" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Wilt in the Heat</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/216/pursue-the-past" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/5/4584d5f7-b1f1-4c8e-80c5-ad35e44a968e.jpg?1775938502" alt="Pursue the Past" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Pursue the Past</div><div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/230/spirit-mascot" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg?1775938605" alt="Spirit Mascot" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Spirit Mascot</div><div class="card-score">avgNorm: <span class="score-value negative">-0.865</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/210/practiced-scrollsmith" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459" alt="Practiced Scrollsmith" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Practiced Scrollsmith</div><div class="card-score">avgNorm: <span class="score-value">1.038</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/181/colossus-of-the-blood-age" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/f/bfa7f0a4-6b65-4e53-ba00-848df260d8e3.jpg?1775938248" alt="Colossus of the Blood Age" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Colossus of the Blood Age</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/198/kirol-history-buff-pack-a-punch" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375" alt="Kirol, History Buff // Pack a Punch" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Kirol, History Buff // Pack a Punch</div><div class="card-score">avgNorm: <span class="score-value">0.540</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 5</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/201/lorehold-the-historian" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396" alt="Lorehold, the Historian" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Lorehold, the Historian</div><div class="card-score">avgNorm: <span class="score-value">1.820</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/173/ark-of-hunger" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187" alt="Ark of Hunger" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Ark of Hunger</div><div class="card-score">avgNorm: <span class="score-value">0.877</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/174/aziza-mage-tower-captain" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194" alt="Aziza, Mage Tower Captain" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Aziza, Mage Tower Captain</div><div class="card-score">avgNorm: <span class="score-value">0.860</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════ QUANDRIX (GU) -->
-    <div class="color-section">
-        <div class="color-header" style="border-color: #1abc9c;">
-            <div class="color-dot pair" style="--col1:#27ae60;--col2:#4a90e2;"></div>
-            <h2>Quandrix <span class="college-label">G/U</span></h2>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Commons <span class="rarity-count">top 3 of 3</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/186/embrace-the-paradox" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288" alt="Embrace the Paradox" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Embrace the Paradox</div><div class="card-score">avgNorm: <span class="score-value">0.006</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/189/fractal-mascot" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/c/f/cf5b19e3-eed1-4b36-9756-660ffb3baa08.jpg?1775938311" alt="Fractal Mascot" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Fractal Mascot</div><div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/215/pterafractyl" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495" alt="Pterafractyl" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Pterafractyl</div><div class="card-score">avgNorm: <span class="score-value negative">-0.189</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Uncommons <span class="rarity-count">top 3 of 7</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/190/fractal-tender" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318" alt="Fractal Tender" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Fractal Tender</div><div class="card-score">avgNorm: <span class="score-value">0.557</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/208/paradox-surveyor" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445" alt="Paradox Surveyor" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Paradox Surveyor</div><div class="card-score">avgNorm: <span class="score-value">0.522</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/213/proctors-gaze" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/b/1/b127d543-0a90-4af6-9410-94d5cd30389e.jpg?1775938479" alt="Proctor's Gaze" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Proctor's Gaze</div><div class="card-score">avgNorm: <span class="score-value">0.220</span></div></div>
-                </a></div>
-            </div>
-        </div>
-
-        <div class="rarity-group">
-            <div class="rarity-title">Rares &amp; Mythics <span class="rarity-count">top 3 of 5</span></div>
-            <div class="cards-grid">
-                <div class="card-item"><a href="https://scryfall.com/card/sos/175/berta-wise-extrapolator" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201" alt="Berta, Wise Extrapolator" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Berta, Wise Extrapolator</div><div class="card-score">avgNorm: <span class="score-value">1.820</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/218/quandrix-the-proof" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517" alt="Quandrix, the Proof" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Quandrix, the Proof</div><div class="card-score">avgNorm: <span class="score-value">1.500</span></div></div>
-                </a></div>
-                <div class="card-item"><a href="https://scryfall.com/card/sos/172/applied-geometry" target="_blank" rel="noopener">
-                    <div class="card-image-wrapper"><img src="https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180" alt="Applied Geometry" class="card-image" loading="lazy"></div>
-                    <div class="card-info"><div class="card-name">Applied Geometry</div><div class="card-score">avgNorm: <span class="score-value">1.429</span></div></div>
-                </a></div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    document.getElementById('loadTime').textContent = new Date().toLocaleString('en-GB', {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-        timeZone: 'UTC', timeZoneName: 'short'
-    });
-</script>
+        // Handle input changes
+        document.getElementById('cardCount').addEventListener('input', (e) => {
+            const count = Math.max(1, Math.min(20, parseInt(e.target.value) || 5));
+            renderCards(count);
+        });
+    </script>
 </body>
 </html>
