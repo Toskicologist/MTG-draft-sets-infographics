@@ -834,11 +834,13 @@
             return GRADE_LABELS[index];
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-            const SET_CONFIG = {"set_code": "ECL", "set_name": "Lorwyn Eclipsed", "version": "1.4.0", "timestamp": "2026-02-27T18:37:00Z", "data_paths": {"expert_csv": "../../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv", "lands_csv": "../../shared-data/17lands exports/card-ratings-2026-02-27.csv", "scryfall_json": "../../shared-data/data/scryfall/scryfall_reference.json", "metadata_csv": "../../shared-data/data/ecl/ecl-complete-data.csv"}, "styling": {"header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)", "title": "Most Underrated & Overrated Cards"}};
+        // Configuration (injected at build time)
+        const SET_CONFIG = {"set_code": "ECL", "set_name": "Lorwyn Eclipsed", "version": "1.4.0", "timestamp": "2026-02-27T18:37:00Z", "data_paths": {"expert_csv": "../../shared-data/data/ecl/ecl-expert-ratings-normalized-FINAL.csv", "lands_csv": "../../shared-data/17lands exports/card-ratings-2026-02-27.csv", "scryfall_json": "../../shared-data/data/scryfall/scryfall_reference.json", "metadata_csv": "../../shared-data/data/ecl/ecl-complete-data.csv"}, "styling": {"header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)", "title": "Most Underrated & Overrated Cards"}};
         const EXPERTS = [{"abbreviation": "tcgplayer", "name": "TCGPlayer", "raw_column": "tcgplayer_raw", "zscore_column": "tcgplayer_zscore"},{"abbreviation": "draftsim", "name": "Draftsim", "raw_column": "draftsim_raw", "zscore_column": "draftsim_zscore"},{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore"},{"abbreviation": "llu", "name": "Limited Level-Ups", "raw_column": "llu_raw", "zscore_column": "llu_zscore"}];
         const RATERS = ["tcgplayer", "draftsim", "cgb", "llu"];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
             initializeHeader();
             setupTabs();
             await loadData();
