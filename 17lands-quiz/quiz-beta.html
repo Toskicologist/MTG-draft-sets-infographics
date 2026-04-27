@@ -930,7 +930,7 @@
     }
 
     .mode-option {
-      padding: 10px 20px;
+      padding: 6px 10px;
       background: transparent;
       border: none;
       color: #aaa;
@@ -938,8 +938,8 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      min-height: 44px;
-      min-width: 120px;
+      min-height: 36px;
+      min-width: 80px;
     }
 
     .mode-option:hover {
@@ -1102,9 +1102,9 @@
     /* Mobile adjustments */
     @media (max-width: 768px) {
       .mode-option {
-        padding: 8px 16px;
+        padding: 5px 10px;
         font-size: 12px;
-        min-width: 100px;
+        min-width: 75px;
       }
 
       .grade-selector {
@@ -6411,7 +6411,7 @@ Play at: ${baseUrl}`,
                   setRarityFilters([]);
                   setTypeFilters([]);
                 }}
-                style={{fontSize: '13px', padding: '5px 8px', display: 'flex', alignItems: 'center', gap: '3px', flex: '0 1 auto'}}
+                style={{fontSize: '13px', padding: '3px 6px', display: 'flex', alignItems: 'center', gap: '2px', flex: '0 1 auto'}}
               >
                 <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
                   <path d={SET_ICONS[code].path} />
