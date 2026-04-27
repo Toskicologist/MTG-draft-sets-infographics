@@ -5760,7 +5760,7 @@ const GIHQuiz = () => {
   const [currentSetCode, setCurrentSetCode] = React.useState(() => {
     const hash = window.location.hash.replace('#', '').toUpperCase();
     if (hash && SET_CONFIG[hash]) return hash;
-    return safeStorage.getItem(STORAGE_KEYS.SET) || 'ECL';
+    return safeStorage.getItem(STORAGE_KEYS.SET) || 'SOS';
   });
   const currentSetConfig = SET_CONFIG[currentSetCode];
   const activeCardData = currentSetConfig.data;
@@ -6394,7 +6394,7 @@ Play at: ${baseUrl}`,
       {(currentPair || currentCard || filterError) && (
         <div className="quiz-section">
           <div className="set-selector">
-            {Object.keys(SET_CONFIG).map(code => (
+            {['SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'SOS')].map(code => (
               <button
                 key={code}
                 className={`mode-option ${currentSetCode === code ? 'active' : ''}`}
