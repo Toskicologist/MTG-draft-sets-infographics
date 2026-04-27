@@ -5361,9 +5361,9 @@ function parseQuery(text) {
   return out;
 }
 
-function MultiSelectFilter({ label, options, selected, isOpen, onToggleOpen, onToggleValue, onClear }) {
+function MultiSelectFilter({ label, plural, options, selected, isOpen, onToggleOpen, onToggleValue, onClear }) {
   const buttonLabel = selected.length === 0
-    ? `All ${label}s`
+    ? `All ${plural || label + 's'}`
     : selected.length === 1
       ? (options.find(o => o.value === selected[0])?.label || selected[0])
       : `${selected.length} selected`;
@@ -6165,7 +6165,7 @@ Play at: ${baseUrl}`,
               onClear={() => clearFilter(setColorFilters)}
             />
             <MultiSelectFilter
-              label="Rarity"
+              label="Rarity" plural="Rarities"
               options={[
                 {value: 'M', label: 'Mythic (M)'},
                 {value: 'R', label: 'Rare (R)'},
