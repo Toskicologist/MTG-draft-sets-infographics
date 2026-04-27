@@ -6419,6 +6419,11 @@ Play at: ${baseUrl}`,
                 <span style={{fontSize: code === 'CUBE' ? '11px' : '13px', lineHeight: '1'}}>
                   {SET_CONFIG[code].shortName}
                 </span>
+                {code === 'SOS' && (
+                  <span style={{fontSize: '9px', fontWeight: '700', color: '#ff3333', marginLeft: '2px', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+                    NEW
+                  </span>
+                )}
               </button>
             ))}
           </div>
