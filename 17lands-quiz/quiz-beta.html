@@ -1135,6 +1135,12 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.3.7 (2026-04-27 UTC - Claude Opus 4.7):
+  - FEAT: Color and Rarity filters now multi-select comboboxes (matching Type filter), with consistent <select>-style sizing
+  - FEAT: Color filter uses "any of" semantics — selecting W and U matches any card containing W or U (W, U, WU, WUB, WUBR, etc.)
+  - REFACTOR: Extracted reusable MultiSelectFilter component (replaces three separate filter UIs)
+  - DEPR: Removed type-filter visibility guard — all sets have type data after v4.3.6 so it always shows
+
   v4.3.6 (2026-04-13 UTC - Claude Sonnet 4.6):
   - FEAT: Add type data to all 9 non-ECL sets (~2158 cards) via Scryfall /cards/collection API
   - FEAT: Type filter now works for all sets, not just ECL
@@ -5319,6 +5325,107 @@ const GradeSelector = ({ onSelect, disabled, selectedGrade }) => {
   );
 };
 
+function buildQuery(colors, rarities, types) {
+  const parts = [];
+  if (colors.length) parts.push('c:' + colors.join(','));
+  if (rarities.length) parts.push('r:' + rarities.join(','));
+  if (types.length) parts.push('t:' + types.map(t => /\s/.test(t) ? `"${t}"` : t).join(','));
+  return parts.join(' ');
+}
+
+function parseQuery(text) {
+  const out = { colors: [], rarities: [], types: [] };
+  const re = /(c|color|r|rarity|t|type):((?:"[^"]*"|[^\s,]+)(?:,(?:"[^"]*"|[^\s,]+))*)/gi;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const key = m[1][0].toLowerCase();
+    const values = m[2].split(',').map(v => v.replace(/^"|"$/g, '').trim()).filter(Boolean);
+    if (key === 'c') {
+      // Normalize: split joined letters (c:wu -> W, U), uppercase, accept aliases
+      for (const v of values) {
+        const lower = v.toLowerCase();
+        if (lower === 'multicolor' || lower === 'multi') out.colors.push('multicolor');
+        else if (lower === 'colorless') out.colors.push('colorless');
+        else for (const ch of lower) if ('wubrg'.includes(ch)) out.colors.push(ch.toUpperCase());
+      }
+    } else if (key === 'r') {
+      for (const v of values) {
+        const upper = v.toUpperCase();
+        if (upper.length === 1 && 'MRUC'.includes(upper)) out.rarities.push(upper);
+      }
+    } else if (key === 't') {
+      // Title-case so it matches data: "creature" or "CREATURE" -> "Creature"
+      out.types.push(...values.map(v => v.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())));
+    }
+  }
+  return out;
+}
+
+function MultiSelectFilter({ label, options, selected, isOpen, onToggleOpen, onToggleValue, onClear }) {
+  const buttonLabel = selected.length === 0
+    ? `All ${label}s`
+    : selected.length === 1
+      ? (options.find(o => o.value === selected[0])?.label || selected[0])
+      : `${selected.length} selected`;
+
+  const buttonStyle = {
+    padding: '10px 12px',
+    background: selected.length > 0 ? 'rgba(74, 158, 255, 0.4)' : 'rgba(74, 158, 255, 0.25)',
+    border: '1px solid rgba(74, 158, 255, 0.5)',
+    borderRadius: '6px',
+    color: '#fff',
+    fontSize: '13px',
+    cursor: 'pointer',
+    minWidth: '140px',
+    textAlign: 'left',
+    transition: 'all 0.2s'
+  };
+
+  return (
+    <div className="filter-group" style={{position: 'relative'}}>
+      <label className="filter-label">{label}</label>
+      <div style={{display: 'flex', gap: '4px', alignItems: 'center'}}>
+        <button onClick={onToggleOpen} style={buttonStyle}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#4a9eff'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(74, 158, 255, 0.5)'; }}>
+          {buttonLabel} <span style={{float: 'right', opacity: 0.7}}>▾</span>
+        </button>
+        {selected.length > 0 && (
+          <button onClick={onClear}
+            style={{background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '14px', padding: '2px 4px'}}>
+            ✕
+          </button>
+        )}
+      </div>
+      {isOpen && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, zIndex: 100, marginTop: '4px',
+          background: '#0a0e27', border: '1px solid rgba(74, 158, 255, 0.5)', borderRadius: '6px',
+          padding: '4px 0', minWidth: '160px', maxHeight: '260px', overflowY: 'auto',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+        }}>
+          {options.map(opt => {
+            const isSel = selected.includes(opt.value);
+            return (
+              <label key={opt.value} style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '6px 12px', cursor: 'pointer', fontSize: '13px',
+                background: isSel ? 'rgba(74, 158, 255, 0.25)' : 'transparent'
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = isSel ? 'rgba(74, 158, 255, 0.35)' : 'rgba(74, 158, 255, 0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = isSel ? 'rgba(74, 158, 255, 0.25)' : 'transparent'}
+              >
+                <input type="checkbox" checked={isSel} onChange={() => onToggleValue(opt.value)} style={{accentColor: '#4a9eff'}} />
+                {opt.label}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const GIHQuiz = () => {
   // Run migration on first load
   React.useEffect(() => {
@@ -5344,10 +5451,12 @@ const GIHQuiz = () => {
   const savedMode = safeStorage.getItem(STORAGE_KEYS.MODE) || 'comparison';
   const [quizMode, setQuizMode] = React.useState(savedMode);
 
-  const [colorFilter, setColorFilter] = React.useState('all');
-  const [rarityFilter, setRarityFilter] = React.useState('all');
-  const [typeFilters, setTypeFilters] = React.useState([]); // empty = all types
-  const [typeDropdownOpen, setTypeDropdownOpen] = React.useState(false);
+  const [colorFilters, setColorFilters] = React.useState([]);
+  const [rarityFilters, setRarityFilters] = React.useState([]);
+  const [typeFilters, setTypeFilters] = React.useState([]);
+  const [openDropdown, setOpenDropdown] = React.useState(null); // 'color' | 'rarity' | 'type' | null
+  const [queryText, setQueryText] = React.useState('');
+  const lastSource = React.useRef(null);
   const [smartSelectionEnabled, setSmartSelectionEnabled] = React.useState(true);
   const [metric, setMetric] = React.useState(() => safeStorage.getItem(STORAGE_KEYS.METRIC) || 'gihWr');
   const [expandMetricHelp, setExpandMetricHelp] = React.useState(false);
@@ -5433,48 +5542,52 @@ const GIHQuiz = () => {
 
   // Close type dropdown when clicking outside
   React.useEffect(() => {
-    if (!typeDropdownOpen) return;
+    if (!openDropdown) return;
     const handler = (e) => {
-      if (!e.target.closest('.filter-group')) setTypeDropdownOpen(false);
+      if (!e.target.closest('.filter-group')) setOpenDropdown(null);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [typeDropdownOpen]);
+  }, [openDropdown]);
+
+  {/* Sync comboboxes -> query text (skip if query just changed comboboxes) */}
+  React.useEffect(() => {
+    if (lastSource.current === 'query') { lastSource.current = null; return; }
+    lastSource.current = 'combobox';
+    setQueryText(buildQuery(colorFilters, rarityFilters, typeFilters));
+  }, [colorFilters, rarityFilters, typeFilters]);
 
   // Generate new question when filters, mode, or set change
   React.useEffect(() => {
     generateQuestion();
-  }, [quizMode, colorFilter, rarityFilter, typeFilters, smartSelectionEnabled, metric, currentSetCode, generateQuestion]);
+  }, [quizMode, colorFilters, rarityFilters, typeFilters, smartSelectionEnabled, metric, currentSetCode, generateQuestion]);
 
   // Generate new question
   const generateQuestion = React.useCallback(() => {
     // Filter cards by color and rarity
     let filtered = activeCardData;
 
-    if (colorFilter !== 'all') {
-      if (colorFilter === 'colorless') {
-        filtered = filtered.filter(c => !c.color || c.color === '');
-      } else if (colorFilter === 'multicolor') {
-        filtered = filtered.filter(c => c.color && c.color.length > 1);
-      } else {
-        // Single color filter
-        filtered = filtered.filter(c => c.color === colorFilter);
-      }
+    if (colorFilters.length > 0) {
+      filtered = filtered.filter(c => {
+        const color = c.color || '';
+        if (colorFilters.includes('colorless') && color === '') return true;
+        if (colorFilters.includes('multicolor') && color.length > 1) return true;
+        return colorFilters.some(cf => cf.length === 1 && color.includes(cf));
+      });
     }
 
-    if (rarityFilter !== 'all') {
-      filtered = filtered.filter(c => c.rarity === rarityFilter);
+    if (rarityFilters.length > 0) {
+      filtered = filtered.filter(c => rarityFilters.includes(c.rarity));
     }
 
     if (typeFilters.length > 0) {
       filtered = filtered.filter(c => {
-        if (!c.type) return false;
         return typeFilters.some(tf =>
-          c.type.startsWith(tf) ||
+          c.type && (c.type.startsWith(tf) ||
           c.type.includes(`— ${tf}`) ||
           c.type.endsWith(` ${tf}`) ||
           c.type.includes(` ${tf} `) ||
-          c.type.includes(` ${tf}`)
+          c.type.includes(` ${tf}`))
         );
       });
     }
@@ -5487,7 +5600,11 @@ const GIHQuiz = () => {
       return;
     }
 
-    const filterKey = `${colorFilter}|${rarityFilter}|${typeFilters.join(',')}`;
+    const filterKey = [
+      [...colorFilters].sort().join(','),
+      [...rarityFilters].sort().join(','),
+      [...typeFilters].sort().join(',')
+    ].join('|');
     const shownCards = loadShownCards(quizMode, filterKey, currentSetCode);
 
     if (quizMode === 'grading') {
@@ -5593,7 +5710,7 @@ const GIHQuiz = () => {
         setCurrentPair(null);
       }
     }
-  }, [colorFilter, rarityFilter, typeFilters, quizMode, smartSelectionEnabled, metric, currentSetCode, activeCardData]);
+  }, [colorFilters, rarityFilters, typeFilters, quizMode, smartSelectionEnabled, metric, currentSetCode, activeCardData]);
 
   // Preload images for a pair of cards in the background
   const preloadCardImages = React.useCallback(async (card1, card2) => {
@@ -5631,7 +5748,11 @@ const GIHQuiz = () => {
     saveScore(quizMode, newPoints, newQuestions, currentSetCode);
 
     // Mark this pair as shown
-    const filterKey = `${colorFilter}|${rarityFilter}|${typeFilters.join(',')}`;
+    const filterKey = [
+      [...colorFilters].sort().join(','),
+      [...rarityFilters].sort().join(','),
+      [...typeFilters].sort().join(',')
+    ].join('|');
     addShownCards(quizMode, filterKey, currentSetCode, currentPair[0].name, currentPair[1].name);
 
     // Add to history
@@ -5650,8 +5771,8 @@ const GIHQuiz = () => {
       isCorrect,
       pointsEarned,
       metric: metric,
-      filterColor: colorFilter,
-      filterRarity: rarityFilter,
+      filterColor: colorFilters.join(',') || 'all',
+      filterRarity: rarityFilters.join(',') || 'all',
       filterType: typeFilters.join(',') || 'all',
       smartSelection: smartSelectionEnabled
     };
@@ -5665,7 +5786,7 @@ const GIHQuiz = () => {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilter, rarityFilter, typeFilters, smartSelectionEnabled, currentSetCode, generateQuestion]);
+  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilters, rarityFilters, typeFilters, smartSelectionEnabled, currentSetCode, generateQuestion]);
 
   // Handle image loaded notification for background preloading
   const handleImageLoaded = React.useCallback((cardNumber) => {
@@ -5735,7 +5856,11 @@ const GIHQuiz = () => {
     saveScore(quizMode, newPoints, newQuestions, currentSetCode);
 
     // Mark card as shown
-    const filterKey = `${colorFilter}|${rarityFilter}|${typeFilters.join(',')}`;
+    const filterKey = [
+      [...colorFilters].sort().join(','),
+      [...rarityFilters].sort().join(','),
+      [...typeFilters].sort().join(',')
+    ].join('|');
     const shownCards = loadShownCards(quizMode, filterKey, currentSetCode);
     shownCards.push(currentCard.name);
     saveShownCards(quizMode, filterKey, shownCards, currentSetCode);
@@ -5750,8 +5875,8 @@ const GIHQuiz = () => {
       userGrade: grade,
       gradeDistance: distance,
       pointsEarned,
-      filterColor: colorFilter,
-      filterRarity: rarityFilter,
+      filterColor: colorFilters.join(',') || 'all',
+      filterRarity: rarityFilters.join(',') || 'all',
       filterType: typeFilters.join(',') || 'all'
     };
     addHistoryEntry(quizMode, historyEntry, currentSetCode);
@@ -5764,34 +5889,37 @@ const GIHQuiz = () => {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentCard, isAnswering, questions, points, quizMode, colorFilter, rarityFilter, typeFilters, currentSetCode, generateQuestion]);
+  }, [currentCard, isAnswering, questions, points, quizMode, colorFilters, rarityFilters, typeFilters, currentSetCode, generateQuestion]);
 
   const handleNextQuestion = React.useCallback(() => {
     setIsAnswering(false);
     generateQuestion();
   }, [generateQuestion]);
 
-  const handleColorChange = (e) => {
-    setColorFilter(e.target.value);
+  const toggleFilter = (setter, current, value) => {
+    setter(current.includes(value) ? current.filter(v => v !== value) : [...current, value]);
     setShowResult(false);
     setSelectedCardNum(null);
     setIsAnswering(false);
   };
 
-  const handleRarityChange = (e) => {
-    setRarityFilter(e.target.value);
+  const clearFilter = (setter) => {
+    setter([]);
     setShowResult(false);
     setSelectedCardNum(null);
     setIsAnswering(false);
   };
 
-  const handleTypeToggle = (typeValue) => {
-    setTypeFilters(prev =>
-      prev.includes(typeValue) ? prev.filter(t => t !== typeValue) : [...prev, typeValue]
-    );
-    setShowResult(false);
-    setSelectedCardNum(null);
-    setIsAnswering(false);
+  const handleQueryChange = (e) => {
+    const text = e.target.value;
+    setQueryText(text);
+    if (lastSource.current === 'combobox') { lastSource.current = null; return; }
+    lastSource.current = 'query';
+    const parsed = parseQuery(text);
+    setColorFilters(parsed.colors);
+    setRarityFilters(parsed.rarities);
+    setTypeFilters(parsed.types);
+    setShowResult(false); setSelectedCardNum(null); setIsAnswering(false);
   };
 
   const showToastMessage = (message) => {
@@ -5955,8 +6083,8 @@ Play at: ${baseUrl}`,
                   setIsAnswering(false);
                   setCurrentPair(null);
                   setCurrentCard(null);
-                  setColorFilter('all');
-                  setRarityFilter('all');
+                  setColorFilters([]);
+                  setRarityFilters([]);
                   setTypeFilters([]);
                 }}
                 style={{fontSize: '13px', padding: '5px 8px', display: 'flex', alignItems: 'center', gap: '3px', flex: '0 1 auto'}}
@@ -6019,99 +6147,52 @@ Play at: ${baseUrl}`,
           )}
 
           <div className="filter-section">
-            <div className="filter-group">
-              <label className="filter-label">Color</label>
-              <select value={colorFilter} onChange={handleColorChange}>
-                <option value="all">All Colors</option>
-                <option value="W">White (W)</option>
-                <option value="U">Blue (U)</option>
-                <option value="B">Black (B)</option>
-                <option value="R">Red (R)</option>
-                <option value="G">Green (G)</option>
-                <option value="multicolor">Multicolor</option>
-                <option value="colorless">Colorless</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label className="filter-label">Rarity</label>
-              <select value={rarityFilter} onChange={handleRarityChange}>
-                <option value="all">All Rarities</option>
-                <option value="M">Mythic (M)</option>
-                <option value="R">Rare (R)</option>
-                <option value="U">Uncommon (U)</option>
-                <option value="C">Common (C)</option>
-              </select>
-            </div>
-
-            {/* Type filter: only cards with type data; hidden for other sets */}
-            {activeCardData.some(c => c.type) && (() => {
-              // Derive main types from active set
-              const typeOptions = [...new Set(
-                activeCardData
-                  .filter(c => c.type)
-                  .map(c => c.type.split(' — ')[0].trim())
-              )].sort();
-
-              const label = typeFilters.length === 0
-                ? 'All Types'
-                : typeFilters.length === 1
-                ? typeFilters[0]
-                : `${typeFilters.length} types`;
-
+            <MultiSelectFilter
+              label="Color"
+              options={[
+                {value: 'W', label: 'White (W)'},
+                {value: 'U', label: 'Blue (U)'},
+                {value: 'B', label: 'Black (B)'},
+                {value: 'R', label: 'Red (R)'},
+                {value: 'G', label: 'Green (G)'},
+                {value: 'multicolor', label: 'Multicolor'},
+                {value: 'colorless', label: 'Colorless'}
+              ]}
+              selected={colorFilters}
+              isOpen={openDropdown === 'color'}
+              onToggleOpen={() => setOpenDropdown(openDropdown === 'color' ? null : 'color')}
+              onToggleValue={v => toggleFilter(setColorFilters, colorFilters, v)}
+              onClear={() => clearFilter(setColorFilters)}
+            />
+            <MultiSelectFilter
+              label="Rarity"
+              options={[
+                {value: 'M', label: 'Mythic (M)'},
+                {value: 'R', label: 'Rare (R)'},
+                {value: 'U', label: 'Uncommon (U)'},
+                {value: 'C', label: 'Common (C)'}
+              ]}
+              selected={rarityFilters}
+              isOpen={openDropdown === 'rarity'}
+              onToggleOpen={() => setOpenDropdown(openDropdown === 'rarity' ? null : 'rarity')}
+              onToggleValue={v => toggleFilter(setRarityFilters, rarityFilters, v)}
+              onClear={() => clearFilter(setRarityFilters)}
+            />
+            {(() => {
+              const typeOptions = [...new Set(activeCardData.filter(c => c.type).map(c => c.type.split(' — ')[0].trim()))].sort().map(t => ({value: t, label: t}));
               return (
-                <div className="filter-group" style={{position: 'relative'}}>
-                  <label className="filter-label">Type</label>
-                  <div style={{display: 'flex', gap: '4px', alignItems: 'center'}}>
-                    <button
-                      onClick={() => setTypeDropdownOpen(o => !o)}
-                      style={{
-                        background: typeFilters.length > 0 ? '#4a9eff' : '#1a2040',
-                        color: '#fff',
-                        border: '1px solid #2a3060',
-                        borderRadius: '4px',
-                        padding: '4px 10px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        minWidth: '90px',
-                        textAlign: 'left'
-                      }}
-                    >
-                      {label} ▾
-                    </button>
-                    {typeFilters.length > 0 && (
-                      <button onClick={() => { setTypeFilters([]); setShowResult(false); setSelectedCardNum(null); setIsAnswering(false); }}
-                        style={{background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px', padding: '2px 4px'}}>
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                  {typeDropdownOpen && (
-                    <div style={{
-                      position: 'absolute', top: '100%', left: 0, zIndex: 100,
-                      background: '#1a2040', border: '1px solid #2a3060', borderRadius: '4px',
-                      padding: '4px 0', minWidth: '160px', maxHeight: '220px', overflowY: 'auto',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-                    }}>
-                      {typeOptions.map(t => (
-                        <label key={t} style={{
-                          display: 'flex', alignItems: 'center', gap: '8px',
-                          padding: '5px 12px', cursor: 'pointer', fontSize: '13px',
-                          background: typeFilters.includes(t) ? '#2a3a6a' : 'transparent'
-                        }}
-                          onMouseEnter={e => e.currentTarget.style.background = typeFilters.includes(t) ? '#2a3a6a' : '#232b50'}
-                          onMouseLeave={e => e.currentTarget.style.background = typeFilters.includes(t) ? '#2a3a6a' : 'transparent'}
-                        >
-                          <input type="checkbox" checked={typeFilters.includes(t)} onChange={() => handleTypeToggle(t)}
-                            style={{accentColor: '#4a9eff'}} />
-                          {t}
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <MultiSelectFilter
+                  label="Type"
+                  options={typeOptions}
+                  selected={typeFilters}
+                  isOpen={openDropdown === 'type'}
+                  onToggleOpen={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
+                  onToggleValue={v => toggleFilter(setTypeFilters, typeFilters, v)}
+                  onClear={() => clearFilter(setTypeFilters)}
+                />
               );
             })()}
+            {/* Search box temporarily disabled — supporting code (queryText state, buildQuery/parseQuery, handleQueryChange, sync useEffect) left in place for re-enabling later */}
 
           </div>
 
@@ -6507,7 +6588,8 @@ Play at: ${baseUrl}`,
                 {history.slice().reverse().map((entry, idx) => {
                   const actualIdx = history.length - idx;
                   const setName = entry.setCode ? SET_CONFIG[entry.setCode]?.shortName || entry.setCode : 'ECL';
-                  const filterText = `${setName} • ${entry.filterColor === 'all' ? 'All' : entry.filterColor.toUpperCase()} / ${entry.filterRarity === 'all' ? 'All' : entry.filterRarity}${entry.filterType && entry.filterType !== 'all' ? ` / ${entry.filterType}` : ''}`;
+                  const fmt = v => !v || v === 'all' ? 'All' : v.toUpperCase();
+                  const filterText = `${setName} • ${fmt(entry.filterColor)} / ${fmt(entry.filterRarity)} / ${fmt(entry.filterType)}`;
                   const smartMarker = entry.smartSelection ? ' ✨' : '';
                   const metricMarker = entry.metric === 'alsa' ? ' 🎯' : '';
 
