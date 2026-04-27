@@ -428,16 +428,6 @@
       text-decoration: underline;
     }
 
-    .card-set-badge {
-      font-size: 12px;
-      font-weight: 600;
-      color: #ffb347;
-      margin-left: 8px;
-      padding: 2px 6px;
-      background: rgba(255, 179, 71, 0.15);
-      border-radius: 4px;
-      display: inline-block;
-    }
 
     .result-panel {
       background: rgba(74, 158, 255, 0.1);
@@ -5306,10 +5296,8 @@ const SCRYFALL_SET_CODES = {
   EOE: ['eoe', 'spg'],
   TDM: ['ddt', 'spg'],
   FIN: ['fin', 'fca', 'spg'],
-  // Secrets of Strixhaven printing variants
-  SOS: ['sos'],
-  SPA: ['spa'],
-  SPG: ['spg']
+  // Secrets of Strixhaven: try each printing variant in order
+  SOS: ['sos', 'soa', 'spg']
   // CUBE excluded: cards span all sets, uses exact-name + oldest-print strategy (see below)
 };
 
@@ -5630,18 +5618,15 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
           </div>
         )}
       </div>
-      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'}}>
-        <a
-          href={cardUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="card-name"
-          title={cardInfo?.oracleText ? `${card.name}\n\n${cardInfo.typeLine}\n\n${cardInfo.oracleText}` : card.name}
-        >
-          {card.name}
-        </a>
-        {card.set && <span className="card-set-badge">{card.set}</span>}
-      </div>
+      <a
+        href={cardUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="card-name"
+        title={cardInfo?.oracleText ? `${card.name}\n\n${cardInfo.typeLine}\n\n${cardInfo.oracleText}` : card.name}
+      >
+        {card.name}
+      </a>
     </div>
   );
 };
