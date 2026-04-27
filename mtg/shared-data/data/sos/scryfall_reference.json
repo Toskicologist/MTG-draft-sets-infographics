@@ -1,0 +1,416 @@
+{
+  "scryfall_sos_cards": 266,
+  "matched": 41,
+  "cards": [
+    {
+      "quiz_name": "Emeritus of Ideation // Ancestral Recall",
+      "scryfall_id": "75961d36-acf6-425f-9698-0bf52af74f31",
+      "oracle_id": "24a29be4-5bc2-469b-b2ce-2fb305c3facb",
+      "scryfall_name": "Emeritus of Ideation // Ancestral Recall",
+      "color": "U",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
+      "scryfall_uri": "https://scryfall.com/card/sos/45/emeritus-of-ideation-ancestral-recall?utm_source=api"
+    },
+    {
+      "quiz_name": "Germination Practicum",
+      "scryfall_id": "abe8332f-c76e-44e2-9427-d1228453abec",
+      "oracle_id": "c8d22139-7b25-4bb1-b0d9-d4c622401edf",
+      "scryfall_name": "Germination Practicum",
+      "color": "G",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016",
+      "scryfall_uri": "https://scryfall.com/card/sos/149/germination-practicum?utm_source=api"
+    },
+    {
+      "quiz_name": "Moment of Reckoning",
+      "scryfall_id": "577d9dc8-7720-4dc9-b650-64b4729b309b",
+      "oracle_id": "8e9576c1-b0c2-4be5-9005-35b51164f78e",
+      "scryfall_name": "Moment of Reckoning",
+      "color": "BW",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423",
+      "scryfall_uri": "https://scryfall.com/card/sos/205/moment-of-reckoning?utm_source=api"
+    },
+    {
+      "quiz_name": "Quandrix, the Proof",
+      "scryfall_id": "015afe31-af3c-4c9b-9997-d7c33b915a33",
+      "oracle_id": "2cbccc46-bdef-4dfb-90a4-0278c5c8488a",
+      "scryfall_name": "Quandrix, the Proof",
+      "color": "GU",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517",
+      "scryfall_uri": "https://scryfall.com/card/sos/218/quandrix-the-proof?utm_source=api"
+    },
+    {
+      "quiz_name": "Professor Dellian Fel",
+      "scryfall_id": "6ff3b4d8-1271-4c5d-8834-7662244f173d",
+      "oracle_id": "8c5fe985-69e1-4a03-99fc-a6fd2314a9a7",
+      "scryfall_name": "Professor Dellian Fel",
+      "color": "BG",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486",
+      "scryfall_uri": "https://scryfall.com/card/sos/214/professor-dellian-fel?utm_source=api"
+    },
+    {
+      "quiz_name": "Berta, Wise Extrapolator",
+      "scryfall_id": "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
+      "oracle_id": "715f0832-696c-4111-b418-d9b6da403159",
+      "scryfall_name": "Berta, Wise Extrapolator",
+      "color": "GU",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201",
+      "scryfall_uri": "https://scryfall.com/card/sos/175/berta-wise-extrapolator?utm_source=api"
+    },
+    {
+      "quiz_name": "Jadzi, Steward of Fate // Oracle's Gift",
+      "scryfall_id": "a95b6baf-01e6-49c3-9a26-394b127d53c3",
+      "oracle_id": "c63b3511-d597-4c6e-9094-eabdeaa8a394",
+      "scryfall_name": "Jadzi, Steward of Fate // Oracle's Gift",
+      "color": "U",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293",
+      "scryfall_uri": "https://scryfall.com/card/sos/55/jadzi-steward-of-fate-oracles-gift?utm_source=api"
+    },
+    {
+      "quiz_name": "Lorehold, the Historian",
+      "scryfall_id": "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
+      "oracle_id": "61a41cf1-60cc-45ba-aa98-493c14e87d9d",
+      "scryfall_name": "Lorehold, the Historian",
+      "color": "RW",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396",
+      "scryfall_uri": "https://scryfall.com/card/sos/201/lorehold-the-historian?utm_source=api"
+    },
+    {
+      "quiz_name": "Emeritus of Truce // Swords to Plowshares",
+      "scryfall_id": "9869a753-5e41-4098-ab41-e75b4396ec50",
+      "oracle_id": "e6c41473-2398-4888-9f0c-467dce7c39a4",
+      "scryfall_name": "Emeritus of Truce // Swords to Plowshares",
+      "color": "W",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
+      "scryfall_uri": "https://scryfall.com/card/sos/13/emeritus-of-truce-swords-to-plowshares?utm_source=api"
+    },
+    {
+      "quiz_name": "Conciliator's Duelist",
+      "scryfall_id": "e225929b-6197-4550-969e-3c4a97206a68",
+      "oracle_id": "d6ea0e58-7b14-425b-9135-57e149c0e47e",
+      "scryfall_name": "Conciliator's Duelist",
+      "color": "BW",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257",
+      "scryfall_uri": "https://scryfall.com/card/sos/182/conciliators-duelist?utm_source=api"
+    },
+    {
+      "quiz_name": "Silverquill, the Disputant",
+      "scryfall_id": "1742c9cd-5ba0-4335-9999-acc7f9d4f73c",
+      "oracle_id": "66deb3f3-0314-427e-9cb8-6befa365ae94",
+      "scryfall_name": "Silverquill, the Disputant",
+      "color": "BW",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577",
+      "scryfall_uri": "https://scryfall.com/card/sos/226/silverquill-the-disputant?utm_source=api"
+    },
+    {
+      "quiz_name": "Emeritus of Abundance // Regrowth",
+      "scryfall_id": "ac095763-6f4e-4d4e-9c99-414646368f8d",
+      "oracle_id": "e5152e8d-9f55-493d-a0fc-753cc72ee299",
+      "scryfall_name": "Emeritus of Abundance // Regrowth",
+      "color": "G",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986",
+      "scryfall_uri": "https://scryfall.com/card/sos/145/emeritus-of-abundance-regrowth?utm_source=api"
+    },
+    {
+      "quiz_name": "Improvisation Capstone",
+      "scryfall_id": "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
+      "oracle_id": "fd4f0315-567a-4cc5-bc7e-88a9d2cee910",
+      "scryfall_name": "Improvisation Capstone",
+      "color": "R",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787",
+      "scryfall_uri": "https://scryfall.com/card/sos/120/improvisation-capstone?utm_source=api"
+    },
+    {
+      "quiz_name": "Stirring Hopesinger",
+      "scryfall_id": "21375667-b318-47f8-a482-9c8c2b5b14c0",
+      "oracle_id": "7244d04a-bb9c-4fbe-a346-4a3f45709da7",
+      "scryfall_name": "Stirring Hopesinger",
+      "color": "W",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157",
+      "scryfall_uri": "https://scryfall.com/card/sos/35/stirring-hopesinger?utm_source=api"
+    },
+    {
+      "quiz_name": "Ral Zarek, Guest Lecturer",
+      "scryfall_id": "8fbad757-4081-42f7-a460-68ac03e77510",
+      "oracle_id": "0dc76b7f-6405-44a1-8c55-31fa480ff70b",
+      "scryfall_name": "Ral Zarek, Guest Lecturer",
+      "color": "B",
+      "rarity": "M",
+      "image_url": "https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587",
+      "scryfall_uri": "https://scryfall.com/card/sos/97/ral-zarek-guest-lecturer?utm_source=api"
+    },
+    {
+      "quiz_name": "Antiquities on the Loose",
+      "scryfall_id": "68ee92cd-51af-4de5-bcc8-34d0bb2fd398",
+      "oracle_id": "9c45682f-48b5-4e58-9277-ff4211f389ae",
+      "scryfall_name": "Antiquities on the Loose",
+      "color": "W",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960",
+      "scryfall_uri": "https://scryfall.com/card/sos/7/antiquities-on-the-loose?utm_source=api"
+    },
+    {
+      "quiz_name": "Applied Geometry",
+      "scryfall_id": "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
+      "oracle_id": "88fc179c-055b-47c2-b830-1fd2b1377147",
+      "scryfall_name": "Applied Geometry",
+      "color": "GU",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180",
+      "scryfall_uri": "https://scryfall.com/card/sos/172/applied-geometry?utm_source=api"
+    },
+    {
+      "quiz_name": "Informed Inkwright",
+      "scryfall_id": "5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6",
+      "oracle_id": "d2a372d8-3eb2-4ba4-a75f-7951654de383",
+      "scryfall_name": "Informed Inkwright",
+      "color": "W",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046",
+      "scryfall_uri": "https://scryfall.com/card/sos/20/informed-inkwright?utm_source=api"
+    },
+    {
+      "quiz_name": "Abstract Paintmage",
+      "scryfall_id": "ea008094-d995-4740-9b39-c61049356c55",
+      "oracle_id": "bc899d5c-0a91-4f19-a3e4-3078ae966110",
+      "scryfall_name": "Abstract Paintmage",
+      "color": "RU",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173",
+      "scryfall_uri": "https://scryfall.com/card/sos/171/abstract-paintmage?utm_source=api"
+    },
+    {
+      "quiz_name": "Mind Roots",
+      "scryfall_id": "9d5fdbda-ebbe-45d6-a668-5ddee057a063",
+      "oracle_id": "5d32dbf3-c157-4543-8813-da88f463de0e",
+      "scryfall_name": "Mind Roots",
+      "color": "BG",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410",
+      "scryfall_uri": "https://scryfall.com/card/sos/203/mind-roots?utm_source=api"
+    },
+    {
+      "quiz_name": "Strixhaven Skycoach",
+      "scryfall_id": "87741fbb-b426-4f83-a358-587b0907f081",
+      "oracle_id": "e286a191-39d4-4073-b844-11d2aba911b4",
+      "scryfall_name": "Strixhaven Skycoach",
+      "color": "",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/8/7/87741fbb-b426-4f83-a358-587b0907f081.jpg?1775938759",
+      "scryfall_uri": "https://scryfall.com/card/sos/252/strixhaven-skycoach?utm_source=api"
+    },
+    {
+      "quiz_name": "Blazing Firesinger // Seething Song",
+      "scryfall_id": "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
+      "oracle_id": "1bf505a7-292e-4642-83b6-8ff41ebe5d51",
+      "scryfall_name": "Blazing Firesinger // Seething Song",
+      "color": "R",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691",
+      "scryfall_uri": "https://scryfall.com/card/sos/109/blazing-firesinger-seething-song?utm_source=api"
+    },
+    {
+      "quiz_name": "Chelonian Tackle",
+      "scryfall_id": "a82a4d8c-4105-4923-85a2-ef58241f725c",
+      "oracle_id": "8c1c519a-6edd-4204-b825-b0feca5afa42",
+      "scryfall_name": "Chelonian Tackle",
+      "color": "G",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964",
+      "scryfall_uri": "https://scryfall.com/card/sos/142/chelonian-tackle?utm_source=api"
+    },
+    {
+      "quiz_name": "Embrace the Paradox",
+      "scryfall_id": "c0cf5e0f-3668-46f2-850d-d91a538e8ead",
+      "oracle_id": "b9110be0-3f0c-449b-8baf-689e92fdb8f0",
+      "scryfall_name": "Embrace the Paradox",
+      "color": "GU",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288",
+      "scryfall_uri": "https://scryfall.com/card/sos/186/embrace-the-paradox?utm_source=api"
+    },
+    {
+      "quiz_name": "Noxious Newt",
+      "scryfall_id": "3a028306-c5d7-4f8f-b6f4-0d103fd47000",
+      "oracle_id": "1232c461-643c-40a3-901e-09b665f817da",
+      "scryfall_name": "Noxious Newt",
+      "color": "G",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060",
+      "scryfall_uri": "https://scryfall.com/card/sos/155/noxious-newt?utm_source=api"
+    },
+    {
+      "quiz_name": "Slumbering Trudge",
+      "scryfall_id": "3a925370-58ac-4181-9acc-db7b0e0abf17",
+      "oracle_id": "d04bce9a-822b-4a52-8826-b503ef5f5b2e",
+      "scryfall_name": "Slumbering Trudge",
+      "color": "G",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a925370-58ac-4181-9acc-db7b0e0abf17.jpg?1776584117",
+      "scryfall_uri": "https://scryfall.com/card/sos/160/slumbering-trudge?utm_source=api"
+    },
+    {
+      "quiz_name": "Terramorphic Expanse",
+      "scryfall_id": "9a4c5629-fadd-42b9-850f-9f8586a2ca50",
+      "oracle_id": "1bd3e453-aa21-4ee6-95c2-d6d920ee8e7a",
+      "scryfall_name": "Terramorphic Expanse",
+      "color": "",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/9/a/9a4c5629-fadd-42b9-850f-9f8586a2ca50.jpg?1775938853",
+      "scryfall_uri": "https://scryfall.com/card/sos/265/terramorphic-expanse?utm_source=api"
+    },
+    {
+      "quiz_name": "Banishing Betrayal",
+      "scryfall_id": "1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4",
+      "oracle_id": "6b633e58-ea1b-4ed0-addb-6dfd93645ae4",
+      "scryfall_name": "Banishing Betrayal",
+      "color": "U",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176",
+      "scryfall_uri": "https://scryfall.com/card/sos/38/banishing-betrayal?utm_source=api"
+    },
+    {
+      "quiz_name": "Bogwater Lumaret",
+      "scryfall_id": "7a42f51a-3377-47bb-b6fb-c0515bf1dcfb",
+      "oracle_id": "0109432d-5a2a-456f-ad39-b75cb4c73420",
+      "scryfall_name": "Bogwater Lumaret",
+      "color": "BG",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216",
+      "scryfall_uri": "https://scryfall.com/card/sos/177/bogwater-lumaret?utm_source=api"
+    },
+    {
+      "quiz_name": "Burrog Banemaker",
+      "scryfall_id": "3e4f9d23-1a17-4188-ac91-f8ddea46a1c4",
+      "oracle_id": "c531801c-acf0-45ae-a112-054cc5ccb6ed",
+      "scryfall_name": "Burrog Banemaker",
+      "color": "B",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433",
+      "scryfall_uri": "https://scryfall.com/card/sos/75/burrog-banemaker?utm_source=api"
+    },
+    {
+      "quiz_name": "Dig Site Inventory",
+      "scryfall_id": "e52464ee-df8b-41ec-af93-4b0eb004383e",
+      "oracle_id": "96742ebc-10a6-49e6-812a-631e5a60847d",
+      "scryfall_name": "Dig Site Inventory",
+      "color": "W",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980",
+      "scryfall_uri": "https://scryfall.com/card/sos/10/dig-site-inventory?utm_source=api"
+    },
+    {
+      "quiz_name": "End of the Hunt",
+      "scryfall_id": "0809b51a-6a05-4f18-9bf4-1b8382da648f",
+      "oracle_id": "74b8182e-54be-444a-97b1-84fc5fd3c290",
+      "scryfall_name": "End of the Hunt",
+      "color": "B",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476",
+      "scryfall_uri": "https://scryfall.com/card/sos/81/end-of-the-hunt?utm_source=api"
+    },
+    {
+      "quiz_name": "Inkshape Demonstrator",
+      "scryfall_id": "bcfac992-9984-4529-b9ff-a42d58832b34",
+      "oracle_id": "4993651f-f161-4007-b485-a0c66a02f91b",
+      "scryfall_name": "Inkshape Demonstrator",
+      "color": "W",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053",
+      "scryfall_uri": "https://scryfall.com/card/sos/21/inkshape-demonstrator?utm_source=api"
+    },
+    {
+      "quiz_name": "Rubble Rouser",
+      "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
+      "oracle_id": "f35aa497-bd0f-4642-8713-820b9f014da5",
+      "scryfall_name": "Rubble Rouser",
+      "color": "R",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
+      "scryfall_uri": "https://scryfall.com/card/sos/128/rubble-rouser?utm_source=api"
+    },
+    {
+      "quiz_name": "Send in the Pest",
+      "scryfall_id": "283b508b-89f0-4c23-9686-b049e402b73c",
+      "oracle_id": "955bfcb8-6477-4ed0-b6e7-8940874ae5e4",
+      "scryfall_name": "Send in the Pest",
+      "color": "B",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/2/8/283b508b-89f0-4c23-9686-b049e402b73c.jpg?1775937607",
+      "scryfall_uri": "https://scryfall.com/card/sos/100/send-in-the-pest?utm_source=api"
+    },
+    {
+      "quiz_name": "Spiritcall Enthusiast // Scrollboost",
+      "scryfall_id": "c0b85569-2cb3-4b64-b0fe-418195c4dab0",
+      "oracle_id": "c77ddcac-ce54-4348-bde2-5d9caf3d5b04",
+      "scryfall_name": "Spiritcall Enthusiast // Scrollboost",
+      "color": "W",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/c/0/c0b85569-2cb3-4b64-b0fe-418195c4dab0.jpg?1775937144",
+      "scryfall_uri": "https://scryfall.com/card/sos/33/spiritcall-enthusiast-scrollboost?utm_source=api"
+    },
+    {
+      "quiz_name": "Summoned Dromedary",
+      "scryfall_id": "44d0277c-ca82-4334-a15a-cd67a9db0d02",
+      "oracle_id": "697b14c6-fe6a-4880-9cf2-b6602a52ca0b",
+      "scryfall_name": "Summoned Dromedary",
+      "color": "W",
+      "rarity": "U",
+      "image_url": "https://cards.scryfall.io/normal/front/4/4/44d0277c-ca82-4334-a15a-cd67a9db0d02.jpg?1775937170",
+      "scryfall_uri": "https://scryfall.com/card/sos/37/summoned-dromedary?utm_source=api"
+    },
+    {
+      "quiz_name": "Elemental Mascot",
+      "scryfall_id": "c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0",
+      "oracle_id": "882f30e4-4ce1-4581-8d2d-d763aa13befe",
+      "scryfall_name": "Elemental Mascot",
+      "color": "RU",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280",
+      "scryfall_uri": "https://scryfall.com/card/sos/185/elemental-mascot?utm_source=api"
+    },
+    {
+      "quiz_name": "Great Hall of the Biblioplex",
+      "scryfall_id": "42d92674-2664-411c-b9c5-b04da7c845f4",
+      "oracle_id": "a8c70dab-1e27-4a9c-bd2d-910d5720d02d",
+      "scryfall_name": "Great Hall of the Biblioplex",
+      "color": "",
+      "rarity": "R",
+      "image_url": "https://cards.scryfall.io/normal/front/4/2/42d92674-2664-411c-b9c5-b04da7c845f4.jpg?1775938794",
+      "scryfall_uri": "https://scryfall.com/card/sos/257/great-hall-of-the-biblioplex?utm_source=api"
+    },
+    {
+      "quiz_name": "Fields of Strife",
+      "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "oracle_id": "a32e08fa-bea4-4ba9-a126-9bf0a91f67e2",
+      "scryfall_name": "Fields of Strife",
+      "color": "",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+      "scryfall_uri": "https://scryfall.com/card/sos/255/fields-of-strife?utm_source=api"
+    },
+    {
+      "quiz_name": "Forum of Amity",
+      "scryfall_id": "1de6c6cc-0c55-4997-8623-d7f796bd9ab8",
+      "oracle_id": "349ea6c7-6b3e-417f-b082-b712e2b1635b",
+      "scryfall_name": "Forum of Amity",
+      "color": "",
+      "rarity": "C",
+      "image_url": "https://cards.scryfall.io/normal/front/1/d/1de6c6cc-0c55-4997-8623-d7f796bd9ab8.jpg?1775938787",
+      "scryfall_uri": "https://scryfall.com/card/sos/256/forum-of-amity?utm_source=api"
+    }
+  ]
+}
