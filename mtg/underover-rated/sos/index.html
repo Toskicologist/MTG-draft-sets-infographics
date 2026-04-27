@@ -1076,8 +1076,9 @@
                 return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=spg&format=image`;
             }
 
-            // Regular cards not in cache
-            return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${SET_CONFIG.set_code.toLowerCase()}&format=image`;
+            // For cards not in cache, try without set filter first (works for SOA/SPG guests)
+            // Then fallback to main set if that fails
+            return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image`;
         }
 
         function renderCard(card, isUnderrated) {
