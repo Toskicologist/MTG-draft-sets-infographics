@@ -13,7 +13,12 @@
 
     <!--
     Changelog:
-    - v1.2.0 (2026-04-29) Final Full List implementation
+    - v1.2.1 (2026-04-29) Full List metadata & Set column
+      - Fixed Type and Mana Cost columns (now populated from card_data.json primary source)
+      - Added Set column for set code display (SOS/SOA/SPG cross-reference)
+      - Set code now prioritizes card_data.json over setCodesMap for accuracy
+      - All Full List data cross-referenced against sos-ratings-v2-beta.html
+    - v1.2.0 (2026-04-29) Full List implementation
       - Card names in Full List tab always render as links (fallback to Scryfall search if scryfallUrl missing)
       - Card name hovers show card images with tooltip positioning
       - All data populated from local sources (no live API calls)
@@ -1015,34 +1020,35 @@
                 }
             });
 
-            // Create a map of card metadata (type, mana cost) from sos-complete-data.csv
+            // Create a map of card metadata using card_data.json as primary source (has complete data)
             const metaMap = new Map();
-            cardMetadata.forEach(row => {
-                const name = row.Card_Name?.replace(/^"|"$/g, '').trim();
-                if (name) {
-                    metaMap.set(name, {
-                        type: row.Type || '',
-                        manaCost: row.Mana_Cost || ''
-                    });
-                }
-            });
 
-            // Fill in missing type/manaCost from card_data.json (sos-ratings)
+            // First, populate from card_data.json (primary source with complete type/manaCost data)
             if (cardDataJSON && typeof cardDataJSON === 'object') {
-                Object.values(cardDataJSON).forEach(cardInfo => {
-                    if (cardInfo.name && !metaMap.has(cardInfo.name)) {
+                // card_data.json is an array of card objects
+                const cardArray = Array.isArray(cardDataJSON) ? cardDataJSON : Object.values(cardDataJSON);
+                cardArray.forEach(cardInfo => {
+                    if (cardInfo.name) {
                         metaMap.set(cardInfo.name, {
                             type: cardInfo.type || '',
-                            manaCost: ''
+                            manaCost: cardInfo.manaCost || '',
+                            setCode: cardInfo.setCode || SET_CONFIG.set_code
                         });
-                    } else if (cardInfo.name && cardInfo.type) {
-                        const existing = metaMap.get(cardInfo.name);
-                        if (!existing.type) {
-                            existing.type = cardInfo.type;
-                        }
                     }
                 });
             }
+
+            // Fall back to CSV for any missing data
+            cardMetadata.forEach(row => {
+                const name = row.Card_Name?.replace(/^"|"$/g, '').trim();
+                if (name && !metaMap.has(name)) {
+                    metaMap.set(name, {
+                        type: row.Type || '',
+                        manaCost: row.Mana_Cost || '',
+                        setCode: SET_CONFIG.set_code
+                    });
+                }
+            });
 
             // Create a map of Scryfall URLs
             const scryfallMap = new Map();
@@ -1106,7 +1112,7 @@
                     discrepancy: discrepancy,
                     controversy: controversy,
                     scryfallUrl: scryfallMap.get(cardName) || '',
-                    setCode: window.setCodesMap && window.setCodesMap[cardName] ? window.setCodesMap[cardName] : SET_CONFIG.set_code
+                    setCode: meta.setCode || (window.setCodesMap && window.setCodesMap[cardName]) || SET_CONFIG.set_code
                 };
 
                 cards.push(card);
@@ -2239,10 +2245,11 @@
                         <thead>
                             <tr>
                                 <th data-sk="name">Card Name<span class="fl-sort">▲</span></th>
+                                <th data-sk="setCode" style="width:3.5ch;">Set<span class="fl-sort">▲</span></th>
                                 <th data-sk="rarity" style="width:3.5ch;">R<span class="fl-sort">▲</span></th>
                                 <th data-sk="colors" style="width:4ch;">Col<span class="fl-sort">▲</span></th>
-                                <th data-sk="type" style="width:3ch;">T<span class="fl-sort">▲</span></th>
-                                <th data-sk="manaCost" style="width:5ch;">Mana<span class="fl-sort">▲</span></th>
+                                <th data-sk="type" style="width:5ch;">Type<span class="fl-sort">▲</span></th>
+                                <th data-sk="manaCost" style="width:6ch;">Mana<span class="fl-sort">▲</span></th>
                                 <th data-sk="discrepancy" style="font-weight:700;">Discrep.<span class="fl-sort">▼</span></th>
                                 <th data-sk="expertZScore">Avg Expert<span class="fl-sort">▲</span></th>
                                 <th data-sk="controversy">Controv.<span class="fl-sort">▲</span></th>
@@ -2280,9 +2287,10 @@
 
                 row.innerHTML = `
                     <td>${link}<div class="fl-card-img"></div></td>
+                    <td style="text-align:center;">${card.setCode || '-'}</td>
                     <td>${card.rarity || '-'}</td>
                     <td>${card.colors || '-'}</td>
-                    <td class="fl-type-cell compact" data-full="${card.type}" title="${card.type}">${typeCode}</td>
+                    <td class="fl-type-cell compact" data-full="${card.type}" title="${card.type}">${card.type || '-'}</td>
                     <td style="font-size:0.85em">${card.manaCost || '-'}</td>
                     <td class="${flScoreClass(card.discrepancy)}">${(card.discrepancy >= 0 ? '+' : '') + card.discrepancy.toFixed(2)}σ</td>
                     <td class="${flScoreClass(card.expertZScore)}">${flFmt(card.expertZScore, true)} (${Number.isFinite(card.expertZScore) ? zScoreToGrade(card.expertZScore) : '-'})</td>
@@ -2391,7 +2399,7 @@
             const key = flSortState.key;
             const dir = flSortState.direction;
 
-            const stringKeys = new Set(['name', 'colors', 'type', 'manaCost']);
+            const stringKeys = new Set(['name', 'setCode', 'colors', 'type', 'manaCost']);
 
             rows.sort((a, b) => {
                 let aVal, bVal;
