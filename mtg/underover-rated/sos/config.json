@@ -45,7 +45,8 @@
     "lands_csv": "../../shared-data/17lands exports/SOS card-ratings-2026-04-27 1245 .csv",
     "scryfall_json": "../../shared-data/data/sos/scryfall_reference.json",
     "metadata_csv": "../../shared-data/data/sos/sos-complete-data.csv",
-    "set_codes_json": "../../shared-data/data/sos/sos-set-codes.json"
+    "set_codes_json": "../../shared-data/data/sos/sos-set-codes.json",
+    "card_data_json": "../sos-ratings/card_data.json"
   },
   "styling": {
     "header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)",
