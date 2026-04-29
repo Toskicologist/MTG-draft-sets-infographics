@@ -13,10 +13,11 @@
 
     <!--
     Changelog:
-    - v1.2.0-beta.6 (2026-04-29) Stage 4: Full List enhancements - add hover tooltips (already implemented) and populate missing Type/Mana Cost data
-      - Add populateMissingMetadata() function that fetches missing Type/Mana from Scryfall API
-      - Runs after data loading, respects rate limiting (50ms delay between requests)
-      - Calls integrated into Full List card name hover tooltips (already present)
+    - v1.2.0-beta.8 (2026-04-29) Stage 4: Populate missing metadata from local card_data.json
+      - Load card_data.json (from sos-ratings) as fallback for missing Type data in metadata CSV
+      - Full List card name hovers show card images (already implemented)
+      - No live API calls - all data is local
+    - v1.2.0-beta.7 (2026-04-29) Reverted broken Scryfall API approach (CORS issue)
     - v1.2.0-beta.5 (2026-04-29) Use card.setCode in Scryfall fallback URLs instead of hardcoding set:sos
     - v1.2.0-beta.4 (2026-04-29) Fix Scryfall links in Grid View and broken fallback URL
       - Add click handler in attachGridCardHoverListeners() so Grid View cards open Scryfall (skips if clicking an existing <a>)
@@ -823,7 +824,7 @@
         }
 
         // Configuration (injected at build time)
-        const SET_CONFIG = {"set_code": "SOS", "set_name": "Secrets of Strixhaven", "version": "1.2.0-beta.6", "timestamp": "2026-04-29T14:34:02Z", "data_paths": {"expert_csv": "../../shared-data/data/sos/sos-expert-ratings-normalized-beta.csv", "lands_csv": "../../shared-data/17lands exports/SOS card-ratings-2026-04-27 1245 .csv", "scryfall_json": "../../shared-data/data/sos/scryfall_reference.json", "metadata_csv": "../../shared-data/data/sos/sos-complete-data.csv", "set_codes_json": "../../shared-data/data/sos/sos-set-codes.json"}, "styling": {"header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)", "title": "Most Underrated & Overrated Cards"}, "experts": [{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore", "url": "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/"}, {"abbreviation": "ds", "name": "Draftsim", "raw_column": "ds_raw", "zscore_column": "ds_zscore", "url": "https://draftsim.com/mtg-sos-limited-set-review/"}, {"abbreviation": "llu_a", "name": "Limited Level-Ups (Alex)", "raw_column": "llu_a_raw", "zscore_column": "llu_a_zscore", "url": "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208"}, {"abbreviation": "llu_m", "name": "Limited Level-Ups (Marc)", "raw_column": "llu_m_raw", "zscore_column": "llu_m_zscore", "url": "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c"}, {"abbreviation": "cfb", "name": "Channel Fireball/TCG Player", "raw_column": "cfb_raw", "zscore_column": "cfb_zscore", "url": "https://www.tcgplayer.com/search/articles?q=secrets+of+strixhaven+limited+&productLineName=magic"}], "header": {"full_table_url": "https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html", "lands_url": "https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft", "lands_date": "April 27, 2026", "also_see": [{"text": "Draft Archetypes Color Wheel", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/"}, {"text": "17Lands Scores Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/"}, {"text": "Card Knowledge Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/anki.html"}]}};
+        const SET_CONFIG = {"set_code": "SOS", "set_name": "Secrets of Strixhaven", "version": "1.2.0-beta.8", "timestamp": "2026-04-29T14:41:39Z", "data_paths": {"expert_csv": "../../shared-data/data/sos/sos-expert-ratings-normalized-beta.csv", "lands_csv": "../../shared-data/17lands exports/SOS card-ratings-2026-04-27 1245 .csv", "scryfall_json": "../../shared-data/data/sos/scryfall_reference.json", "metadata_csv": "../../shared-data/data/sos/sos-complete-data.csv", "set_codes_json": "../../shared-data/data/sos/sos-set-codes.json"}, "styling": {"header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)", "title": "Most Underrated & Overrated Cards"}, "experts": [{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore", "url": "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/"}, {"abbreviation": "ds", "name": "Draftsim", "raw_column": "ds_raw", "zscore_column": "ds_zscore", "url": "https://draftsim.com/mtg-sos-limited-set-review/"}, {"abbreviation": "llu_a", "name": "Limited Level-Ups (Alex)", "raw_column": "llu_a_raw", "zscore_column": "llu_a_zscore", "url": "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208"}, {"abbreviation": "llu_m", "name": "Limited Level-Ups (Marc)", "raw_column": "llu_m_raw", "zscore_column": "llu_m_zscore", "url": "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c"}, {"abbreviation": "cfb", "name": "Channel Fireball/TCG Player", "raw_column": "cfb_raw", "zscore_column": "cfb_zscore", "url": "https://www.tcgplayer.com/search/articles?q=secrets+of+strixhaven+limited+&productLineName=magic"}], "header": {"full_table_url": "https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html", "lands_url": "https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft", "lands_date": "April 27, 2026", "also_see": [{"text": "Draft Archetypes Color Wheel", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/"}, {"text": "17Lands Scores Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/"}, {"text": "Card Knowledge Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/anki.html"}]}};
         const EXPERTS = [{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore", "url": "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/"},{"abbreviation": "ds", "name": "Draftsim", "raw_column": "ds_raw", "zscore_column": "ds_zscore", "url": "https://draftsim.com/mtg-sos-limited-set-review/"},{"abbreviation": "llu_a", "name": "Limited Level-Ups (Alex)", "raw_column": "llu_a_raw", "zscore_column": "llu_a_zscore", "url": "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208"},{"abbreviation": "llu_m", "name": "Limited Level-Ups (Marc)", "raw_column": "llu_m_raw", "zscore_column": "llu_m_zscore", "url": "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c"},{"abbreviation": "cfb", "name": "Channel Fireball/TCG Player", "raw_column": "cfb_raw", "zscore_column": "cfb_zscore", "url": "https://www.tcgplayer.com/search/articles?q=secrets+of+strixhaven+limited+&productLineName=magic"}];
         const RATERS = ["cgb", "ds", "llu_a", "llu_m", "cfb"];
 
@@ -896,7 +897,7 @@
             try {
                 // Load consolidated master ratings file (includes all 320 cards with pre-calculated z-scores)
                 // This eliminates the need for data merging and on-the-fly z-score calculations
-                const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV, setCodesJSON] = await Promise.all([
+                const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV, setCodesJSON, cardDataJSON] = await Promise.all([
                     fetch(SET_CONFIG.data_paths.expert_csv).then(r => {
                         if (!r.ok) throw new Error(`Failed to load expert ratings: ${r.status}`);
                         return r.text();
@@ -916,7 +917,8 @@
                     fetch(SET_CONFIG.data_paths.set_codes_json).then(r => {
                         if (!r.ok) throw new Error(`Failed to load set codes: ${r.status}`);
                         return r.json();
-                    })
+                    }),
+                    fetch(SET_CONFIG.data_paths.card_data_json).then(r => r.ok ? r.json() : {})
                 ]);
 
                 expertRatings = parseCSV(masterRatingsCSV);
@@ -929,9 +931,6 @@
 
                 // Process and calculate discrepancies
                 processedCards = calculateDiscrepancies();
-
-                // Populate missing metadata from Scryfall API
-                await populateMissingMetadata(processedCards);
 
                 // Render all views
                 renderGridView2();
@@ -1011,7 +1010,7 @@
                 }
             });
 
-            // Create a map of card metadata (type, mana cost) from ecl-complete-data.csv
+            // Create a map of card metadata (type, mana cost) from sos-complete-data.csv
             const metaMap = new Map();
             cardMetadata.forEach(row => {
                 const name = row.Card_Name?.replace(/^"|"$/g, '').trim();
@@ -1022,6 +1021,23 @@
                     });
                 }
             });
+
+            // Fill in missing type/manaCost from card_data.json (sos-ratings)
+            if (cardDataJSON && typeof cardDataJSON === 'object') {
+                Object.values(cardDataJSON).forEach(cardInfo => {
+                    if (cardInfo.name && !metaMap.has(cardInfo.name)) {
+                        metaMap.set(cardInfo.name, {
+                            type: cardInfo.type || '',
+                            manaCost: ''
+                        });
+                    } else if (cardInfo.name && cardInfo.type) {
+                        const existing = metaMap.get(cardInfo.name);
+                        if (!existing.type) {
+                            existing.type = cardInfo.type;
+                        }
+                    }
+                });
+            }
 
             // Create a map of Scryfall URLs
             const scryfallMap = new Map();
@@ -1092,24 +1108,6 @@
             });
 
             return cards;
-        }
-
-        async function populateMissingMetadata(cards) {
-            const missing = cards.filter(c => !c.type || !c.manaCost);
-            if (missing.length === 0) return;
-            for (const card of missing) {
-                if (!card.type || !card.manaCost) {
-                    try {
-                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(card.name)}&set=${card.setCode.toLowerCase()}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (!card.type && data.type_line) card.type = data.type_line;
-                            if (!card.manaCost && data.mana_cost) card.manaCost = data.mana_cost;
-                        }
-                    } catch (e) {}
-                    await new Promise(r => setTimeout(r, 50));
-                }
-            }
         }
 
         function getCardImage(cardName, setCode) {
