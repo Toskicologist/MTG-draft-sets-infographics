@@ -13,6 +13,11 @@
 
     <!--
     Changelog:
+    - v1.2.0 (2026-04-29) Final Full List implementation
+      - Card names in Full List tab always render as links (fallback to Scryfall search if scryfallUrl missing)
+      - Card name hovers show card images with tooltip positioning
+      - All data populated from local sources (no live API calls)
+      - Fully featured tabs: Grid View, By Rarity, By Color, Full List
     - v1.2.0-beta.8 (2026-04-29) Stage 4: Populate missing metadata from local card_data.json
       - Load card_data.json (from sos-ratings) as fallback for missing Type data in metadata CSV
       - Full List card name hovers show card images (already implemented)
@@ -2270,9 +2275,8 @@
                 row.dataset.discrepancy = Number.isFinite(card.discrepancy) ? card.discrepancy : '';
 
                 const typeCode = getTypeCode(card.type);
-                const link = card.scryfallUrl
-                    ? `<a href="${card.scryfallUrl}" target="_blank" rel="noopener noreferrer" title="View on Scryfall">${card.name}</a>`
-                    : card.name;
+                const scryfallUrl = card.scryfallUrl || (`https://scryfall.com/search?q=${encodeURIComponent('"' + card.name + '"')}`);
+                const link = `<a href="${scryfallUrl}" target="_blank" rel="noopener noreferrer" title="View on Scryfall">${card.name}</a>`;
 
                 row.innerHTML = `
                     <td>${link}<div class="fl-card-img"></div></td>
