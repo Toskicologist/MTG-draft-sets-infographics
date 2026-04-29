@@ -201,9 +201,15 @@
 
         .cards-row {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            grid-template-columns: repeat(10, minmax(0, 1fr));
             gap: 6px;
             margin-top: 6px;
+        }
+
+        @media (max-width: 1000px) {
+            .cards-row {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
         }
 
         .column-label {
