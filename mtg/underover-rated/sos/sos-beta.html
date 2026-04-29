@@ -930,7 +930,7 @@
                 window.setCodesMap = setCodesJSON;
 
                 // Process and calculate discrepancies
-                processedCards = calculateDiscrepancies();
+                processedCards = calculateDiscrepancies(cardDataJSON);
 
                 // Render all views
                 renderGridView2();
@@ -995,7 +995,7 @@
         }
 
 
-        function calculateDiscrepancies() {
+        function calculateDiscrepancies(cardDataJSON) {
             const cards = [];
 
             // Create a map of 17 Lands data by card name (includes rarity, color, and GIH WR)
