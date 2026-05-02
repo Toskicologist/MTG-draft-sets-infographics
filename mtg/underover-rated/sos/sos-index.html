@@ -3,17 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOS - Most Underrated & Overrated Cards</title>
-    <meta property="og:title" content="SOS - Most Underrated & Overrated Cards">
+    <title>SOS Beta - Most Underrated & Overrated Cards</title>
+    <meta property="og:title" content="SOS Beta - Most Underrated & Overrated Cards">
     <meta property="og:description" content="Discover which Secrets of Strixhaven cards experts got wrong - comparing predicted ratings vs actual 17 Lands performance data">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SOS - Most Underrated & Overrated Cards">
+    <meta name="twitter:title" content="SOS Beta - Most Underrated & Overrated Cards">
     <meta name="twitter:description" content="Which cards did the experts get wrong? Actual match data reveals the surprises">
 
     <!--
     Changelog:
-    - v1.1.1 (2026-04-29) Fix stale ECL title/meta tags and changelog
+    - v1.2.3 (2026-05-02) Fix card_data_json missing from inline SET_CONFIG
+      - Root cause: SET_CONFIG is hardcoded inline in HTML; config.json is not fetched at runtime
+      - Added card_data_json path (../../ratings-project/sos-ratings/card_data.json) to inline data_paths
+      - Type and Mana Cost columns now populate correctly from card_data.json
+    - v1.2.2 (2026-05-02) Fix card_data.json path resolution (config.json only - ineffective)
+      - Corrected relative path to card_data.json in config.json (no runtime effect)
+    - v1.2.1 (2026-04-29) Full List metadata & Set column
+      - Fixed Type and Mana Cost columns (now populated from card_data.json primary source)
+      - Added Set column for set code display (SOS/SOA/SPG cross-reference)
+      - Set code now prioritizes card_data.json over setCodesMap for accuracy
+      - All Full List data cross-referenced against sos-ratings-v2-beta.html
+    - v1.2.0 (2026-04-29) Full List implementation
+      - Card names in Full List tab always render as links (fallback to Scryfall search if scryfallUrl missing)
+      - Card name hovers show card images with tooltip positioning
+      - All data populated from local sources (no live API calls)
+      - Fully featured tabs: Grid View, By Rarity, By Color, Full List
+    - v1.2.0-beta.8 (2026-04-29) Stage 4: Populate missing metadata from local card_data.json
+      - Load card_data.json (from sos-ratings) as fallback for missing Type data in metadata CSV
+      - Full List card name hovers show card images (already implemented)
+      - No live API calls - all data is local
+    - v1.2.0-beta.7 (2026-04-29) Reverted broken Scryfall API approach (CORS issue)
+    - v1.2.0-beta.5 (2026-04-29) Use card.setCode in Scryfall fallback URLs instead of hardcoding set:sos
+    - v1.2.0-beta.4 (2026-04-29) Fix Scryfall links in Grid View and broken fallback URL
+      - Add click handler in attachGridCardHoverListeners() so Grid View cards open Scryfall (skips if clicking an existing <a>)
+      - Fix fallback URL encoding: raw quotes in href attribute were truncating the URL
+    - v1.2.0-beta.3 (2026-04-29) Make card images clickable to Scryfall
+      - Wrap card images in renderCard() with Scryfall link (uses scryfallUrl from cache, falls back to search)
+      - Fix tooltip Scryfall URL: was hardcoded set:ecl, now set:sos with exact-name search
+    - v1.2.0-beta.2 (2026-04-29) Beta enhancements
+      - Increase card counts to 10 in all By Rarity/Color/Multicolor sections (was 4/3)
+      - Responsive grid: 10 cards per row at max width, 5 per row at narrow widths
+      - Add hover tooltips (card image popup) to By Rarity and By Color cards
+      - Fix Pick Your Poison color data (corrected from B|G to G in CSV)
     - v1.1.0 (2026-04-28) Multiple improvements
       - Set-code-aware image fetching (SOS→SOA→SPG priority with fallback)
       - Compact grid-style card images in By Rarity/Color views
@@ -190,9 +222,15 @@
 
         .cards-row {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            grid-template-columns: repeat(10, minmax(0, 1fr));
             gap: 6px;
             margin-top: 6px;
+        }
+
+        @media (max-width: 1000px) {
+            .cards-row {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
         }
 
         .column-label {
@@ -802,7 +840,7 @@
         }
 
         // Configuration (injected at build time)
-        const SET_CONFIG = {"set_code": "SOS", "set_name": "Secrets of Strixhaven", "version": "1.1.1", "timestamp": "2026-04-29T13:52:48Z", "data_paths": {"expert_csv": "../../shared-data/data/sos/sos-expert-ratings-normalized-beta.csv", "lands_csv": "../../shared-data/17lands exports/SOS card-ratings-2026-04-27 1245 .csv", "scryfall_json": "../../shared-data/data/sos/scryfall_reference.json", "metadata_csv": "../../shared-data/data/sos/sos-complete-data.csv", "set_codes_json": "../../shared-data/data/sos/sos-set-codes.json"}, "styling": {"header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)", "title": "Most Underrated & Overrated Cards"}, "experts": [{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore", "url": "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/"}, {"abbreviation": "ds", "name": "Draftsim", "raw_column": "ds_raw", "zscore_column": "ds_zscore", "url": "https://draftsim.com/mtg-sos-limited-set-review/"}, {"abbreviation": "llu_a", "name": "Limited Level-Ups (Alex)", "raw_column": "llu_a_raw", "zscore_column": "llu_a_zscore", "url": "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208"}, {"abbreviation": "llu_m", "name": "Limited Level-Ups (Marc)", "raw_column": "llu_m_raw", "zscore_column": "llu_m_zscore", "url": "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c"}, {"abbreviation": "cfb", "name": "Channel Fireball/TCG Player", "raw_column": "cfb_raw", "zscore_column": "cfb_zscore", "url": "https://www.tcgplayer.com/search/articles?q=secrets+of+strixhaven+limited+&productLineName=magic"}], "header": {"full_table_url": "https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html", "lands_url": "https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft", "lands_date": "April 27, 2026", "also_see": [{"text": "Draft Archetypes Color Wheel", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/"}, {"text": "17Lands Scores Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/"}, {"text": "Card Knowledge Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/anki.html"}]}};
+        const SET_CONFIG = {"set_code": "SOS", "set_name": "Secrets of Strixhaven", "version": "1.2.3", "timestamp": "2026-05-02T14:00:00Z", "data_paths": {"expert_csv": "../../shared-data/data/sos/sos-expert-ratings-normalized-beta.csv", "lands_csv": "../../shared-data/17lands exports/SOS card-ratings-2026-04-27 1245 .csv", "scryfall_json": "../../shared-data/data/sos/scryfall_reference.json", "metadata_csv": "../../shared-data/data/sos/sos-complete-data.csv", "set_codes_json": "../../shared-data/data/sos/sos-set-codes.json", "card_data_json": "../../ratings-project/sos-ratings/card_data.json"}, "styling": {"header_bg": "linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%)", "title": "Most Underrated & Overrated Cards"}, "experts": [{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore", "url": "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/"}, {"abbreviation": "ds", "name": "Draftsim", "raw_column": "ds_raw", "zscore_column": "ds_zscore", "url": "https://draftsim.com/mtg-sos-limited-set-review/"}, {"abbreviation": "llu_a", "name": "Limited Level-Ups (Alex)", "raw_column": "llu_a_raw", "zscore_column": "llu_a_zscore", "url": "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208"}, {"abbreviation": "llu_m", "name": "Limited Level-Ups (Marc)", "raw_column": "llu_m_raw", "zscore_column": "llu_m_zscore", "url": "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c"}, {"abbreviation": "cfb", "name": "Channel Fireball/TCG Player", "raw_column": "cfb_raw", "zscore_column": "cfb_zscore", "url": "https://www.tcgplayer.com/search/articles?q=secrets+of+strixhaven+limited+&productLineName=magic"}], "header": {"full_table_url": "https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html", "lands_url": "https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft", "lands_date": "April 27, 2026", "also_see": [{"text": "Draft Archetypes Color Wheel", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/"}, {"text": "17Lands Scores Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/"}, {"text": "Card Knowledge Quiz", "url": "https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/anki.html"}]}};
         const EXPERTS = [{"abbreviation": "cgb", "name": "Card Game Base", "raw_column": "cgb_raw", "zscore_column": "cgb_zscore", "url": "https://cardgamebase.com/secrets-of-strixhaven-draft-tier-list/"},{"abbreviation": "ds", "name": "Draftsim", "raw_column": "ds_raw", "zscore_column": "ds_zscore", "url": "https://draftsim.com/mtg-sos-limited-set-review/"},{"abbreviation": "llu_a", "name": "Limited Level-Ups (Alex)", "raw_column": "llu_a_raw", "zscore_column": "llu_a_zscore", "url": "https://www.17lands.com/tier_list/3dda4b67b4b0403caeb0a744887b0208"},{"abbreviation": "llu_m", "name": "Limited Level-Ups (Marc)", "raw_column": "llu_m_raw", "zscore_column": "llu_m_zscore", "url": "https://www.17lands.com/tier_list/09ccc33bf4d6461f9c73de01bd8efe0c"},{"abbreviation": "cfb", "name": "Channel Fireball/TCG Player", "raw_column": "cfb_raw", "zscore_column": "cfb_zscore", "url": "https://www.tcgplayer.com/search/articles?q=secrets+of+strixhaven+limited+&productLineName=magic"}];
         const RATERS = ["cgb", "ds", "llu_a", "llu_m", "cfb"];
 
@@ -849,7 +887,7 @@
                 </div>
             `;
 
-            document.getElementById('set-info').textContent = SET_CONFIG.set_name + ' (' + SET_CONFIG.set_code + ') | Version: ' + SET_CONFIG.version;
+            document.getElementById('set-info').textContent = SET_CONFIG.set_name + ' (' + SET_CONFIG.set_code + ') | Version: ' + SET_CONFIG.version + ' | Updated: ' + SET_CONFIG.timestamp;
         }
 
         function setupTabs() {
@@ -875,7 +913,7 @@
             try {
                 // Load consolidated master ratings file (includes all 320 cards with pre-calculated z-scores)
                 // This eliminates the need for data merging and on-the-fly z-score calculations
-                const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV, setCodesJSON] = await Promise.all([
+                const [masterRatingsCSV, actualCSV, scryfallJSON, metadataCSV, setCodesJSON, cardDataJSON] = await Promise.all([
                     fetch(SET_CONFIG.data_paths.expert_csv).then(r => {
                         if (!r.ok) throw new Error(`Failed to load expert ratings: ${r.status}`);
                         return r.text();
@@ -895,7 +933,8 @@
                     fetch(SET_CONFIG.data_paths.set_codes_json).then(r => {
                         if (!r.ok) throw new Error(`Failed to load set codes: ${r.status}`);
                         return r.json();
-                    })
+                    }),
+                    fetch(SET_CONFIG.data_paths.card_data_json).then(r => r.ok ? r.json() : {})
                 ]);
 
                 expertRatings = parseCSV(masterRatingsCSV);
@@ -907,7 +946,7 @@
                 window.setCodesMap = setCodesJSON;
 
                 // Process and calculate discrepancies
-                processedCards = calculateDiscrepancies();
+                processedCards = calculateDiscrepancies(cardDataJSON);
 
                 // Render all views
                 renderGridView2();
@@ -972,7 +1011,7 @@
         }
 
 
-        function calculateDiscrepancies() {
+        function calculateDiscrepancies(cardDataJSON) {
             const cards = [];
 
             // Create a map of 17 Lands data by card name (includes rarity, color, and GIH WR)
@@ -987,14 +1026,32 @@
                 }
             });
 
-            // Create a map of card metadata (type, mana cost) from ecl-complete-data.csv
+            // Create a map of card metadata using card_data.json as primary source (has complete data)
             const metaMap = new Map();
+
+            // First, populate from card_data.json (primary source with complete type/manaCost data)
+            if (cardDataJSON && typeof cardDataJSON === 'object') {
+                // card_data.json is an array of card objects
+                const cardArray = Array.isArray(cardDataJSON) ? cardDataJSON : Object.values(cardDataJSON);
+                cardArray.forEach(cardInfo => {
+                    if (cardInfo.name) {
+                        metaMap.set(cardInfo.name, {
+                            type: cardInfo.type || '',
+                            manaCost: cardInfo.manaCost || '',
+                            setCode: cardInfo.setCode || SET_CONFIG.set_code
+                        });
+                    }
+                });
+            }
+
+            // Fall back to CSV for any missing data
             cardMetadata.forEach(row => {
                 const name = row.Card_Name?.replace(/^"|"$/g, '').trim();
-                if (name) {
+                if (name && !metaMap.has(name)) {
                     metaMap.set(name, {
                         type: row.Type || '',
-                        manaCost: row.Mana_Cost || ''
+                        manaCost: row.Mana_Cost || '',
+                        setCode: SET_CONFIG.set_code
                     });
                 }
             });
@@ -1061,7 +1118,7 @@
                     discrepancy: discrepancy,
                     controversy: controversy,
                     scryfallUrl: scryfallMap.get(cardName) || '',
-                    setCode: window.setCodesMap && window.setCodesMap[cardName] ? window.setCodesMap[cardName] : SET_CONFIG.set_code
+                    setCode: meta.setCode || (window.setCodesMap && window.setCodesMap[cardName]) || SET_CONFIG.set_code
                 };
 
                 cards.push(card);
@@ -1092,11 +1149,14 @@
             const discrepancyClass = isUnderrated ? 'positive' : 'negative';
             const discrepancySign = isUnderrated ? '+' : '';
             const discrepancyValue = discrepancySign + card.discrepancy.toFixed(2);
+            const scryfallHref = card.scryfallUrl || `https://scryfall.com/search?q=${encodeURIComponent(card.name + ' set:' + card.setCode.toLowerCase())}`;
 
             return `
                 <div class="grid-card ${isUnderrated ? 'underrated' : 'overrated'}" title="${card.name}" data-setcode="${card.setCode}">
                     <div class="grid-card-image-container">
+                        <a href="${scryfallHref}" target="_blank" rel="noopener noreferrer" tabindex="-1">
                         <img src="${getCardImage(card.name, card.setCode)}" alt="${card.name}" class="grid-card-image" loading="lazy" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='${getImageFallbackUrl(card.name)}'}">
+                        </a>
                     </div>
                     <div class="grid-card-content">
                         <div class="grid-card-stats-line">
@@ -1810,8 +1870,8 @@
                 const rarityCards = processedCards.filter(c => c.rarity === rarity);
 
                 // Get top underrated and overrated
-                const underrated = [...rarityCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 4);
-                const overrated = [...rarityCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 4);
+                const underrated = [...rarityCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 10);
+                const overrated = [...rarityCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 10);
 
                 if (underrated.length === 0 && overrated.length === 0) return;
 
@@ -1841,6 +1901,7 @@
 
             html += '</div>';
             document.getElementById('rarity-tab').innerHTML = html;
+            attachGridCardHoverListeners();
         }
 
         function renderColorView() {
@@ -1864,8 +1925,8 @@
                     return c.colors.includes(color) && c.colors.length <= 2;
                 });
 
-                const underrated = [...colorCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 3);
-                const overrated = [...colorCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 3);
+                const underrated = [...colorCards].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 10);
+                const overrated = [...colorCards].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 10);
 
                 if (underrated.length === 0 && overrated.length === 0) return;
 
@@ -1893,8 +1954,8 @@
             // Add multicolor section
             const multicolor = processedCards.filter(c => c.colors.length > 2);
             if (multicolor.length > 0) {
-                const underrated = [...multicolor].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 3);
-                const overrated = [...multicolor].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 3);
+                const underrated = [...multicolor].sort((a, b) => b.discrepancy - a.discrepancy).slice(0, 10);
+                const overrated = [...multicolor].sort((a, b) => a.discrepancy - b.discrepancy).slice(0, 10);
 
                 html += `
                     <div class="color-section">
@@ -1919,6 +1980,7 @@
 
             html += '</div>';
             document.getElementById('color-tab').innerHTML = html;
+            attachGridCardHoverListeners();
         }
 
         function renderTrendingView() {
@@ -2110,6 +2172,13 @@
                     card.style.cursor = 'pointer';
                     card.addEventListener('mouseover', (e) => showGridCardTooltip(cardName, e));
                     card.addEventListener('mouseout', hideGridCardTooltip);
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('a')) return;
+                        const cardData = processedCards.find(c => c.name === cardName);
+                        const setCode = cardData?.setCode?.toLowerCase() || 'sos';
+                        const url = cardData?.scryfallUrl || `https://scryfall.com/search?q=${encodeURIComponent(cardName + ' set:' + setCode)}`;
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                    });
                 }
             });
         }
@@ -2182,10 +2251,11 @@
                         <thead>
                             <tr>
                                 <th data-sk="name">Card Name<span class="fl-sort">▲</span></th>
+                                <th data-sk="setCode" style="width:3.5ch;">Set<span class="fl-sort">▲</span></th>
                                 <th data-sk="rarity" style="width:3.5ch;">R<span class="fl-sort">▲</span></th>
                                 <th data-sk="colors" style="width:4ch;">Col<span class="fl-sort">▲</span></th>
-                                <th data-sk="type" style="width:3ch;">T<span class="fl-sort">▲</span></th>
-                                <th data-sk="manaCost" style="width:5ch;">Mana<span class="fl-sort">▲</span></th>
+                                <th data-sk="type" style="width:5ch;">Type<span class="fl-sort">▲</span></th>
+                                <th data-sk="manaCost" style="width:6ch;">Mana<span class="fl-sort">▲</span></th>
                                 <th data-sk="discrepancy" style="font-weight:700;">Discrep.<span class="fl-sort">▼</span></th>
                                 <th data-sk="expertZScore">Avg Expert<span class="fl-sort">▲</span></th>
                                 <th data-sk="controversy">Controv.<span class="fl-sort">▲</span></th>
@@ -2218,15 +2288,15 @@
                 row.dataset.discrepancy = Number.isFinite(card.discrepancy) ? card.discrepancy : '';
 
                 const typeCode = getTypeCode(card.type);
-                const link = card.scryfallUrl
-                    ? `<a href="${card.scryfallUrl}" target="_blank" rel="noopener noreferrer" title="View on Scryfall">${card.name}</a>`
-                    : card.name;
+                const scryfallUrl = card.scryfallUrl || (`https://scryfall.com/search?q=${encodeURIComponent('"' + card.name + '"')}`);
+                const link = `<a href="${scryfallUrl}" target="_blank" rel="noopener noreferrer" title="View on Scryfall">${card.name}</a>`;
 
                 row.innerHTML = `
                     <td>${link}<div class="fl-card-img"></div></td>
+                    <td style="text-align:center;">${card.setCode || '-'}</td>
                     <td>${card.rarity || '-'}</td>
                     <td>${card.colors || '-'}</td>
-                    <td class="fl-type-cell compact" data-full="${card.type}" title="${card.type}">${typeCode}</td>
+                    <td class="fl-type-cell compact" data-full="${card.type}" title="${card.type}">${card.type || '-'}</td>
                     <td style="font-size:0.85em">${card.manaCost || '-'}</td>
                     <td class="${flScoreClass(card.discrepancy)}">${(card.discrepancy >= 0 ? '+' : '') + card.discrepancy.toFixed(2)}σ</td>
                     <td class="${flScoreClass(card.expertZScore)}">${flFmt(card.expertZScore, true)} (${Number.isFinite(card.expertZScore) ? zScoreToGrade(card.expertZScore) : '-'})</td>
@@ -2335,7 +2405,7 @@
             const key = flSortState.key;
             const dir = flSortState.direction;
 
-            const stringKeys = new Set(['name', 'colors', 'type', 'manaCost']);
+            const stringKeys = new Set(['name', 'setCode', 'colors', 'type', 'manaCost']);
 
             rows.sort((a, b) => {
                 let aVal, bVal;
@@ -2482,7 +2552,7 @@
         document.body.appendChild(gridCardTooltip);
 
         function showGridCardTooltip(cardName, e) {
-            const cardUrl = `https://scryfall.com/search?q="${cardName.replace(/"/g, '\\"')}" set:ecl`;
+            const cardUrl = `https://scryfall.com/search?q=!"${cardName.replace(/"/g, '\\"')}" set:sos`;
             const element = e.target.closest('.grid-card');
             const setCode = element?.dataset.setcode;
             gridCardTooltip.innerHTML = `<img src="${getCardImage(cardName, setCode)}" alt="${cardName}" title="Click to view on Scryfall">`;
