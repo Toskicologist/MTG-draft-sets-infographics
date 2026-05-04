@@ -1480,7 +1480,7 @@
 
             // Overall underrated for each color (monocolor only)
             colors.forEach(color => {
-                const colorCards = processedCards.filter(c => c.colors === color);
+                const colorCards = processedCards.filter(c => c.colors === color && c.discrepancy != null);
                 const topUnderrated = colorCards.length > 0
                     ? colorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
                     : null;
@@ -1511,7 +1511,7 @@
 
             // Overall underrated for multicolor
             const allMultiUnderrated = processedCards.filter(c =>
-                c.colors && c.colors.length > 1
+                c.colors && c.colors.length > 1 && c.discrepancy != null
             );
             const topMultiUnderrated = allMultiUnderrated.length > 0
                 ? allMultiUnderrated.sort((a, b) => b.discrepancy - a.discrepancy)[0]
@@ -1541,7 +1541,7 @@
 
             // Overall underrated for colorless
             const allColorlessUnderrated = processedCards.filter(c =>
-                !c.colors || c.colors === 'C'
+                (!c.colors || c.colors === 'C') && c.discrepancy != null
             );
             const topColorlessUnderrated = allColorlessUnderrated.length > 0
                 ? allColorlessUnderrated.sort((a, b) => b.discrepancy - a.discrepancy)[0]
@@ -1577,7 +1577,7 @@
 
             // Overall overrated for each color (monocolor only)
             colors.forEach(color => {
-                const colorCards = processedCards.filter(c => c.colors === color);
+                const colorCards = processedCards.filter(c => c.colors === color && c.discrepancy != null);
                 const topOverrated = colorCards.length > 0
                     ? colorCards.sort((a, b) => a.discrepancy - b.discrepancy)[0]
                     : null;
@@ -1608,7 +1608,7 @@
 
             // Overall overrated for multicolor
             const allMultiOverrated = processedCards.filter(c =>
-                c.colors && c.colors.length > 1
+                c.colors && c.colors.length > 1 && c.discrepancy != null
             );
             const topMultiOverrated = allMultiOverrated.length > 0
                 ? allMultiOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
@@ -1638,7 +1638,7 @@
 
             // Overall overrated for colorless
             const allColorlessOverrated = processedCards.filter(c =>
-                !c.colors || c.colors === 'C'
+                (!c.colors || c.colors === 'C') && c.discrepancy != null
             );
             const topColorlessOverrated = allColorlessOverrated.length > 0
                 ? allColorlessOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
@@ -1678,7 +1678,7 @@
                 colors.forEach(color => {
                     // Monocolor cards only
                     const colorCards = processedCards.filter(c =>
-                        c.rarity === rarity && c.colors === color
+                        c.rarity === rarity && c.colors === color && c.discrepancy != null
                     );
 
                     const topUnderrated = colorCards.length > 0
@@ -1711,7 +1711,7 @@
 
                 // Multicolor column
                 const multicolorCards = processedCards.filter(c =>
-                    c.rarity === rarity && c.colors && c.colors.length > 1
+                    c.rarity === rarity && c.colors && c.colors.length > 1 && c.discrepancy != null
                 );
                 const topMultiUnderrated = multicolorCards.length > 0
                     ? multicolorCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
@@ -1741,7 +1741,7 @@
 
                 // Colorless column
                 const colorlessCards = processedCards.filter(c =>
-                    c.rarity === rarity && (!c.colors || c.colors === 'C')
+                    c.rarity === rarity && (!c.colors || c.colors === 'C') && c.discrepancy != null
                 );
                 const topColorlessUnderrated = colorlessCards.length > 0
                     ? colorlessCards.sort((a, b) => b.discrepancy - a.discrepancy)[0]
@@ -1778,7 +1778,7 @@
                 colors.forEach(color => {
                     // Monocolor cards only
                     const colorCards = processedCards.filter(c =>
-                        c.rarity === rarity && c.colors === color
+                        c.rarity === rarity && c.colors === color && c.discrepancy != null
                     );
 
                     const topOverrated = colorCards.length > 0
@@ -1811,7 +1811,7 @@
 
                 // Multicolor column
                 const multicolorCardsOverrated = processedCards.filter(c =>
-                    c.rarity === rarity && c.colors && c.colors.length > 1
+                    c.rarity === rarity && c.colors && c.colors.length > 1 && c.discrepancy != null
                 );
                 const topMultiOverrated = multicolorCardsOverrated.length > 0
                     ? multicolorCardsOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
@@ -1841,7 +1841,7 @@
 
                 // Colorless column
                 const colorlessCardsOverrated = processedCards.filter(c =>
-                    c.rarity === rarity && (!c.colors || c.colors === 'C')
+                    c.rarity === rarity && (!c.colors || c.colors === 'C') && c.discrepancy != null
                 );
                 const topColorlessOverrated = colorlessCardsOverrated.length > 0
                     ? colorlessCardsOverrated.sort((a, b) => a.discrepancy - b.discrepancy)[0]
