@@ -16,3 +16,8 @@ deploy-to-github.bat
 tmp/
 __pycache__/
 *.pyc
+
+# analyze_archetypes.py output artifacts — regenerated every run, not consumed
+# at runtime (the values are spliced into ARCHETYPE_ANALYSIS.html directly).
+mtg/ratings-project/sos/archetype_discrepancies.csv
+mtg/ratings-project/sos/card_discrepancies.csv
