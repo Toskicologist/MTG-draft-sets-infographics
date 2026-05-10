@@ -13,3 +13,6 @@ deploy-to-github.bat
 *.local.bat
 *.local.ps1
 *-report.txt
+tmp/
+__pycache__/
+*.pyc
