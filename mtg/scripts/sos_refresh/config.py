@@ -2,9 +2,12 @@
 
 Operates in two modes, auto-detected from where the script lives:
 
-  LOCAL mode  - script is inside C:\\Users\\<user>\\ClaudeProjects\\.
+  LOCAL mode  - script is inside a ClaudeProjects checkout on the dev machine.
                 ClaudeProjects is the source-of-truth; sync-to-github-pages.ps1
                 copies the result into a separate MTG-GitHub-Pages folder.
+                Paths default to ~/ClaudeProjects and ~/MTG-GitHub-Pages, but can
+                be overridden via the CLAUDE_PROJECTS_ROOT and GITHUB_PAGES_ROOT
+                env vars.
 
   CI mode     - script is inside the public MTG-GitHub-Pages repo (e.g. when
                 a GitHub Action runs `python mtg/scripts/refresh_sos_17lands.py`).
@@ -59,8 +62,10 @@ if _IS_CI:
     QUIZ_INDEX_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "index.html"
 else:
     # ----- LOCAL mode: ClaudeProjects + MTG-GitHub-Pages as separate folders -----
-    CLAUDE_PROJECTS_ROOT = Path(r"c:\Users\<user>\ClaudeProjects")
-    GITHUB_PAGES_ROOT = Path(r"c:\Users\<user>\MTG-GitHub-Pages")
+    # Override via env vars if your checkouts live somewhere other than ~/ClaudeProjects
+    # and ~/MTG-GitHub-Pages.
+    CLAUDE_PROJECTS_ROOT = Path(os.environ.get("CLAUDE_PROJECTS_ROOT", str(Path.home() / "ClaudeProjects")))
+    GITHUB_PAGES_ROOT = Path(os.environ.get("GITHUB_PAGES_ROOT", str(Path.home() / "MTG-GitHub-Pages")))
 
     # Shared 17Lands data folder (CSVs live here)
     LANDS_EXPORTS_DIR = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "17lands exports"
