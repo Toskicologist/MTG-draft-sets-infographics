@@ -1,0 +1,49 @@
+# Refreshes the Budget Modern Deckbuilder's TCG Mid snapshot daily so the
+# static page always has fresh same-origin price data (no CORS/key/server).
+# TCGcsv refreshes ~20:00 UTC; this runs after that and commits the new JSON
+# + meta if changed. Source of truth: ClaudeProjects deploy/ staging copy.
+
+name: Refresh TCG Mid snapshot
+
+on:
+  schedule:
+    - cron: "30 20 * * *"   # 20:30 UTC daily, after TCGcsv's ~20:00 refresh
+  workflow_dispatch: {}      # manual "Run workflow" button
+
+permissions:
+  contents: write            # to commit the regenerated JSON
+
+concurrency:
+  group: tcg-prices
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Script writes the JSON next to itself via import.meta.url, so cwd
+      # does not matter; path matches the deployed project location.
+      - name: Build snapshot
+        run: node mtg/budget-modern-deckbuilder/scripts/build-tcg-prices.mjs
+
+      - name: Commit if changed
+        run: |
+          D=mtg/budget-modern-deckbuilder/data
+          # Commit BOTH the snapshot and the meta file (the page's
+          # "prices last updated" banner reads the meta; its generatedAt
+          # changes every run, so a successful refresh always commits).
+          if [ -n "$(git status --porcelain "$D/tcg-prices.json" "$D/tcg-prices-meta.json")" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "$D/tcg-prices.json" "$D/tcg-prices-meta.json"
+            git commit -m "chore: refresh TCG Mid snapshot ($(date -u +%Y-%m-%d))"
+            git push
+          else
+            echo "No change; nothing to commit."
+          fi
