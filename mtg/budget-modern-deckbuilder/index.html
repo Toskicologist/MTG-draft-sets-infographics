@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Modern Deckbuilder</title>
+<meta property="og:title" content="Budget Modern Deckbuilder">
+<meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
+<meta property="og:type" content="website">
+<!--
+  Budget Modern Deckbuilder (v2.1.0)
+
+  Changelog:
+  v2.1.0 (2026-05-17) - Top "prices last updated" banner (reads a tiny
+                        data/tcg-prices-meta.json on load; flags staleness).
+                        Collapsible "Where do the prices come from?" explainer
+                        covering TCG Mid vs Market and what TCGcsv is.
+  v2.0.0 (2026-05-17) - Add true TCGplayer **Mid** price figure (default) via a
+                        once-daily TCGcsv snapshot (scripts/build-tcg-prices.mjs
+                        -> data/tcg-prices.json), keyed by Scryfall tcgplayer_id.
+                        New Price-figure selector: TCG Mid (snapshot) | TCG
+                        Market (Scryfall live). "Prices calculated" stamp +
+                        export filename now use the snapshot's build time for
+                        Mid, live fetch time for Market. Source-aware flags.
+  v1.0.0 (2026-05-16) - Initial: decklist parse, Scryfall cheapest-printing
+                        USD (Market), dual budgets, timestamped export.
+
+  - Parses standard / MTGA / MTGO decklists (mainboard + sideboard).
+  - Two figures: TCG Mid (median current NM/LP listing, daily snapshot) or
+    TCG Market (recent sales, live Scryfall prices.usd). Cheapest paper
+    printing by default. Foil-only / unpriced / non-Modern-legal cards are
+    flagged, never silently substituted.
+  - Two independent budgets: main deck (default $25) + sideboard (default $10).
+  - Exports a .txt report stamped with the exact time the chosen figure was
+    calculated (snapshot build time for Mid; live fetch time for Market).
+-->
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1e2540; --line:#2c3454;
+    --ink:#e8ecf8; --dim:#9aa6c8; --accent:#6ea8ff;
+    --ok:#3ddc97; --bad:#ff6b81; --warn:#ffcf5c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 18px 64px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--dim);margin:0 0 20px;font-size:13px}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+  @media(max-width:840px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  label{display:block;font-size:12px;color:var(--dim);margin:0 0 6px;letter-spacing:.02em;text-transform:uppercase}
+  textarea{width:100%;height:340px;resize:vertical;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  input[type=text],input[type=number]{width:100%;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px}
+  .field{margin-bottom:14px}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  button{cursor:pointer;border:0;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:600}
+  .primary{background:var(--accent);color:#06122b;width:100%}
+  .primary:disabled{opacity:.55;cursor:wait}
+  .ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  .actions{display:flex;gap:10px;margin-top:10px}
+  .actions button{flex:1}
+  .totals{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}
+  @media(max-width:560px){.totals{grid-template-columns:1fr}}
+  .tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;border-left:5px solid var(--line)}
+  .tcard.pass{border-left-color:var(--ok)}
+  .tcard.over{border-left-color:var(--bad)}
+  .tcard h3{margin:0 0 8px;font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+  .tcard .amt{font-size:30px;font-weight:700}
+  .tcard .meta{font-size:13px;color:var(--dim);margin-top:6px}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .badge.pass{background:rgba(61,220,151,.15);color:var(--ok)}
+  .badge.over{background:rgba(255,107,129,.15);color:var(--bad)}
+  table{width:100%;border-collapse:collapse;margin:8px 0 26px;font-size:13px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.flagged td{background:rgba(255,207,92,.07)}
+  .tag{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:6px}
+  .tag.warn{background:rgba(255,207,92,.18);color:var(--warn)}
+  .tag.bad{background:rgba(255,107,129,.18);color:var(--bad)}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 2px}
+  .sechead h2{font-size:17px;margin:0}
+  .sechead span{color:var(--dim);font-size:13px}
+  #status{margin:14px 0;color:var(--dim);font-size:13px;min-height:20px}
+  .bar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:6px}
+  .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .15s}
+  .hidden{display:none}
+  .stamp{font-size:13px;color:var(--dim);margin:6px 0 0}
+  footer{margin-top:40px;color:var(--dim);font-size:12px;border-top:1px solid var(--line);padding-top:14px}
+  footer a{word-break:break-word}
+  code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+  .updated{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel2);
+    border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;
+    padding:9px 13px;margin:0 0 14px;font-size:13px;color:var(--ink)}
+  .updated b{font-weight:700}
+  .updated .dim{color:var(--dim)}
+  .updated .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+  .updated.stale .dot{background:var(--warn)}
+  .updated.err{border-left-color:var(--warn)}
+  details.explain{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:0 14px;margin:0 0 18px;font-size:13.5px}
+  details.explain[open]{padding-bottom:6px}
+  details.explain summary{cursor:pointer;padding:12px 0;font-weight:600;color:var(--ink);list-style:none}
+  details.explain summary::-webkit-details-marker{display:none}
+  details.explain summary::before{content:"\25B8 ";color:var(--accent)}
+  details.explain[open] summary::before{content:"\25BE ";}
+  details.explain p{margin:0 0 10px;color:var(--dim);line-height:1.6}
+  details.explain p:first-of-type{margin-top:2px}
+  details.explain strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.1.0 · 2026-05-17</span></h1>
+  <p class="sub">Paste a decklist &rarr; cheapest-printing <strong>TCG Mid</strong> (or live TCG Market) USD &rarr; separate main-deck &amp; sideboard budget check &rarr; export stamped with when prices were calculated.</p>
+
+  <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
+
+  <details class="explain">
+    <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
+    <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure, distinct from <strong>TCG Market</strong> (an average of recent <em>completed sales</em>, which is what the Scryfall API reports).</p>
+    <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run service that mirrors TCGplayer's public pricing data (low / mid / high / market) and republishes it as plain daily JSON. It refreshes roughly once a day (~20:00&nbsp;UTC). This page uses a snapshot of that data taken shortly after each refresh; the banner above shows exactly when that snapshot was built, and every export is stamped with the same time so you always know how fresh the numbers are.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess). Cards with no Mid for the chosen printing &mdash; or that aren't Modern-legal &mdash; are flagged, never estimated. Switch the <strong>Price figure</strong> selector to <strong>TCG Market (live)</strong> for real-time sale-based prices straight from Scryfall instead.</p>
+  </details>
+
+  <div class="grid">
+    <div class="panel">
+      <label for="decklist">Decklist</label>
+      <textarea id="decklist" spellcheck="false" placeholder="4 Lightning Bolt
+4 Monastery Swiftspear
+2 Mishra's Bauble
+20 Mountain
+...
+
+Sideboard
+3 Smash to Smithereens
+2 Searing Blaze">4 Lightning Bolt
+4 Monastery Swiftspear
+4 Soul-Scar Mage
+4 Goblin Guide
+20 Mountain
+
+Sideboard
+3 Smash to Smithereens
+2 Roiling Vortex</textarea>
+      <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. A line reading <em>Sideboard</em> (or a blank line) splits the boards. <code>//</code> / <code>#</code> lines ignored.</p>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <label for="deckname">Deck name (for export)</label>
+        <input type="text" id="deckname" value="Budget Modern Deck">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="budgetMain">Main budget $</label>
+          <input type="number" id="budgetMain" value="25" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="budgetSide">Side budget $</label>
+          <input type="number" id="budgetSide" value="10" min="0" step="1">
+        </div>
+      </div>
+      <div class="field">
+        <label for="source">Price figure</label>
+        <select id="source" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
+          <option value="mid" selected>TCG Mid &mdash; daily snapshot (TCGcsv)</option>
+          <option value="market">TCG Market &mdash; live (Scryfall)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="cheapest" checked style="width:auto;vertical-align:-2px"> Use cheapest paper printing</label>
+      </div>
+      <button class="primary" id="go">Calculate prices</button>
+      <div class="actions">
+        <button class="ghost" id="exportBtn" disabled>Export .txt</button>
+        <button class="ghost" id="copyBtn" disabled>Copy report</button>
+      </div>
+      <div id="status"></div>
+      <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
+    </div>
+  </div>
+
+  <div id="results" class="hidden">
+    <p class="stamp" id="stamp"></p>
+    <div class="totals">
+      <div class="tcard" id="tMain">
+        <h3>Main deck</h3>
+        <div class="amt" id="mainAmt">$0.00</div>
+        <div class="meta" id="mainMeta"></div>
+      </div>
+      <div class="tcard" id="tSide">
+        <h3>Sideboard</h3>
+        <div class="amt" id="sideAmt">$0.00</div>
+        <div class="meta" id="sideMeta"></div>
+      </div>
+    </div>
+    <div id="tables"></div>
+  </div>
+
+  <footer>
+    <strong>TCG Mid</strong> = TCGplayer Mid USD (median current NM/LP listing) from a once-daily snapshot via <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a>; the report carries the snapshot's exact build time as the "prices calculated" stamp.
+    <strong>TCG Market</strong> = TCGplayer Market USD (recent actual sales) fetched live from the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> <code>prices.usd</code> (Scryfall uses market, not mid). Card&rarr;price mapping uses Scryfall's <code>tcgplayer_id</code>. Both are indicative, not checkout quotes. Cards with no price for the chosen figure, or not Modern-legal, are flagged &mdash; never estimated.
+  </footer>
+</div>
+
+<script>
+"use strict";
+const SCRYFALL = "https://api.scryfall.com";
+const SLEEP = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+const money = n => "$" + Number(n).toFixed(2);
+
+let lastReport = null; // { text, filename }
+
+/* ---- decklist parsing ---------------------------------------------- */
+function parseDecklist(raw){
+  const main = new Map();   // name -> qty
+  const side = new Map();
+  let board = main;
+  let sawExplicitSide = false;
+  const lines = raw.split(/\r?\n/);
+
+  for (let rawLine of lines){
+    let line = rawLine.trim();
+    if (!line){ // blank line = board separator only if we haven't already
+      if (board === main && main.size && !sawExplicitSide) board = side;
+      continue;
+    }
+    if (/^(\/\/|#)/.test(line)) continue;
+    if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(line)) { board = main; continue; }
+    if (/^(sideboard)\s*:?\s*$/i.test(line)) { board = side; sawExplicitSide = true; continue; }
+
+    let sb = false;
+    if (/^sb:\s*/i.test(line)){ sb = true; line = line.replace(/^sb:\s*/i,""); }
+
+    // strip trailing MTGA set/collector "(SET) 123" and leading qty
+    const m = line.match(/^(\d+)\s*[xX]?\s+(.+?)\s*$/);
+    if (!m) continue;
+    let qty = parseInt(m[1],10);
+    let name = m[2]
+      .replace(/\s+\*[A-Za-z]\*\s*$/,"")                          // trailing *F* foil marker
+      .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+\S+)?\s*$/,"")          // (SET) 123
+      .replace(/\s*\[[^\]]*\]\s*$/,"")                            // [tags]
+      .trim();
+    if (!name || !qty) continue;
+    const target = sb ? side : board;
+    target.set(name, (target.get(name)||0) + qty);
+  }
+  return { main, side };
+}
+
+/* ---- TCG Mid snapshot ---------------------------------------------- */
+let _snap = null; // { generatedAt, source, prices:{ productId: mid } }
+async function loadSnapshot(){
+  if (_snap) return _snap;
+  const r = await fetch("./data/tcg-prices.json", { cache:"no-cache" });
+  if (!r.ok) throw new Error("snapshot HTTP " + r.status);
+  const j = await r.json();
+  if (!j || !j.prices) throw new Error("snapshot malformed");
+  _snap = j;
+  return _snap;
+}
+
+/* ---- Scryfall lookup ----------------------------------------------- */
+async function fetchJSON(url){
+  const r = await fetch(url, { headers:{ "Accept":"application/json" } });
+  if (r.status === 404) return { __notfound:true };
+  if (!r.ok) throw new Error("Scryfall HTTP " + r.status);
+  return r.json();
+}
+
+// Unit price of one Scryfall card object for the chosen source. Never guesses.
+// mid    -> snapshot[ card.tcgplayer_id ]  (TCGplayer Mid, non-foil only)
+// market -> card.prices.usd (TCGplayer Market via Scryfall), usd_foil flagged
+function cardUnit(c, source, snap){
+  if (source === "mid"){
+    const v = c.tcgplayer_id != null ? snap.prices[c.tcgplayer_id] : undefined;
+    return { price: (typeof v === "number" && v > 0) ? v : null };
+  }
+  const usd = c.prices && c.prices.usd ? parseFloat(c.prices.usd) : null;
+  if (usd != null) return { price: usd };
+  const fo = c.prices && c.prices.usd_foil ? parseFloat(c.prices.usd_foil) : null;
+  return fo != null ? { price: fo, foil:true } : { price:null };
+}
+
+// Returns { name, found, price, foilOnly, set, cn, modern } — never guesses.
+async function priceCard(name, cheapest, source, snap){
+  if (cheapest){
+    let url = SCRYFALL + "/cards/search?unique=prints&q=" +
+      encodeURIComponent(`!"${name}" game:paper`);
+    let best = null, bestFoil = null, modern = null, found = false;
+    while (url){
+      const data = await fetchJSON(url);
+      if (data.__notfound || data.object === "error" || !data.data) break;
+      found = true;
+      for (const c of data.data){
+        if (modern == null && c.legalities) modern = c.legalities.modern;
+        const u = cardUnit(c, source, snap);
+        if (u.price == null) continue;
+        const rec = { price:u.price, set:c.set.toUpperCase(), cn:c.collector_number };
+        if (u.foil){ if (bestFoil == null || u.price < bestFoil.price) bestFoil = rec; }
+        else       { if (best == null || u.price < best.price) best = rec; }
+      }
+      url = data.has_more ? data.next_page : null;
+      if (url) await SLEEP(90);
+    }
+    if (!found) return await priceNamed(name, source, snap);
+    if (best)     return { name, found:true, price:best.price, foilOnly:false,
+                           set:best.set, cn:best.cn, modern };
+    if (bestFoil) return { name, found:true, price:bestFoil.price, foilOnly:true,
+                           set:bestFoil.set, cn:bestFoil.cn, modern };
+    return { name, found:true, price:null, foilOnly:false, set:null, cn:null, modern };
+  }
+  return await priceNamed(name, source, snap);
+}
+
+async function priceNamed(name, source, snap){
+  const c = await fetchJSON(SCRYFALL + "/cards/named?fuzzy=" + encodeURIComponent(name));
+  if (c.__notfound || c.object === "error")
+    return { name, found:false, price:null, foilOnly:false, set:null, cn:null, modern:null };
+  const modern = c.legalities ? c.legalities.modern : null;
+  const u = cardUnit(c, source, snap);
+  return { name:c.name, found:true, price:u.price, foilOnly:!!u.foil,
+           set:c.set?c.set.toUpperCase():null, cn:c.collector_number, modern };
+}
+
+/* ---- run ----------------------------------------------------------- */
+async function run(){
+  const { main, side } = parseDecklist($("decklist").value);
+  if (!main.size && !side.size){ $("status").textContent = "No cards parsed. Check the decklist format."; return; }
+
+  const cheapest = $("cheapest").checked;
+  const source = $("source").value; // "mid" | "market"
+  const names = [...new Set([...main.keys(), ...side.keys()])];
+  const priceMap = new Map();
+
+  $("go").disabled = true; $("exportBtn").disabled = true; $("copyBtn").disabled = true;
+
+  let snap = null;
+  if (source === "mid"){
+    $("status").textContent = "Loading daily TCG Mid snapshot…";
+    try { snap = await loadSnapshot(); }
+    catch(e){
+      $("status").innerHTML = "Couldn't load the TCG Mid snapshot (" +
+        escapeHtml(String(e.message||e)) + "). It must be served over http(s) — " +
+        "if you opened this file directly, run a local server or switch Price figure to <b>TCG Market</b>.";
+      $("go").disabled = false; return;
+    }
+  }
+
+  $("barWrap").classList.remove("hidden");
+  let done = 0;
+  for (const n of names){
+    $("status").textContent = `Pricing ${done+1}/${names.length}: ${n}`;
+    try { priceMap.set(n, await priceCard(n, cheapest, source, snap)); }
+    catch(e){ priceMap.set(n, { name:n, found:false, price:null, error:String(e.message||e),
+              foilOnly:false, set:null, cn:null, modern:null }); }
+    done++;
+    $("bar").style.width = (done/names.length*100) + "%";
+    await SLEEP(95); // Scryfall rate-limit courtesy
+  }
+
+  const runAt = new Date();
+  // "prices calculated" = when the figure was actually computed:
+  //   mid    -> the snapshot's build time   market -> now (live fetch)
+  const priceAt = source === "mid" ? new Date(snap.generatedAt) : runAt;
+  render(main, side, priceMap, { source, priceAt, runAt }, cheapest);
+
+  $("status").textContent =
+    `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"}).`;
+  $("barWrap").classList.add("hidden");
+  $("go").disabled = false; $("exportBtn").disabled = false; $("copyBtn").disabled = false;
+}
+
+function sectionRows(map, priceMap){
+  let total = 0, anyMissing = false;
+  const rows = [];
+  for (const [name, qty] of map){
+    const p = priceMap.get(name) || {};
+    const unit = (p.found && p.price != null) ? p.price : null;
+    const lineT = unit != null ? unit * qty : null;
+    if (lineT != null) total += lineT; else anyMissing = true;
+    rows.push({ name, qty, p, unit, lineT });
+  }
+  return { rows, total, anyMissing };
+}
+
+function flags(p){
+  const out = [];
+  if (!p.found) out.push('<span class="tag bad">not found</span>');
+  else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
+  if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
+  if (p.modern === "banned") out.push('<span class="tag bad">Modern banned</span>');
+  else if (p.modern && p.modern !== "legal") out.push('<span class="tag warn">not Modern-legal</span>');
+  return out.join("");
+}
+
+function renderTable(title, sec){
+  let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
+  h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th></tr></thead><tbody>`;
+  for (const r of sec.rows){
+    const flagged = (!r.p.found || r.p.price==null || r.p.foilOnly || (r.p.modern && r.p.modern!=="legal"));
+    const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
+    h += `<tr class="${flagged?'flagged':''}"><td class="num">${r.qty}</td>`+
+         `<td>${escapeHtml(r.name)}${flags(r.p)}</td>`+
+         `<td>${print}</td>`+
+         `<td class="num">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
+         `<td class="num">${r.lineT!=null?money(r.lineT):"&mdash;"}</td></tr>`;
+  }
+  h += `</tbody></table>`;
+  return h;
+}
+
+let LAST = null, CUR_SRC = "mid";
+function render(main, side, priceMap, meta, cheapest){
+  CUR_SRC = meta.source;
+  const m = sectionRows(main, priceMap);
+  const s = sectionRows(side, priceMap);
+  const bM = parseFloat($("budgetMain").value)||0;
+  const bS = parseFloat($("budgetSide").value)||0;
+  LAST = { m, s, bM, bS, ...meta, cheapest, deckname:$("deckname").value.trim()||"Deck" };
+
+  const srcLabel = meta.source === "mid" ? "TCG Mid (daily snapshot)" : "TCG Market (live)";
+  $("results").classList.remove("hidden");
+  $("stamp").textContent =
+    "Prices calculated: " + meta.priceAt.toLocaleString() +
+    "  (" + meta.priceAt.toISOString() + ") — " + srcLabel +
+    (meta.source === "mid"
+      ? "  ·  checked " + meta.runAt.toLocaleString()
+      : "");
+
+  const setCard = (idEl, idAmt, idMeta, sec, budget) => {
+    const over = sec.total > budget;
+    const el = $(idEl); el.classList.toggle("pass", !over); el.classList.toggle("over", over);
+    $(idAmt).textContent = money(sec.total);
+    const diff = budget - sec.total;
+    $(idMeta).innerHTML =
+      `Budget ${money(budget)} &middot; ` +
+      `<span class="badge ${over?'over':'pass'}">${over?'OVER by '+money(-diff):'UNDER by '+money(diff)}</span>` +
+      (sec.anyMissing ? `<br><span class="tag bad">some cards unpriced — total is a floor</span>` : "");
+  };
+  setCard("tMain","mainAmt","mainMeta", m, bM);
+  setCard("tSide","sideAmt","sideMeta", s, bS);
+
+  $("tables").innerHTML =
+    renderTable("Main deck", m) +
+    (s.rows.length ? renderTable("Sideboard", s) : "");
+
+  lastReport = buildReport(LAST);
+}
+
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---- export -------------------------------------------------------- */
+function buildReport(L){
+  const pad = (s,n) => String(s).padEnd(n);
+  const lines = [];
+  lines.push("=".repeat(60));
+  lines.push(L.deckname);
+  lines.push("Budget Modern Deckbuilder report");
+  lines.push("=".repeat(60));
+  lines.push("Prices calculated: " + L.priceAt.toISOString() + " (UTC)");
+  lines.push("                   " + L.priceAt.toLocaleString() + " (local)");
+  lines.push("Price figure     : " + (L.source === "mid"
+    ? "TCGplayer Mid USD — daily snapshot via TCGcsv"
+    : "TCGplayer Market USD — live via Scryfall prices.usd"));
+  lines.push("Report generated : " + L.runAt.toISOString() + " (UTC)");
+  lines.push("Printing basis   : " + (L.cheapest ? "cheapest paper printing" : "Scryfall default/fuzzy printing"));
+  lines.push("");
+  const sec = (title, s, budget) => {
+    lines.push("-".repeat(60));
+    lines.push(title + "  (budget " + money(budget) + ")");
+    lines.push("-".repeat(60));
+    for (const r of s.rows){
+      const f = [];
+      if (!r.p.found) f.push("NOT FOUND");
+      else if (r.p.price==null) f.push(L.source==="mid" ? "NO TCG MID" : "NO USD");
+      if (r.p.foilOnly) f.push("foil-only");
+      if (r.p.modern==="banned") f.push("MODERN-BANNED");
+      else if (r.p.modern && r.p.modern!=="legal") f.push("not-modern-legal");
+      lines.push(pad(r.qty+"x",4) + pad(r.name,34) +
+        pad(r.p.set?(r.p.set+" "+(r.p.cn||"")):"-",12) +
+        pad(r.unit!=null?money(r.unit):"-",9) +
+        pad(r.lineT!=null?money(r.lineT):"-",9) +
+        (f.length?("  ["+f.join(", ")+"]"):""));
+    }
+    const over = s.total > budget;
+    lines.push("");
+    lines.push(pad("",4)+pad("TOTAL"+(s.anyMissing?" (floor, unpriced cards)":""),34)+
+      pad("",12)+pad("",9)+money(s.total));
+    lines.push(pad("",4)+pad(over?"OVER BUDGET by "+money(s.total-budget):"under budget by "+money(budget-s.total),34));
+    lines.push("");
+  };
+  sec("MAIN DECK", L.m, L.bM);
+  if (L.s.rows.length) sec("SIDEBOARD", L.s, L.bS);
+  lines.push("=".repeat(60));
+  lines.push("Combined: " + money(L.m.total + L.s.total) +
+    " vs combined budget " + money(L.bM + L.bS));
+  lines.push("=".repeat(60));
+
+  const ts = L.priceAt.toISOString().replace(/[:.]/g,"-");
+  const safe = L.deckname.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase() || "deck";
+  return { text: lines.join("\n"), filename: `budget-modern_${safe}_${L.source}_${ts}.txt` };
+}
+
+$("go").addEventListener("click", run);
+$("exportBtn").addEventListener("click", () => {
+  if (!lastReport) return;
+  const blob = new Blob([lastReport.text], { type:"text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = lastReport.filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$("copyBtn").addEventListener("click", async () => {
+  if (!lastReport) return;
+  try { await navigator.clipboard.writeText(lastReport.text);
+        $("status").textContent = "Report copied to clipboard."; }
+  catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
+});
+
+/* ---- "prices last updated" banner ---------------------------------- */
+function ago(d){
+  const s = Math.max(0, (Date.now() - d.getTime())/1000);
+  if (s < 90)    return "just now";
+  if (s < 5400)  return Math.round(s/60) + " min ago";
+  if (s < 172800)return Math.round(s/3600) + " h ago";
+  return Math.round(s/86400) + " days ago";
+}
+async function showLastUpdated(){
+  const box = $("updated"), txt = $("updatedText");
+  try{
+    const r = await fetch("./data/tcg-prices-meta.json", { cache:"no-cache" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const meta = await r.json();
+    const d = new Date(meta.generatedAt);
+    const stale = (Date.now() - d.getTime()) > 36*3600*1000; // TCGcsv is daily
+    box.classList.toggle("stale", stale);
+    txt.classList.remove("dim");
+    txt.innerHTML =
+      "<b>TCG Mid prices last updated:</b> " + d.toLocaleString() +
+      " <span class='dim'>(" + ago(d) + " · " + d.toISOString() + ")</span>" +
+      " <span class='dim'>· " + (meta.productCount||0).toLocaleString() +
+      " cards · daily snapshot via TCGcsv</span>" +
+      (stale ? " <span class='tag warn'>snapshot &gt;36 h old</span>" : "");
+  }catch(e){
+    box.classList.add("err");
+    txt.classList.remove("dim");
+    txt.innerHTML =
+      "TCG&nbsp;Mid&nbsp;snapshot date unavailable (" + escapeHtml(String(e.message||e)) +
+      ") — this needs to be served over http(s). <b>TCG Market</b> prices are fetched live and work regardless.";
+  }
+}
+showLastUpdated();
+</script>
+</body>
+</html>
