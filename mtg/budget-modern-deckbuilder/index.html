@@ -8,9 +8,14 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v2.4.0)
+  Budget Modern Deckbuilder (v2.5.0)
 
   Changelog:
+  v2.5.0 (2026-05-18) - Output is now two columns: each budget box sits
+                        directly above its own deck table (main left, side
+                        right). Export/Copy disabled until a calc matches
+                        the current inputs (no more exporting a stale
+                        report). Added Export .csv.
   v2.4.0 (2026-05-18) - Mid mode now near-INSTANT: a daily job builds a slim
                         Scryfall card index (printings + legalities + image)
                         alongside the TCGcsv price table and publishes both
@@ -84,8 +89,10 @@
   .ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
   .actions{display:flex;gap:10px;margin-top:10px}
   .actions button{flex:1}
-  .totals{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}
-  @media(max-width:560px){.totals{grid-template-columns:1fr}}
+  .boards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:18px 0;align-items:start}
+  @media(max-width:760px){.boards{grid-template-columns:1fr}}
+  .board{min-width:0}
+  .board .tcard{margin-bottom:12px}
   .tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;border-left:5px solid var(--line)}
   .tcard.pass{border-left-color:var(--ok)}
   .tcard.over{border-left-color:var(--bad)}
@@ -150,7 +157,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.4.0 · 2026-05-18</span></h1>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.5.0 · 2026-05-18</span></h1>
   <p class="sub">Paste a decklist &rarr; cheapest-printing <strong>TCG Mid</strong> (or live TCG Market) USD &rarr; separate main-deck &amp; sideboard budget check &rarr; export stamped with when prices were calculated.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
@@ -241,8 +248,10 @@ Sideboard
       <button class="primary" id="go">Calculate prices</button>
       <div class="actions">
         <button class="ghost" id="exportBtn" disabled>Export .txt</button>
+        <button class="ghost" id="csvBtn" disabled>Export .csv</button>
         <button class="ghost" id="copyBtn" disabled>Copy report</button>
       </div>
+      <p class="sub" id="exportHint" style="margin:6px 0 0;display:none">Recalculate to export — inputs changed since the last run.</p>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     </div>
@@ -250,19 +259,24 @@ Sideboard
 
   <div id="results" class="hidden">
     <p class="stamp" id="stamp"></p>
-    <div class="totals">
-      <div class="tcard" id="tMain">
-        <h3>Main deck</h3>
-        <div class="amt" id="mainAmt">$0.00</div>
-        <div class="meta" id="mainMeta"></div>
+    <div class="boards">
+      <div class="board">
+        <div class="tcard" id="tMain">
+          <h3>Main deck</h3>
+          <div class="amt" id="mainAmt">$0.00</div>
+          <div class="meta" id="mainMeta"></div>
+        </div>
+        <div id="mainTable"></div>
       </div>
-      <div class="tcard" id="tSide">
-        <h3>Sideboard</h3>
-        <div class="amt" id="sideAmt">$0.00</div>
-        <div class="meta" id="sideMeta"></div>
+      <div class="board">
+        <div class="tcard" id="tSide">
+          <h3>Sideboard</h3>
+          <div class="amt" id="sideAmt">$0.00</div>
+          <div class="meta" id="sideMeta"></div>
+        </div>
+        <div id="sideTable"></div>
       </div>
     </div>
-    <div id="tables"></div>
   </div>
 
   <footer>
@@ -278,7 +292,28 @@ const SLEEP = ms => new Promise(r => setTimeout(r, ms));
 const $ = id => document.getElementById(id);
 const money = n => "$" + Number(n).toFixed(2);
 
-let lastReport = null; // { text, filename }
+let lastReport = null; // { text, filename } — .txt report
+let lastCsv = null;    // { text, filename } — .csv export
+let lastSig = null;    // inputSig() at the last successful calc
+
+// Inputs that affect the computed result/exports (colour-code is visual only,
+// so it's excluded — it doesn't change what's exported).
+const EXPORT_INPUTS = ["decklist","sideboard","budgetMain","budgetSide",
+  "deckname","source","format","cheapest","ignoreBasics"];
+function inputSig(){
+  return EXPORT_INPUTS.map(id => { const el = $(id);
+    return el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value;
+  }).join("");
+}
+function setExportsEnabled(on){
+  for (const id of ["exportBtn","csvBtn","copyBtn"]) $(id).disabled = !on;
+  const hint = $("exportHint");
+  if (hint) hint.style.display = (!on && lastReport) ? "" : "none";
+}
+// Re-enable exports only when a report exists AND inputs match that run.
+function refreshExportState(){
+  setExportsEnabled(!!lastReport && lastSig !== null && inputSig() === lastSig);
+}
 
 /* ---- decklist parsing ---------------------------------------------- */
 // One "<qty> <name>" line -> {qty,name}, or null. Strips MTGA/MTGO cruft.
@@ -476,7 +511,7 @@ async function run(){
   const names = [...new Set([...main.keys(), ...side.keys()])];
   const priceMap = new Map();
 
-  $("go").disabled = true; $("exportBtn").disabled = true; $("copyBtn").disabled = true;
+  $("go").disabled = true; setExportsEnabled(false);
 
   let cdn = null;
   if (source === "mid"){
@@ -526,7 +561,9 @@ async function run(){
     `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"})` +
     (fellBack ? ` · ${fellBack} via live Scryfall fallback` : "") + ".";
   $("barWrap").classList.add("hidden");
-  $("go").disabled = false; $("exportBtn").disabled = false; $("copyBtn").disabled = false;
+  $("go").disabled = false;
+  lastSig = inputSig();          // this run matches the current inputs
+  setExportsEnabled(true);
 }
 
 function sectionRows(map, priceMap){
@@ -638,11 +675,13 @@ function render(main, side, priceMap, meta, cheapest){
   setCard("tMain","mainAmt","mainMeta", m, bM);
   setCard("tSide","sideAmt","sideMeta", s, bS);
 
-  $("tables").innerHTML =
-    renderTable("Main deck", m) +
-    (s.rows.length ? renderTable("Sideboard", s) : "");
+  $("mainTable").innerHTML = renderTable("Main deck", m);
+  $("sideTable").innerHTML = s.rows.length
+    ? renderTable("Sideboard", s)
+    : '<p class="sub" style="margin:12px 0 0">No sideboard cards.</p>';
 
   lastReport = buildReport(LAST);
+  lastCsv = buildCsv(LAST);
 }
 
 /* ---- card-image hover popup (uses imgs captured during pricing) ----- */
@@ -732,21 +771,73 @@ function buildReport(L){
   return { text: lines.join("\n"), filename: `budget-modern_${safe}_${L.source}_${ts}.txt` };
 }
 
-$("go").addEventListener("click", run);
-$("exportBtn").addEventListener("click", () => {
-  if (!lastReport) return;
-  const blob = new Blob([lastReport.text], { type:"text/plain;charset=utf-8" });
+function csvEsc(v){
+  v = (v == null) ? "" : String(v);
+  return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+}
+function buildCsv(L){
+  const fmt = L.format;
+  const out = [[
+    "Board","Qty","Card","Set","Collector","Unit USD","Line USD",
+    fmt === "__none" ? "Legality" : ("Legality (" + fmtName(fmt) + ")"), "Notes"
+  ]];
+  const add = (board, s) => { for (const r of s.rows){
+    const p = r.p, notes = [];
+    if (!p.found) notes.push("not found");
+    else if (p.price == null) notes.push(L.source === "mid" ? "no TCG Mid" : "no USD price");
+    if (p.foilOnly) notes.push("foil only");
+    let leg = "";
+    if (fmt !== "__none" && p.found){
+      const v = p.legal ? p.legal[fmt] : undefined;
+      leg = v || "unknown";
+      if (v && v !== "legal") notes.push(v === "not_legal" ? ("not " + fmtName(fmt) + "-legal") : (fmtName(fmt) + " " + v));
+    }
+    out.push([ board, r.qty, r.name, p.set || "", p.cn || "",
+      r.unit != null ? r.unit.toFixed(2) : "",
+      r.lineT != null ? r.lineT.toFixed(2) : "", leg, notes.join("; ") ]);
+  }};
+  add("Main", L.m);
+  add("Sideboard", L.s);
+  out.push([]);
+  const tot = (label, s, budget) => out.push([ label,"","","","","",
+    s.total.toFixed(2), "",
+    "budget " + budget.toFixed(2) + (s.total > budget ? " — OVER" : " — under") +
+    (s.anyMissing ? " (floor: unpriced cards)" : "") ]);
+  tot("TOTAL Main deck", L.m, L.bM);
+  tot("TOTAL Sideboard", L.s, L.bS);
+  const ts = L.priceAt.toISOString().replace(/[:.]/g,"-");
+  const safe = L.deckname.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase() || "deck";
+  return {
+    text: out.map(row => row.map(csvEsc).join(",")).join("\r\n"),
+    filename: `budget-modern_${safe}_${L.source}_${ts}.csv`,
+  };
+}
+
+function downloadFile(file, mime){
+  if (!file) return;
+  const blob = new Blob([file.text], { type: mime + ";charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = lastReport.filename;
+  a.download = file.filename;
   a.click();
   URL.revokeObjectURL(a.href);
-});
+}
+$("go").addEventListener("click", run);
+$("exportBtn").addEventListener("click", () => downloadFile(lastReport, "text/plain"));
+$("csvBtn").addEventListener("click", () => downloadFile(lastCsv, "text/csv"));
 $("copyBtn").addEventListener("click", async () => {
   if (!lastReport) return;
   try { await navigator.clipboard.writeText(lastReport.text);
         $("status").textContent = "Report copied to clipboard."; }
   catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
+});
+// Disable exports the moment any result-affecting input changes, so you can
+// never export a report that doesn't match what's on screen.
+EXPORT_INPUTS.forEach(id => {
+  const el = $(id);
+  el.addEventListener(
+    (el.tagName === "SELECT" || el.type === "checkbox") ? "change" : "input",
+    refreshExportState);
 });
 
 /* ---- "prices last updated" banner ---------------------------------- */
