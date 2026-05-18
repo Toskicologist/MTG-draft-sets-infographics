@@ -156,28 +156,50 @@ async function buildIndex() {
   return cards;
 }
 
-/* ---- main ---------------------------------------------------------- */
+async function readJSON(p){ try { return JSON.parse(await readFile(p, "utf8")); } catch { return null; } }
+
+/* ---- main ----------------------------------------------------------
+   --no-prices : skip the TCGcsv price rebuild (index only)
+   --no-index  : skip the heavy Scryfall index rebuild AND carry forward an
+                 existing data/cards-index.json (the workflow restores the
+                 prior one from the price-data branch). The card index only
+                 changes on set releases / B&R, so it is rebuilt monthly /
+                 on demand, while prices rebuild daily. If no prior index is
+                 present (first run), it is built regardless.            */
 async function main() {
   await mkdir(DATA, { recursive: true });
-  const generatedAt = new Date().toISOString();
-  const meta = { generatedAt, fmt: FMT };
+  const now = new Date().toISOString();          // price build time
+  const idxPath = join(DATA, "cards-index.json");
+  const meta = { generatedAt: now, fmt: FMT };
 
   if (!has("--no-prices")) {
     const prices = await buildPrices();
-    const out = { generatedAt, source: "tcgcsv.com TCGplayer cat 1, subType=Normal, Mid USD", prices };
+    const out = { generatedAt: now, source: "tcgcsv.com TCGplayer cat 1, subType=Normal, Mid USD", prices };
     await writeFile(join(DATA, "tcg-prices.json"), JSON.stringify(out));
     meta.priceCount = Object.keys(prices).length;
     meta.pricesBytes = Buffer.byteLength(JSON.stringify(out));
   }
 
-  const cards = await buildIndex();
-  const idx = { generatedAt, source: "Scryfall default_cards (EN paper)", fmt: FMT, cards };
-  await writeFile(join(DATA, "cards-index.json"), JSON.stringify(idx));
-  meta.cardCount = Object.keys(cards).length;
-  meta.indexBytes = Buffer.byteLength(JSON.stringify(idx));
+  const carried = has("--no-index") ? await readJSON(idxPath) : null;
+  if (carried && carried.cards) {
+    // Reuse the existing index untouched (daily price-only run).
+    meta.cardCount = Object.keys(carried.cards).length;
+    meta.indexGeneratedAt = carried.generatedAt || null;
+    meta.indexBytes = Buffer.byteLength(JSON.stringify(carried));
+    console.error(`[index] carried forward (built ${meta.indexGeneratedAt}) · ${meta.cardCount} names`);
+  } else {
+    if (has("--no-index")) console.error("[index] --no-index but no prior index found -> building anyway");
+    const cards = await buildIndex();
+    const idx = { generatedAt: now, source: "Scryfall default_cards (EN paper)", fmt: FMT, cards };
+    await writeFile(idxPath, JSON.stringify(idx));
+    meta.cardCount = Object.keys(cards).length;
+    meta.indexGeneratedAt = now;
+    meta.indexBytes = Buffer.byteLength(JSON.stringify(idx));
+  }
 
   await writeFile(join(DATA, "data-meta.json"), JSON.stringify(meta));
   console.error(`[meta] ${JSON.stringify({
+    priceGeneratedAt: meta.generatedAt, indexGeneratedAt: meta.indexGeneratedAt,
     cardCount: meta.cardCount, priceCount: meta.priceCount,
     indexMB: meta.indexBytes && (meta.indexBytes/1048576).toFixed(2),
     pricesMB: meta.pricesBytes && (meta.pricesBytes/1048576).toFixed(2) })}`);
