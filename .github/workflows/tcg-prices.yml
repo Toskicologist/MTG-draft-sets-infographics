@@ -1,9 +1,12 @@
-# Refreshes the Budget Modern Deckbuilder's TCG Mid snapshot daily so the
-# static page always has fresh same-origin price data (no CORS/key/server).
-# TCGcsv refreshes ~20:00 UTC; this runs after that and commits the new JSON
-# + meta if changed. Source of truth: ClaudeProjects deploy/ staging copy.
+# Daily: rebuild the TCG-Mid price snapshot (TCGcsv) + a slim Scryfall card
+# index, and publish BOTH to the orphan `price-data` branch as a single
+# force-pushed commit (so `main` history never grows), then purge jsDelivr.
+# The deckbuilder page fetches them from
+#   https://cdn.jsdelivr.net/gh/<owner>/<repo>@price-data/<file>?d=<UTC-date>
+# so Mid mode needs ZERO Scryfall calls and there is no CORS problem.
+# Source of truth: ClaudeProjects mtg/budget-modern-deckbuilder/deploy/.
 
-name: Refresh TCG Mid snapshot
+name: Refresh price-data
 
 on:
   schedule:
@@ -11,10 +14,10 @@ on:
   workflow_dispatch: {}      # manual "Run workflow" button
 
 permissions:
-  contents: write            # to commit the regenerated JSON
+  contents: write
 
 concurrency:
-  group: tcg-prices
+  group: price-data
   cancel-in-progress: false
 
 jobs:
@@ -27,23 +30,33 @@ jobs:
         with:
           node-version: 22
 
-      # Script writes the JSON next to itself via import.meta.url, so cwd
-      # does not matter; path matches the deployed project location.
-      - name: Build snapshot
-        run: node mtg/budget-modern-deckbuilder/scripts/build-tcg-prices.mjs
+      # ~514 MB Scryfall bulk is streamed (bounded RAM); ~2-3 min total.
+      - name: Build price snapshot + card index
+        run: node mtg/budget-modern-deckbuilder/scripts/build-data.mjs
 
-      - name: Commit if changed
+      - name: Publish to orphan price-data branch (single force-pushed commit)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
-          D=mtg/budget-modern-deckbuilder/data
-          # Commit BOTH the snapshot and the meta file (the page's
-          # "prices last updated" banner reads the meta; its generatedAt
-          # changes every run, so a successful refresh always commits).
-          if [ -n "$(git status --porcelain "$D/tcg-prices.json" "$D/tcg-prices-meta.json")" ]; then
-            git config user.name  "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add "$D/tcg-prices.json" "$D/tcg-prices-meta.json"
-            git commit -m "chore: refresh TCG Mid snapshot ($(date -u +%Y-%m-%d))"
-            git push
-          else
-            echo "No change; nothing to commit."
-          fi
+          set -e
+          SRC="$PWD/mtg/budget-modern-deckbuilder/data"
+          WORK="$(mktemp -d)"
+          cp "$SRC/tcg-prices.json" "$SRC/cards-index.json" "$SRC/data-meta.json" "$WORK/"
+          cd "$WORK"
+          git init -q
+          git checkout -q -b price-data
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "price-data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" price-data
+
+      - name: Purge jsDelivr edge cache
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          for f in tcg-prices.json cards-index.json data-meta.json; do
+            curl -sS "https://purge.jsdelivr.net/gh/${REPO}@price-data/${f}" >/dev/null || true
+          done
+          echo "purge requested"

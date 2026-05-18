@@ -21,3 +21,4 @@ __pycache__/
 # at runtime (the values are spliced into ARCHETYPE_ANALYSIS.html directly).
 mtg/ratings-project/sos/archetype_discrepancies.csv
 mtg/ratings-project/sos/card_discrepancies.csv
+mtg/budget-modern-deckbuilder/data/

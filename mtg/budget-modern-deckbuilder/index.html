@@ -8,9 +8,29 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v2.1.0)
+  Budget Modern Deckbuilder (v2.4.0)
 
   Changelog:
+  v2.4.0 (2026-05-18) - Mid mode now near-INSTANT: a daily job builds a slim
+                        Scryfall card index (printings + legalities + image)
+                        alongside the TCGcsv price table and publishes both
+                        to an orphan `price-data` branch served via jsDelivr
+                        (per-UTC-day cache key). Mid mode does ZERO per-card
+                        Scryfall calls; anything missing from the index falls
+                        back to a live lookup. `main` no longer carries the
+                        big data files (no repo-history growth).
+  v2.3.0 (2026-05-18) - Ignore-basic-lands toggle (default on). Format
+                        selector (default Modern) — rows not legal in the
+                        chosen format are highlighted red. Optional
+                        colour-coded prices (green->red, default on). Card
+                        names now link to Scryfall with an image hover
+                        popup (zero extra API calls — image captured during
+                        the pricing fetch). Report carries format + basics.
+  v2.2.0 (2026-05-17) - Deck input hardened: split on explicit "Sideboard"
+                        header / "SB:" prefix ONLY (removed the fragile
+                        first-blank-line guess that mis-split maindecks with
+                        section gaps). Added an optional separate Sideboard
+                        box for bare lists with no marker.
   v2.1.0 (2026-05-17) - Top "prices last updated" banner (reads a tiny
                         data/tcg-prices-meta.json on load; flags staleness).
                         Collapsible "Where do the prices come from?" explainer
@@ -80,9 +100,23 @@
   th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel)}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   tr.flagged td{background:rgba(255,207,92,.07)}
+  tr.illegal td{background:rgba(255,107,129,.13)}
+  tr.illegal td:nth-child(2){color:var(--bad);font-weight:600}
   .tag{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:6px}
   .tag.warn{background:rgba(255,207,92,.18);color:var(--warn)}
   .tag.bad{background:rgba(255,107,129,.18);color:var(--bad)}
+  /* cost color-coding (toggle): green -> red by price */
+  td.c0{color:#3ddc97}
+  td.c1{color:#9be36b}
+  td.c2{color:#ffcf5c}
+  td.c3{color:#ff9d5c}
+  td.c4{color:#ff6b81;font-weight:700}
+  a.cardlink{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--dim)}
+  a.cardlink:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  #cardTip{position:fixed;display:none;z-index:10000;padding:4px;background:#fff;
+    border:2px solid var(--accent);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);
+    pointer-events:none}
+  #cardTip img{display:block;width:240px;height:auto;border-radius:7px}
   .sechead{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 2px}
   .sechead h2{font-size:17px;margin:0}
   .sechead span{color:var(--dim);font-size:13px}
@@ -116,7 +150,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.1.0 · 2026-05-17</span></h1>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.4.0 · 2026-05-18</span></h1>
   <p class="sub">Paste a decklist &rarr; cheapest-printing <strong>TCG Mid</strong> (or live TCG Market) USD &rarr; separate main-deck &amp; sideboard budget check &rarr; export stamped with when prices were calculated.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
@@ -124,8 +158,8 @@
   <details class="explain">
     <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
     <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure, distinct from <strong>TCG Market</strong> (an average of recent <em>completed sales</em>, which is what the Scryfall API reports).</p>
-    <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run service that mirrors TCGplayer's public pricing data (low / mid / high / market) and republishes it as plain daily JSON. It refreshes roughly once a day (~20:00&nbsp;UTC). This page uses a snapshot of that data taken shortly after each refresh; the banner above shows exactly when that snapshot was built, and every export is stamped with the same time so you always know how fresh the numbers are.</p>
-    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess). Cards with no Mid for the chosen printing &mdash; or that aren't Modern-legal &mdash; are flagged, never estimated. Switch the <strong>Price figure</strong> selector to <strong>TCG Market (live)</strong> for real-time sale-based prices straight from Scryfall instead.</p>
+    <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run mirror of TCGplayer's public pricing &mdash; refreshed once a day (~20:00&nbsp;UTC). A scheduled job rebuilds the price table <em>and</em> a slim card index (printings, legalities, image) from Scryfall's bulk data, and publishes both to a CDN. The page loads those two files once, so <strong>Mid mode does zero per-card API calls and is near-instant</strong>. The banner above shows exactly when the data was built; every export carries that same timestamp.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Anything missing from the daily index falls back to a live Scryfall lookup automatically. Switch <strong>Price figure</strong> to <strong>TCG Market (live)</strong> for real-time sale-based prices from Scryfall instead.</p>
   </details>
 
   <div class="grid">
@@ -148,7 +182,13 @@ Sideboard
 Sideboard
 3 Smash to Smithereens
 2 Roiling Vortex</textarea>
-      <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. A line reading <em>Sideboard</em> (or a blank line) splits the boards. <code>//</code> / <code>#</code> lines ignored.</p>
+      <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. The boards split on a line reading <em>Sideboard</em> or an <code>SB:</code> prefix &mdash; paste a full export as-is. <code>//</code> / <code>#</code> lines ignored.</p>
+
+      <label for="sideboard" style="margin-top:16px">Sideboard <span style="text-transform:none;letter-spacing:0">(optional &mdash; only if your list has no <em>Sideboard</em> marker)</span></label>
+      <textarea id="sideboard" spellcheck="false" style="height:120px" placeholder="3 Smash to Smithereens
+2 Roiling Vortex
+(everything here counts as sideboard)"></textarea>
+      <p class="sub" style="margin:8px 0 0">Anything here is added to the sideboard total. Leave empty if your decklist above already contains a <em>Sideboard</em> / <code>SB:</code> section.</p>
     </div>
 
     <div class="panel">
@@ -166,15 +206,37 @@ Sideboard
           <input type="number" id="budgetSide" value="10" min="0" step="1">
         </div>
       </div>
-      <div class="field">
-        <label for="source">Price figure</label>
-        <select id="source" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
-          <option value="mid" selected>TCG Mid &mdash; daily snapshot (TCGcsv)</option>
-          <option value="market">TCG Market &mdash; live (Scryfall)</option>
-        </select>
+      <div class="row">
+        <div class="field">
+          <label for="source">Price figure</label>
+          <select id="source" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
+            <option value="mid" selected>TCG Mid &mdash; snapshot</option>
+            <option value="market">TCG Market &mdash; live</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="format">Format</label>
+          <select id="format" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
+            <option value="standard">Standard</option>
+            <option value="pioneer">Pioneer</option>
+            <option value="modern" selected>Modern</option>
+            <option value="legacy">Legacy</option>
+            <option value="vintage">Vintage</option>
+            <option value="pauper">Pauper</option>
+            <option value="premodern">Premodern</option>
+            <option value="commander">Commander</option>
+            <option value="__none">(no legality check)</option>
+          </select>
+        </div>
       </div>
       <div class="field">
         <label><input type="checkbox" id="cheapest" checked style="width:auto;vertical-align:-2px"> Use cheapest paper printing</label>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="ignoreBasics" checked style="width:auto;vertical-align:-2px"> Ignore basic lands (Plains/Island/&hellip;)</label>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="colorCost" checked style="width:auto;vertical-align:-2px"> Colour-code prices (green&rarr;red)</label>
       </div>
       <button class="primary" id="go">Calculate prices</button>
       <div class="actions">
@@ -204,8 +266,8 @@ Sideboard
   </div>
 
   <footer>
-    <strong>TCG Mid</strong> = TCGplayer Mid USD (median current NM/LP listing) from a once-daily snapshot via <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a>; the report carries the snapshot's exact build time as the "prices calculated" stamp.
-    <strong>TCG Market</strong> = TCGplayer Market USD (recent actual sales) fetched live from the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> <code>prices.usd</code> (Scryfall uses market, not mid). Card&rarr;price mapping uses Scryfall's <code>tcgplayer_id</code>. Both are indicative, not checkout quotes. Cards with no price for the chosen figure, or not Modern-legal, are flagged &mdash; never estimated.
+    <strong>TCG Mid</strong> = TCGplayer Mid USD (median current NM/LP listing), rebuilt daily from <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> + a Scryfall bulk index and served via jsDelivr; the report carries the build time as the "prices calculated" stamp.
+    <strong>TCG Market</strong> = TCGplayer Market USD (recent actual sales) fetched live from the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> <code>prices.usd</code> (Scryfall uses market, not mid). Card&rarr;price mapping uses Scryfall's <code>tcgplayer_id</code>. Both are indicative, not checkout quotes. Cards with no price for the chosen figure, or not legal in the chosen format, are flagged &mdash; never estimated.
   </footer>
 </div>
 
@@ -219,52 +281,97 @@ const money = n => "$" + Number(n).toFixed(2);
 let lastReport = null; // { text, filename }
 
 /* ---- decklist parsing ---------------------------------------------- */
+// One "<qty> <name>" line -> {qty,name}, or null. Strips MTGA/MTGO cruft.
+function parseCardLine(line){
+  const m = line.match(/^(\d+)\s*[xX]?\s+(.+?)\s*$/);
+  if (!m) return null;
+  const qty = parseInt(m[1],10);
+  const name = m[2]
+    .replace(/\s+\*[A-Za-z]\*\s*$/,"")                  // trailing *F* foil marker
+    .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+\S+)?\s*$/,"")  // (SET) 123
+    .replace(/\s*\[[^\]]*\]\s*$/,"")                     // [tags]
+    .trim();
+  if (!name || !qty) return null;
+  return { qty, name };
+}
+function addTo(map, name, qty){ map.set(name, (map.get(name)||0) + qty); }
+
+// Main paste box: split ONLY on an explicit "Sideboard" header or an "SB:"
+// line prefix (no blank-line guessing — blank lines are ignored). Standard
+// exports all carry one of these markers, so paste-and-go still works.
 function parseDecklist(raw){
-  const main = new Map();   // name -> qty
-  const side = new Map();
+  const main = new Map(), side = new Map();
   let board = main;
-  let sawExplicitSide = false;
-  const lines = raw.split(/\r?\n/);
-
-  for (let rawLine of lines){
+  for (let rawLine of (raw||"").split(/\r?\n/)){
     let line = rawLine.trim();
-    if (!line){ // blank line = board separator only if we haven't already
-      if (board === main && main.size && !sawExplicitSide) board = side;
-      continue;
-    }
-    if (/^(\/\/|#)/.test(line)) continue;
+    if (!line || /^(\/\/|#)/.test(line)) continue;
     if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(line)) { board = main; continue; }
-    if (/^(sideboard)\s*:?\s*$/i.test(line)) { board = side; sawExplicitSide = true; continue; }
-
+    if (/^(sideboard)\s*:?\s*$/i.test(line)) { board = side; continue; }
     let sb = false;
     if (/^sb:\s*/i.test(line)){ sb = true; line = line.replace(/^sb:\s*/i,""); }
-
-    // strip trailing MTGA set/collector "(SET) 123" and leading qty
-    const m = line.match(/^(\d+)\s*[xX]?\s+(.+?)\s*$/);
-    if (!m) continue;
-    let qty = parseInt(m[1],10);
-    let name = m[2]
-      .replace(/\s+\*[A-Za-z]\*\s*$/,"")                          // trailing *F* foil marker
-      .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+\S+)?\s*$/,"")          // (SET) 123
-      .replace(/\s*\[[^\]]*\]\s*$/,"")                            // [tags]
-      .trim();
-    if (!name || !qty) continue;
-    const target = sb ? side : board;
-    target.set(name, (target.get(name)||0) + qty);
+    const c = parseCardLine(line);
+    if (c) addTo(sb ? side : board, c.name, c.qty);
   }
   return { main, side };
 }
 
-/* ---- TCG Mid snapshot ---------------------------------------------- */
-let _snap = null; // { generatedAt, source, prices:{ productId: mid } }
-async function loadSnapshot(){
-  if (_snap) return _snap;
-  const r = await fetch("./data/tcg-prices.json", { cache:"no-cache" });
-  if (!r.ok) throw new Error("snapshot HTTP " + r.status);
-  const j = await r.json();
-  if (!j || !j.prices) throw new Error("snapshot malformed");
-  _snap = j;
-  return _snap;
+// Optional sideboard box: every card line is sideboard, no markers needed.
+function parseSideboardBox(raw){
+  const side = new Map();
+  for (const rawLine of (raw||"").split(/\r?\n/)){
+    const line = rawLine.trim();
+    if (!line || /^(\/\/|#)/.test(line) || /^(sideboard)\s*:?\s*$/i.test(line)) continue;
+    const c = parseCardLine(line.replace(/^sb:\s*/i,""));
+    if (c) addTo(side, c.name, c.qty);
+  }
+  return side;
+}
+
+/* ---- daily data from the jsDelivr CDN (orphan price-data branch) ----
+   tcg-prices.json  { prices:{ productId: Mid } }
+   cards-index.json { fmt:[...], cards:{ name: {p:[[id,set,cn]], l, i} } }
+   data-meta.json   { generatedAt, fmt, counts }
+   Per-UTC-day query key => fresh each day, cached within the day.        */
+const CDN = "https://cdn.jsdelivr.net/gh/Toskicologist/MTG-draft-sets-infographics@price-data";
+const LEGWORD = { l:"legal", n:"not_legal", b:"banned", r:"restricted", "-":null };
+const utcDay = () => new Date().toISOString().slice(0,10);
+let _cdn = null; // { prices, index, meta }
+async function loadCdn(){
+  if (_cdn) return _cdn;
+  const d = "?d=" + utcDay();
+  const grab = async f => {
+    const r = await fetch(`${CDN}/${f}${d}`);
+    if (!r.ok) throw new Error(`${f} HTTP ${r.status}`);
+    return r.json();
+  };
+  const [prices, index, meta] = await Promise.all([
+    grab("tcg-prices.json"), grab("cards-index.json"), grab("data-meta.json"),
+  ]);
+  if (!prices || !prices.prices || !index || !index.cards) throw new Error("CDN data malformed");
+  _cdn = { prices: prices.prices, index, meta };
+  return _cdn;
+}
+// Price one card purely from the CDN index + price map (zero Scryfall calls).
+// Returns the same shape as priceCard, or null if the card isn't in the index
+// (caller then falls back to a live Scryfall lookup for that one card).
+function priceFromIndex(name, cdn){
+  const e = cdn.index.cards[name.toLowerCase().trim()];
+  if (!e) return null;
+  let best = null;
+  for (const [id, set, cn] of e.p){
+    const m = cdn.prices[id];
+    if (typeof m === "number" && m > 0 && (best == null || m < best.price))
+      best = { price:m, set:(set||"").toUpperCase(), cn };
+  }
+  const legal = {};
+  const order = cdn.index.fmt || [];
+  for (let k = 0; k < order.length; k++) legal[order[k]] = LEGWORD[e.l[k]] ?? null;
+  const uri = best
+    ? `https://scryfall.com/card/${(best.set||"").toLowerCase()}/${best.cn}`
+    : `https://scryfall.com/search?q=${encodeURIComponent('!"'+name+'"')}`;
+  const img = e.i ? `${SCRYFALL}/cards/${e.i}?format=image&version=normal` : null;
+  return { name, found:true, price: best ? best.price : null, foilOnly:false,
+           set: best ? best.set : null, cn: best ? best.cn : null, legal, uri, img };
 }
 
 /* ---- Scryfall lookup ----------------------------------------------- */
@@ -289,21 +396,33 @@ function cardUnit(c, source, snap){
   return fo != null ? { price: fo, foil:true } : { price:null };
 }
 
-// Returns { name, found, price, foilOnly, set, cn, modern } — never guesses.
+// front-face image (handles double-faced cards). Captured from the fetch we
+// already do for pricing — the hover popup costs zero extra API calls.
+function imgOf(c){
+  if (c.image_uris) return c.image_uris.normal || c.image_uris.large || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.normal || null;
+  return null;
+}
+
+// Returns { name, found, price, foilOnly, set, cn, legal, uri, img } — never guesses.
+// `legal` = Scryfall legalities map (per-format), used by the format toggle.
 async function priceCard(name, cheapest, source, snap){
   if (cheapest){
     let url = SCRYFALL + "/cards/search?unique=prints&q=" +
       encodeURIComponent(`!"${name}" game:paper`);
-    let best = null, bestFoil = null, modern = null, found = false;
+    let best = null, bestFoil = null, legal = null, found = false, fb = null;
     while (url){
       const data = await fetchJSON(url);
       if (data.__notfound || data.object === "error" || !data.data) break;
       found = true;
       for (const c of data.data){
-        if (modern == null && c.legalities) modern = c.legalities.modern;
+        if (legal == null && c.legalities) legal = c.legalities;
+        if (fb == null) fb = { uri:c.scryfall_uri, img:imgOf(c) };
         const u = cardUnit(c, source, snap);
         if (u.price == null) continue;
-        const rec = { price:u.price, set:c.set.toUpperCase(), cn:c.collector_number };
+        const rec = { price:u.price, set:c.set.toUpperCase(), cn:c.collector_number,
+                      uri:c.scryfall_uri, img:imgOf(c) };
         if (u.foil){ if (bestFoil == null || u.price < bestFoil.price) bestFoil = rec; }
         else       { if (best == null || u.price < best.price) best = rec; }
       }
@@ -311,11 +430,11 @@ async function priceCard(name, cheapest, source, snap){
       if (url) await SLEEP(90);
     }
     if (!found) return await priceNamed(name, source, snap);
-    if (best)     return { name, found:true, price:best.price, foilOnly:false,
-                           set:best.set, cn:best.cn, modern };
-    if (bestFoil) return { name, found:true, price:bestFoil.price, foilOnly:true,
-                           set:bestFoil.set, cn:bestFoil.cn, modern };
-    return { name, found:true, price:null, foilOnly:false, set:null, cn:null, modern };
+    const pick = best || bestFoil;
+    if (pick) return { name, found:true, price:pick.price, foilOnly:!best&&!!bestFoil,
+                       set:pick.set, cn:pick.cn, legal, uri:pick.uri, img:pick.img };
+    return { name, found:true, price:null, foilOnly:false, set:null, cn:null,
+             legal, uri:fb&&fb.uri, img:fb&&fb.img };
   }
   return await priceNamed(name, source, snap);
 }
@@ -323,57 +442,89 @@ async function priceCard(name, cheapest, source, snap){
 async function priceNamed(name, source, snap){
   const c = await fetchJSON(SCRYFALL + "/cards/named?fuzzy=" + encodeURIComponent(name));
   if (c.__notfound || c.object === "error")
-    return { name, found:false, price:null, foilOnly:false, set:null, cn:null, modern:null };
-  const modern = c.legalities ? c.legalities.modern : null;
+    return { name, found:false, price:null, foilOnly:false, set:null, cn:null,
+             legal:null, uri:null, img:null };
   const u = cardUnit(c, source, snap);
   return { name:c.name, found:true, price:u.price, foilOnly:!!u.foil,
-           set:c.set?c.set.toUpperCase():null, cn:c.collector_number, modern };
+           set:c.set?c.set.toUpperCase():null, cn:c.collector_number,
+           legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
 }
 
 /* ---- run ----------------------------------------------------------- */
 async function run(){
   const { main, side } = parseDecklist($("decklist").value);
+  // Merge the optional Sideboard box (additive) into the sideboard.
+  for (const [name, qty] of parseSideboardBox($("sideboard").value))
+    side.set(name, (side.get(name)||0) + qty);
   if (!main.size && !side.size){ $("status").textContent = "No cards parsed. Check the decklist format."; return; }
 
+  // Ignore basic lands (default on): drop them before pricing — they cost
+  // ~$0 and just add noise + Scryfall calls.
+  const ignoreBasics = $("ignoreBasics").checked;
+  let basicsDropped = 0;
+  if (ignoreBasics){
+    const isBasic = n => /^(snow-covered\s+)?(plains|island|swamp|mountain|forest|wastes)$/i.test(n.trim());
+    for (const mp of [main, side])
+      for (const n of [...mp.keys()])
+        if (isBasic(n)){ basicsDropped += mp.get(n); mp.delete(n); }
+  }
+  if (!main.size && !side.size){ $("status").textContent = "Only basic lands found (ignored). Nothing to price."; return; }
+
   const cheapest = $("cheapest").checked;
+  const format = $("format").value;  // e.g. "modern" | "__none"
   const source = $("source").value; // "mid" | "market"
   const names = [...new Set([...main.keys(), ...side.keys()])];
   const priceMap = new Map();
 
   $("go").disabled = true; $("exportBtn").disabled = true; $("copyBtn").disabled = true;
 
-  let snap = null;
+  let cdn = null;
   if (source === "mid"){
-    $("status").textContent = "Loading daily TCG Mid snapshot…";
-    try { snap = await loadSnapshot(); }
+    $("status").textContent = "Loading daily price data…";
+    try { cdn = await loadCdn(); }
     catch(e){
-      $("status").innerHTML = "Couldn't load the TCG Mid snapshot (" +
-        escapeHtml(String(e.message||e)) + "). It must be served over http(s) — " +
-        "if you opened this file directly, run a local server or switch Price figure to <b>TCG Market</b>.";
+      $("status").innerHTML = "Couldn't load the daily TCG Mid data from the CDN (" +
+        escapeHtml(String(e.message||e)) + "). Retry, or switch Price figure to " +
+        "<b>TCG Market</b> (live).";
       $("go").disabled = false; return;
     }
   }
 
   $("barWrap").classList.remove("hidden");
-  let done = 0;
+  let done = 0, fellBack = 0;
   for (const n of names){
     $("status").textContent = `Pricing ${done+1}/${names.length}: ${n}`;
-    try { priceMap.set(n, await priceCard(n, cheapest, source, snap)); }
-    catch(e){ priceMap.set(n, { name:n, found:false, price:null, error:String(e.message||e),
-              foilOnly:false, set:null, cn:null, modern:null }); }
+    try {
+      let p = null;
+      if (source === "mid"){
+        p = priceFromIndex(n, cdn);                 // instant, no network
+        if (!p){                                    // rare: not in index
+          fellBack++;
+          p = await priceCard(n, cheapest, "mid", { prices: cdn.prices });
+          await SLEEP(95);                          // throttle the fallback
+        }
+      } else {
+        p = await priceCard(n, cheapest, "market", null);
+        await SLEEP(95);                            // Scryfall rate-limit
+      }
+      priceMap.set(n, p);
+    } catch(e){ priceMap.set(n, { name:n, found:false, price:null,
+              error:String(e.message||e), foilOnly:false, set:null, cn:null,
+              legal:null, uri:null, img:null }); }
     done++;
     $("bar").style.width = (done/names.length*100) + "%";
-    await SLEEP(95); // Scryfall rate-limit courtesy
   }
 
   const runAt = new Date();
   // "prices calculated" = when the figure was actually computed:
   //   mid    -> the snapshot's build time   market -> now (live fetch)
-  const priceAt = source === "mid" ? new Date(snap.generatedAt) : runAt;
-  render(main, side, priceMap, { source, priceAt, runAt }, cheapest);
+  const priceAt = source === "mid" ? new Date(cdn.meta.generatedAt) : runAt;
+  render(main, side, priceMap, { source, priceAt, runAt, format, basicsDropped,
+    colorCost: $("colorCost").checked }, cheapest);
 
   $("status").textContent =
-    `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"}).`;
+    `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"})` +
+    (fellBack ? ` · ${fellBack} via live Scryfall fallback` : "") + ".";
   $("barWrap").classList.add("hidden");
   $("go").disabled = false; $("exportBtn").disabled = false; $("copyBtn").disabled = false;
 }
@@ -391,35 +542,74 @@ function sectionRows(map, priceMap){
   return { rows, total, anyMissing };
 }
 
+function fmtName(f){
+  return ({standard:"Standard",pioneer:"Pioneer",modern:"Modern",legacy:"Legacy",
+    vintage:"Vintage",pauper:"Pauper",premodern:"Premodern",commander:"Commander"})[f]
+    || (f.charAt(0).toUpperCase()+f.slice(1));
+}
+// price -> color tier class (green c0 .. red c4); null -> "".
+function costClass(v){
+  if (v == null) return "";
+  if (v < 0.5) return "c0";
+  if (v < 2)   return "c1";
+  if (v < 5)   return "c2";
+  if (v < 15)  return "c3";
+  return "c4";
+}
+// legality status of p in the current format: "legal" | "bad" | "warn" | "ok-none"
+function legalStatus(p){
+  if (CUR_FMT === "__none" || !p.found) return "ok-none";
+  const v = p.legal ? p.legal[CUR_FMT] : undefined;
+  if (v === "legal") return "ok";
+  if (v === "restricted") return "warn";
+  return "bad"; // not_legal / banned / unknown
+}
 function flags(p){
   const out = [];
   if (!p.found) out.push('<span class="tag bad">not found</span>');
   else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
   if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
-  if (p.modern === "banned") out.push('<span class="tag bad">Modern banned</span>');
-  else if (p.modern && p.modern !== "legal") out.push('<span class="tag warn">not Modern-legal</span>');
+  if (CUR_FMT !== "__none" && p.found){
+    const v = p.legal ? p.legal[CUR_FMT] : undefined;
+    const F = fmtName(CUR_FMT);
+    if (v === "banned") out.push(`<span class="tag bad">${F} banned</span>`);
+    else if (v === "restricted") out.push(`<span class="tag warn">${F} restricted</span>`);
+    else if (v === "not_legal") out.push(`<span class="tag bad">not ${F}-legal</span>`);
+    else if (v == null) out.push(`<span class="tag warn">${F} legality unknown</span>`);
+  }
   return out.join("");
 }
 
+function cardLink(p, name){
+  const href = p.uri || ("https://scryfall.com/search?q=" +
+    encodeURIComponent('!"' + name + '"'));
+  const img = p.img ? ` data-img="${escapeHtml(p.img)}"` : "";
+  return `<a class="cardlink" href="${escapeHtml(href)}" target="_blank" ` +
+         `rel="noopener"${img}>${escapeHtml(name)}</a>`;
+}
 function renderTable(title, sec){
   let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
   h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th></tr></thead><tbody>`;
   for (const r of sec.rows){
-    const flagged = (!r.p.found || r.p.price==null || r.p.foilOnly || (r.p.modern && r.p.modern!=="legal"));
+    const priceFlagged = (!r.p.found || r.p.price==null || r.p.foilOnly);
+    const illegal = legalStatus(r.p) === "bad";
+    const cls = [priceFlagged?'flagged':'', illegal?'illegal':''].filter(Boolean).join(' ');
     const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
-    h += `<tr class="${flagged?'flagged':''}"><td class="num">${r.qty}</td>`+
-         `<td>${escapeHtml(r.name)}${flags(r.p)}</td>`+
+    const uc = CUR_COLOR ? " " + costClass(r.unit) : "";
+    const lc = CUR_COLOR ? " " + costClass(r.lineT) : "";
+    h += `<tr class="${cls}"><td class="num">${r.qty}</td>`+
+         `<td>${cardLink(r.p, r.name)}${flags(r.p)}</td>`+
          `<td>${print}</td>`+
-         `<td class="num">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
-         `<td class="num">${r.lineT!=null?money(r.lineT):"&mdash;"}</td></tr>`;
+         `<td class="num${uc}">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
+         `<td class="num${lc}">${r.lineT!=null?money(r.lineT):"&mdash;"}</td></tr>`;
   }
   h += `</tbody></table>`;
   return h;
 }
 
-let LAST = null, CUR_SRC = "mid";
+let LAST = null, CUR_SRC = "mid", CUR_FMT = "modern", CUR_COLOR = true;
 function render(main, side, priceMap, meta, cheapest){
-  CUR_SRC = meta.source;
+  CUR_SRC = meta.source; CUR_FMT = meta.format; CUR_COLOR = meta.colorCost;
   const m = sectionRows(main, priceMap);
   const s = sectionRows(side, priceMap);
   const bM = parseFloat($("budgetMain").value)||0;
@@ -431,9 +621,9 @@ function render(main, side, priceMap, meta, cheapest){
   $("stamp").textContent =
     "Prices calculated: " + meta.priceAt.toLocaleString() +
     "  (" + meta.priceAt.toISOString() + ") — " + srcLabel +
-    (meta.source === "mid"
-      ? "  ·  checked " + meta.runAt.toLocaleString()
-      : "");
+    (meta.source === "mid" ? "  ·  checked " + meta.runAt.toLocaleString() : "") +
+    (meta.format !== "__none" ? "  ·  legality: " + fmtName(meta.format) : "") +
+    (meta.basicsDropped ? `  ·  ${meta.basicsDropped} basic land${meta.basicsDropped>1?'s':''} ignored` : "");
 
   const setCard = (idEl, idAmt, idMeta, sec, budget) => {
     const over = sec.total > budget;
@@ -455,6 +645,31 @@ function render(main, side, priceMap, meta, cheapest){
   lastReport = buildReport(LAST);
 }
 
+/* ---- card-image hover popup (uses imgs captured during pricing) ----- */
+(function(){
+  const tip = document.createElement("div");
+  tip.id = "cardTip"; document.body.appendChild(tip);
+  let cur = null;
+  function move(e){
+    const m = 14;
+    let x = e.clientX + m, y = e.clientY + m;
+    if (x + tip.offsetWidth  > innerWidth  - m) x = e.clientX - tip.offsetWidth  - m;
+    if (y + tip.offsetHeight > innerHeight - m) y = e.clientY - tip.offsetHeight - m;
+    tip.style.left = Math.max(m,x) + "px"; tip.style.top = Math.max(m,y) + "px";
+  }
+  document.addEventListener("mouseover", e => {
+    const a = e.target.closest && e.target.closest("a.cardlink[data-img]");
+    if (!a) return;
+    cur = a.getAttribute("data-img");
+    tip.innerHTML = `<img alt="" src="${cur}">`;
+    tip.style.display = "block"; move(e);
+  });
+  document.addEventListener("mousemove", e => { if (tip.style.display==="block") move(e); });
+  document.addEventListener("mouseout", e => {
+    if (e.target.closest && e.target.closest("a.cardlink")) { tip.style.display="none"; cur=null; }
+  });
+})();
+
 function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 /* ---- export -------------------------------------------------------- */
@@ -472,6 +687,8 @@ function buildReport(L){
     : "TCGplayer Market USD — live via Scryfall prices.usd"));
   lines.push("Report generated : " + L.runAt.toISOString() + " (UTC)");
   lines.push("Printing basis   : " + (L.cheapest ? "cheapest paper printing" : "Scryfall default/fuzzy printing"));
+  lines.push("Legality format  : " + (L.format === "__none" ? "(not checked)" : fmtName(L.format)));
+  if (L.basicsDropped) lines.push("Basic lands      : " + L.basicsDropped + " ignored (excluded from totals)");
   lines.push("");
   const sec = (title, s, budget) => {
     lines.push("-".repeat(60));
@@ -482,8 +699,14 @@ function buildReport(L){
       if (!r.p.found) f.push("NOT FOUND");
       else if (r.p.price==null) f.push(L.source==="mid" ? "NO TCG MID" : "NO USD");
       if (r.p.foilOnly) f.push("foil-only");
-      if (r.p.modern==="banned") f.push("MODERN-BANNED");
-      else if (r.p.modern && r.p.modern!=="legal") f.push("not-modern-legal");
+      if (L.format !== "__none" && r.p.found){
+        const v = r.p.legal ? r.p.legal[L.format] : undefined;
+        const F = fmtName(L.format).toUpperCase();
+        if (v === "banned") f.push(F+"-BANNED");
+        else if (v === "restricted") f.push(F+"-restricted");
+        else if (v === "not_legal") f.push("not-"+L.format+"-legal");
+        else if (v == null) f.push(L.format+"-legality-unknown");
+      }
       lines.push(pad(r.qty+"x",4) + pad(r.name,34) +
         pad(r.p.set?(r.p.set+" "+(r.p.cn||"")):"-",12) +
         pad(r.unit!=null?money(r.unit):"-",9) +
@@ -537,25 +760,26 @@ function ago(d){
 async function showLastUpdated(){
   const box = $("updated"), txt = $("updatedText");
   try{
-    const r = await fetch("./data/tcg-prices-meta.json", { cache:"no-cache" });
+    const r = await fetch(`${CDN}/data-meta.json?d=${utcDay()}`);
     if (!r.ok) throw new Error("HTTP " + r.status);
     const meta = await r.json();
     const d = new Date(meta.generatedAt);
-    const stale = (Date.now() - d.getTime()) > 36*3600*1000; // TCGcsv is daily
+    const stale = (Date.now() - d.getTime()) > 36*3600*1000; // refreshed daily
     box.classList.toggle("stale", stale);
     txt.classList.remove("dim");
     txt.innerHTML =
       "<b>TCG Mid prices last updated:</b> " + d.toLocaleString() +
       " <span class='dim'>(" + ago(d) + " · " + d.toISOString() + ")</span>" +
-      " <span class='dim'>· " + (meta.productCount||0).toLocaleString() +
-      " cards · daily snapshot via TCGcsv</span>" +
-      (stale ? " <span class='tag warn'>snapshot &gt;36 h old</span>" : "");
+      " <span class='dim'>· " + (meta.priceCount||0).toLocaleString() +
+      " priced products · " + (meta.cardCount||0).toLocaleString() +
+      " cards indexed · via TCGcsv + Scryfall</span>" +
+      (stale ? " <span class='tag warn'>data &gt;36 h old</span>" : "");
   }catch(e){
     box.classList.add("err");
     txt.classList.remove("dim");
     txt.innerHTML =
-      "TCG&nbsp;Mid&nbsp;snapshot date unavailable (" + escapeHtml(String(e.message||e)) +
-      ") — this needs to be served over http(s). <b>TCG Market</b> prices are fetched live and work regardless.";
+      "Daily price-data date unavailable (" + escapeHtml(String(e.message||e)) +
+      "). <b>TCG Market</b> prices are fetched live and work regardless.";
   }
 }
 showLastUpdated();
