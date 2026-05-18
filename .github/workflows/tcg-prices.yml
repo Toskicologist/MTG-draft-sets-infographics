@@ -1,17 +1,25 @@
-# Daily: rebuild the TCG-Mid price snapshot (TCGcsv) + a slim Scryfall card
-# index, and publish BOTH to the orphan `price-data` branch as a single
-# force-pushed commit (so `main` history never grows), then purge jsDelivr.
-# The deckbuilder page fetches them from
-#   https://cdn.jsdelivr.net/gh/<owner>/<repo>@price-data/<file>?d=<UTC-date>
-# so Mid mode needs ZERO Scryfall calls and there is no CORS problem.
+# Publishes the deckbuilder's data to the orphan `price-data` branch (single
+# force-pushed commit, no main-history growth), fetched by the page via
+# jsDelivr.  Two cadences, because they change at very different rates:
+#   * tcg-prices.json  (TCGcsv Mid)        -> rebuilt EVERY day
+#   * cards-index.json (Scryfall name->id, -> rebuilt MONTHLY (1st) or on
+#       legalities, image)                    demand; carried forward daily
+# Brand-new cards not yet in the index fall back to live Scryfall on the
+# page, so a stale index is safe between rebuilds.  After a B&R announcement
+# or a big set release, trigger a manual run with rebuild_index = true.
 # Source of truth: ClaudeProjects mtg/budget-modern-deckbuilder/deploy/.
 
 name: Refresh price-data
 
 on:
   schedule:
-    - cron: "30 20 * * *"   # 20:30 UTC daily, after TCGcsv's ~20:00 refresh
-  workflow_dispatch: {}      # manual "Run workflow" button
+    - cron: "30 20 * * *"      # 20:30 UTC daily (after TCGcsv ~20:00)
+  workflow_dispatch:
+    inputs:
+      rebuild_index:
+        description: "Also rebuild the Scryfall card index (do this after a B&R or new set)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -30,9 +38,36 @@ jobs:
         with:
           node-version: 22
 
-      # ~514 MB Scryfall bulk is streamed (bounded RAM); ~2-3 min total.
-      - name: Build price snapshot + card index
-        run: node mtg/budget-modern-deckbuilder/scripts/build-data.mjs
+      - name: Restore previous data from price-data branch
+        run: |
+          set -e
+          D=mtg/budget-modern-deckbuilder/data
+          mkdir -p "$D"
+          if git fetch --depth 1 origin price-data 2>/dev/null; then
+            for f in cards-index.json tcg-prices.json data-meta.json; do
+              git show "FETCH_HEAD:$f" > "$D/$f" 2>/dev/null || true
+            done
+            [ -s "$D/cards-index.json" ] && echo "HAVE_INDEX=1" >> "$GITHUB_ENV" || true
+          fi
+
+      - name: Decide whether to rebuild the index
+        run: |
+          DOM=$(date -u +%d)
+          if [ "${{ github.event.inputs.rebuild_index }}" = "true" ] \
+             || [ "$DOM" = "01" ] || [ -z "${HAVE_INDEX:-}" ]; then
+            echo "REBUILD_INDEX=1" >> "$GITHUB_ENV"
+            echo "Index WILL be rebuilt (dispatch=$([ "${{ github.event.inputs.rebuild_index }}" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none})"
+          else
+            echo "Index carried forward (prices-only run)"
+          fi
+
+      - name: Build (prices always; index monthly / on demand)
+        run: |
+          if [ -n "${REBUILD_INDEX:-}" ]; then
+            node mtg/budget-modern-deckbuilder/scripts/build-data.mjs
+          else
+            node mtg/budget-modern-deckbuilder/scripts/build-data.mjs --no-index
+          fi
 
       - name: Publish to orphan price-data branch (single force-pushed commit)
         env:
@@ -49,7 +84,9 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -q -m "price-data $(date -u +%Y-%m-%dT%H:%MZ)"
+          MSG="price-data $(date -u +%Y-%m-%dT%H:%MZ)"
+          [ -n "${REBUILD_INDEX:-}" ] && MSG="$MSG (index rebuilt)" || MSG="$MSG (prices only)"
+          git commit -q -m "$MSG"
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" price-data
 
       - name: Purge jsDelivr edge cache
