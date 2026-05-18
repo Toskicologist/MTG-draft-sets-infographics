@@ -126,7 +126,9 @@ async function buildIndex() {
     if (!key) return;
     let e = cards[key];
     if (!e) {
-      e = cards[key] = { p: [], l: legString(c.legalities), i: c.id };
+      // No image id needed: the page derives the image from the cheapest
+      // printing's set+collector (a direct Scryfall endpoint).
+      e = cards[key] = { p: [], l: legString(c.legalities) };
       // alias the front-face name for DFC / split / adventure ("A // B")
       const slash = key.indexOf(" // ");
       if (slash > 0) { const front = key.slice(0, slash); if (!cards[front]) cards[front] = e; }

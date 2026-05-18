@@ -8,9 +8,18 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v2.5.0)
+  Budget Modern Deckbuilder (v2.6.0)
 
   Changelog:
+  v2.6.0 (2026-05-19) - Live preview: in Mid mode the totals/tables update
+                        as you edit (debounced, index-only, ZERO Scryfall
+                        calls; cards not in the index show "Calculate to
+                        price"). Exports stay gated to an explicit Calculate
+                        (the authoritative pass that also resolves fallback
+                        cards). Popup image + card link now use the CHEAPEST
+                        printing's real set/collector (matches the shown set
+                        code) via Scryfall's direct /set/cn endpoint — same
+                        single lazy request; stored image id dropped.
   v2.5.0 (2026-05-18) - Output is now two columns: each budget box sits
                         directly above its own deck table (main left, side
                         right). Export/Copy disabled until a calc matches
@@ -157,7 +166,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.5.0 · 2026-05-18</span></h1>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.6.0 · 2026-05-19</span></h1>
   <p class="sub">Paste a decklist &rarr; cheapest-printing <strong>TCG Mid</strong> (or live TCG Market) USD &rarr; separate main-deck &amp; sideboard budget check &rarr; export stamped with when prices were calculated.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
@@ -392,19 +401,28 @@ async function loadCdn(){
 function priceFromIndex(name, cdn){
   const e = cdn.index.cards[name.toLowerCase().trim()];
   if (!e) return null;
-  let best = null;
-  for (const [id, set, cn] of e.p){
+  let best = null, bestP = null;
+  for (const ent of e.p){
+    const [id] = ent;
     const m = cdn.prices[id];
-    if (typeof m === "number" && m > 0 && (best == null || m < best.price))
-      best = { price:m, set:(set||"").toUpperCase(), cn };
+    if (typeof m === "number" && m > 0 && (best == null || m < best.price)){
+      best = { price:m, set:(ent[1]||"").toUpperCase(), cn:ent[2] };
+      bestP = ent;
+    }
   }
   const legal = {};
   const order = cdn.index.fmt || [];
   for (let k = 0; k < order.length; k++) legal[order[k]] = LEGWORD[e.l[k]] ?? null;
-  const uri = best
-    ? `https://scryfall.com/card/${(best.set||"").toLowerCase()}/${best.cn}`
+  // Image + Scryfall link key off the CHEAPEST printing actually shown
+  // (fallback: first printing). /(set)/(collector) is a direct Scryfall
+  // endpoint — same single lazy redirect as before, just the right card.
+  const imgP = bestP || e.p[0] || null;
+  const uri = imgP
+    ? `https://scryfall.com/card/${imgP[1]}/${encodeURIComponent(imgP[2])}`
     : `https://scryfall.com/search?q=${encodeURIComponent('!"'+name+'"')}`;
-  const img = e.i ? `${SCRYFALL}/cards/${e.i}?format=image&version=normal` : null;
+  const img = imgP
+    ? `${SCRYFALL}/cards/${imgP[1]}/${encodeURIComponent(imgP[2])}?format=image&version=normal`
+    : null;
   return { name, found:true, price: best ? best.price : null, foilOnly:false,
            set: best ? best.set : null, cn: best ? best.cn : null, legal, uri, img };
 }
@@ -485,85 +503,121 @@ async function priceNamed(name, source, snap){
            legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
 }
 
-/* ---- run ----------------------------------------------------------- */
-async function run(){
+/* ---- decklist -> boards (shared by run() and live preview) --------- */
+function buildBoards(){
   const { main, side } = parseDecklist($("decklist").value);
-  // Merge the optional Sideboard box (additive) into the sideboard.
   for (const [name, qty] of parseSideboardBox($("sideboard").value))
     side.set(name, (side.get(name)||0) + qty);
-  if (!main.size && !side.size){ $("status").textContent = "No cards parsed. Check the decklist format."; return; }
-
-  // Ignore basic lands (default on): drop them before pricing — they cost
-  // ~$0 and just add noise + Scryfall calls.
-  const ignoreBasics = $("ignoreBasics").checked;
   let basicsDropped = 0;
-  if (ignoreBasics){
+  if ($("ignoreBasics").checked){
     const isBasic = n => /^(snow-covered\s+)?(plains|island|swamp|mountain|forest|wastes)$/i.test(n.trim());
     for (const mp of [main, side])
       for (const n of [...mp.keys()])
         if (isBasic(n)){ basicsDropped += mp.get(n); mp.delete(n); }
   }
-  if (!main.size && !side.size){ $("status").textContent = "Only basic lands found (ignored). Nothing to price."; return; }
+  return { main, side, basicsDropped };
+}
 
-  const cheapest = $("cheapest").checked;
-  const format = $("format").value;  // e.g. "modern" | "__none"
-  const source = $("source").value; // "mid" | "market"
-  const names = [...new Set([...main.keys(), ...side.keys()])];
+/* ---- live preview (Mid only, index-only, ZERO Scryfall calls) ------ */
+let RUNNING = false;          // a full Calculate is in progress
+let _cdnPrefetch = null;
+function ensureCdn(){          // memoised background load
+  if (_cdn) return Promise.resolve(_cdn);
+  if (!_cdnPrefetch) _cdnPrefetch = loadCdn().catch(e => { _cdnPrefetch = null; throw e; });
+  return _cdnPrefetch;
+}
+let _liveTimer = null;
+function scheduleLive(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(livePreview, 450); }
+async function livePreview(){
+  if (RUNNING || $("source").value !== "mid") return;   // Mid-only; no API spam
+  let cdn;
+  try { cdn = await ensureCdn(); } catch { return; }     // wait until data loads
+  if (RUNNING || $("source").value !== "mid") return;
+  const { main, side, basicsDropped } = buildBoards();
+  if (!main.size && !side.size){ $("results").classList.add("hidden"); return; }
   const priceMap = new Map();
+  for (const n of new Set([...main.keys(), ...side.keys()])){
+    let p = priceFromIndex(n, cdn);
+    if (!p) p = { name:n, found:true, price:null, foilOnly:false, set:null,
+      cn:null, legal:null, pending:true,
+      uri:`https://scryfall.com/search?q=${encodeURIComponent('!"'+n+'"')}`, img:null };
+    priceMap.set(n, p);
+  }
+  $("status").textContent = "Live preview — edit freely; click Calculate for the exportable report.";
+  render(main, side, priceMap, { source:"mid", priceAt:new Date(cdn.meta.generatedAt),
+    runAt:new Date(), format:$("format").value, basicsDropped,
+    colorCost:$("colorCost").checked, live:true }, $("cheapest").checked);
+}
 
+/* ---- run (the authoritative pass: full, incl. Scryfall fallback) --- */
+async function run(){
+  if (RUNNING) return;
+  RUNNING = true;
   $("go").disabled = true; setExportsEnabled(false);
-
-  let cdn = null;
-  if (source === "mid"){
-    $("status").textContent = "Loading daily price data…";
-    try { cdn = await loadCdn(); }
-    catch(e){
-      $("status").innerHTML = "Couldn't load the daily TCG Mid data from the CDN (" +
-        escapeHtml(String(e.message||e)) + "). Retry, or switch Price figure to " +
-        "<b>TCG Market</b> (live).";
-      $("go").disabled = false; return;
+  try {
+    const { main, side, basicsDropped } = buildBoards();
+    if (!main.size && !side.size){
+      $("status").textContent = "Nothing to price (no cards parsed, or only ignored basic lands).";
+      return;
     }
-  }
+    const cheapest = $("cheapest").checked;
+    const format = $("format").value;
+    const source = $("source").value;
+    const names = [...new Set([...main.keys(), ...side.keys()])];
+    const priceMap = new Map();
 
-  $("barWrap").classList.remove("hidden");
-  let done = 0, fellBack = 0;
-  for (const n of names){
-    $("status").textContent = `Pricing ${done+1}/${names.length}: ${n}`;
-    try {
-      let p = null;
-      if (source === "mid"){
-        p = priceFromIndex(n, cdn);                 // instant, no network
-        if (!p){                                    // rare: not in index
-          fellBack++;
-          p = await priceCard(n, cheapest, "mid", { prices: cdn.prices });
-          await SLEEP(95);                          // throttle the fallback
-        }
-      } else {
-        p = await priceCard(n, cheapest, "market", null);
-        await SLEEP(95);                            // Scryfall rate-limit
+    let cdn = null;
+    if (source === "mid"){
+      $("status").textContent = "Loading daily price data…";
+      try { cdn = await ensureCdn(); }
+      catch(e){
+        $("status").innerHTML = "Couldn't load the daily TCG Mid data from the CDN (" +
+          escapeHtml(String(e.message||e)) + "). Retry, or switch Price figure to " +
+          "<b>TCG Market</b> (live).";
+        return;
       }
-      priceMap.set(n, p);
-    } catch(e){ priceMap.set(n, { name:n, found:false, price:null,
-              error:String(e.message||e), foilOnly:false, set:null, cn:null,
-              legal:null, uri:null, img:null }); }
-    done++;
-    $("bar").style.width = (done/names.length*100) + "%";
+    }
+
+    $("barWrap").classList.remove("hidden");
+    let done = 0, fellBack = 0;
+    for (const n of names){
+      $("status").textContent = `Pricing ${done+1}/${names.length}: ${n}`;
+      try {
+        let p = null;
+        if (source === "mid"){
+          p = priceFromIndex(n, cdn);                 // instant, no network
+          if (!p){                                    // rare: not in index
+            fellBack++;
+            p = await priceCard(n, cheapest, "mid", { prices: cdn.prices });
+            await SLEEP(95);                          // throttle the fallback
+          }
+        } else {
+          p = await priceCard(n, cheapest, "market", null);
+          await SLEEP(95);                            // Scryfall rate-limit
+        }
+        priceMap.set(n, p);
+      } catch(e){ priceMap.set(n, { name:n, found:false, price:null,
+                error:String(e.message||e), foilOnly:false, set:null, cn:null,
+                legal:null, uri:null, img:null }); }
+      done++;
+      $("bar").style.width = (done/names.length*100) + "%";
+    }
+
+    const runAt = new Date();
+    const priceAt = source === "mid" ? new Date(cdn.meta.generatedAt) : runAt;
+    render(main, side, priceMap, { source, priceAt, runAt, format, basicsDropped,
+      colorCost: $("colorCost").checked }, cheapest);
+
+    $("status").textContent =
+      `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"})` +
+      (fellBack ? ` · ${fellBack} via live Scryfall fallback` : "") + ".";
+    $("barWrap").classList.add("hidden");
+    lastSig = inputSig();          // this run matches the current inputs
+    setExportsEnabled(true);
+  } finally {
+    RUNNING = false;
+    $("go").disabled = false;
   }
-
-  const runAt = new Date();
-  // "prices calculated" = when the figure was actually computed:
-  //   mid    -> the snapshot's build time   market -> now (live fetch)
-  const priceAt = source === "mid" ? new Date(cdn.meta.generatedAt) : runAt;
-  render(main, side, priceMap, { source, priceAt, runAt, format, basicsDropped,
-    colorCost: $("colorCost").checked }, cheapest);
-
-  $("status").textContent =
-    `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"})` +
-    (fellBack ? ` · ${fellBack} via live Scryfall fallback` : "") + ".";
-  $("barWrap").classList.add("hidden");
-  $("go").disabled = false;
-  lastSig = inputSig();          // this run matches the current inputs
-  setExportsEnabled(true);
 }
 
 function sectionRows(map, priceMap){
@@ -603,7 +657,8 @@ function legalStatus(p){
 }
 function flags(p){
   const out = [];
-  if (!p.found) out.push('<span class="tag bad">not found</span>');
+  if (p.pending) out.push('<span class="tag warn">Calculate to price</span>');
+  else if (!p.found) out.push('<span class="tag bad">not found</span>');
   else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
   if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
   if (CUR_FMT !== "__none" && p.found){
@@ -656,9 +711,10 @@ function render(main, side, priceMap, meta, cheapest){
   const srcLabel = meta.source === "mid" ? "TCG Mid (daily snapshot)" : "TCG Market (live)";
   $("results").classList.remove("hidden");
   $("stamp").textContent =
-    "Prices calculated: " + meta.priceAt.toLocaleString() +
+    (meta.live ? "LIVE preview (index only — Calculate for the full report) · " : "") +
+    "Prices: " + meta.priceAt.toLocaleString() +
     "  (" + meta.priceAt.toISOString() + ") — " + srcLabel +
-    (meta.source === "mid" ? "  ·  checked " + meta.runAt.toLocaleString() : "") +
+    (!meta.live && meta.source === "mid" ? "  ·  checked " + meta.runAt.toLocaleString() : "") +
     (meta.format !== "__none" ? "  ·  legality: " + fmtName(meta.format) : "") +
     (meta.basicsDropped ? `  ·  ${meta.basicsDropped} basic land${meta.basicsDropped>1?'s':''} ignored` : "");
 
@@ -680,8 +736,12 @@ function render(main, side, priceMap, meta, cheapest){
     ? renderTable("Sideboard", s)
     : '<p class="sub" style="margin:12px 0 0">No sideboard cards.</p>';
 
-  lastReport = buildReport(LAST);
-  lastCsv = buildCsv(LAST);
+  // Live preview is index-only and may omit cards resolvable via fallback —
+  // don't let it become the exportable report; that's gated to Calculate.
+  if (!meta.live){
+    lastReport = buildReport(LAST);
+    lastCsv = buildCsv(LAST);
+  }
 }
 
 /* ---- card-image hover popup (uses imgs captured during pricing) ----- */
@@ -831,14 +891,23 @@ $("copyBtn").addEventListener("click", async () => {
         $("status").textContent = "Report copied to clipboard."; }
   catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
 });
-// Disable exports the moment any result-affecting input changes, so you can
-// never export a report that doesn't match what's on screen.
-EXPORT_INPUTS.forEach(id => {
+// On any result-affecting change: (a) disable exports so you can never
+// export a report that doesn't match the screen, and (b) live-refresh the
+// preview (Mid mode only — index-only, zero Scryfall calls).
+[...EXPORT_INPUTS, "colorCost"].forEach(id => {
   const el = $(id);
-  el.addEventListener(
-    (el.tagName === "SELECT" || el.type === "checkbox") ? "change" : "input",
-    refreshExportState);
+  const ev = (el.tagName === "SELECT" || el.type === "checkbox") ? "change" : "input";
+  el.addEventListener(ev, () => { refreshExportState(); scheduleLive(); });
 });
+// Switching to Mid: warm the CDN data so the first live preview is instant.
+$("source").addEventListener("change", () => {
+  if ($("source").value === "mid") ensureCdn().catch(() => {});
+});
+// Warm it on first interaction with the list too.
+["decklist","sideboard"].forEach(id =>
+  $(id).addEventListener("focus", () => {
+    if ($("source").value === "mid") ensureCdn().catch(() => {});
+  }, { once:true }));
 
 /* ---- "prices last updated" banner ---------------------------------- */
 function ago(d){
