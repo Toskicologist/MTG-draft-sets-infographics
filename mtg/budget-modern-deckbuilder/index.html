@@ -8,9 +8,20 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.1.0)
+  Budget Modern Deckbuilder (v3.2.0)
 
   Changelog:
+  v3.2.0 (2026-05-19T15:34:54Z) - Typo tolerance. A slightly misspelled card
+                        ("lighting bol", "lightening bolt") is now matched to
+                        the nearest card in the daily index by a bounded
+                        Levenshtein scan (zero API; requires a UNIQUE nearest
+                        match so an ambiguous typo is never silently changed).
+                        The totals/tables update to the corrected card
+                        immediately and a dismissible notice states each
+                        change; the decklist text itself is rewritten too, but
+                        only while the box isn't focused (deferred to blur) so
+                        it never fights mid-typing. Scryfall-resolved cards
+                        also adopt their canonical spelling.
   v3.1.0 (2026-05-19) - Guarantee TCGcsv Mid as the only price source: the
                         opt-in Scryfall "Resolve" path uses Scryfall purely
                         for card identity (name -> tcgplayer_id) and prices
@@ -164,6 +175,15 @@
   .updated .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
   .updated.stale .dot{background:var(--warn)}
   .updated.err{border-left-color:var(--warn)}
+  .fixnote{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel2);
+    border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:8px;
+    padding:9px 13px;margin:0 0 14px;font-size:13px;color:var(--ink)}
+  .fixnote .dot{width:7px;height:7px;border-radius:50%;background:var(--warn);
+    display:inline-block;flex:0 0 auto}
+  .fixnote span{flex:1 1 220px}
+  .fixnote .fixx{background:transparent;color:var(--dim);border:0;padding:0 4px;
+    font-size:18px;line-height:1;cursor:pointer;font-weight:700;flex:0 0 auto}
+  .fixnote .fixx:hover{color:var(--ink)}
   details.explain{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:0 14px;margin:0 0 18px;font-size:13.5px}
   details.explain[open]{padding-bottom:6px}
@@ -178,7 +198,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.1.0 · 2026-05-19</span></h1>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.2.0 · 2026-05-19 15:34 UTC</span></h1>
   <p class="sub">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
@@ -268,6 +288,8 @@ Sideboard
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     </div>
   </div>
+
+  <div id="fixNote" class="fixnote hidden"></div>
 
   <div id="results" class="hidden">
     <p class="stamp" id="stamp"></p>
@@ -385,6 +407,64 @@ async function loadCdn(){
   _cdn = { prices: prices.prices, index, meta };
   return _cdn;
 }
+/* ---- typo tolerance (zero API: matches against the in-memory index) ---
+   Exact index miss -> nearest card name by bounded Levenshtein. Used to
+   auto-correct slight misspellings ("lighting bol" -> "lightning bolt")
+   before pricing, so the fix is instant and needs no Scryfall call. The
+   Scryfall resolve path additionally yields canonical casing (see below). */
+// Levenshtein with an early-out: returns >max as soon as the best possible
+// distance for a row exceeds max (keeps the all-names scan cheap).
+function lev(a, b, max){
+  const m = a.length, n = b.length;
+  if (Math.abs(m - n) > max) return max + 1;
+  let prev = new Array(n + 1), cur = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++){
+    cur[0] = i; let rowMin = cur[0];
+    const ca = a.charCodeAt(i - 1);
+    for (let j = 1; j <= n; j++){
+      const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      if (cur[j] < rowMin) rowMin = cur[j];
+    }
+    if (rowMin > max) return max + 1;
+    const t = prev; prev = cur; cur = t;
+  }
+  return prev[n];
+}
+// Best unique nearest index name within a length-scaled threshold, or null.
+// Requires a *unique* minimum so an ambiguous typo is never silently changed.
+const _fuzzyCache = new Map();              // lower -> hit lower-name | null
+function findFuzzy(lower, cdn){
+  if (_fuzzyCache.has(lower)) return _fuzzyCache.get(lower);
+  const keys = cdn._keys || (cdn._keys = Object.keys(cdn.index.cards));
+  const L = lower.length;
+  const th = L <= 4 ? 1 : L <= 8 ? 2 : Math.min(4, Math.floor(L * 0.3));
+  let minDist = th + 1, hit = null, count = 0;
+  for (let i = 0; i < keys.length; i++){
+    const k = keys[i];
+    if (Math.abs(k.length - L) > th) continue;       // cheap length prefilter
+    const d = lev(lower, k, th);
+    if (d > th) continue;
+    if (d < minDist){ minDist = d; hit = k; count = 1; }
+    else if (d === minDist) count++;
+  }
+  const res = (hit && minDist >= 1 && count === 1) ? hit : null;
+  _fuzzyCache.set(lower, res);
+  return res;
+}
+// Display casing for an index hit (index keys are lowercased to stay slim /
+// zero-API). Pragmatic Title Case — the Scryfall link/image still come from
+// the exact set+collector, so card identity is correct regardless of casing.
+const _SMALL = new Set(["the","of","to","and","a","an","in","on","for","with","from","at","by"]);
+function titleCaseName(s){
+  return s.split(" ").map((w, i) =>
+    (i > 0 && _SMALL.has(w)) ? w
+      : w.replace(/(^|[-/])([a-zà-ÿ])/g, (_, p, c) => p + c.toUpperCase())
+  ).join(" ");
+}
+const norm = s => String(s || "").toLowerCase().trim();
+
 // Price one card purely from the CDN index + price map (zero Scryfall calls).
 // Returns the same shape as priceCard, or null if the card isn't in the index
 // (caller then falls back to a live Scryfall lookup for that one card).
@@ -533,22 +613,52 @@ async function recompute(){
     $("status").textContent = "Paste a decklist above — totals appear automatically.";
     setExportsEnabled(false); lastReport = lastCsv = null; return;
   }
-  const priceMap = new Map();
+  // Pass 1: price each name; if it's an exact index miss, try a typo-tolerant
+  // index match (zero API). A Scryfall-resolved card also yields its canonical
+  // spelling. `prov` = provisional corrected name for this entry.
   _pending = [];
+  const recs = [];                                  // {nm, p, prov}
   for (const nm of new Set([...main.keys(), ...side.keys()])){
     let p = _resolved.get(nm) || priceFromIndex(nm, cdn);
+    let prov = nm;
+    if (!p){
+      const hit = findFuzzy(norm(nm), cdn);
+      const cp = hit ? priceFromIndex(hit, cdn) : null;
+      if (cp){ prov = titleCaseName(hit); cp.name = prov; p = cp; }
+    }
     if (!p){
       _pending.push(nm);
       p = { name:nm, found:true, price:null, foilOnly:false, set:null, cn:null,
             legal:null, pending:true, img:null,
             uri:"https://scryfall.com/search?q=" + encodeURIComponent('!"'+nm+'"') };
+    } else if (p.found && !p.pending && p.name && norm(p.name) !== norm(nm)){
+      prov = p.name;                                 // Scryfall canonical casing
     }
-    priceMap.set(nm, p);
+    recs.push({ nm, p, prov });
   }
+  // Prefer an already-correctly-spelled entry's exact casing when a correction
+  // collides with one (avoids a duplicate row differing only by case).
+  const stable = new Map();
+  for (const r of recs) if (norm(r.prov) === norm(r.nm)) stable.set(norm(r.nm), r.nm);
+  const priceMap = new Map(), renameOf = new Map(), corrections = [];
+  for (const r of recs){
+    let final = r.prov;
+    if (norm(final) !== norm(r.nm) && stable.has(norm(final))) final = stable.get(norm(final));
+    if (norm(final) !== norm(r.nm)) corrections.push({ from:r.nm, to:final });
+    renameOf.set(r.nm, final);
+    r.p.name = final;
+    priceMap.set(final, r.p);
+  }
+  const remap = m => { for (const [k, q] of [...m]){ const f = renameOf.get(k);
+    if (f && f !== k){ m.delete(k); m.set(f, (m.get(f) || 0) + q); } } };
+  remap(main); remap(side);
+
   render(main, side, priceMap, { source:"mid", priceAt:new Date(cdn.meta.generatedAt),
     runAt:new Date(), format:$("format").value, basicsDropped,
     colorCost:$("colorCost").checked }, $("cheapest").checked);
   setExportsEnabled(true);
+  showFixNote(corrections);
+  applyTextCorrections(corrections);
 
   const rb = $("resolveBtn");
   if (_pending.length && !RESOLVING){
@@ -734,6 +844,65 @@ function render(main, side, priceMap, meta, cheapest){
 
 function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+/* ---- spelling-correction notice + decklist rewrite ------------------
+   A correction is shown immediately and the totals/tables already use the
+   corrected name. The decklist *text* is only rewritten when the relevant
+   box isn't focused (never fight the user mid-type) — otherwise it's queued
+   and applied on blur. `_progEdit` marks our own writes so the user-edit
+   listener doesn't treat them as a manual change.                        */
+let _progEdit = false, _pendingTextFix = [];
+function showFixNote(corrections){
+  const box = $("fixNote");
+  if (!corrections.length) return;        // keep any prior notice (it's accurate
+                                          // until the user edits again)
+  box.innerHTML =
+    `<span class="dot"></span><span><b>Spelling auto-corrected</b> &mdash; ` +
+    corrections.map(c =>
+      `&ldquo;${escapeHtml(c.from)}&rdquo; &rarr; <b>${escapeHtml(c.to)}</b>`
+    ).join(" &nbsp;&middot;&nbsp; ") +
+    `. The totals and your decklist text were updated to the matched card` +
+    ` (cheapest printing, from the daily index).</span>` +
+    `<button class="fixx" type="button" title="dismiss" aria-label="dismiss">&times;</button>`;
+  box.classList.remove("hidden");
+  box.querySelector(".fixx").onclick = () => box.classList.add("hidden");
+}
+// Rewrite a textarea's value, swapping any line whose parsed card name was
+// corrected to the corrected name (qty + SB: prefix preserved; other lines
+// untouched verbatim). Only corrected lines are normalised.
+function rewriteList(raw, map){
+  return (raw || "").split(/\r?\n/).map(line => {
+    const t = line.trim();
+    if (!t || /^(\/\/|#)/.test(t) ||
+        /^(deck|maindeck|main deck|commander|companion|sideboard)\s*:?\s*$/i.test(t))
+      return line;
+    const sb = t.match(/^sb:\s*/i);
+    const body = sb ? t.slice(sb[0].length) : t;
+    const c = parseCardLine(body);
+    if (!c) return line;
+    const to = map.get(norm(c.name));
+    return to ? (sb ? sb[0] : "") + c.qty + " " + to : line;
+  }).join("\n");
+}
+function applyTextCorrections(corrections){
+  if (!corrections.length) return;
+  const dEl = $("decklist"), sEl = $("sideboard");
+  const focused = document.activeElement === dEl || document.activeElement === sEl;
+  if (focused){ _pendingTextFix = corrections.slice(); return; }   // defer to blur
+  const map = new Map();
+  for (const c of corrections) map.set(norm(c.from), c.to);
+  for (const el of [dEl, sEl]){
+    const next = rewriteList(el.value, map);
+    if (next !== el.value){
+      const top = el.scrollTop;
+      _progEdit = true;                 // our write, not a manual edit
+      el.value = next;
+      el.dispatchEvent(new Event("input", { bubbles:true }));
+      el.scrollTop = top;
+    }
+  }
+  _pendingTextFix = [];
+}
+
 /* ---- export -------------------------------------------------------- */
 function buildReport(L){
   const pad = (s,n) => String(s).padEnd(n);
@@ -858,6 +1027,24 @@ RECOMPUTE_INPUTS.forEach(id => {
   el.addEventListener(ev, scheduleRecompute);
 });
 $("resolveBtn").addEventListener("click", resolveMissing);
+
+// A *manual* edit to either list dismisses the correction notice (it'll
+// re-appear from the next recompute if a typo still stands). Our own
+// programmatic rewrite (_progEdit) must not count as a manual edit.
+["decklist","sideboard"].forEach(id => {
+  const el = $(id);
+  el.addEventListener("input", () => {
+    if (_progEdit){ _progEdit = false; return; }
+    $("fixNote").classList.add("hidden");
+  });
+  // Apply any deferred text correction once the user leaves the box.
+  el.addEventListener("blur", () => {
+    if (_pendingTextFix.length &&
+        document.activeElement !== $("decklist") &&
+        document.activeElement !== $("sideboard"))
+      applyTextCorrections(_pendingTextFix);
+  });
+});
 
 /* ---- "prices last updated" banner ---------------------------------- */
 function ago(d){
