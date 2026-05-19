@@ -8,9 +8,15 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v2.6.0)
+  Budget Modern Deckbuilder (v3.0.0)
 
   Changelog:
+  v3.0.0 (2026-05-19) - Mid-only: removed the TCG Market option and the
+                        Calculate button. Totals recompute live on every
+                        edit (debounced, index-only, ZERO Scryfall). Cards
+                        not in the daily index are flagged with an opt-in
+                        one-click throttled Scryfall "Resolve" (no API spam
+                        while typing). Exports always reflect the screen.
   v2.6.0 (2026-05-19) - Live preview: in Mid mode the totals/tables update
                         as you edit (debounced, index-only, ZERO Scryfall
                         calls; cards not in the index show "Calculate to
@@ -60,13 +66,11 @@
                         USD (Market), dual budgets, timestamped export.
 
   - Parses standard / MTGA / MTGO decklists (mainboard + sideboard).
-  - Two figures: TCG Mid (median current NM/LP listing, daily snapshot) or
-    TCG Market (recent sales, live Scryfall prices.usd). Cheapest paper
-    printing by default. Foil-only / unpriced / non-Modern-legal cards are
+  - TCG Mid (median current NM/LP listing), cheapest paper printing,
+    rebuilt daily. Unpriced / not-format-legal / not-in-index cards are
     flagged, never silently substituted.
   - Two independent budgets: main deck (default $25) + sideboard (default $10).
-  - Exports a .txt report stamped with the exact time the chosen figure was
-    calculated (snapshot build time for Mid; live fetch time for Market).
+  - Exports .txt/.csv stamped with the snapshot build time.
 -->
 <style>
   :root{
@@ -166,16 +170,16 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v2.6.0 · 2026-05-19</span></h1>
-  <p class="sub">Paste a decklist &rarr; cheapest-printing <strong>TCG Mid</strong> (or live TCG Market) USD &rarr; separate main-deck &amp; sideboard budget check &rarr; export stamped with when prices were calculated.</p>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.0.0 · 2026-05-19</span></h1>
+  <p class="sub">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
 
   <details class="explain">
     <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
-    <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure, distinct from <strong>TCG Market</strong> (an average of recent <em>completed sales</em>, which is what the Scryfall API reports).</p>
+    <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure (distinct from TCGplayer's <em>Market</em> price, which is an average of recent <em>completed sales</em>).</p>
     <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run mirror of TCGplayer's public pricing &mdash; refreshed once a day (~20:00&nbsp;UTC). A scheduled job rebuilds the price table <em>and</em> a slim card index (printings, legalities, image) from Scryfall's bulk data, and publishes both to a CDN. The page loads those two files once, so <strong>Mid mode does zero per-card API calls and is near-instant</strong>. The banner above shows exactly when the data was built; every export carries that same timestamp.</p>
-    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Anything missing from the daily index falls back to a live Scryfall lookup automatically. Switch <strong>Price figure</strong> to <strong>TCG Market (live)</strong> for real-time sale-based prices from Scryfall instead.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit (no button). Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
   </details>
 
   <div class="grid">
@@ -222,28 +226,19 @@ Sideboard
           <input type="number" id="budgetSide" value="10" min="0" step="1">
         </div>
       </div>
-      <div class="row">
-        <div class="field">
-          <label for="source">Price figure</label>
-          <select id="source" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
-            <option value="mid" selected>TCG Mid &mdash; snapshot</option>
-            <option value="market">TCG Market &mdash; live</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="format">Format</label>
-          <select id="format" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
-            <option value="standard">Standard</option>
-            <option value="pioneer">Pioneer</option>
-            <option value="modern" selected>Modern</option>
-            <option value="legacy">Legacy</option>
-            <option value="vintage">Vintage</option>
-            <option value="pauper">Pauper</option>
-            <option value="premodern">Premodern</option>
-            <option value="commander">Commander</option>
-            <option value="__none">(no legality check)</option>
-          </select>
-        </div>
+      <div class="field">
+        <label for="format">Format (legality check)</label>
+        <select id="format" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
+          <option value="standard">Standard</option>
+          <option value="pioneer">Pioneer</option>
+          <option value="modern" selected>Modern</option>
+          <option value="legacy">Legacy</option>
+          <option value="vintage">Vintage</option>
+          <option value="pauper">Pauper</option>
+          <option value="premodern">Premodern</option>
+          <option value="commander">Commander</option>
+          <option value="__none">(no legality check)</option>
+        </select>
       </div>
       <div class="field">
         <label><input type="checkbox" id="cheapest" checked style="width:auto;vertical-align:-2px"> Use cheapest paper printing</label>
@@ -254,13 +249,13 @@ Sideboard
       <div class="field">
         <label><input type="checkbox" id="colorCost" checked style="width:auto;vertical-align:-2px"> Colour-code prices (green&rarr;red)</label>
       </div>
-      <button class="primary" id="go">Calculate prices</button>
+      <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit &mdash; no button to press.</p>
+      <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
       <div class="actions">
         <button class="ghost" id="exportBtn" disabled>Export .txt</button>
         <button class="ghost" id="csvBtn" disabled>Export .csv</button>
         <button class="ghost" id="copyBtn" disabled>Copy report</button>
       </div>
-      <p class="sub" id="exportHint" style="margin:6px 0 0;display:none">Recalculate to export — inputs changed since the last run.</p>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     </div>
@@ -290,7 +285,7 @@ Sideboard
 
   <footer>
     <strong>TCG Mid</strong> = TCGplayer Mid USD (median current NM/LP listing), rebuilt daily from <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> + a Scryfall bulk index and served via jsDelivr; the report carries the build time as the "prices calculated" stamp.
-    <strong>TCG Market</strong> = TCGplayer Market USD (recent actual sales) fetched live from the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> <code>prices.usd</code> (Scryfall uses market, not mid). Card&rarr;price mapping uses Scryfall's <code>tcgplayer_id</code>. Both are indicative, not checkout quotes. Cards with no price for the chosen figure, or not legal in the chosen format, are flagged &mdash; never estimated.
+    Card&rarr;price mapping uses Scryfall's <code>tcgplayer_id</code> (exact, not a name guess). Indicative prices, not checkout quotes. Cards with no Mid, or not legal in the chosen format, are flagged &mdash; never estimated; cards not in the daily index can be resolved on demand via Scryfall.
   </footer>
 </div>
 
@@ -301,27 +296,14 @@ const SLEEP = ms => new Promise(r => setTimeout(r, ms));
 const $ = id => document.getElementById(id);
 const money = n => "$" + Number(n).toFixed(2);
 
-let lastReport = null; // { text, filename } — .txt report
-let lastCsv = null;    // { text, filename } — .csv export
-let lastSig = null;    // inputSig() at the last successful calc
+let lastReport = null; // { text, filename } — .txt report (always current)
+let lastCsv = null;    // { text, filename } — .csv export (always current)
 
-// Inputs that affect the computed result/exports (colour-code is visual only,
-// so it's excluded — it doesn't change what's exported).
-const EXPORT_INPUTS = ["decklist","sideboard","budgetMain","budgetSide",
-  "deckname","source","format","cheapest","ignoreBasics"];
-function inputSig(){
-  return EXPORT_INPUTS.map(id => { const el = $(id);
-    return el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value;
-  }).join("");
-}
+// Result-affecting inputs -> a debounced recompute fires on any change.
+const RECOMPUTE_INPUTS = ["decklist","sideboard","budgetMain","budgetSide",
+  "deckname","format","cheapest","ignoreBasics","colorCost"];
 function setExportsEnabled(on){
   for (const id of ["exportBtn","csvBtn","copyBtn"]) $(id).disabled = !on;
-  const hint = $("exportHint");
-  if (hint) hint.style.display = (!on && lastReport) ? "" : "none";
-}
-// Re-enable exports only when a report exists AND inputs match that run.
-function refreshExportState(){
-  setExportsEnabled(!!lastReport && lastSig !== null && inputSig() === lastSig);
 }
 
 /* ---- decklist parsing ---------------------------------------------- */
@@ -518,106 +500,86 @@ function buildBoards(){
   return { main, side, basicsDropped };
 }
 
-/* ---- live preview (Mid only, index-only, ZERO Scryfall calls) ------ */
-let RUNNING = false;          // a full Calculate is in progress
-let _cdnPrefetch = null;
-function ensureCdn(){          // memoised background load
+/* ---- always-on recompute (Mid only, index-only, ZERO Scryfall) ----
+   No "Calculate" button: any edit re-renders from the in-memory CDN
+   index. Cards not in the index are flagged and listed for an explicit,
+   throttled, opt-in Scryfall resolve.                                   */
+let _cdnPrefetch = null, RESOLVING = false, _pending = [];
+const _resolved = new Map();          // name -> priced via Scryfall this session
+function ensureCdn(){
   if (_cdn) return Promise.resolve(_cdn);
   if (!_cdnPrefetch) _cdnPrefetch = loadCdn().catch(e => { _cdnPrefetch = null; throw e; });
   return _cdnPrefetch;
 }
 let _liveTimer = null;
-function scheduleLive(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(livePreview, 450); }
-async function livePreview(){
-  if (RUNNING || $("source").value !== "mid") return;   // Mid-only; no API spam
+function scheduleRecompute(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(recompute, 350); }
+
+async function recompute(){
   let cdn;
-  try { cdn = await ensureCdn(); } catch { return; }     // wait until data loads
-  if (RUNNING || $("source").value !== "mid") return;
-  const { main, side, basicsDropped } = buildBoards();
-  if (!main.size && !side.size){ $("results").classList.add("hidden"); return; }
-  const priceMap = new Map();
-  for (const n of new Set([...main.keys(), ...side.keys()])){
-    let p = priceFromIndex(n, cdn);
-    if (!p) p = { name:n, found:true, price:null, foilOnly:false, set:null,
-      cn:null, legal:null, pending:true,
-      uri:`https://scryfall.com/search?q=${encodeURIComponent('!"'+n+'"')}`, img:null };
-    priceMap.set(n, p);
+  try { cdn = await ensureCdn(); }
+  catch(e){
+    $("status").innerHTML = "Couldn't load the daily TCG Mid data (" +
+      escapeHtml(String(e.message||e)) + "). It's served from a CDN — check " +
+      "your connection, then edit the list to retry.";
+    return;
   }
-  $("status").textContent = "Live preview — edit freely; click Calculate for the exportable report.";
+  const { main, side, basicsDropped } = buildBoards();
+  if (!main.size && !side.size){
+    $("results").classList.add("hidden");
+    $("resolveBtn").style.display = "none";
+    $("status").textContent = "Paste a decklist above — totals appear automatically.";
+    setExportsEnabled(false); lastReport = lastCsv = null; return;
+  }
+  const priceMap = new Map();
+  _pending = [];
+  for (const nm of new Set([...main.keys(), ...side.keys()])){
+    let p = _resolved.get(nm) || priceFromIndex(nm, cdn);
+    if (!p){
+      _pending.push(nm);
+      p = { name:nm, found:true, price:null, foilOnly:false, set:null, cn:null,
+            legal:null, pending:true, img:null,
+            uri:"https://scryfall.com/search?q=" + encodeURIComponent('!"'+nm+'"') };
+    }
+    priceMap.set(nm, p);
+  }
   render(main, side, priceMap, { source:"mid", priceAt:new Date(cdn.meta.generatedAt),
     runAt:new Date(), format:$("format").value, basicsDropped,
-    colorCost:$("colorCost").checked, live:true }, $("cheapest").checked);
+    colorCost:$("colorCost").checked }, $("cheapest").checked);
+  setExportsEnabled(true);
+
+  const rb = $("resolveBtn");
+  if (_pending.length && !RESOLVING){
+    rb.style.display = ""; rb.disabled = false;
+    rb.textContent = "Resolve " + _pending.length + " card" +
+      (_pending.length>1?"s":"") + " not in the daily index via Scryfall";
+  } else if (!_pending.length){
+    rb.style.display = "none";
+  }
+  $("status").textContent = _pending.length
+    ? (_pending.length + " card" + (_pending.length>1?"s":"") +
+       " not in the daily index — priced the rest; click Resolve for those.")
+    : "Updated — TCG Mid.";
 }
 
-/* ---- run (the authoritative pass: full, incl. Scryfall fallback) --- */
-async function run(){
-  if (RUNNING) return;
-  RUNNING = true;
-  $("go").disabled = true; setExportsEnabled(false);
-  try {
-    const { main, side, basicsDropped } = buildBoards();
-    if (!main.size && !side.size){
-      $("status").textContent = "Nothing to price (no cards parsed, or only ignored basic lands).";
-      return;
-    }
-    const cheapest = $("cheapest").checked;
-    const format = $("format").value;
-    const source = $("source").value;
-    const names = [...new Set([...main.keys(), ...side.keys()])];
-    const priceMap = new Map();
-
-    let cdn = null;
-    if (source === "mid"){
-      $("status").textContent = "Loading daily price data…";
-      try { cdn = await ensureCdn(); }
-      catch(e){
-        $("status").innerHTML = "Couldn't load the daily TCG Mid data from the CDN (" +
-          escapeHtml(String(e.message||e)) + "). Retry, or switch Price figure to " +
-          "<b>TCG Market</b> (live).";
-        return;
-      }
-    }
-
-    $("barWrap").classList.remove("hidden");
-    let done = 0, fellBack = 0;
-    for (const n of names){
-      $("status").textContent = `Pricing ${done+1}/${names.length}: ${n}`;
-      try {
-        let p = null;
-        if (source === "mid"){
-          p = priceFromIndex(n, cdn);                 // instant, no network
-          if (!p){                                    // rare: not in index
-            fellBack++;
-            p = await priceCard(n, cheapest, "mid", { prices: cdn.prices });
-            await SLEEP(95);                          // throttle the fallback
-          }
-        } else {
-          p = await priceCard(n, cheapest, "market", null);
-          await SLEEP(95);                            // Scryfall rate-limit
-        }
-        priceMap.set(n, p);
-      } catch(e){ priceMap.set(n, { name:n, found:false, price:null,
-                error:String(e.message||e), foilOnly:false, set:null, cn:null,
-                legal:null, uri:null, img:null }); }
-      done++;
-      $("bar").style.width = (done/names.length*100) + "%";
-    }
-
-    const runAt = new Date();
-    const priceAt = source === "mid" ? new Date(cdn.meta.generatedAt) : runAt;
-    render(main, side, priceMap, { source, priceAt, runAt, format, basicsDropped,
-      colorCost: $("colorCost").checked }, cheapest);
-
-    $("status").textContent =
-      `Done — ${names.length} unique cards priced (${source==="mid"?"TCG Mid":"TCG Market"})` +
-      (fellBack ? ` · ${fellBack} via live Scryfall fallback` : "") + ".";
-    $("barWrap").classList.add("hidden");
-    lastSig = inputSig();          // this run matches the current inputs
-    setExportsEnabled(true);
-  } finally {
-    RUNNING = false;
-    $("go").disabled = false;
+// Opt-in: throttled Scryfall lookup for ONLY the cards missing from the index.
+async function resolveMissing(){
+  if (RESOLVING || !_pending.length || !_cdn) return;
+  RESOLVING = true;
+  const rb = $("resolveBtn"); rb.disabled = true;
+  $("barWrap").classList.remove("hidden");
+  const todo = _pending.slice(); let done = 0;
+  for (const nm of todo){
+    rb.textContent = "Resolving " + (++done) + "/" + todo.length + ": " + nm;
+    try {
+      _resolved.set(nm, await priceCard(nm, $("cheapest").checked, "mid", { prices:_cdn.prices }));
+    } catch(e){ _resolved.set(nm, { name:nm, found:false, price:null, foilOnly:false,
+      set:null, cn:null, legal:null, uri:null, img:null }); }
+    $("bar").style.width = (done/todo.length*100) + "%";
+    await SLEEP(95);                                   // Scryfall rate-limit
   }
+  $("barWrap").classList.add("hidden");
+  RESOLVING = false;
+  await recompute();                                   // re-render with resolved
 }
 
 function sectionRows(map, priceMap){
@@ -657,7 +619,7 @@ function legalStatus(p){
 }
 function flags(p){
   const out = [];
-  if (p.pending) out.push('<span class="tag warn">Calculate to price</span>');
+  if (p.pending) out.push('<span class="tag warn">not in daily index</span>');
   else if (!p.found) out.push('<span class="tag bad">not found</span>');
   else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
   if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
@@ -701,22 +663,21 @@ function renderTable(title, sec){
 
 let LAST = null, CUR_SRC = "mid", CUR_FMT = "modern", CUR_COLOR = true;
 function render(main, side, priceMap, meta, cheapest){
-  CUR_SRC = meta.source; CUR_FMT = meta.format; CUR_COLOR = meta.colorCost;
+  CUR_SRC = "mid"; CUR_FMT = meta.format; CUR_COLOR = meta.colorCost;
   const m = sectionRows(main, priceMap);
   const s = sectionRows(side, priceMap);
   const bM = parseFloat($("budgetMain").value)||0;
   const bS = parseFloat($("budgetSide").value)||0;
   LAST = { m, s, bM, bS, ...meta, cheapest, deckname:$("deckname").value.trim()||"Deck" };
 
-  const srcLabel = meta.source === "mid" ? "TCG Mid (daily snapshot)" : "TCG Market (live)";
   $("results").classList.remove("hidden");
   $("stamp").textContent =
-    (meta.live ? "LIVE preview (index only — Calculate for the full report) · " : "") +
     "Prices: " + meta.priceAt.toLocaleString() +
-    "  (" + meta.priceAt.toISOString() + ") — " + srcLabel +
-    (!meta.live && meta.source === "mid" ? "  ·  checked " + meta.runAt.toLocaleString() : "") +
+    "  (" + meta.priceAt.toISOString() + ") — TCG Mid (daily snapshot)" +
+    "  ·  checked " + meta.runAt.toLocaleString() +
     (meta.format !== "__none" ? "  ·  legality: " + fmtName(meta.format) : "") +
-    (meta.basicsDropped ? `  ·  ${meta.basicsDropped} basic land${meta.basicsDropped>1?'s':''} ignored` : "");
+    (meta.basicsDropped ? ("  ·  " + meta.basicsDropped + " basic land" +
+       (meta.basicsDropped>1?"s":"") + " ignored") : "");
 
   const setCard = (idEl, idAmt, idMeta, sec, budget) => {
     const over = sec.total > budget;
@@ -736,12 +697,8 @@ function render(main, side, priceMap, meta, cheapest){
     ? renderTable("Sideboard", s)
     : '<p class="sub" style="margin:12px 0 0">No sideboard cards.</p>';
 
-  // Live preview is index-only and may omit cards resolvable via fallback —
-  // don't let it become the exportable report; that's gated to Calculate.
-  if (!meta.live){
-    lastReport = buildReport(LAST);
-    lastCsv = buildCsv(LAST);
-  }
+  lastReport = buildReport(LAST);
+  lastCsv = buildCsv(LAST);
 }
 
 /* ---- card-image hover popup (uses imgs captured during pricing) ----- */
@@ -882,7 +839,6 @@ function downloadFile(file, mime){
   a.click();
   URL.revokeObjectURL(a.href);
 }
-$("go").addEventListener("click", run);
 $("exportBtn").addEventListener("click", () => downloadFile(lastReport, "text/plain"));
 $("csvBtn").addEventListener("click", () => downloadFile(lastCsv, "text/csv"));
 $("copyBtn").addEventListener("click", async () => {
@@ -891,23 +847,13 @@ $("copyBtn").addEventListener("click", async () => {
         $("status").textContent = "Report copied to clipboard."; }
   catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
 });
-// On any result-affecting change: (a) disable exports so you can never
-// export a report that doesn't match the screen, and (b) live-refresh the
-// preview (Mid mode only — index-only, zero Scryfall calls).
-[...EXPORT_INPUTS, "colorCost"].forEach(id => {
+// Any result-affecting edit -> debounced recompute (Mid, index-only).
+RECOMPUTE_INPUTS.forEach(id => {
   const el = $(id);
   const ev = (el.tagName === "SELECT" || el.type === "checkbox") ? "change" : "input";
-  el.addEventListener(ev, () => { refreshExportState(); scheduleLive(); });
+  el.addEventListener(ev, scheduleRecompute);
 });
-// Switching to Mid: warm the CDN data so the first live preview is instant.
-$("source").addEventListener("change", () => {
-  if ($("source").value === "mid") ensureCdn().catch(() => {});
-});
-// Warm it on first interaction with the list too.
-["decklist","sideboard"].forEach(id =>
-  $(id).addEventListener("focus", () => {
-    if ($("source").value === "mid") ensureCdn().catch(() => {});
-  }, { once:true }));
+$("resolveBtn").addEventListener("click", resolveMissing);
 
 /* ---- "prices last updated" banner ---------------------------------- */
 function ago(d){
@@ -939,10 +885,11 @@ async function showLastUpdated(){
     txt.classList.remove("dim");
     txt.innerHTML =
       "Daily price-data date unavailable (" + escapeHtml(String(e.message||e)) +
-      "). <b>TCG Market</b> prices are fetched live and work regardless.";
+      "). Edit the list to retry.";
   }
 }
 showLastUpdated();
+recompute();
 </script>
 </body>
 </html>
