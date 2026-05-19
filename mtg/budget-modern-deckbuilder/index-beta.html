@@ -8,16 +8,25 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.3.0)
+  Budget Modern Deckbuilder (v3.3.0-beta.2)  [BETA — sandbox; main is v3.3.0]
 
   Changelog:
-  v3.3.0 (2026-05-19T16:27:08Z) - Spelling correction is now BUTTON-GATED, not
-                        automatic. Removed the v3.2.0 in-memory Levenshtein
-                        auto-correction entirely. A card not in the daily index
-                        stays flagged until you click "Resolve via Scryfall";
-                        that Scryfall fuzzy lookup is the only correction path,
-                        and on a canonical rename it rewrites BOTH the decklist
-                        text and the preview and flags exactly what changed.
+  v3.3.0-beta.2 (2026-05-19T16:33:37Z) - Corrected scope of the original
+                        list's item 2. Item 2 is the EDITABLE OUTPUT TABLE:
+                        per-row −/+ quantity steppers, a remove ✕, and an
+                        "Add" box per board. Every edit does a targeted line
+                        edit on the decklist text (comments / ignored basics /
+                        other lines untouched) then recomputes, so the table
+                        and the decklist textarea ALWAYS match. Spelling
+                        correction stays button-gated (now also shipped in
+                        main v3.3.0). Items 3 (visual breakdown) and 4 (share
+                        link) unchanged from beta.1.
+  v3.3.0-beta.1 (2026-05-19T15:53:53Z) - BETA sandbox (initial): button-gated
+                        spelling; "Show visual breakdown" (card grid + mana /
+                        price / colour charts, one batched Scryfall call);
+                        self-contained URL share link. NOTE: this build had
+                        item 2 mis-scoped as the spelling feature — corrected
+                        in beta.2.
   v3.2.0 (2026-05-19T15:34:54Z) - Typo tolerance. A slightly misspelled card
                         ("lighting bol", "lightening bolt") is now matched to
                         the nearest card in the daily index by a bounded
@@ -204,11 +213,58 @@
   details.explain p{margin:0 0 10px;color:var(--dim);line-height:1.6}
   details.explain p:first-of-type{margin-top:2px}
   details.explain strong{color:var(--ink)}
+  /* ---- visual breakdown (beta item 3) ---- */
+  .vbreak{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 4px}
+  .vbreak #visualBtn{width:auto;flex:0 0 auto}
+  .vbnote{color:var(--dim);font-size:12px}
+  #visual{margin:14px 0 8px}
+  #visual h2{font-size:17px;margin:22px 0 10px}
+  #visual h3{font-size:13px;color:var(--dim);text-transform:uppercase;
+    letter-spacing:.04em;margin:0 0 10px}
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
+    gap:12px}
+  .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:8px;text-align:center}
+  .vcard img{width:100%;height:auto;border-radius:7px;display:block;
+    background:var(--panel2);aspect-ratio:488/680}
+  .vcard .vq{font-weight:700;font-size:13px;margin:6px 0 1px}
+  .vcard .vp{color:var(--dim);font-size:12px}
+  .vcard.miss{display:flex;flex-direction:column;justify-content:center;
+    min-height:170px;color:var(--dim);font-size:12px}
+  .vcharts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:6px 0 8px}
+  @media(max-width:760px){.vcharts{grid-template-columns:1fr}}
+  .chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:14px}
+  .chart .bar{display:flex;align-items:center;gap:8px;margin:5px 0;height:auto;
+    background:none;border-radius:0;overflow:visible}
+  .chart .bl{width:54px;color:var(--dim);font-size:12px;text-align:right;
+    flex:0 0 54px}
+  .chart .bt{flex:1;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .chart .bt>i{display:block;height:15px;background:var(--accent);width:0}
+  .chart .bv{width:34px;font-size:12px;font-variant-numeric:tabular-nums;
+    flex:0 0 34px}
+  .pie{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .pip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block;
+    border:1px solid rgba(255,255,255,.18)}
+  /* ---- editable output (beta item 2) ---- */
+  .qctl{display:inline-flex;align-items:center;gap:7px}
+  .qctl b{min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
+  .qbtn,.xbtn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);
+    color:var(--ink);border-radius:6px;padding:0;width:22px;height:22px;
+    font-size:14px;font-weight:700;line-height:1}
+  .qbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .xbtn{color:var(--dim);font-weight:700}
+  .xbtn:hover{border-color:var(--bad);color:var(--bad)}
+  .addcard{display:flex;gap:8px;margin:2px 0 26px}
+  .addcard .addinput{flex:1;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+  .addcard .addbtn{flex:0 0 auto;padding:8px 14px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.3.0 · 2026-05-19 16:27 UTC</span></h1>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.3.0-beta.2 · 2026-05-19 16:33 UTC · BETA</span></h1>
   <p class="sub">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
@@ -295,6 +351,8 @@ Sideboard
         <button class="ghost" id="csvBtn" disabled>Export .csv</button>
         <button class="ghost" id="copyBtn" disabled>Copy report</button>
       </div>
+      <button class="ghost" id="shareBtn" style="width:100%;margin-top:10px">Copy share link</button>
+      <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the whole list, budgets &amp; options are encoded in the URL itself (no account, no server).</p>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     </div>
@@ -322,6 +380,12 @@ Sideboard
         <div id="sideTable"></div>
       </div>
     </div>
+
+    <div class="vbreak">
+      <button class="ghost" id="visualBtn" type="button">Show visual breakdown</button>
+      <span class="vbnote">Card images &amp; charts &mdash; one batched Scryfall request, only when you ask.</span>
+    </div>
+    <div id="visual" class="hidden"></div>
   </div>
 
   <footer>
@@ -428,10 +492,9 @@ async function loadCdn(){
   _cdn = { prices: prices.prices, index, meta };
   return _cdn;
 }
-// Spelling correction is NOT automatic: an exact index miss stays "pending"
-// until the user clicks "Resolve via Scryfall". That button (Scryfall's fuzzy
-// search) is the only correction path; on a canonical rename it rewrites the
-// decklist text + preview and flags the change.
+// Beta item 2: NO automatic in-memory typo correction. Correction happens
+// only via the explicit "Resolve via Scryfall" button (Scryfall's fuzzy
+// search), which then rewrites the decklist text + preview and flags it.
 const norm = s => String(s || "").toLowerCase().trim();
 
 // Price one card purely from the CDN index + price map (zero Scryfall calls).
@@ -582,10 +645,10 @@ async function recompute(){
     $("status").textContent = "Paste a decklist above — totals appear automatically.";
     setExportsEnabled(false); lastReport = lastCsv = null; return;
   }
-  // Pass 1: price each name. NO automatic correction: an exact index miss
-  // stays "pending" until the user clicks Resolve. A card resolved via
-  // Scryfall carries its canonical spelling in `p.name`; that (and only that)
-  // drives a rename/flag below. `prov` = provisional name for this entry.
+  // Pass 1: price each name. NO automatic correction (beta item 2): an exact
+  // index miss stays "pending" until the user clicks Resolve. A card the user
+  // resolved via Scryfall carries its canonical spelling in `p.name`; that
+  // (and only that) drives a rename/flag below. `prov` = provisional name.
   _pending = [];
   const recs = [];                                  // {nm, p, prov}
   for (const nm of new Set([...main.keys(), ...side.keys()])){
@@ -724,9 +787,9 @@ function cardLink(p, name){
   return `<a class="cardlink" href="${escapeHtml(href)}" target="_blank" ` +
          `rel="noopener"${img}>${escapeHtml(name)}</a>`;
 }
-function renderTable(title, sec){
+function renderTable(title, sec, board){
   let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
-  h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th></tr></thead><tbody>`;
+  h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th><th></th></tr></thead><tbody>`;
   for (const r of sec.rows){
     // Resolved/indexed but TCGcsv has no Mid -> same prominent red flag as
     // a not-format-legal card (price is always TCGcsv Mid, or clearly absent).
@@ -737,13 +800,22 @@ function renderTable(title, sec){
     const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
     const uc = CUR_COLOR ? " " + costClass(r.unit) : "";
     const lc = CUR_COLOR ? " " + costClass(r.lineT) : "";
-    h += `<tr class="${cls}"><td class="num">${r.qty}</td>`+
+    const dn = escapeHtml(r.name), db = escapeHtml(board);
+    const qctl = `<span class="qctl">`+
+      `<button type="button" class="qbtn" data-act="dec" data-board="${db}" data-name="${dn}" title="one fewer" aria-label="one fewer">&minus;</button>`+
+      `<b>${r.qty}</b>`+
+      `<button type="button" class="qbtn" data-act="inc" data-board="${db}" data-name="${dn}" title="one more" aria-label="one more">+</button></span>`;
+    h += `<tr class="${cls}"><td class="num">${qctl}</td>`+
          `<td>${cardLink(r.p, r.name)}${flags(r.p)}</td>`+
          `<td>${print}</td>`+
          `<td class="num${uc}">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
-         `<td class="num${lc}">${r.lineT!=null?money(r.lineT):"&mdash;"}</td></tr>`;
+         `<td class="num${lc}">${r.lineT!=null?money(r.lineT):"&mdash;"}</td>`+
+         `<td class="num"><button type="button" class="xbtn" data-act="remove" data-board="${db}" data-name="${dn}" title="remove card" aria-label="remove ${dn}">&times;</button></td></tr>`;
   }
   h += `</tbody></table>`;
+  h += `<form class="addcard" data-board="${escapeHtml(board)}">`+
+       `<input type="text" class="addinput" placeholder="Add to ${board==="side"?"sideboard":"main deck"}: e.g. 2 Lightning Bolt" aria-label="add card to ${board}">`+
+       `<button type="submit" class="ghost addbtn">Add</button></form>`;
   return h;
 }
 
@@ -778,14 +850,252 @@ function render(main, side, priceMap, meta, cheapest){
   setCard("tMain","mainAmt","mainMeta", m, bM);
   setCard("tSide","sideAmt","sideMeta", s, bS);
 
-  $("mainTable").innerHTML = renderTable("Main deck", m);
+  $("mainTable").innerHTML = renderTable("Main deck", m, "main");
   $("sideTable").innerHTML = s.rows.length
-    ? renderTable("Sideboard", s)
-    : '<p class="sub" style="margin:12px 0 0">No sideboard cards.</p>';
+    ? renderTable("Sideboard", s, "side")
+    : `<div class="sechead"><h2>Sideboard</h2><span>$0.00</span></div>`+
+      `<p class="sub" style="margin:8px 0 10px">No sideboard cards.</p>`+
+      `<form class="addcard" data-board="side">`+
+      `<input type="text" class="addinput" placeholder="Add to sideboard: e.g. 2 Roiling Vortex" aria-label="add card to sideboard">`+
+      `<button type="submit" class="ghost addbtn">Add</button></form>`;
 
   lastReport = buildReport(LAST);
   lastCsv = buildCsv(LAST);
+  if (_vbKey && _vbKey !== vbSig()) resetVisual();   // deck changed -> stale
 }
+
+/* ---- visual breakdown (beta item 3) --------------------------------
+   Opt-in only (button). ONE batched Scryfall /cards/collection request
+   (<=75 ids/call) for images + cmc + colours; charts are drawn from that
+   (zero further calls). Re-click toggles; editing the deck invalidates.  */
+let _vbKey = null;                       // deck signature the visual reflects
+function vbSig(){
+  if (!LAST) return "";
+  const f = s => s.rows.map(r => r.qty + "|" + norm(r.name)).join(",");
+  return f(LAST.m) + "#" + f(LAST.s);
+}
+function resetVisual(){
+  _vbKey = null;
+  const b = $("visualBtn"); if (b){ b.disabled = false; b.textContent = "Show visual breakdown"; }
+  const v = $("visual"); if (v){ v.classList.add("hidden"); v.innerHTML = ""; }
+}
+async function scryfallCollection(names){
+  const out = new Map();
+  for (let i = 0; i < names.length; i += 75){
+    const identifiers = names.slice(i, i + 75).map(n => ({ name:n }));
+    const r = await fetch(SCRYFALL + "/cards/collection", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify({ identifiers }) });
+    if (r.ok){
+      const j = await r.json();
+      for (const c of (j.data || [])){
+        const k = norm(c.name); out.set(k, c);
+        const sl = k.indexOf(" // "); if (sl > 0) out.set(k.slice(0, sl), c);
+      }
+    }
+    if (i + 75 < names.length) await SLEEP(95);
+  }
+  return out;
+}
+function vImg(c){
+  if (!c) return null;
+  if (c.image_uris) return c.image_uris.normal || c.image_uris.small || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.normal || null;
+  return null;
+}
+const vIsLand = c => !!c && /\bLand\b/.test(c.type_line || "");
+const vCmc = c => (c && typeof c.cmc === "number") ? c.cmc : 0;
+function vColors(c){
+  const a = c && (c.colors ||
+    (c.card_faces && c.card_faces[0] && c.card_faces[0].colors));
+  return Array.isArray(a) ? a : ((c && c.color_identity) || []);
+}
+function vbar(label, val, max){
+  const pct = max > 0 ? Math.round(val / max * 100) : 0;
+  return `<div class="bar"><span class="bl">${escapeHtml(String(label))}</span>` +
+    `<span class="bt"><i style="width:${pct}%"></i></span>` +
+    `<span class="bv">${val}</span></div>`;
+}
+const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
+  R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
+function renderVisual(rows){
+  const grid = side => rows.filter(r => r.board === side).map(r => {
+    const img = vImg(r.c);
+    return `<div class="vcard${img ? "" : " miss"}">` +
+      (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
+           : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
+      `<div class="vq">${r.qty}&times;</div>` +
+      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}</div></div>`;
+  }).join("");
+  const known = rows.filter(r => r.c && !vIsLand(r.c));
+  const curve = [0,0,0,0,0,0,0,0];
+  for (const r of known) curve[Math.min(7, Math.round(vCmc(r.c)))] += r.qty;
+  const cmax = Math.max(1, ...curve);
+  const curveH = curve.map((v, i) => vbar(i === 7 ? "7+" : i, v, cmax)).join("");
+  const buckets = [["< $1",0],["$1–5",0],["$5–15",0],["$15+",0]];
+  for (const r of rows){ if (r.unit == null) continue;
+    buckets[r.unit < 1 ? 0 : r.unit < 5 ? 1 : r.unit < 15 ? 2 : 3][1] += r.qty; }
+  const bmax = Math.max(1, ...buckets.map(b => b[1]));
+  const bH = buckets.map(b => vbar(b[0], b[1], bmax)).join("");
+  const colC = { W:0,U:0,B:0,R:0,G:0,C:0 };
+  for (const r of known){ const cs = vColors(r.c);
+    if (!cs.length) colC.C += r.qty;
+    else for (const c of cs) if (colC[c] != null) colC[c] += r.qty; }
+  const pie = Object.entries(colC).filter(([,v]) => v > 0).map(([k,v]) =>
+    `<span class="pip"><span class="sw" style="background:${VCOL[k][0]}"></span>${VCOL[k][1]} ${v}</span>`).join("");
+  const miss = rows.filter(r => !r.c).length;
+  $("visual").innerHTML =
+    `<h2>Visual breakdown</h2>` +
+    `<div class="vcharts">` +
+      `<div class="chart"><h3>Mana curve · non-land, by copies</h3>${curveH}</div>` +
+      `<div class="chart"><h3>Price spread · by copies</h3>${bH}` +
+        `<h3 style="margin-top:14px">Colours · by copies</h3>` +
+        `<div class="pie">${pie || '<span class="vp">&mdash;</span>'}</div></div>` +
+    `</div>` +
+    `<h2>Main deck</h2><div class="vgrid">${grid("main") || '<span class="vp">&mdash;</span>'}</div>` +
+    (rows.some(r => r.board === "side")
+      ? `<h2>Sideboard</h2><div class="vgrid">${grid("side")}</div>` : "") +
+    (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts.</p>` : "");
+  $("visual").classList.remove("hidden");
+}
+async function showVisual(){
+  if (!LAST){ return; }
+  const sig = vbSig(), v = $("visual"), b = $("visualBtn");
+  if (_vbKey === sig){                       // already built for this deck
+    const hidden = v.classList.toggle("hidden");
+    b.textContent = hidden ? "Show visual breakdown" : "Hide visual breakdown";
+    return;
+  }
+  const rows = [];
+  for (const [board, sec] of [["main", LAST.m], ["side", LAST.s]])
+    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit, board, c:null });
+  if (!rows.length) return;
+  const names = [...new Set(rows.map(r => r.name))];
+  b.disabled = true; b.textContent = "Loading card data…";
+  try {
+    const map = await scryfallCollection(names);
+    for (const r of rows) r.c = map.get(norm(r.name)) || null;
+    renderVisual(rows);
+    _vbKey = sig;
+    b.textContent = "Hide visual breakdown";
+  } catch(e){
+    v.innerHTML = `<p class="sub" style="margin:10px 0">Couldn't load card data from Scryfall (${escapeHtml(String(e.message||e))}). Try again.</p>`;
+    v.classList.remove("hidden");
+    b.textContent = "Show visual breakdown";
+  } finally { b.disabled = false; }
+}
+
+/* ---- editable output (beta item 2) ---------------------------------
+   Single source of truth = the decklist text. The +/- / remove / add
+   controls do TARGETED line edits on the textarea (other lines, comments,
+   ignored basics untouched) then recompute, so the table is always exactly
+   what the text says — they can never disagree.                          */
+function _setQty(raw, q){
+  return raw.replace(/^(\s*)(sb:\s*)?(\d+)/i, (m,a,b) => (a||"") + (b||"") + q);
+}
+// Walk decklist text with parseDecklist's board rules; onCard returns
+// "keep" | "remove" | newRawLine.
+function _walkDeck(text, onCard){
+  const out = [];
+  let cur = "main";
+  for (const raw of (text||"").split(/\r?\n/)){
+    const t = raw.trim();
+    let handled = false;
+    if (t && !/^(\/\/|#)/.test(t)){
+      if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(t)) cur = "main";
+      else if (/^(sideboard)\s*:?\s*$/i.test(t)) cur = "side";
+      else {
+        const sb = /^sb:\s*/i.test(t);
+        const c = parseCardLine(sb ? t.replace(/^sb:\s*/i,"") : t);
+        if (c){
+          const r = onCard({ board: sb ? "side" : cur, name:c.name, qty:c.qty, raw });
+          if (r === "remove") handled = true;
+          else if (typeof r === "string"){ out.push(r); handled = true; }
+        }
+      }
+    }
+    if (!handled) out.push(raw);
+  }
+  return out.join("\n");
+}
+function _sideBoxStrip(text, N){              // remove a name from the side box
+  return (text||"").split(/\r?\n/).filter(l => {
+    const t = l.trim();
+    if (!t || /^(\/\/|#)/.test(t) || /^sideboard\s*:?\s*$/i.test(t)) return true;
+    const c = parseCardLine(t.replace(/^sb:\s*/i,""));
+    return !(c && norm(c.name) === N);
+  }).join("\n");
+}
+function editDeck(board, name, op){
+  const dEl = $("decklist"), sEl = $("sideboard"), N = norm(name);
+  let changed = false;
+  if (op === "remove"){
+    const nv = _walkDeck(dEl.value, c =>
+      (c.board === board && norm(c.name) === N) ? "remove" : "keep");
+    if (nv !== dEl.value){ dEl.value = nv; changed = true; }
+    if (board === "side"){
+      const sv = _sideBoxStrip(sEl.value, N);
+      if (sv !== sEl.value){ sEl.value = sv; changed = true; }
+    }
+  } else {                                    // inc / dec
+    const d = op === "inc" ? 1 : -1;
+    let hit = false;
+    dEl.value = _walkDeck(dEl.value, c => {
+      if (hit || c.board !== board || norm(c.name) !== N) return "keep";
+      hit = true;
+      const q = c.qty + d;
+      return q < 1 ? "remove" : _setQty(c.raw, q);
+    });
+    if (hit) changed = true;
+    if (!hit && board === "side"){            // maybe it's in the side box
+      const lines = sEl.value.split(/\r?\n/);
+      for (let i = 0; i < lines.length; i++){
+        const t = lines[i].trim();
+        if (!t || /^(\/\/|#)/.test(t) || /^sideboard\s*:?\s*$/i.test(t)) continue;
+        const c = parseCardLine(t.replace(/^sb:\s*/i,""));
+        if (c && norm(c.name) === N){
+          const q = c.qty + d;
+          lines[i] = q < 1 ? null : _setQty(lines[i], q);
+          changed = true; break;
+        }
+      }
+      if (changed) sEl.value = lines.filter(l => l !== null).join("\n");
+    }
+  }
+  if (changed) recompute();                   // text is canonical -> rebuild
+}
+function addCard(board, text){
+  const s = (text || "").trim();
+  const c = parseCardLine(/^\d/.test(s) ? s : "1 " + s);
+  if (!c) return;
+  const line = c.qty + " " + c.name;
+  if (board === "side"){
+    const sEl = $("sideboard"), v = sEl.value.replace(/\s+$/,"");
+    sEl.value = (v ? v + "\n" : "") + line;
+  } else {
+    const dEl = $("decklist"), lines = dEl.value.split(/\r?\n/);
+    let idx = lines.findIndex(l => /^(sideboard)\s*:?\s*$/i.test(l.trim()));
+    if (idx < 0) idx = lines.length;
+    lines.splice(idx, 0, line);
+    dEl.value = lines.join("\n");
+  }
+  recompute();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest(".qbtn[data-act],.xbtn[data-act]");
+  if (!b) return;
+  e.preventDefault();
+  editDeck(b.dataset.board, b.dataset.name, b.dataset.act);
+});
+document.addEventListener("submit", e => {
+  const f = e.target.closest && e.target.closest("form.addcard");
+  if (!f) return;
+  e.preventDefault();
+  const inp = f.querySelector(".addinput");
+  if (inp && inp.value.trim()){ addCard(f.dataset.board, inp.value); inp.value = ""; }
+});
 
 /* ---- card-image hover popup (uses imgs captured during pricing) ----- */
 (function(){
@@ -997,6 +1307,7 @@ RECOMPUTE_INPUTS.forEach(id => {
   el.addEventListener(ev, scheduleRecompute);
 });
 $("resolveBtn").addEventListener("click", resolveMissing);
+$("visualBtn").addEventListener("click", showVisual);
 
 // A *manual* edit to either list dismisses the correction notice (it'll
 // re-appear from the next recompute if a typo still stands). Our own
@@ -1049,6 +1360,56 @@ async function showLastUpdated(){
       "). Edit the list to retry.";
   }
 }
+/* ---- self-contained share link (beta item 4) -----------------------
+   The entire input state is encoded into the URL fragment (UTF-8 -> bytes
+   -> URL-safe base64). No backend, no account: the link IS the data.    */
+const SHARE_KEYS = {                       // short URL key -> element id
+  d:"decklist", s:"sideboard", n:"deckname", bm:"budgetMain", bs:"budgetSide",
+  f:"format", c:"cheapest", ib:"ignoreBasics", cc:"colorCost" };
+function b64urlEncode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64urlDecode(s){
+  s = s.replace(/-/g,"+").replace(/_/g,"/");
+  const bin = atob(s);
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+function buildShareLink(){
+  const st = {};
+  for (const [k, id] of Object.entries(SHARE_KEYS)){
+    const el = $(id);
+    st[k] = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value;
+  }
+  return location.origin + location.pathname + "#d=" +
+    b64urlEncode(JSON.stringify(st));
+}
+function loadShared(){
+  const m = /[#&]d=([^&]+)/.exec(location.hash || "");
+  if (!m) return;
+  let st; try { st = JSON.parse(b64urlDecode(m[1])); } catch { return; }
+  for (const [k, id] of Object.entries(SHARE_KEYS)){
+    if (!(k in st)) continue;
+    const el = $(id);
+    if (el.type === "checkbox") el.checked = !!st[k];
+    else el.value = st[k];
+  }
+}
+$("shareBtn").addEventListener("click", async () => {
+  const url = buildShareLink();
+  try {
+    await navigator.clipboard.writeText(url);
+    history.replaceState(null, "", url);     // reflect it in the address bar
+    $("status").textContent = "Share link copied to clipboard.";
+  } catch {
+    history.replaceState(null, "", url);
+    $("status").textContent = "Clipboard blocked — the link is now in the address bar; copy it from there.";
+  }
+});
+
+loadShared();                                // shared state before first render
 showLastUpdated();
 recompute();
 </script>
