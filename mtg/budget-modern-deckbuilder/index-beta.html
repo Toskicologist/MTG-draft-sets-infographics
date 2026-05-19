@@ -8,9 +8,25 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.3.0-beta.2)  [BETA — sandbox; main is v3.3.0]
+  Budget Modern Deckbuilder (v3.3.0-beta.3)  [BETA — sandbox; main is v3.3.1]
 
   Changelog:
+  v3.3.0-beta.3 (2026-05-19T22:23:02Z) - Two things:
+                        (a) FIX: in beta.2 the +/- steppers and the remove ✕
+                        corrupted all OTHER card lines, replacing them with
+                        the literal string "keep". `_walkDeck` interpreted any
+                        non-"remove" string as a replacement line; the callers
+                        returned "keep" as a sentinel which got pushed
+                        verbatim. Replaced the "keep" sentinel with `null` in
+                        the three callers; `_walkDeck` already falls through
+                        on null/undefined. Added a regression unit test that
+                        covers other-card lines.
+                        (b) Visual restructure mirroring main v3.3.1: project
+                        cross-links + TCGcsv/Scryfall credits + contact line
+                        moved into a graphic-background header (shared image
+                        overlay), TCG Mid info merged into the top "Where do
+                        the prices come from?" collapsible, "— no button"
+                        wording stripped, footer removed.
   v3.3.0-beta.2 (2026-05-19T16:33:37Z) - Corrected scope of the original
                         list's item 2. Item 2 is the EDITABLE OUTPUT TABLE:
                         per-row −/+ quantity steppers, a remove ✕, and an
@@ -213,6 +229,32 @@
   details.explain p{margin:0 0 10px;color:var(--dim);line-height:1.6}
   details.explain p:first-of-type{margin-top:2px}
   details.explain strong{color:var(--ink)}
+  /* ---- site header (matches the other MTG project pages) ------- */
+  .site-header{position:relative;border-radius:12px;overflow:hidden;
+    margin:0 0 22px;box-shadow:0 4px 6px rgba(0,0,0,.18);
+    background-image:url('../assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+    background-size:cover;background-position:center;background-repeat:no-repeat}
+  .site-header::before{content:'';position:absolute;inset:0;z-index:1;
+    background:linear-gradient(135deg,rgba(102,126,234,.78) 0%,rgba(118,75,162,.78) 100%)}
+  .site-header .header-content{position:relative;z-index:2;padding:26px 28px;color:#fff}
+  .site-header h1{color:#fff;font-size:28px;margin:0 0 6px;text-align:center;
+    text-shadow:1px 1px 3px rgba(0,0,0,.4);font-weight:700}
+  .site-header h1 span{color:rgba(255,255,255,.78);font-size:12px;font-weight:400;
+    text-shadow:none}
+  .site-header .subtitle{text-align:center;color:rgba(255,255,255,.95);
+    font-size:14px;margin:0 0 14px;line-height:1.5}
+  .site-header .data-info{background:rgba(255,255,255,.13);padding:11px 14px;
+    border-radius:8px;text-align:center;font-size:12.5px;line-height:1.7;
+    color:rgba(255,255,255,.95)}
+  .site-header .data-info a{color:#fff;text-decoration:underline}
+  .site-header .data-info a:hover{opacity:.85}
+  .site-header .data-info strong{color:#fff;font-weight:600}
+  .site-header .data-info .sep{opacity:.45;margin:0 6px}
+  .site-header .data-info .row{margin-top:7px}
+  @media(max-width:560px){
+    .site-header .header-content{padding:20px 16px}
+    .site-header h1{font-size:22px}
+  }
   /* ---- visual breakdown (beta item 3) ---- */
   .vbreak{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 4px}
   .vbreak #visualBtn{width:auto;flex:0 0 auto}
@@ -264,8 +306,28 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.3.0-beta.2 · 2026-05-19 16:33 UTC · BETA</span></h1>
-  <p class="sub">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
+  <header class="site-header">
+    <div class="header-content">
+      <h1>Budget Modern Deckbuilder <span>v3.3.0-beta.3 &middot; 2026-05-19 22:23 UTC &middot; BETA</span></h1>
+      <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
+      <div class="data-info">
+        <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
+        <strong>Card info &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> &middot; <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener">Support them on Patreon</a>
+        <div class="row">
+          Also see:
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener">SOS Under/Overrated</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener">ECL Under/Overrated</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener">17 Lands Quiz</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener">Card Knowledge Quiz</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html" target="_blank" rel="noopener">Multi-Set Color Wheel</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener">All projects</a>
+        </div>
+        <div class="row">
+          Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener">Reddit</a>.
+        </div>
+      </div>
+    </div>
+  </header>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
 
@@ -273,13 +335,13 @@
     <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
     <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure (distinct from TCGplayer's <em>Market</em> price, which is an average of recent <em>completed sales</em>).</p>
     <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run mirror of TCGplayer's public pricing &mdash; refreshed once a day (~20:00&nbsp;UTC). A scheduled job rebuilds the price table <em>and</em> a slim card index (printings, legalities, image) from Scryfall's bulk data, and publishes both to a CDN. The page loads those two files once, so <strong>Mid mode does zero per-card API calls and is near-instant</strong>. The banner above shows exactly when the data was built; every export carries that same timestamp.</p>
-    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit (no button). Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. <strong>Indicative prices, not checkout quotes.</strong> Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit. Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
   </details>
 
   <div class="grid">
     <div class="panel">
       <label for="decklist">Decklist</label>
-      <p class="sub" style="margin:-2px 0 8px">Totals update <strong>live as you type</strong> &mdash; no button. Only lines that <strong>start with a quantity</strong> (e.g. <code>4 Lightning Bolt</code>) are counted; any line without a leading number is ignored.</p>
+      <p class="sub" style="margin:-2px 0 8px">Totals update <strong>live as you type</strong>. Only lines that <strong>start with a quantity</strong> (e.g. <code>4 Lightning Bolt</code>) are counted; any line without a leading number is ignored.</p>
       <textarea id="decklist" spellcheck="false" placeholder="4 Lightning Bolt
 4 Monastery Swiftspear
 2 Mishra's Bauble
@@ -344,7 +406,7 @@ Sideboard
       <div class="field">
         <label><input type="checkbox" id="colorCost" checked style="width:auto;vertical-align:-2px"> Colour-code prices (green&rarr;red)</label>
       </div>
-      <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit &mdash; no button to press.</p>
+      <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
       <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
       <div class="actions">
         <button class="ghost" id="exportBtn" disabled>Export .txt</button>
@@ -388,20 +450,6 @@ Sideboard
     <div id="visual" class="hidden"></div>
   </div>
 
-  <footer>
-    <p><strong>TCG Mid</strong> = TCGplayer Mid USD (median current NM/LP listing), rebuilt daily from <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> + a Scryfall bulk index and served via jsDelivr; the report carries the build time as the "prices calculated" stamp.
-    Card&rarr;price mapping uses Scryfall's <code>tcgplayer_id</code> (exact, not a name guess). Indicative prices, not checkout quotes. Cards with no Mid, or not legal in the chosen format, are flagged &mdash; never estimated; cards not in the daily index can be resolved on demand via Scryfall.</p>
-    <p>Price data from <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a>. <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
-    Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener">Support them on Patreon</a></p>
-    <p class="footlinks">Also see:
-      <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener">SOS Under/Overrated</a> |
-      <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener">ECL Under/Overrated</a> |
-      <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener">17 Lands Quiz</a> |
-      <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener">Card Knowledge Quiz</a> |
-      <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html" target="_blank" rel="noopener">Multi-Set Color Wheel</a> |
-      <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener">All projects</a></p>
-    <p>Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener">Reddit</a>.</p>
-  </footer>
 </div>
 
 <script>
@@ -1033,7 +1081,7 @@ function editDeck(board, name, op){
   let changed = false;
   if (op === "remove"){
     const nv = _walkDeck(dEl.value, c =>
-      (c.board === board && norm(c.name) === N) ? "remove" : "keep");
+      (c.board === board && norm(c.name) === N) ? "remove" : null);
     if (nv !== dEl.value){ dEl.value = nv; changed = true; }
     if (board === "side"){
       const sv = _sideBoxStrip(sEl.value, N);
@@ -1043,7 +1091,7 @@ function editDeck(board, name, op){
     const d = op === "inc" ? 1 : -1;
     let hit = false;
     dEl.value = _walkDeck(dEl.value, c => {
-      if (hit || c.board !== board || norm(c.name) !== N) return "keep";
+      if (hit || c.board !== board || norm(c.name) !== N) return null;
       hit = true;
       const q = c.qty + d;
       return q < 1 ? "remove" : _setQty(c.raw, q);
