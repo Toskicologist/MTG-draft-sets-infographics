@@ -8,9 +8,17 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.0.0)
+  Budget Modern Deckbuilder (v3.1.0)
 
   Changelog:
+  v3.1.0 (2026-05-19) - Guarantee TCGcsv Mid as the only price source: the
+                        opt-in Scryfall "Resolve" path uses Scryfall purely
+                        for card identity (name -> tcgplayer_id) and prices
+                        strictly from the TCGcsv Mid map; removed the dead
+                        Scryfall usd/market price branch entirely. A card
+                        that resolves but has no TCGcsv Mid is now flagged
+                        in red (same prominence as not-format-legal) and
+                        excluded from the total.
   v3.0.0 (2026-05-19) - Mid-only: removed the TCG Market option and the
                         Calculate button. Totals recompute live on every
                         edit (debounced, index-only, ZERO Scryfall). Cards
@@ -170,7 +178,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.0.0 · 2026-05-19</span></h1>
+  <h1>Budget Modern Deckbuilder <span style="font-size:12px;color:var(--dim);font-weight:400">v3.1.0 · 2026-05-19</span></h1>
   <p class="sub">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
@@ -417,18 +425,14 @@ async function fetchJSON(url){
   return r.json();
 }
 
-// Unit price of one Scryfall card object for the chosen source. Never guesses.
-// mid    -> snapshot[ card.tcgplayer_id ]  (TCGplayer Mid, non-foil only)
-// market -> card.prices.usd (TCGplayer Market via Scryfall), usd_foil flagged
-function cardUnit(c, source, snap){
-  if (source === "mid"){
-    const v = c.tcgplayer_id != null ? snap.prices[c.tcgplayer_id] : undefined;
-    return { price: (typeof v === "number" && v > 0) ? v : null };
-  }
-  const usd = c.prices && c.prices.usd ? parseFloat(c.prices.usd) : null;
-  if (usd != null) return { price: usd };
-  const fo = c.prices && c.prices.usd_foil ? parseFloat(c.prices.usd_foil) : null;
-  return fo != null ? { price: fo, foil:true } : { price:null };
+// Unit price = the cheapest printing's TCGplayer **Mid**, looked up by its
+// tcgplayer_id in the TCGcsv price map (snap.prices). Scryfall is used ONLY
+// to resolve name -> tcgplayer_id; the PRICE is *always* TCGcsv Mid. No Mid
+// in TCGcsv -> null (card is flagged + excluded; never substituted with a
+// Scryfall / market price).
+function cardUnit(c, snap){
+  const v = c.tcgplayer_id != null ? snap.prices[c.tcgplayer_id] : undefined;
+  return (typeof v === "number" && v > 0) ? v : null;
 }
 
 // front-face image (handles double-faced cards). Captured from the fetch we
@@ -440,13 +444,14 @@ function imgOf(c){
   return null;
 }
 
-// Returns { name, found, price, foilOnly, set, cn, legal, uri, img } — never guesses.
-// `legal` = Scryfall legalities map (per-format), used by the format toggle.
-async function priceCard(name, cheapest, source, snap){
+// Resolve a card NOT in the daily index. Scryfall supplies identity only
+// (each printing's tcgplayer_id, legalities, image); every price is the
+// TCGcsv Mid for that tcgplayer_id. TCGcsv is always the price source.
+async function priceCard(name, cheapest, snap){
   if (cheapest){
     let url = SCRYFALL + "/cards/search?unique=prints&q=" +
       encodeURIComponent(`!"${name}" game:paper`);
-    let best = null, bestFoil = null, legal = null, found = false, fb = null;
+    let best = null, legal = null, found = false, fb = null;
     while (url){
       const data = await fetchJSON(url);
       if (data.__notfound || data.object === "error" || !data.data) break;
@@ -454,33 +459,31 @@ async function priceCard(name, cheapest, source, snap){
       for (const c of data.data){
         if (legal == null && c.legalities) legal = c.legalities;
         if (fb == null) fb = { uri:c.scryfall_uri, img:imgOf(c) };
-        const u = cardUnit(c, source, snap);
-        if (u.price == null) continue;
-        const rec = { price:u.price, set:c.set.toUpperCase(), cn:c.collector_number,
-                      uri:c.scryfall_uri, img:imgOf(c) };
-        if (u.foil){ if (bestFoil == null || u.price < bestFoil.price) bestFoil = rec; }
-        else       { if (best == null || u.price < best.price) best = rec; }
+        const price = cardUnit(c, snap);              // TCGcsv Mid or null
+        if (price == null) continue;
+        if (best == null || price < best.price)
+          best = { price, set:c.set.toUpperCase(), cn:c.collector_number,
+                   uri:c.scryfall_uri, img:imgOf(c) };
       }
       url = data.has_more ? data.next_page : null;
       if (url) await SLEEP(90);
     }
-    if (!found) return await priceNamed(name, source, snap);
-    const pick = best || bestFoil;
-    if (pick) return { name, found:true, price:pick.price, foilOnly:!best&&!!bestFoil,
-                       set:pick.set, cn:pick.cn, legal, uri:pick.uri, img:pick.img };
+    if (!found) return await priceNamed(name, snap);
+    if (best) return { name, found:true, price:best.price, foilOnly:false,
+                       set:best.set, cn:best.cn, legal, uri:best.uri, img:best.img };
     return { name, found:true, price:null, foilOnly:false, set:null, cn:null,
              legal, uri:fb&&fb.uri, img:fb&&fb.img };
   }
-  return await priceNamed(name, source, snap);
+  return await priceNamed(name, snap);
 }
 
-async function priceNamed(name, source, snap){
+async function priceNamed(name, snap){
   const c = await fetchJSON(SCRYFALL + "/cards/named?fuzzy=" + encodeURIComponent(name));
   if (c.__notfound || c.object === "error")
     return { name, found:false, price:null, foilOnly:false, set:null, cn:null,
              legal:null, uri:null, img:null };
-  const u = cardUnit(c, source, snap);
-  return { name:c.name, found:true, price:u.price, foilOnly:!!u.foil,
+  const price = cardUnit(c, snap);                    // TCGcsv Mid or null
+  return { name:c.name, found:true, price, foilOnly:false,
            set:c.set?c.set.toUpperCase():null, cn:c.collector_number,
            legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
 }
@@ -571,7 +574,7 @@ async function resolveMissing(){
   for (const nm of todo){
     rb.textContent = "Resolving " + (++done) + "/" + todo.length + ": " + nm;
     try {
-      _resolved.set(nm, await priceCard(nm, $("cheapest").checked, "mid", { prices:_cdn.prices }));
+      _resolved.set(nm, await priceCard(nm, $("cheapest").checked, { prices:_cdn.prices }));
     } catch(e){ _resolved.set(nm, { name:nm, found:false, price:null, foilOnly:false,
       set:null, cn:null, legal:null, uri:null, img:null }); }
     $("bar").style.width = (done/todo.length*100) + "%";
@@ -645,9 +648,12 @@ function renderTable(title, sec){
   let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
   h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th></tr></thead><tbody>`;
   for (const r of sec.rows){
+    // Resolved/indexed but TCGcsv has no Mid -> same prominent red flag as
+    // a not-format-legal card (price is always TCGcsv Mid, or clearly absent).
+    const noMid = r.p.found && r.p.price == null && !r.p.pending;
     const priceFlagged = (!r.p.found || r.p.price==null || r.p.foilOnly);
     const illegal = legalStatus(r.p) === "bad";
-    const cls = [priceFlagged?'flagged':'', illegal?'illegal':''].filter(Boolean).join(' ');
+    const cls = [priceFlagged?'flagged':'', (illegal||noMid)?'illegal':''].filter(Boolean).join(' ');
     const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
     const uc = CUR_COLOR ? " " + costClass(r.unit) : "";
     const lc = CUR_COLOR ? " " + costClass(r.lineT) : "";
@@ -738,9 +744,7 @@ function buildReport(L){
   lines.push("=".repeat(60));
   lines.push("Prices calculated: " + L.priceAt.toISOString() + " (UTC)");
   lines.push("                   " + L.priceAt.toLocaleString() + " (local)");
-  lines.push("Price figure     : " + (L.source === "mid"
-    ? "TCGplayer Mid USD — daily snapshot via TCGcsv"
-    : "TCGplayer Market USD — live via Scryfall prices.usd"));
+  lines.push("Price figure     : TCGplayer Mid USD (cheapest printing) — daily TCGcsv snapshot");
   lines.push("Report generated : " + L.runAt.toISOString() + " (UTC)");
   lines.push("Printing basis   : " + (L.cheapest ? "cheapest paper printing" : "Scryfall default/fuzzy printing"));
   lines.push("Legality format  : " + (L.format === "__none" ? "(not checked)" : fmtName(L.format)));
