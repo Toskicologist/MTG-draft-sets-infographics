@@ -8,9 +8,16 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.3.0-beta.3)  [BETA — sandbox; main is v3.3.1]
+  Budget Modern Deckbuilder (v3.5.0-beta.1)  [BETA — sandbox; main is v3.4.0]
 
   Changelog:
+  v3.5.0-beta.1 (2026-06-02T16:53:10Z) - Visual breakdown: new "Scale cards
+                        by line cost" toggle. When on, each card image in the
+                        grid is sized by its line total ($qty x unit) using a
+                        sqrt scale (so expensive cards visibly dominate
+                        without crushing cheap ones to invisibility); off
+                        keeps the uniform auto-fill grid. Toggle re-renders
+                        from the cached Scryfall data — no extra API call.
   v3.3.0-beta.3 (2026-05-19T22:23:02Z) - Two things:
                         (a) FIX: in beta.2 the +/- steppers and the remove ✕
                         corrupted all OTHER card lines, replacing them with
@@ -265,6 +272,12 @@
     letter-spacing:.04em;margin:0 0 10px}
   .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
     gap:12px}
+  /* size-scaled mode: flex layout so each card honours its inline width */
+  .vgrid.scaled{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+  .vgrid.scaled .vcard{flex:0 0 auto}
+  .vctrl{display:inline-flex;align-items:center;gap:7px;color:var(--dim);
+    font-size:12.5px;margin:-2px 0 10px;user-select:none}
+  .vctrl input{width:auto;vertical-align:-2px;accent-color:var(--accent)}
   .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:8px;text-align:center}
   .vcard img{width:100%;height:auto;border-radius:7px;display:block;
@@ -308,7 +321,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.3.0-beta.3 &middot; 2026-05-19 22:23 UTC &middot; BETA</span></h1>
+      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.1 &middot; 2026-06-02 16:53 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -917,13 +930,15 @@ function render(main, side, priceMap, meta, cheapest){
    (<=75 ids/call) for images + cmc + colours; charts are drawn from that
    (zero further calls). Re-click toggles; editing the deck invalidates.  */
 let _vbKey = null;                       // deck signature the visual reflects
+let _vbRows = null;                      // cached Scryfall-enriched rows
+let _vbScale = false;                    // beta v3.5.0-beta.1: scale by line cost
 function vbSig(){
   if (!LAST) return "";
   const f = s => s.rows.map(r => r.qty + "|" + norm(r.name)).join(",");
   return f(LAST.m) + "#" + f(LAST.s);
 }
 function resetVisual(){
-  _vbKey = null;
+  _vbKey = null; _vbRows = null;
   const b = $("visualBtn"); if (b){ b.disabled = false; b.textContent = "Show visual breakdown"; }
   const v = $("visual"); if (v){ v.classList.add("hidden"); v.innerHTML = ""; }
 }
@@ -969,14 +984,30 @@ function vbar(label, val, max){
 const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
   R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
 function renderVisual(rows){
+  // Size scaling (beta v3.5.0-beta.1): when _vbScale is on, each card's
+  // width grows with its line total (qty x unit). sqrt scale so a $40 card
+  // doesn't crush a $1 card to invisibility. Combined max across both
+  // boards keeps main/side directly comparable.
+  const SC_MIN = 70, SC_MAX = 220;
+  const maxLine = Math.max(0, ...rows.map(r => r.lineT || 0));
+  const widthFor = lineT => {
+    if (!_vbScale || maxLine <= 0) return null;
+    const t = Math.sqrt(Math.max(0, lineT || 0) / maxLine);
+    return Math.round(SC_MIN + (SC_MAX - SC_MIN) * t);
+  };
   const grid = side => rows.filter(r => r.board === side).map(r => {
     const img = vImg(r.c);
-    return `<div class="vcard${img ? "" : " miss"}">` +
+    const w = widthFor(r.lineT);
+    const style = w != null ? ` style="width:${w}px"` : "";
+    return `<div class="vcard${img ? "" : " miss"}"${style}>` +
       (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
            : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
       `<div class="vq">${r.qty}&times;</div>` +
-      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}</div></div>`;
+      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}` +
+        (r.lineT != null ? ` <span style="opacity:.6">/ ${money(r.lineT)}</span>` : "") +
+      `</div></div>`;
   }).join("");
+  const gridCls = _vbScale ? "vgrid scaled" : "vgrid";
   const known = rows.filter(r => r.c && !vIsLand(r.c));
   const curve = [0,0,0,0,0,0,0,0];
   for (const r of known) curve[Math.min(7, Math.round(vCmc(r.c)))] += r.qty;
@@ -996,15 +1027,17 @@ function renderVisual(rows){
   const miss = rows.filter(r => !r.c).length;
   $("visual").innerHTML =
     `<h2>Visual breakdown</h2>` +
+    `<label class="vctrl"><input type="checkbox" id="vScaleByCost"${_vbScale?" checked":""}>` +
+      ` Scale cards by line cost (qty &times; unit)</label>` +
     `<div class="vcharts">` +
       `<div class="chart"><h3>Mana curve · non-land, by copies</h3>${curveH}</div>` +
       `<div class="chart"><h3>Price spread · by copies</h3>${bH}` +
         `<h3 style="margin-top:14px">Colours · by copies</h3>` +
         `<div class="pie">${pie || '<span class="vp">&mdash;</span>'}</div></div>` +
     `</div>` +
-    `<h2>Main deck</h2><div class="vgrid">${grid("main") || '<span class="vp">&mdash;</span>'}</div>` +
+    `<h2>Main deck</h2><div class="${gridCls}">${grid("main") || '<span class="vp">&mdash;</span>'}</div>` +
     (rows.some(r => r.board === "side")
-      ? `<h2>Sideboard</h2><div class="vgrid">${grid("side")}</div>` : "") +
+      ? `<h2>Sideboard</h2><div class="${gridCls}">${grid("side")}</div>` : "") +
     (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts.</p>` : "");
   $("visual").classList.remove("hidden");
 }
@@ -1018,13 +1051,14 @@ async function showVisual(){
   }
   const rows = [];
   for (const [board, sec] of [["main", LAST.m], ["side", LAST.s]])
-    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit, board, c:null });
+    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit, lineT:r.lineT, board, c:null });
   if (!rows.length) return;
   const names = [...new Set(rows.map(r => r.name))];
   b.disabled = true; b.textContent = "Loading card data…";
   try {
     const map = await scryfallCollection(names);
     for (const r of rows) r.c = map.get(norm(r.name)) || null;
+    _vbRows = rows;
     renderVisual(rows);
     _vbKey = sig;
     b.textContent = "Hide visual breakdown";
@@ -1034,6 +1068,13 @@ async function showVisual(){
     b.textContent = "Show visual breakdown";
   } finally { b.disabled = false; }
 }
+// Toggle the size-scaled grid without re-fetching Scryfall data.
+document.addEventListener("change", e => {
+  if (e.target && e.target.id === "vScaleByCost"){
+    _vbScale = !!e.target.checked;
+    if (_vbRows) renderVisual(_vbRows);
+  }
+});
 
 /* ---- editable output (beta item 2) ---------------------------------
    Single source of truth = the decklist text. The +/- / remove / add
