@@ -8,9 +8,22 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.4.0)
+  Budget Modern Deckbuilder (v3.4.1)
 
   Changelog:
+  v3.4.1 (2026-06-03T13:23:04Z) - FIX (ported from beta v3.5.0-beta.2): visual
+                        breakdown failed to fetch the image for split / DFC /
+                        adventure cards (e.g. "Wear // Tear") when the row
+                        name was the front-face alias ("Wear"). The previous
+                        code sent {name: ...} identifiers to /cards/collection,
+                        which does EXACT name matching — aliases never
+                        resolved. Now sends {set, collector_number} identifiers
+                        (same layout-agnostic basis as the working table hover
+                        popup) and keys the response back under both card name
+                        AND set+collector, so the lookup is reliable for every
+                        layout. Unpriced rows (no set/cn) still use {name} as
+                        a best-effort fallback. See
+                        mtg/MULTI_FACE_CARD_LOOKUPS.md.
   v3.4.0 (2026-06-02T16:42:46Z) - Promoted v3.3.0-beta.3 to main. Three new
                         features carried over from the beta sandbox:
                         - Editable output table: per-row -/+ steppers, a
@@ -326,7 +339,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.4.0 &middot; 2026-06-02 16:42 UTC</span></h1>
+      <h1>Budget Modern Deckbuilder <span>v3.4.1 &middot; 2026-06-03 13:23 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -945,22 +958,30 @@ function resetVisual(){
   const b = $("visualBtn"); if (b){ b.disabled = false; b.textContent = "Show visual breakdown"; }
   const v = $("visual"); if (v){ v.classList.add("hidden"); v.innerHTML = ""; }
 }
-async function scryfallCollection(names){
+// v3.4.1: takes a list of identifier objects (mix of {set, collector_number}
+// and {name}). Keys the result map by card name (+ front-face alias) AND by
+// "set|cn" so callers can look up by whichever they have. set+collector is
+// preferred because /cards/collection's {name} identifier is EXACT-match and
+// fails for split/DFC/adventure front-face aliases (e.g. "Wear" alone won't
+// resolve to "Wear // Tear"). See mtg/MULTI_FACE_CARD_LOOKUPS.md.
+const _scKey = (s, n) => `sc:${String(s||"").toLowerCase()}|${String(n||"").toLowerCase()}`;
+async function scryfallCollection(identifiers){
   const out = new Map();
-  for (let i = 0; i < names.length; i += 75){
-    const identifiers = names.slice(i, i + 75).map(n => ({ name:n }));
+  for (let i = 0; i < identifiers.length; i += 75){
+    const chunk = identifiers.slice(i, i + 75);
     const r = await fetch(SCRYFALL + "/cards/collection", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "Accept":"application/json" },
-      body: JSON.stringify({ identifiers }) });
+      body: JSON.stringify({ identifiers: chunk }) });
     if (r.ok){
       const j = await r.json();
       for (const c of (j.data || [])){
         const k = norm(c.name); out.set(k, c);
         const sl = k.indexOf(" // "); if (sl > 0) out.set(k.slice(0, sl), c);
+        if (c.set && c.collector_number) out.set(_scKey(c.set, c.collector_number), c);
       }
     }
-    if (i + 75 < names.length) await SLEEP(95);
+    if (i + 75 < identifiers.length) await SLEEP(95);
   }
   return out;
 }
@@ -1036,13 +1057,27 @@ async function showVisual(){
   }
   const rows = [];
   for (const [board, sec] of [["main", LAST.m], ["side", LAST.s]])
-    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit, board, c:null });
+    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit,
+      set:r.p && r.p.set, cn:r.p && r.p.cn, board, c:null });
   if (!rows.length) return;
-  const names = [...new Set(rows.map(r => r.name))];
+  // Build deduped identifiers, preferring {set, collector_number} (works for
+  // split/DFC/adventure cards where the row name is a front-face alias).
+  const idents = [], seen = new Set();
+  for (const r of rows){
+    const key = (r.set && r.cn) ? _scKey(r.set, r.cn) : "n:" + norm(r.name);
+    if (seen.has(key)) continue; seen.add(key);
+    idents.push((r.set && r.cn)
+      ? { set: String(r.set).toLowerCase(), collector_number: String(r.cn) }
+      : { name: r.name });
+  }
   b.disabled = true; b.textContent = "Loading card data…";
   try {
-    const map = await scryfallCollection(names);
-    for (const r of rows) r.c = map.get(norm(r.name)) || null;
+    const map = await scryfallCollection(idents);
+    // Look up by set+cn first; fall back to name (with front-face alias).
+    for (const r of rows){
+      r.c = (r.set && r.cn && map.get(_scKey(r.set, r.cn)))
+         || map.get(norm(r.name)) || null;
+    }
     renderVisual(rows);
     _vbKey = sig;
     b.textContent = "Hide visual breakdown";
