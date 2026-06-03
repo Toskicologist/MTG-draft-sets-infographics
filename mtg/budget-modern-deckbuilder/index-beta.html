@@ -8,9 +8,26 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.5.0-beta.5)  [BETA — sandbox; main is v3.4.1]
+  Budget Modern Deckbuilder (v3.5.0-beta.6)  [BETA — sandbox; main is v3.4.1]
 
   Changelog:
+  v3.5.0-beta.6 (2026-06-03T22:44:07Z) - Treemap: stop wide-short card tiles.
+                        (1) Free/unspent space is now pulled OUT of the
+                        squarify and given the leftover region directly (a
+                        vertical cut: cards fill the left at width = spent/
+                        budget, full height; unspent is the right strip). The
+                        free chunk was the largest value and was hogging a big
+                        square and forcing the cards into thin leftovers — now
+                        the CARDS get a clean, tall region and squarify makes
+                        square-ish tiles, while the odd leftover shape lands in
+                        the empty area where it doesn't matter. (2) Boxes are
+                        now square-ish (aspect 1.45 -> 1.1) so nothing is
+                        substantially wider than tall. Area still ∝ budget and
+                        $1 still equal-area across both boards. (3) Squarify now
+                        uses an ASYMMETRIC aspect penalty (WIDE_BIAS) so a wide
+                        tile costs far more than a tall one — the packer biases
+                        to portrait/square and avoids wide-short tiles (cards
+                        are portrait anyway).
   v3.5.0-beta.5 (2026-06-03T22:02:45Z) - Treemap overhaul per feedback:
                         - Thin WHITE 1px lines around each card box (black bg).
                         - Squarer boxes: each board box now scales BOTH
@@ -401,7 +418,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.5 &middot; 2026-06-03 22:02 UTC &middot; BETA</span></h1>
+      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.6 &middot; 2026-06-03 22:44 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1100,6 +1117,12 @@ function squarify(items, rect){
   if (total <= 0) return [];
   const vertical = rect.w <= rect.h;
   const side = vertical ? rect.h : rect.w, other = vertical ? rect.w : rect.h;
+  // ASYMMETRIC badness: a tile WIDER than tall is penalised far more than one
+  // taller than wide, so the packer biases toward portrait/square tiles and
+  // avoids wide-short ones (cards are portrait anyway). WIDE_BIAS<1 makes a
+  // tall tile "cheaper" than an equally-lopsided wide tile.
+  const WIDE_BIAS = 0.5;
+  const badness = (w, h) => { const ar = w / h; return ar >= 1 ? ar : (1 / ar) * WIDE_BIAS; };
   let bestRow = [items[0]], bestWorst = Infinity, rowSum = 0;
   for (let i = 0; i < items.length; i++){
     rowSum += items[i].value;
@@ -1107,7 +1130,7 @@ function squarify(items, rect){
     let worst = 0;
     for (let j = 0; j <= i; j++){
       const len = (items[j].value / rowSum) * side;
-      const ratio = Math.max(len / rowThickness, rowThickness / len);
+      const ratio = vertical ? badness(rowThickness, len) : badness(len, rowThickness);
       if (ratio > worst) worst = ratio;
     }
     if (worst <= bestWorst){ bestWorst = worst; bestRow = items.slice(0, i + 1); }
@@ -1140,24 +1163,32 @@ function budgetTiles(cards, budget){
   return { items, spent, V, free, over: spent > b };
 }
 // One board's box HTML (absolutely-positioned tiles inside a relative .tmbox).
+// Free space is pulled OUT of the squarify and given the leftover region (a
+// vertical cut: cards fill the left, full height; free is the right strip).
+// This hands the CARDS a clean, tall region so squarify makes square-ish
+// tiles (never substantially wider than tall) and dumps any odd leftover
+// shape into the empty/unspent area, where it doesn't matter.
 function treemapBox(boardRows, budget, width, height){
   const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
-  const tiles = bt.items.length ? squarify(bt.items, { x:0, y:0, w:width, h:height }) : [];
   const g = 2;                                     // gutter between tiles
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const html = tiles.map(t => {
+  const cardItems = bt.items.filter(i => !i.item.__free);
+
+  // Vertical cut: cards occupy the left fraction (spent/V) of the width.
+  let cardsRect = { x:0, y:0, w:width, h:height }, freeRect = null;
+  if (bt.free > 0 && cardItems.length){
+    const cw = Math.max(1, width * (bt.spent / bt.V));
+    cardsRect = { x:0, y:0, w:cw, h:height };
+    freeRect  = { x:cw, y:0, w:width - cw, h:height };
+  } else if (bt.free > 0 && !cardItems.length){
+    cardsRect = { x:0, y:0, w:0, h:0 };
+    freeRect  = { x:0, y:0, w:width, h:height };
+  }
+  const tiles = cardItems.length ? squarify(cardItems, cardsRect) : [];
+
+  let html = tiles.map(t => {
     const x = t.x + g, y = t.y + g, w = Math.max(1, t.w - 2*g), h = Math.max(1, t.h - 2*g);
     const pos = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
-
-    if (t.item.__free){
-      const ff = clamp(Math.floor(Math.min((w - 10) / 4.5, h * 0.42)), 9, 30);
-      const inner = (w > 50 && h > 26)
-        ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(t.item.amount)}` +
-          `<br><span style="font-size:${Math.max(8, Math.round(ff*0.42))}px;font-weight:600;opacity:.85">unspent</span></span>`
-        : "";
-      return `<div class="tmtile free" style="${pos}">${inner}</div>`;
-    }
-
     const r = t.item, img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
     const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "");
     const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
@@ -1181,6 +1212,19 @@ function treemapBox(boardRows, budget, width, height){
       : "";
     return `<div class="${cls}" style="${pos};${bg}" title="${title}">${costHtml}${nameHtml}</div>`;
   }).join("");
+
+  // Free/unspent region as one clean rectangle (placed last, any shape).
+  if (freeRect && freeRect.w > 3 && freeRect.h > 3){
+    const x = freeRect.x + g, y = freeRect.y + g,
+          w = Math.max(1, freeRect.w - 2*g), h = Math.max(1, freeRect.h - 2*g);
+    const pos = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
+    const ff = clamp(Math.floor(Math.min(w / 4.2, h * 0.4)), 9, 32);
+    const inner = (w > 40 && h > 22)
+      ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(bt.free)}` +
+        `<br><span style="font-size:${Math.max(8, Math.round(ff*0.42))}px;font-weight:600;opacity:.85">unspent</span></span>`
+      : "";
+    html += `<div class="tmtile free" style="${pos}">${inner}</div>`;
+  }
   return { html, bt, height };
 }
 function buildTreemapHTML(rows){
@@ -1192,8 +1236,8 @@ function buildTreemapHTML(rows){
   // value V. Scaling BOTH dimensions by √V (not just height) avoids the
   // wide-short sideboard strip: the smaller board is a smaller *similar* box.
   // $1 still occupies the same area in both (shared k = area/V).
-  const ASPECT = 1.45;
-  const wBig = Math.min(cw, 900);
+  const ASPECT = 1.1;                              // box w:h — square-ish, never wide
+  const wBig = Math.min(cw, 760);
   const hBig = Math.round(wBig / ASPECT);
   const k = (wBig * hBig) / Math.max(mainBT.V, sideBT.V, 1);   // px² per $
   const boxFor = V => {
