@@ -8,9 +8,23 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.5.0-beta.4)  [BETA — sandbox; main is v3.4.1]
+  Budget Modern Deckbuilder (v3.5.0-beta.5)  [BETA — sandbox; main is v3.4.1]
 
   Changelog:
+  v3.5.0-beta.5 (2026-06-03T22:02:45Z) - Treemap overhaul per feedback:
+                        - Thin WHITE 1px lines around each card box (black bg).
+                        - Squarer boxes: each board box now scales BOTH
+                          dimensions by sqrt(value) to a fixed ~1.45:1 aspect
+                          (area still ∝ budget, $1 still equal-area in both),
+                          so the sideboard is a smaller *similar* box instead
+                          of a wide-short strip — far fewer wide-short tiles.
+                        - Labels copied from the pauper poster: COST is sized
+                          by tile WIDTH and centred (a big number no longer
+                          forces the name out), and the NAME wraps below and
+                          is shrunk-to-fit by measuring scrollHeight
+                          (fitTreemapLabels) so it shows whenever there's room.
+                        - Visual breakdown now DEFAULTS to the treemap and
+                          AUTO-OPENS once on load (no click needed).
   v3.5.0-beta.4 (2026-06-03T21:43:59Z) - Treemap tile polish: stronger solid
                         borders (2px accent box border + dark tile borders
                         with a light inner edge) so tiles read as distinct
@@ -317,27 +331,27 @@
   .vctrl select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
     border-radius:7px;padding:4px 8px;font-size:12.5px}
   /* ---- cost treemap (beta v3.5.0-beta.3) ---- */
-  .tmbox{position:relative;width:100%;border:2px solid var(--accent);
-    border-radius:10px;overflow:hidden;background:var(--panel);margin:0 0 16px}
-  .tmtile{position:absolute;overflow:hidden;border:2px solid #05070e;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+  .tmbox{position:relative;border:1px solid rgba(255,255,255,.85);
+    border-radius:8px;overflow:hidden;background:#05070e;margin:0 auto 16px}
+  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.7);
     background-size:cover;background-position:center;background-repeat:no-repeat;
     background-color:var(--panel2)}
   .tmtile.contain{background-size:contain;background-color:#0a0d18}
-  /* label: bottom-anchored column. Cost sits at the very bottom (always
-     visible); the name wraps ABOVE it and is clipped by overflow when the
-     tile is too short — so the price is never lost, the name is what gives. */
-  .tmtile .tlab{position:absolute;left:0;right:0;bottom:0;padding:2px 4px 3px;
-    color:#fff;text-shadow:0 1px 2px #000,0 0 4px #000;pointer-events:none;
-    display:flex;flex-direction:column;gap:1px;
-    background:linear-gradient(to top,rgba(0,0,0,.9),rgba(0,0,0,.55) 55%,rgba(0,0,0,0))}
-  .tmtile .tnm{word-break:break-word;overflow:hidden;line-height:1.12;
-    display:-webkit-box;-webkit-box-orient:vertical}
-  .tmtile .tcost{font-weight:800;line-height:1.05;white-space:nowrap}
+  /* pauper-poster label: cost centered & sized by WIDTH (so a big number
+     never forces the name out); name wraps in the space below and is
+     shrunk-to-fit by JS (fitTreemapLabels). Both heavily shadowed for any bg. */
+  .tmtile .tcost{position:absolute;left:0;width:100%;text-align:center;
+    transform:translateY(-50%);font-weight:800;line-height:1;color:#fff;
+    pointer-events:none;text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
+  .tmtile .tnmwrap{position:absolute;left:0;width:100%;display:flex;
+    align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none}
+  .tmtile .tnm{color:#fff;font-weight:700;line-height:1.13;text-align:center;
+    word-break:break-word;overflow-wrap:break-word;padding:0 3px 2px;max-width:100%;
+    text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
   .tmtile.free{background:repeating-linear-gradient(45deg,
     rgba(255,255,255,.05),rgba(255,255,255,.05) 9px,
     rgba(255,255,255,.10) 9px,rgba(255,255,255,.10) 18px);
-    border:2px dashed var(--accent);display:flex;align-items:center;
+    border:1px dashed rgba(255,255,255,.85);display:flex;align-items:center;
     justify-content:center;text-align:center;color:var(--ink);padding:6px}
   .tmhead{display:flex;align-items:baseline;justify-content:space-between;
     margin:18px 0 8px}
@@ -387,7 +401,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.4 &middot; 2026-06-03 21:43 UTC &middot; BETA</span></h1>
+      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.5 &middot; 2026-06-03 22:02 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -989,6 +1003,11 @@ function render(main, side, priceMap, meta, cheapest){
   lastReport = buildReport(LAST);
   lastCsv = buildCsv(LAST);
   if (_vbKey && _vbKey !== vbSig()) resetVisual();   // deck changed -> stale
+  // Auto-open the visual breakdown once on first load (ease of checking).
+  if (!_vbAutoOpened && (m.rows.length || s.rows.length)){
+    _vbAutoOpened = true;
+    setTimeout(() => { if (_vbKey === null) showVisual(); }, 60);
+  }
 }
 
 /* ---- visual breakdown (beta item 3) --------------------------------
@@ -997,8 +1016,9 @@ function render(main, side, priceMap, meta, cheapest){
    (zero further calls). Re-click toggles; editing the deck invalidates.  */
 let _vbKey = null;                       // deck signature the visual reflects
 let _vbRows = null;                      // cached Scryfall-enriched rows
-let _vbLayout = "grid";                  // "grid" | "treemap"  (beta v3.5.0-beta.3)
+let _vbLayout = "treemap";               // "grid" | "treemap"  (beta v3.5.0-beta.5 default)
 let _vbFill = "cover";                   // treemap fill: "cover" | "contain" | "art"
+let _vbAutoOpened = false;               // auto-open the visual once on first load
 function vbSig(){
   if (!LAST) return "";
   const f = s => s.rows.map(r => r.qty + "|" + norm(r.name)).join(",");
@@ -1142,45 +1162,69 @@ function treemapBox(boardRows, budget, width, height){
     const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "");
     const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
 
-    // Cost: always shown, scaled to the tile (capped by width AND height so it
-    // fits and sits at the very bottom). Name: smaller, wraps, clipped above.
-    const costF = clamp(Math.floor(Math.min((w - 8) / 3.4, h * 0.5)), 8, 40);
-    const nameF = clamp(Math.round(costF * 0.6), 7, 15);
-    const availName = h - costF * 1.3 - 7;         // room left above the cost
-    const showName = availName >= nameF * 1.05;
-    const lines = showName ? clamp(Math.floor(availName / (nameF * 1.15)), 1, 4) : 0;
-    const nameHtml = showName
-      ? `<div class="tnm" style="font-size:${nameF}px;-webkit-line-clamp:${lines}">${r.qty}&times; ${escapeHtml(r.name)}</div>`
-      : "";
-    const costHtml = r.lineT != null
-      ? `<div class="tcost" style="font-size:${costF}px">${money(r.lineT)}</div>` : "";
+    // Pauper-poster style: COST sized by WIDTH (so a big number fits across,
+    // not forcing the name out vertically), centred at 42% height. NAME wraps
+    // in the area below and is shrunk-to-fit later by fitTreemapLabels().
+    const costStr = r.lineT != null ? money(r.lineT) : "";
+    const len = Math.max(2, costStr.length);
+    const costF = clamp(Math.floor(Math.min((w * 0.84) / (len * 0.6), h * 0.5)), 7, 48);
+    const costCY = h * 0.42;                          // cost centre Y
+    const nameTop = costCY + costF / 2 + 2;
+    const nameH = h - nameTop - 1;
+    const nameF = clamp(Math.round(Math.min(w * 0.17, h * 0.14)), 7, 18);
     const title = escapeHtml(r.name) + (r.lineT != null ? " — " + money(r.lineT) : "");
-    return `<div class="${cls}" style="${pos};${bg}" title="${title}">` +
-           `<div class="tlab">${nameHtml}${costHtml}</div></div>`;
+    const costHtml = costStr
+      ? `<div class="tcost" style="font-size:${costF}px;top:${costCY.toFixed(1)}px">${costStr}</div>` : "";
+    const nameHtml = nameH > 7
+      ? `<div class="tnmwrap" style="top:${nameTop.toFixed(1)}px;height:${nameH.toFixed(1)}px">` +
+        `<div class="tnm" style="font-size:${nameF}px">${r.qty}&times; ${escapeHtml(r.name)}</div></div>`
+      : "";
+    return `<div class="${cls}" style="${pos};${bg}" title="${title}">${costHtml}${nameHtml}</div>`;
   }).join("");
   return { html, bt, height };
 }
 function buildTreemapHTML(rows){
-  const width = Math.max(320, ($("visual").clientWidth || 600));
+  const cw = Math.max(320, ($("visual").clientWidth || 700));
   const mainRows = rows.filter(r => r.board === "main").map(r => ({ ...r, cost: r.lineT || 0 }));
   const sideRows = rows.filter(r => r.board === "side").map(r => ({ ...r, cost: r.lineT || 0 }));
   const mainBT = budgetTiles(mainRows, LAST.bM), sideBT = budgetTiles(sideRows, LAST.bS);
-  const bigV = Math.max(mainBT.V, sideBT.V, 1);
-  const bigH = Math.round(Math.min(Math.max(width * 0.58, 240), 460));
-  const k = (width * bigH) / bigV;                 // px per $ — shared by both boards
-  const hFor = V => Math.max(1, Math.round((k * V) / width));   // area = width*h = k*V
+  // Each board box keeps a squarish ASPECT (w:h) and has AREA ∝ its budget-
+  // value V. Scaling BOTH dimensions by √V (not just height) avoids the
+  // wide-short sideboard strip: the smaller board is a smaller *similar* box.
+  // $1 still occupies the same area in both (shared k = area/V).
+  const ASPECT = 1.45;
+  const wBig = Math.min(cw, 900);
+  const hBig = Math.round(wBig / ASPECT);
+  const k = (wBig * hBig) / Math.max(mainBT.V, sideBT.V, 1);   // px² per $
+  const boxFor = V => {
+    if (V <= 0) return null;
+    const area = k * V;
+    const w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
+    return { w, h: Math.max(1, Math.round(area / w)) };
+  };
   const section = (title, boardRows, budget, bt) => {
-    if (!bt.V) return "";
-    const h = hFor(bt.V);
-    const box = treemapBox(boardRows, budget, width, h);
+    const box = boxFor(bt.V);
+    if (!box) return "";
+    const tm = treemapBox(boardRows, budget, box.w, box.h);
     const meta = bt.over
       ? `<span class="tmeta over">$${bt.spent.toFixed(2)} spent — OVER by ${money(bt.spent - budget)}</span>`
       : `<span class="tmeta">$${bt.spent.toFixed(2)} of ${money(budget)} · ${money(bt.free)} unspent</span>`;
     return `<div class="tmhead"><h2>${title}</h2>${meta}</div>` +
-           `<div class="tmbox" style="height:${h}px">${box.html}</div>`;
+           `<div class="tmbox" style="width:${box.w}px;height:${box.h}px">${tm.html}</div>`;
   };
   return section("Main deck", rows.filter(r => r.board === "main"), LAST.bM, mainBT)
        + section("Sideboard", rows.filter(r => r.board === "side"), LAST.bS, sideBT);
+}
+// Pauper-poster shrink-to-fit: reduce each tile name's font until it fits its
+// wrap box (so the name always shows at the largest size that fits the space).
+function fitTreemapLabels(){
+  for (const wrap of $("visual").querySelectorAll(".tnmwrap")){
+    const lab = wrap.firstElementChild; if (!lab) continue;
+    let fs = parseFloat(lab.style.fontSize) || 12, guard = 0;
+    while (fs > 5 && lab.scrollHeight > wrap.clientHeight && guard++ < 40){
+      fs *= 0.85; lab.style.fontSize = fs + "px";
+    }
+  }
 }
 function renderVisual(rows){
   const known = rows.filter(r => r.c && !vIsLand(r.c));
@@ -1247,6 +1291,7 @@ function renderVisual(rows){
   $("visual").innerHTML =
     `<h2>Visual breakdown</h2>` + controls + charts + body +
     (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts/treemap.</p>` : "");
+  if (_vbLayout === "treemap") fitTreemapLabels();   // shrink names to fit
 }
 async function showVisual(){
   if (!LAST){ return; }
