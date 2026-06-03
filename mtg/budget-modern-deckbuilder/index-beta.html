@@ -8,9 +8,25 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.5.0-beta.2)  [BETA — sandbox; main is v3.4.0]
+  Budget Modern Deckbuilder (v3.5.0-beta.3)  [BETA — sandbox; main is v3.4.1]
 
   Changelog:
+  v3.5.0-beta.3 (2026-06-03T18:59:45Z) - Visual breakdown: replaced the
+                        "scale cards by line cost" width toggle with a proper
+                        COST TREEMAP (squarified, WinDirStat-style). Layout
+                        dropdown: "Uniform grid" | "Cost treemap". In treemap
+                        mode each card tile's AREA is proportional to its line
+                        cost (qty x unit); the canvas is the budget, so unspent
+                        budget shows as a hatched "free space" tile (over
+                        budget => no free tile + red OVER label). $1 occupies
+                        the SAME pixel area in both the main & sideboard boxes
+                        (shared px-per-$ constant). New "Fill" dropdown: Crop
+                        to fill (cover, default) | Whole card (contain) | Art
+                        only (art_crop). Treemap algorithm ported from
+                        mtg/pauper/gen-poster.mjs and unit-tested (138/138) in
+                        _scratch/treemap-budget.*. Layout/fill toggles
+                        re-render from cached Scryfall data — no extra API
+                        calls.
   v3.5.0-beta.2 (2026-06-03T13:05:44Z) - FIX: visual breakdown failed to fetch
                         the image for split / DFC / adventure cards (e.g.
                         "Wear // Tear") when the row name was the front-face
@@ -284,12 +300,34 @@
     letter-spacing:.04em;margin:0 0 10px}
   .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
     gap:12px}
-  /* size-scaled mode: flex layout so each card honours its inline width */
-  .vgrid.scaled{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
-  .vgrid.scaled .vcard{flex:0 0 auto}
-  .vctrl{display:inline-flex;align-items:center;gap:7px;color:var(--dim);
-    font-size:12.5px;margin:-2px 0 10px;user-select:none}
-  .vctrl input{width:auto;vertical-align:-2px;accent-color:var(--accent)}
+  .vctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--dim);
+    font-size:12.5px;margin:-2px 0 12px;user-select:none}
+  .vctrl label{display:inline-flex;align-items:center;gap:6px;margin:0}
+  .vctrl select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
+    border-radius:7px;padding:4px 8px;font-size:12.5px}
+  /* ---- cost treemap (beta v3.5.0-beta.3) ---- */
+  .tmbox{position:relative;width:100%;border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;background:var(--panel);margin:0 0 16px}
+  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(0,0,0,.45);
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    background-color:var(--panel2)}
+  .tmtile.contain{background-size:contain;background-color:#0a0d18}
+  .tmtile .tlab{position:absolute;left:0;right:0;bottom:0;padding:2px 5px;
+    font-size:11px;line-height:1.25;color:#fff;
+    background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,0));
+    text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tmtile .tlab b{font-weight:700}
+  .tmtile.mini .tlab{display:none}
+  .tmtile.free{background:repeating-linear-gradient(45deg,
+    rgba(255,255,255,.04),rgba(255,255,255,.04) 8px,
+    rgba(255,255,255,.08) 8px,rgba(255,255,255,.08) 16px);
+    border:1px dashed var(--line);display:flex;align-items:center;
+    justify-content:center;text-align:center;color:var(--dim);font-size:12px;padding:6px}
+  .tmhead{display:flex;align-items:baseline;justify-content:space-between;
+    margin:18px 0 8px}
+  .tmhead h2{margin:0}
+  .tmhead .tmeta{color:var(--dim);font-size:12.5px}
+  .tmhead .tmeta.over{color:var(--bad);font-weight:700}
   .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:8px;text-align:center}
   .vcard img{width:100%;height:auto;border-radius:7px;display:block;
@@ -333,7 +371,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.2 &middot; 2026-06-03 13:05 UTC &middot; BETA</span></h1>
+      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.3 &middot; 2026-06-03 18:59 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -943,7 +981,8 @@ function render(main, side, priceMap, meta, cheapest){
    (zero further calls). Re-click toggles; editing the deck invalidates.  */
 let _vbKey = null;                       // deck signature the visual reflects
 let _vbRows = null;                      // cached Scryfall-enriched rows
-let _vbScale = false;                    // beta v3.5.0-beta.1: scale by line cost
+let _vbLayout = "grid";                  // "grid" | "treemap"  (beta v3.5.0-beta.3)
+let _vbFill = "cover";                   // treemap fill: "cover" | "contain" | "art"
 function vbSig(){
   if (!LAST) return "";
   const f = s => s.rows.map(r => r.qty + "|" + norm(r.name)).join(",");
@@ -988,6 +1027,14 @@ function vImg(c){
     return c.card_faces[0].image_uris.normal || null;
   return null;
 }
+// art_crop (just the artwork) for the treemap "Art only" fill mode.
+function vArt(c){
+  if (!c) return null;
+  if (c.image_uris) return c.image_uris.art_crop || c.image_uris.normal || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.art_crop || c.card_faces[0].image_uris.normal || null;
+  return null;
+}
 const vIsLand = c => !!c && /\bLand\b/.test(c.type_line || "");
 const vCmc = c => (c && typeof c.cmc === "number") ? c.cmc : 0;
 function vColors(c){
@@ -1003,31 +1050,105 @@ function vbar(label, val, max){
 }
 const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
   R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
-function renderVisual(rows){
-  // Size scaling (beta v3.5.0-beta.1): when _vbScale is on, each card's
-  // width grows with its line total (qty x unit). sqrt scale so a $40 card
-  // doesn't crush a $1 card to invisibility. Combined max across both
-  // boards keeps main/side directly comparable.
-  const SC_MIN = 70, SC_MAX = 220;
-  const maxLine = Math.max(0, ...rows.map(r => r.lineT || 0));
-  const widthFor = lineT => {
-    if (!_vbScale || maxLine <= 0) return null;
-    const t = Math.sqrt(Math.max(0, lineT || 0) / maxLine);
-    return Math.round(SC_MIN + (SC_MAX - SC_MIN) * t);
-  };
-  const grid = side => rows.filter(r => r.board === side).map(r => {
-    const img = vImg(r.c);
-    const w = widthFor(r.lineT);
-    const style = w != null ? ` style="width:${w}px"` : "";
-    return `<div class="vcard${img ? "" : " miss"}"${style}>` +
-      (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
-           : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
-      `<div class="vq">${r.qty}&times;</div>` +
-      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}` +
-        (r.lineT != null ? ` <span style="opacity:.6">/ ${money(r.lineT)}</span>` : "") +
-      `</div></div>`;
+/* ---- cost treemap (beta v3.5.0-beta.3) -----------------------------
+   Squarified treemap: each card tile's AREA is proportional to its line
+   cost (qty x unit); the canvas represents the budget, so unspent budget
+   shows as a hatched "free space" tile (WinDirStat-style). $1 occupies the
+   same pixel area in BOTH boards (shared px-per-$ constant k). Ported from
+   mtg/pauper/gen-poster.mjs and unit-tested (138/138) in _scratch/.       */
+function squarify(items, rect){
+  if (!items.length) return [];
+  if (items.length === 1)
+    return [{ item:items[0].item, x:rect.x, y:rect.y, w:rect.w, h:rect.h }];
+  const total = items.reduce((s, it) => s + it.value, 0);
+  if (total <= 0) return [];
+  const vertical = rect.w <= rect.h;
+  const side = vertical ? rect.h : rect.w, other = vertical ? rect.w : rect.h;
+  let bestRow = [items[0]], bestWorst = Infinity, rowSum = 0;
+  for (let i = 0; i < items.length; i++){
+    rowSum += items[i].value;
+    const rowThickness = (rowSum / total) * other;
+    let worst = 0;
+    for (let j = 0; j <= i; j++){
+      const len = (items[j].value / rowSum) * side;
+      const ratio = Math.max(len / rowThickness, rowThickness / len);
+      if (ratio > worst) worst = ratio;
+    }
+    if (worst <= bestWorst){ bestWorst = worst; bestRow = items.slice(0, i + 1); }
+    else break;
+  }
+  const rowTotal = bestRow.reduce((s, it) => s + it.value, 0);
+  const rowThickness = (rowTotal / total) * other;
+  const result = []; let offset = 0;
+  for (const it of bestRow){
+    const len = (it.value / rowTotal) * side;
+    result.push(vertical
+      ? { item:it.item, x:rect.x, y:rect.y + offset, w:rowThickness, h:len }
+      : { item:it.item, x:rect.x + offset, y:rect.y, w:len, h:rowThickness });
+    offset += len;
+  }
+  const rem = items.slice(bestRow.length);
+  const next = vertical
+    ? { x:rect.x + rowThickness, y:rect.y, w:rect.w - rowThickness, h:rect.h }
+    : { x:rect.x, y:rect.y + rowThickness, w:rect.w, h:rect.h - rowThickness };
+  return result.concat(squarify(rem, next));
+}
+// cards: [{...row, cost}] -> {items (desc, +free tile if under budget), spent, V, free, over}
+function budgetTiles(cards, budget){
+  const spent = cards.reduce((s, c) => s + Math.max(0, c.cost || 0), 0);
+  const b = Math.max(0, budget || 0), V = Math.max(spent, b), free = Math.max(0, b - spent);
+  const items = [];
+  for (const c of cards){ const v = Math.max(0, c.cost || 0); if (v > 0) items.push({ item:c, value:v }); }
+  if (free > 0) items.push({ item:{ __free:true, amount:free }, value:free });
+  items.sort((a, b2) => b2.value - a.value);
+  return { items, spent, V, free, over: spent > b };
+}
+// One board's box HTML (absolutely-positioned tiles inside a relative .tmbox).
+function treemapBox(boardRows, budget, width, height){
+  const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
+  const tiles = bt.items.length ? squarify(bt.items, { x:0, y:0, w:width, h:height }) : [];
+  const g = 1.5;                                   // gutter between tiles
+  const html = tiles.map(t => {
+    const x = t.x + g, y = t.y + g, w = Math.max(1, t.w - 2*g), h = Math.max(1, t.h - 2*g);
+    const pos = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
+    if (t.item.__free)
+      return `<div class="tmtile free" style="${pos}">` +
+        (w > 60 && h > 30 ? `<span><b>${money(t.item.amount)}</b><br>unspent</span>` : "") + `</div>`;
+    const r = t.item, img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
+    const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "") +
+                ((w < 56 || h < 34) ? " mini" : "");
+    const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
+    const lab = `<div class="tlab"><b>${r.qty}&times;</b> ${escapeHtml(r.name)}` +
+                (r.lineT != null ? ` &middot; ${money(r.lineT)}` : "") + `</div>`;
+    return `<div class="${cls}" style="${pos};${bg}" title="${escapeHtml(r.name)}${
+      r.lineT != null ? " — " + money(r.lineT) : ""}">${
+      img ? "" : `<div class="tlab" style="position:static;background:none;padding:4px">${escapeHtml(r.name)}</div>`}${lab}</div>`;
   }).join("");
-  const gridCls = _vbScale ? "vgrid scaled" : "vgrid";
+  return { html, bt, height };
+}
+function buildTreemapHTML(rows){
+  const width = Math.max(320, ($("visual").clientWidth || 600));
+  const mainRows = rows.filter(r => r.board === "main").map(r => ({ ...r, cost: r.lineT || 0 }));
+  const sideRows = rows.filter(r => r.board === "side").map(r => ({ ...r, cost: r.lineT || 0 }));
+  const mainBT = budgetTiles(mainRows, LAST.bM), sideBT = budgetTiles(sideRows, LAST.bS);
+  const bigV = Math.max(mainBT.V, sideBT.V, 1);
+  const bigH = Math.round(Math.min(Math.max(width * 0.58, 240), 460));
+  const k = (width * bigH) / bigV;                 // px per $ — shared by both boards
+  const hFor = V => Math.max(1, Math.round((k * V) / width));   // area = width*h = k*V
+  const section = (title, boardRows, budget, bt) => {
+    if (!bt.V) return "";
+    const h = hFor(bt.V);
+    const box = treemapBox(boardRows, budget, width, h);
+    const meta = bt.over
+      ? `<span class="tmeta over">$${bt.spent.toFixed(2)} spent — OVER by ${money(bt.spent - budget)}</span>`
+      : `<span class="tmeta">$${bt.spent.toFixed(2)} of ${money(budget)} · ${money(bt.free)} unspent</span>`;
+    return `<div class="tmhead"><h2>${title}</h2>${meta}</div>` +
+           `<div class="tmbox" style="height:${h}px">${box.html}</div>`;
+  };
+  return section("Main deck", rows.filter(r => r.board === "main"), LAST.bM, mainBT)
+       + section("Sideboard", rows.filter(r => r.board === "side"), LAST.bS, sideBT);
+}
+function renderVisual(rows){
   const known = rows.filter(r => r.c && !vIsLand(r.c));
   const curve = [0,0,0,0,0,0,0,0];
   for (const r of known) curve[Math.min(7, Math.round(vCmc(r.c)))] += r.qty;
@@ -1045,21 +1166,53 @@ function renderVisual(rows){
   const pie = Object.entries(colC).filter(([,v]) => v > 0).map(([k,v]) =>
     `<span class="pip"><span class="sw" style="background:${VCOL[k][0]}"></span>${VCOL[k][1]} ${v}</span>`).join("");
   const miss = rows.filter(r => !r.c).length;
-  $("visual").innerHTML =
-    `<h2>Visual breakdown</h2>` +
-    `<label class="vctrl"><input type="checkbox" id="vScaleByCost"${_vbScale?" checked":""}>` +
-      ` Scale cards by line cost (qty &times; unit)</label>` +
+
+  // Uniform-grid builder (the default layout).
+  const gridCards = side => rows.filter(r => r.board === side).map(r => {
+    const img = vImg(r.c);
+    return `<div class="vcard${img ? "" : " miss"}">` +
+      (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
+           : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
+      `<div class="vq">${r.qty}&times;</div>` +
+      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}` +
+        (r.lineT != null ? ` <span style="opacity:.6">/ ${money(r.lineT)}</span>` : "") +
+      `</div></div>`;
+  }).join("");
+
+  const controls =
+    `<div class="vctrl">` +
+      `<label>Layout <select id="vLayout">` +
+        `<option value="grid"${_vbLayout==="grid"?" selected":""}>Uniform grid</option>` +
+        `<option value="treemap"${_vbLayout==="treemap"?" selected":""}>Cost treemap</option>` +
+      `</select></label>` +
+      `<label id="vFillWrap"${_vbLayout==="treemap"?"":' style="display:none"'}>Fill <select id="vFill">` +
+        `<option value="cover"${_vbFill==="cover"?" selected":""}>Crop to fill</option>` +
+        `<option value="contain"${_vbFill==="contain"?" selected":""}>Whole card</option>` +
+        `<option value="art"${_vbFill==="art"?" selected":""}>Art only</option>` +
+      `</select></label>` +
+      (_vbLayout==="treemap"
+        ? `<span class="vbnote">Tile area &prop; line cost; hatched space = unspent budget. $1 is the same size in both decks.</span>`
+        : "") +
+    `</div>`;
+
+  const charts =
     `<div class="vcharts">` +
       `<div class="chart"><h3>Mana curve · non-land, by copies</h3>${curveH}</div>` +
       `<div class="chart"><h3>Price spread · by copies</h3>${bH}` +
         `<h3 style="margin-top:14px">Colours · by copies</h3>` +
         `<div class="pie">${pie || '<span class="vp">&mdash;</span>'}</div></div>` +
-    `</div>` +
-    `<h2>Main deck</h2><div class="${gridCls}">${grid("main") || '<span class="vp">&mdash;</span>'}</div>` +
-    (rows.some(r => r.board === "side")
-      ? `<h2>Sideboard</h2><div class="${gridCls}">${grid("side")}</div>` : "") +
-    (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts.</p>` : "");
-  $("visual").classList.remove("hidden");
+    `</div>`;
+
+  $("visual").classList.remove("hidden");   // un-hide BEFORE the treemap measures width
+  const body = _vbLayout === "treemap"
+    ? buildTreemapHTML(rows)
+    : `<h2>Main deck</h2><div class="vgrid">${gridCards("main") || '<span class="vp">&mdash;</span>'}</div>` +
+      (rows.some(r => r.board === "side")
+        ? `<h2>Sideboard</h2><div class="vgrid">${gridCards("side")}</div>` : "");
+
+  $("visual").innerHTML =
+    `<h2>Visual breakdown</h2>` + controls + charts + body +
+    (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts/treemap.</p>` : "");
 }
 async function showVisual(){
   if (!LAST){ return; }
@@ -1102,12 +1255,11 @@ async function showVisual(){
     b.textContent = "Show visual breakdown";
   } finally { b.disabled = false; }
 }
-// Toggle the size-scaled grid without re-fetching Scryfall data.
+// Layout / fill selectors re-render from the cached Scryfall rows — no API call.
 document.addEventListener("change", e => {
-  if (e.target && e.target.id === "vScaleByCost"){
-    _vbScale = !!e.target.checked;
-    if (_vbRows) renderVisual(_vbRows);
-  }
+  if (!e.target) return;
+  if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
 });
 
 /* ---- editable output (beta item 2) ---------------------------------
