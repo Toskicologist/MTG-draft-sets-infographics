@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTG Budget Deckbuilder</title>
+<meta property="og:title" content="MTG Budget Deckbuilder">
+<meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
+<meta property="og:type" content="website">
+<!--
+  MTG Budget Deckbuilder (v3.6.0)
+
+  Changelog:
+  v3.6.0 (2026-06-04T22:54:22Z) - Promoted v3.6.0-beta.1..beta.6 to main.
+                        Headline changes since v3.5.0: the visual breakdown is
+                        now ALWAYS ON and live (charts + treemap update on every
+                        edit; Scryfall is only queried for printings not already
+                        cached and only after a short idle, so typing never
+                        fetches and qty/remove/add re-render from cache); mana
+                        curve / price spread / colours moved ABOVE the table as
+                        compact bars; treemap shows main & sideboard SIDE BY SIDE
+                        when wide (boxes top-align); a single consistent budget
+                        visual — the box is the BUDGET (constant), unspent is the
+                        empty remainder, and OVER budget spills into a red strip
+                        below a dashed budget line (height ∝ over-spend, capped);
+                        "Art only" default fill; tile/grid hover popup + click to
+                        Scryfall; single-slash DFC parse; inline per-row Resolve
+                        button; and a responsive table-overlap fix. See the
+                        v3.6.0-beta.* entries below for the full detail.
+  v3.6.0-beta.6 (2026-06-04T22:45:46Z) - Two fixes:
+                        - Treemap header meta: when the full "$X of $Y · $Z
+                          OVER/unspent" would clip, it now drops the prefix and
+                          shows just the short form ("$Z OVER" / "$Z unspent")
+                          instead of an ellipsised line.
+                        - Board table overlap: the responsive grid's lower bound
+                          (340px) was SMALLER than a board table's real
+                          min-content width (~399px measured), so at medium
+                          widths a squeezed table overflowed its column and
+                          overlapped its neighbour. Raised the bound to 430px
+                          (min-content + buffer) so the grid wraps to one column
+                          before that can happen, and added overflow-x:auto on
+                          the table containers as a belt-and-braces for unusually
+                          long card names.
+  v3.6.0-beta.5 (2026-06-04T22:28:33Z) - Side-by-side boxes now START at the
+                        same Y. The board header (title + "$X of $Y · …") was
+                        wrapping to a 2nd line on the narrower board (longer
+                        over-budget meta), making that header taller so its box
+                        sat lower. Header is now kept to ONE line (nowrap; the
+                        meta ellipsises on a very narrow box), so both headers
+                        are equal height and the boxes top-align. Verified
+                        in-browser (both box tops equal).
+  v3.6.0-beta.4 (2026-06-04T22:12:38Z) - Rework the budget visual language to a
+                        single consistent metaphor (was: under=hatched space,
+                        over=red L-wash — felt inconsistent; prior art = bullet
+                        graph / thermometer-past-goal). Now the box is the BUDGET
+                        (constant size, area ∝ budget; $1 = equal area in both
+                        boards). UNDER budget: cards in a square-ish region,
+                        leftover L is empty = unspent. OVER budget: the budget
+                        box fills and the spend OVERFLOWS into a red strip BELOW
+                        a dashed "budget" line (always the bottom — answers
+                        "top or bottom?"); strip height ∝ over-spend, capped at
+                        2.6× so a wildly-over deck stays usable ("$X OVER" still
+                        reports the true amount). Side-by-side boxes now size by
+                        BUDGET (constant footprint) and the over board spills
+                        below the shared budget line. Verified in-browser
+                        (side-by-side + stacked, over/under, cap, charts).
+  v3.6.0-beta.3 (2026-06-04T18:26:51Z) - Fix side-by-side wrongly wrapping to a
+                        second row. The fit math assumed each board's flex item
+                        was exactly its box width, but a long HEADER (e.g.
+                        "$31 spent — OVER by $6" on a small over-budget board)
+                        was wider than a narrow box, so the item overflowed and
+                        forced a wrap (it "won't fit even at full width" for some
+                        price/size combos). Now each unit is pinned to its box
+                        width and the header wraps instead; also reserves more
+                        horizontal slack (flex gap + borders + rounding).
+  v3.6.0-beta.2 (2026-06-04T18:20:01Z) - Fix regressions from beta.1's side-by-
+                        side layout + tweak the over-budget label:
+                        - Side-by-side boxes were sized to FILL the row, which
+                          made the bigger (main) box wide-short — bringing back
+                          wide-short tiles and a rectangular (not L-shaped)
+                          unspent region. Now the shared HEIGHT is chosen so the
+                          larger box stays square-ish (≈1.09 aspect); on very
+                          wide windows the widths shrink (keeping the ∝-value
+                          ratio) and the row centres, instead of going wide-short.
+                          Restores the square card-region + L-shaped unspent.
+                        - Over-budget red label: amount FIRST, "OVER" the SAME
+                          size, on one line where it fits (wraps only if not).
+                        (The under=hatched / over=red-wash visual language is
+                        under review — see notes; this is an interim fix.)
+  v3.6.0-beta.1 (2026-06-04T17:48:41Z) - Big visual/UX pass:
+                        - Visual breakdown is now ALWAYS ON and live: charts +
+                          treemap/grid update on every edit. Scryfall is queried
+                          only for printings not already cached, and only after
+                          a short idle, so typing a name letter-by-letter never
+                          fetches (a half-typed name has no set/collector_number
+                          so it's skipped); a paste / newly-resolved card fetches
+                          once (batched, incremental); qty +/- / remove / add of
+                          a known card re-render purely from cache (zero calls).
+                          Removed the "Show visual breakdown" button + note.
+                        - Mana curve / price spread / colours moved ABOVE the
+                          table as compact vertical-bar charts, computed with the
+                          table (price spread instant from CDN; curve/colours
+                          fill in when enrich lands).
+                        - Treemap: main & sideboard shown SIDE BY SIDE when the
+                          window is wide enough (shared height, width ∝ value, so
+                          $1 stays equal-area across both); stacks when narrow.
+                          Box width capped to the container.
+                        - "Art only" is now the default fill.
+                        - Over budget: the box grows to the spend; a budget guide
+                          line marks the budget level and a translucent RED wash
+                          covers the excess region (area ∝ over-spend).
+                        - Treemap tiles & grid cards: hover = full-card popup,
+                          click = open on Scryfall (same robust set+collector
+                          lookup, so split/DFC cards work).
+                        - Parser: single-slash DFC/split exports ("Giant Killer /
+                          Chop Down (ELD) 14") are normalised to canonical "//".
+                        - Unresolved cards get an inline "Resolve" button right in
+                          the table row (resolves just that card).
+                        - Fixed the medium-width table overlap (auto-fit grid that
+                          wraps cleanly instead of a fixed 2-col + breakpoint).
+  v3.5.0-beta.9 (2026-06-04T16:57:05Z) - Renamed the preset button to
+                        "Preset: $25 Budget Modern".
+  v3.5.0-beta.8 (2026-06-04T16:49:32Z) - Title renamed to "MTG Budget
+                        Deckbuilder". Added a "Preset: $25 Budget Modern"
+                        button ($25 main / $10 side / Modern format). Treemap
+                        price text: now single-line (no wrap), sized to fit
+                        the tile WIDTH with a lower minimum (5px) so small
+                        tiles shrink the number instead of wrapping one digit
+                        to a second line. Cost no longer over-reserves vertical
+                        space, so card NAMES show on more tiles (incl. the
+                        smaller sideboard box — same layout logic as main,
+                        just a smaller box because area ∝ its $10 budget).
+  v3.5.0-beta.7 (2026-06-04T11:24:22Z) - Treemap: fix illegibly tall/thin tiles
+                        (from beta.6's vertical cut + over-strong bias).
+                        - Cards now fill a SQUARE-ish region (area = spent/V of
+                          the box) anchored top-left, instead of a narrow
+                          full-height column — squarify has room in both axes
+                          so tiles stay legible (square/portrait), maintaining
+                          a sensible minimum width. The leftover is an L-shaped
+                          empty region that simply shows the box's hatched
+                          "unspent" background (the empty section no longer
+                          needs to be a rectangle); "$X unspent" is centred in
+                          the larger empty strip.
+                        - WIDE_BIAS 0.5 -> 0.8 (less aggressive; avoids both
+                          wide AND extreme-tall tiles).
+                        - Cost text now WRAPS (sized to fit ~2 lines) so a
+                          narrow tile still shows a readable price.
+  v3.5.0-beta.6 (2026-06-03T22:44:07Z) - Treemap: stop wide-short card tiles.
+                        (1) Free/unspent space is now pulled OUT of the
+                        squarify and given the leftover region directly (a
+                        vertical cut: cards fill the left at width = spent/
+                        budget, full height; unspent is the right strip). The
+                        free chunk was the largest value and was hogging a big
+                        square and forcing the cards into thin leftovers — now
+                        the CARDS get a clean, tall region and squarify makes
+                        square-ish tiles, while the odd leftover shape lands in
+                        the empty area where it doesn't matter. (2) Boxes are
+                        now square-ish (aspect 1.45 -> 1.1) so nothing is
+                        substantially wider than tall. Area still ∝ budget and
+                        $1 still equal-area across both boards. (3) Squarify now
+                        uses an ASYMMETRIC aspect penalty (WIDE_BIAS) so a wide
+                        tile costs far more than a tall one — the packer biases
+                        to portrait/square and avoids wide-short tiles (cards
+                        are portrait anyway).
+  v3.5.0-beta.5 (2026-06-03T22:02:45Z) - Treemap overhaul per feedback:
+                        - Thin WHITE 1px lines around each card box (black bg).
+                        - Squarer boxes: each board box now scales BOTH
+                          dimensions by sqrt(value) to a fixed ~1.45:1 aspect
+                          (area still ∝ budget, $1 still equal-area in both),
+                          so the sideboard is a smaller *similar* box instead
+                          of a wide-short strip — far fewer wide-short tiles.
+                        - Labels copied from the pauper poster: COST is sized
+                          by tile WIDTH and centred (a big number no longer
+                          forces the name out), and the NAME wraps below and
+                          is shrunk-to-fit by measuring scrollHeight
+                          (fitTreemapLabels) so it shows whenever there's room.
+                        - Visual breakdown now DEFAULTS to the treemap and
+                          AUTO-OPENS once on load (no click needed).
+  v3.5.0-beta.4 (2026-06-03T21:43:59Z) - Treemap tile polish: stronger solid
+                        borders (2px accent box border + dark tile borders
+                        with a light inner edge) so tiles read as distinct
+                        boxes. Tile label is now a bottom-anchored column —
+                        the COST sits at the very bottom and is ALWAYS shown,
+                        scaled to the tile (capped by width & height); the
+                        NAME wraps over multiple lines above it (line-clamped)
+                        and is clipped by the tile's overflow when space runs
+                        out, so the price is never lost while a long name
+                        gracefully truncates. Cost & name font sizes scale
+                        independently per tile.
+  v3.5.0-beta.3 (2026-06-03T18:59:45Z) - Visual breakdown: replaced the
+                        "scale cards by line cost" width toggle with a proper
+                        COST TREEMAP (squarified, WinDirStat-style). Layout
+                        dropdown: "Uniform grid" | "Cost treemap". In treemap
+                        mode each card tile's AREA is proportional to its line
+                        cost (qty x unit); the canvas is the budget, so unspent
+                        budget shows as a hatched "free space" tile (over
+                        budget => no free tile + red OVER label). $1 occupies
+                        the SAME pixel area in both the main & sideboard boxes
+                        (shared px-per-$ constant). New "Fill" dropdown: Crop
+                        to fill (cover, default) | Whole card (contain) | Art
+                        only (art_crop). Treemap algorithm ported from
+                        mtg/pauper/gen-poster.mjs and unit-tested (138/138) in
+                        _scratch/treemap-budget.*. Layout/fill toggles
+                        re-render from cached Scryfall data — no extra API
+                        calls.
+  v3.5.0-beta.2 (2026-06-03T13:05:44Z) - FIX: visual breakdown failed to fetch
+                        the image for split / DFC / adventure cards (e.g.
+                        "Wear // Tear") when the row name was the front-face
+                        alias ("Wear"). The previous code sent {name: ...}
+                        identifiers to /cards/collection, which does EXACT
+                        name matching — front-face aliases never resolved.
+                        Now sends {set, collector_number} identifiers (same
+                        layout-agnostic basis as the working table hover
+                        popup) and keys the response back under both the card
+                        name AND set+collector, so the lookup is reliable for
+                        every layout. Unpriced rows (no set/cn) still use
+                        {name} as a best-effort fallback.
+  v3.5.0-beta.1 (2026-06-02T16:53:10Z) - Visual breakdown: new "Scale cards
+                        by line cost" toggle. When on, each card image in the
+                        grid is sized by its line total ($qty x unit) using a
+                        sqrt scale (so expensive cards visibly dominate
+                        without crushing cheap ones to invisibility); off
+                        keeps the uniform auto-fill grid. Toggle re-renders
+                        from the cached Scryfall data — no extra API call.
+  v3.3.0-beta.3 (2026-05-19T22:23:02Z) - Two things:
+                        (a) FIX: in beta.2 the +/- steppers and the remove ✕
+                        corrupted all OTHER card lines, replacing them with
+                        the literal string "keep". `_walkDeck` interpreted any
+                        non-"remove" string as a replacement line; the callers
+                        returned "keep" as a sentinel which got pushed
+                        verbatim. Replaced the "keep" sentinel with `null` in
+                        the three callers; `_walkDeck` already falls through
+                        on null/undefined. Added a regression unit test that
+                        covers other-card lines.
+                        (b) Visual restructure mirroring main v3.3.1: project
+                        cross-links + TCGcsv/Scryfall credits + contact line
+                        moved into a graphic-background header (shared image
+                        overlay), TCG Mid info merged into the top "Where do
+                        the prices come from?" collapsible, "— no button"
+                        wording stripped, footer removed.
+  v3.3.0-beta.2 (2026-05-19T16:33:37Z) - Corrected scope of the original
+                        list's item 2. Item 2 is the EDITABLE OUTPUT TABLE:
+                        per-row −/+ quantity steppers, a remove ✕, and an
+                        "Add" box per board. Every edit does a targeted line
+                        edit on the decklist text (comments / ignored basics /
+                        other lines untouched) then recomputes, so the table
+                        and the decklist textarea ALWAYS match. Spelling
+                        correction stays button-gated (now also shipped in
+                        main v3.3.0). Items 3 (visual breakdown) and 4 (share
+                        link) unchanged from beta.1.
+  v3.3.0-beta.1 (2026-05-19T15:53:53Z) - BETA sandbox (initial): button-gated
+                        spelling; "Show visual breakdown" (card grid + mana /
+                        price / colour charts, one batched Scryfall call);
+                        self-contained URL share link. NOTE: this build had
+                        item 2 mis-scoped as the spelling feature — corrected
+                        in beta.2.
+  v3.2.0 (2026-05-19T15:34:54Z) - Typo tolerance. A slightly misspelled card
+                        ("lighting bol", "lightening bolt") is now matched to
+                        the nearest card in the daily index by a bounded
+                        Levenshtein scan (zero API; requires a UNIQUE nearest
+                        match so an ambiguous typo is never silently changed).
+                        The totals/tables update to the corrected card
+                        immediately and a dismissible notice states each
+                        change; the decklist text itself is rewritten too, but
+                        only while the box isn't focused (deferred to blur) so
+                        it never fights mid-typing. Scryfall-resolved cards
+                        also adopt their canonical spelling.
+  v3.1.0 (2026-05-19) - Guarantee TCGcsv Mid as the only price source: the
+                        opt-in Scryfall "Resolve" path uses Scryfall purely
+                        for card identity (name -> tcgplayer_id) and prices
+                        strictly from the TCGcsv Mid map; removed the dead
+                        Scryfall usd/market price branch entirely. A card
+                        that resolves but has no TCGcsv Mid is now flagged
+                        in red (same prominence as not-format-legal) and
+                        excluded from the total.
+  v3.0.0 (2026-05-19) - Mid-only: removed the TCG Market option and the
+                        Calculate button. Totals recompute live on every
+                        edit (debounced, index-only, ZERO Scryfall). Cards
+                        not in the daily index are flagged with an opt-in
+                        one-click throttled Scryfall "Resolve" (no API spam
+                        while typing). Exports always reflect the screen.
+  v2.6.0 (2026-05-19) - Live preview: in Mid mode the totals/tables update
+                        as you edit (debounced, index-only, ZERO Scryfall
+                        calls; cards not in the index show "Calculate to
+                        price"). Exports stay gated to an explicit Calculate
+                        (the authoritative pass that also resolves fallback
+                        cards). Popup image + card link now use the CHEAPEST
+                        printing's real set/collector (matches the shown set
+                        code) via Scryfall's direct /set/cn endpoint — same
+                        single lazy request; stored image id dropped.
+  v2.5.0 (2026-05-18) - Output is now two columns: each budget box sits
+                        directly above its own deck table (main left, side
+                        right). Export/Copy disabled until a calc matches
+                        the current inputs (no more exporting a stale
+                        report). Added Export .csv.
+  v2.4.0 (2026-05-18) - Mid mode now near-INSTANT: a daily job builds a slim
+                        Scryfall card index (printings + legalities + image)
+                        alongside the TCGcsv price table and publishes both
+                        to an orphan `price-data` branch served via jsDelivr
+                        (per-UTC-day cache key). Mid mode does ZERO per-card
+                        Scryfall calls; anything missing from the index falls
+                        back to a live lookup. `main` no longer carries the
+                        big data files (no repo-history growth).
+  v2.3.0 (2026-05-18) - Ignore-basic-lands toggle (default on). Format
+                        selector (default Modern) — rows not legal in the
+                        chosen format are highlighted red. Optional
+                        colour-coded prices (green->red, default on). Card
+                        names now link to Scryfall with an image hover
+                        popup (zero extra API calls — image captured during
+                        the pricing fetch). Report carries format + basics.
+  v2.2.0 (2026-05-17) - Deck input hardened: split on explicit "Sideboard"
+                        header / "SB:" prefix ONLY (removed the fragile
+                        first-blank-line guess that mis-split maindecks with
+                        section gaps). Added an optional separate Sideboard
+                        box for bare lists with no marker.
+  v2.1.0 (2026-05-17) - Top "prices last updated" banner (reads a tiny
+                        data/tcg-prices-meta.json on load; flags staleness).
+                        Collapsible "Where do the prices come from?" explainer
+                        covering TCG Mid vs Market and what TCGcsv is.
+  v2.0.0 (2026-05-17) - Add true TCGplayer **Mid** price figure (default) via a
+                        once-daily TCGcsv snapshot (scripts/build-tcg-prices.mjs
+                        -> data/tcg-prices.json), keyed by Scryfall tcgplayer_id.
+                        New Price-figure selector: TCG Mid (snapshot) | TCG
+                        Market (Scryfall live). "Prices calculated" stamp +
+                        export filename now use the snapshot's build time for
+                        Mid, live fetch time for Market. Source-aware flags.
+  v1.0.0 (2026-05-16) - Initial: decklist parse, Scryfall cheapest-printing
+                        USD (Market), dual budgets, timestamped export.
+
+  - Parses standard / MTGA / MTGO decklists (mainboard + sideboard).
+  - TCG Mid (median current NM/LP listing), cheapest paper printing,
+    rebuilt daily. Unpriced / not-format-legal / not-in-index cards are
+    flagged, never silently substituted.
+  - Two independent budgets: main deck (default $25) + sideboard (default $10).
+  - Exports .txt/.csv stamped with the snapshot build time.
+-->
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1e2540; --line:#2c3454;
+    --ink:#e8ecf8; --dim:#9aa6c8; --accent:#6ea8ff;
+    --ok:#3ddc97; --bad:#ff6b81; --warn:#ffcf5c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 18px 64px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--dim);margin:0 0 20px;font-size:13px}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+  @media(max-width:840px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  label{display:block;font-size:12px;color:var(--dim);margin:0 0 6px;letter-spacing:.02em;text-transform:uppercase}
+  textarea{width:100%;height:340px;resize:vertical;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  input[type=text],input[type=number]{width:100%;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px}
+  .field{margin-bottom:14px}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  button{cursor:pointer;border:0;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:600}
+  .primary{background:var(--accent);color:#06122b;width:100%}
+  .primary:disabled{opacity:.55;cursor:wait}
+  .ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  .actions{display:flex;gap:10px;margin-top:10px}
+  .actions button{flex:1}
+  /* Lower bound MUST be >= a board table's min-content width (~399px measured)
+     or a squeezed table overflows its column and overlaps its neighbour. 430 =
+     min-content + buffer; below 2×430+gap the grid wraps to one column. */
+  .boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(430px,100%),1fr));
+    gap:20px;margin:18px 0;align-items:start}
+  .board{min-width:0}
+  /* belt-and-braces: an unusually long card name scrolls rather than overlaps */
+  #mainTable,#sideTable{overflow-x:auto}
+  .board .tcard{margin-bottom:12px}
+  .tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;border-left:5px solid var(--line)}
+  .tcard.pass{border-left-color:var(--ok)}
+  .tcard.over{border-left-color:var(--bad)}
+  .tcard h3{margin:0 0 8px;font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+  .tcard .amt{font-size:30px;font-weight:700}
+  .tcard .meta{font-size:13px;color:var(--dim);margin-top:6px}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .badge.pass{background:rgba(61,220,151,.15);color:var(--ok)}
+  .badge.over{background:rgba(255,107,129,.15);color:var(--bad)}
+  table{width:100%;border-collapse:collapse;margin:8px 0 26px;font-size:13px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.flagged td{background:rgba(255,207,92,.07)}
+  tr.illegal td{background:rgba(255,107,129,.13)}
+  tr.illegal td:nth-child(2){color:var(--bad);font-weight:600}
+  .tag{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:6px}
+  .tag.warn{background:rgba(255,207,92,.18);color:var(--warn)}
+  .tag.bad{background:rgba(255,107,129,.18);color:var(--bad)}
+  /* cost color-coding (toggle): green -> red by price */
+  td.c0{color:#3ddc97}
+  td.c1{color:#9be36b}
+  td.c2{color:#ffcf5c}
+  td.c3{color:#ff9d5c}
+  td.c4{color:#ff6b81;font-weight:700}
+  a.cardlink{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--dim)}
+  a.cardlink:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  #cardTip{position:fixed;display:none;z-index:10000;padding:4px;background:#fff;
+    border:2px solid var(--accent);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);
+    pointer-events:none}
+  #cardTip img{display:block;width:240px;height:auto;border-radius:7px}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 2px}
+  .sechead h2{font-size:17px;margin:0}
+  .sechead span{color:var(--dim);font-size:13px}
+  #status{margin:14px 0;color:var(--dim);font-size:13px;min-height:20px}
+  .bar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:6px}
+  .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .15s}
+  .hidden{display:none}
+  .stamp{font-size:13px;color:var(--dim);margin:6px 0 0}
+  footer{margin-top:40px;color:var(--dim);font-size:12px;border-top:1px solid var(--line);padding-top:14px}
+  footer a{word-break:break-word}
+  footer p{margin:0 0 9px;line-height:1.6}
+  footer p:last-child{margin-bottom:0}
+  footer .footlinks{font-size:12.5px}
+  code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+  .updated{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel2);
+    border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;
+    padding:9px 13px;margin:0 0 14px;font-size:13px;color:var(--ink)}
+  .updated b{font-weight:700}
+  .updated .dim{color:var(--dim)}
+  .updated .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+  .updated.stale .dot{background:var(--warn)}
+  .updated.err{border-left-color:var(--warn)}
+  .fixnote{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel2);
+    border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:8px;
+    padding:9px 13px;margin:0 0 14px;font-size:13px;color:var(--ink)}
+  .fixnote .dot{width:7px;height:7px;border-radius:50%;background:var(--warn);
+    display:inline-block;flex:0 0 auto}
+  .fixnote span{flex:1 1 220px}
+  .fixnote .fixx{background:transparent;color:var(--dim);border:0;padding:0 4px;
+    font-size:18px;line-height:1;cursor:pointer;font-weight:700;flex:0 0 auto}
+  .fixnote .fixx:hover{color:var(--ink)}
+  details.explain{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:0 14px;margin:0 0 18px;font-size:13.5px}
+  details.explain[open]{padding-bottom:6px}
+  details.explain summary{cursor:pointer;padding:12px 0;font-weight:600;color:var(--ink);list-style:none}
+  details.explain summary::-webkit-details-marker{display:none}
+  details.explain summary::before{content:"\25B8 ";color:var(--accent)}
+  details.explain[open] summary::before{content:"\25BE ";}
+  details.explain p{margin:0 0 10px;color:var(--dim);line-height:1.6}
+  details.explain p:first-of-type{margin-top:2px}
+  details.explain strong{color:var(--ink)}
+  /* ---- site header (matches the other MTG project pages) ------- */
+  .site-header{position:relative;border-radius:12px;overflow:hidden;
+    margin:0 0 22px;box-shadow:0 4px 6px rgba(0,0,0,.18);
+    background-image:url('../assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+    background-size:cover;background-position:center;background-repeat:no-repeat}
+  .site-header::before{content:'';position:absolute;inset:0;z-index:1;
+    background:linear-gradient(135deg,rgba(102,126,234,.78) 0%,rgba(118,75,162,.78) 100%)}
+  .site-header .header-content{position:relative;z-index:2;padding:26px 28px;color:#fff}
+  .site-header h1{color:#fff;font-size:28px;margin:0 0 6px;text-align:center;
+    text-shadow:1px 1px 3px rgba(0,0,0,.4);font-weight:700}
+  .site-header h1 span{color:rgba(255,255,255,.78);font-size:12px;font-weight:400;
+    text-shadow:none}
+  .site-header .subtitle{text-align:center;color:rgba(255,255,255,.95);
+    font-size:14px;margin:0 0 14px;line-height:1.5}
+  .site-header .data-info{background:rgba(255,255,255,.13);padding:11px 14px;
+    border-radius:8px;text-align:center;font-size:12.5px;line-height:1.7;
+    color:rgba(255,255,255,.95)}
+  .site-header .data-info a{color:#fff;text-decoration:underline}
+  .site-header .data-info a:hover{opacity:.85}
+  .site-header .data-info strong{color:#fff;font-weight:600}
+  .site-header .data-info .sep{opacity:.45;margin:0 6px}
+  .site-header .data-info .row{margin-top:7px}
+  @media(max-width:560px){
+    .site-header .header-content{padding:20px 16px}
+    .site-header h1{font-size:22px}
+  }
+  /* ---- visual breakdown (always-on) ---- */
+  .vbnote{color:var(--dim);font-size:12px}
+  #visual{margin:14px 0 8px}
+  #visual h2{font-size:17px;margin:22px 0 10px}
+  #visual h3{font-size:13px;color:var(--dim);text-transform:uppercase;
+    letter-spacing:.04em;margin:0 0 10px}
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
+    gap:12px}
+  .vctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--dim);
+    font-size:12.5px;margin:-2px 0 12px;user-select:none}
+  .vctrl label{display:inline-flex;align-items:center;gap:6px;margin:0}
+  .vctrl select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
+    border-radius:7px;padding:4px 8px;font-size:12.5px}
+  /* ---- cost treemap (beta v3.5.0-beta.3) ---- */
+  /* Box bg IS the hatched "unspent" texture; card tiles (opaque) sit on top in
+     a square-ish region, so the leftover empty space (an L-shape) reads as the
+     unspent budget without needing its own rectangle. */
+  .tmbox{position:relative;border:1px solid rgba(255,255,255,.85);
+    border-radius:8px;overflow:hidden;margin:0 auto 16px;background:#05070e;
+    background-image:repeating-linear-gradient(45deg,
+      rgba(255,255,255,.05),rgba(255,255,255,.05) 9px,
+      rgba(255,255,255,.10) 9px,rgba(255,255,255,.10) 18px)}
+  a.tmtile,a.vcard{text-decoration:none;color:inherit;cursor:pointer;display:block}
+  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.7);
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    background-color:var(--panel2)}
+  .tmtile.contain{background-size:contain;background-color:#0a0d18}
+  /* pauper-poster label: cost centred & sized to the tile; WRAPS over lines so
+     a tall/thin tile still gets a readable number. Name wraps below and is
+     shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
+  .tmtile .tcost{position:absolute;left:0;width:100%;text-align:center;
+    transform:translateY(-50%);font-weight:800;line-height:1;color:#fff;
+    pointer-events:none;white-space:nowrap;
+    text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
+  .tmtile .tnmwrap{position:absolute;left:0;width:100%;display:flex;
+    align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none}
+  .tmtile .tnm{color:#fff;font-weight:700;line-height:1.13;text-align:center;
+    word-break:break-word;overflow-wrap:break-word;padding:0 3px 2px;max-width:100%;
+    text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
+  /* unspent label, centred in the largest empty strip (no border/bg — the box
+     hatch shows through as the "empty" region). */
+  .tmfree{position:absolute;display:flex;align-items:center;justify-content:center;
+    text-align:center;color:var(--ink);pointer-events:none;
+    text-shadow:0 0 4px #000,0 0 8px #000}
+  /* over-budget: red wash over the excess region + budget boundary guide */
+  .tmover{position:absolute;background:rgba(220,38,38,.42);display:flex;
+    align-items:center;justify-content:center;text-align:center;color:#fff;
+    pointer-events:none;text-shadow:0 0 4px #000,0 0 8px #000;
+    box-shadow:inset 0 0 0 1px rgba(255,90,90,.55)}
+  .tmline{position:absolute;background:rgba(255,255,255,.92);pointer-events:none;
+    z-index:3;box-shadow:0 0 4px rgba(0,0,0,.7)}
+  .tmline.v{width:2px}
+  .tmline.h{height:2px}
+  /* dashed "budget level" line; overspend (the red .tmover strip) sits below it */
+  .tmbudgetline{position:absolute;left:0;height:0;z-index:4;pointer-events:none;
+    border-top:2px dashed rgba(255,255,255,.95);
+    filter:drop-shadow(0 0 3px rgba(0,0,0,.8))}
+  .tmbudgetline span{position:absolute;right:4px;top:3px;font-size:10px;font-weight:700;
+    letter-spacing:.03em;color:#fff;background:rgba(0,0,0,.6);padding:0 5px;border-radius:3px}
+  /* Header is kept to ONE line (title + meta), so both boards' headers are the
+     same height and their boxes start at the same Y when side by side. The meta
+     shrinks with an ellipsis on a narrow box instead of wrapping to a 2nd line. */
+  .tmhead{display:flex;align-items:baseline;justify-content:space-between;
+    flex-wrap:nowrap;gap:10px;margin:18px 0 8px;min-width:0}
+  .tmhead h2{margin:0;flex:0 0 auto;white-space:nowrap;min-width:0}
+  .tmhead .tmeta{color:var(--dim);font-size:12.5px;flex:0 1 auto;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tmhead .tmeta.over{color:var(--bad);font-weight:700}
+  .tmrow{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+  .tmunit{flex:0 0 auto;min-width:0;max-width:100%}
+  .tmrow .tmbox{margin-bottom:0}
+  .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:8px;text-align:center}
+  .vcard img{width:100%;height:auto;border-radius:7px;display:block;
+    background:var(--panel2);aspect-ratio:488/680}
+  .vcard .vq{font-weight:700;font-size:13px;margin:6px 0 1px}
+  .vcard .vp{color:var(--dim);font-size:12px}
+  .vcard.miss{display:flex;flex-direction:column;justify-content:center;
+    min-height:170px;color:var(--dim);font-size:12px}
+  .vcharts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:6px 0 8px}
+  @media(max-width:760px){.vcharts{grid-template-columns:1fr}}
+  .chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:14px}
+  .chart .bar{display:flex;align-items:center;gap:8px;margin:5px 0;height:auto;
+    background:none;border-radius:0;overflow:visible}
+  .chart .bl{width:54px;color:var(--dim);font-size:12px;text-align:right;
+    flex:0 0 54px}
+  .chart .bt{flex:1;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .chart .bt>i{display:block;height:15px;background:var(--accent);width:0}
+  .chart .bv{width:34px;font-size:12px;font-variant-numeric:tabular-nums;
+    flex:0 0 34px}
+  .pie{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .pip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block;
+    border:1px solid rgba(255,255,255,.18)}
+  /* ---- compact charts above the table (computed with the table) ---- */
+  .chartstrip{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;
+    margin:0 0 18px;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:12px 16px}
+  .vchart{flex:1 1 200px;min-width:150px}
+  .vchart h4{font-size:11px;color:var(--dim);text-transform:uppercase;
+    letter-spacing:.05em;margin:0 0 9px;font-weight:600}
+  .vchart .cols{display:flex;align-items:flex-end;gap:5px;height:66px}
+  .vchart .col{flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-end;height:100%;min-width:0}
+  .vchart .col>b{font-size:10px;color:var(--dim);margin-bottom:2px;font-weight:600;
+    font-variant-numeric:tabular-nums;line-height:1}
+  .vchart .col>i{display:block;width:100%;max-width:24px;background:var(--accent);
+    border-radius:3px 3px 0 0;min-height:2px;transition:height .15s}
+  .vchart .col>.cl{font-size:10px;color:var(--dim);margin-top:4px;line-height:1;
+    white-space:nowrap}
+  .vchart .pie{margin-top:2px}
+  @media(max-width:560px){.chartstrip{gap:14px}.vchart{flex-basis:140px}}
+  /* ---- editable output (beta item 2) ---- */
+  .qctl{display:inline-flex;align-items:center;gap:7px}
+  .qctl b{min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
+  .qbtn,.xbtn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);
+    color:var(--ink);border-radius:6px;padding:0;width:22px;height:22px;
+    font-size:14px;font-weight:700;line-height:1}
+  .qbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .xbtn{color:var(--dim);font-weight:700}
+  .xbtn:hover{border-color:var(--bad);color:var(--bad)}
+  .rsv{cursor:pointer;border:1px solid var(--warn);background:transparent;
+    color:var(--warn);border-radius:6px;padding:1px 8px;font-size:11px;
+    font-weight:700;white-space:nowrap;vertical-align:middle;margin-left:2px}
+  .rsv:hover{background:var(--warn);color:#1a1205}
+  .addcard{display:flex;gap:8px;margin:2px 0 26px}
+  .addcard .addinput{flex:1;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+  .addcard .addbtn{flex:0 0 auto;padding:8px 14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <div class="header-content">
+      <h1>MTG Budget Deckbuilder <span>v3.6.0 &middot; 2026-06-04 22:54 UTC</span></h1>
+      <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
+      <div class="data-info">
+        <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
+        <strong>Card info &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a> &middot; <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener">Support them on Patreon</a>
+        <div class="row">
+          Also see:
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener">SOS Under/Overrated</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener">ECL Under/Overrated</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener">17 Lands Quiz</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener">Card Knowledge Quiz</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html" target="_blank" rel="noopener">Multi-Set Color Wheel</a> <span class="sep">|</span>
+          <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener">All projects</a>
+        </div>
+        <div class="row">
+          Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener">Reddit</a>.
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
+
+  <details class="explain">
+    <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
+    <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure (distinct from TCGplayer's <em>Market</em> price, which is an average of recent <em>completed sales</em>).</p>
+    <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run mirror of TCGplayer's public pricing &mdash; refreshed once a day (~20:00&nbsp;UTC). A scheduled job rebuilds the price table <em>and</em> a slim card index (printings, legalities, image) from Scryfall's bulk data, and publishes both to a CDN. The page loads those two files once, so <strong>Mid mode does zero per-card API calls and is near-instant</strong>. The banner above shows exactly when the data was built; every export carries that same timestamp.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. <strong>Indicative prices, not checkout quotes.</strong> Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit. Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
+  </details>
+
+  <div class="grid">
+    <div class="panel">
+      <label for="decklist">Decklist</label>
+      <p class="sub" style="margin:-2px 0 8px">Totals update <strong>live as you type</strong>. Only lines that <strong>start with a quantity</strong> (e.g. <code>4 Lightning Bolt</code>) are counted; any line without a leading number is ignored.</p>
+      <textarea id="decklist" spellcheck="false" placeholder="4 Lightning Bolt
+4 Monastery Swiftspear
+2 Mishra's Bauble
+20 Mountain
+...
+
+Sideboard
+3 Smash to Smithereens
+2 Searing Blaze">4 Lightning Bolt
+4 Monastery Swiftspear
+4 Soul-Scar Mage
+4 Goblin Guide
+20 Mountain
+
+Sideboard
+3 Smash to Smithereens
+2 Roiling Vortex</textarea>
+      <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. The boards split on a line reading <em>Sideboard</em> or an <code>SB:</code> prefix &mdash; paste a full export as-is. <code>//</code> / <code>#</code> lines ignored.</p>
+
+      <label for="sideboard" style="margin-top:16px">Sideboard <span style="text-transform:none;letter-spacing:0">(optional &mdash; only if your list has no <em>Sideboard</em> marker)</span></label>
+      <textarea id="sideboard" spellcheck="false" style="height:120px" placeholder="3 Smash to Smithereens
+2 Roiling Vortex
+(everything here counts as sideboard)"></textarea>
+      <p class="sub" style="margin:8px 0 0">Anything here is added to the sideboard total. Leave empty if your decklist above already contains a <em>Sideboard</em> / <code>SB:</code> section.</p>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <button class="ghost" id="presetBtn" type="button" style="width:100%">Preset: $25 Budget Modern</button>
+        <p class="sub" style="margin:6px 0 0">Sets main $25, sideboard $10, format Modern.</p>
+      </div>
+      <div class="field">
+        <label for="deckname">Deck name (for export)</label>
+        <input type="text" id="deckname" value="Budget Modern Deck">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="budgetMain">Main budget $</label>
+          <input type="number" id="budgetMain" value="25" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="budgetSide">Side budget $</label>
+          <input type="number" id="budgetSide" value="10" min="0" step="1">
+        </div>
+      </div>
+      <div class="field">
+        <label for="format">Format (legality check)</label>
+        <select id="format" style="width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px">
+          <option value="standard">Standard</option>
+          <option value="pioneer">Pioneer</option>
+          <option value="modern" selected>Modern</option>
+          <option value="legacy">Legacy</option>
+          <option value="vintage">Vintage</option>
+          <option value="pauper">Pauper</option>
+          <option value="premodern">Premodern</option>
+          <option value="commander">Commander</option>
+          <option value="__none">(no legality check)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="cheapest" checked style="width:auto;vertical-align:-2px"> Use cheapest paper printing</label>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="ignoreBasics" checked style="width:auto;vertical-align:-2px"> Ignore basic lands (Plains/Island/&hellip;)</label>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="colorCost" checked style="width:auto;vertical-align:-2px"> Colour-code prices (green&rarr;red)</label>
+      </div>
+      <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
+      <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
+      <div class="actions">
+        <button class="ghost" id="exportBtn" disabled>Export .txt</button>
+        <button class="ghost" id="csvBtn" disabled>Export .csv</button>
+        <button class="ghost" id="copyBtn" disabled>Copy report</button>
+      </div>
+      <button class="ghost" id="shareBtn" style="width:100%;margin-top:10px">Copy share link</button>
+      <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the whole list, budgets &amp; options are encoded in the URL itself (no account, no server).</p>
+      <div id="status"></div>
+      <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
+    </div>
+  </div>
+
+  <div id="fixNote" class="fixnote hidden"></div>
+
+  <div id="results" class="hidden">
+    <p class="stamp" id="stamp"></p>
+    <div id="charts"></div>
+    <div class="boards">
+      <div class="board">
+        <div class="tcard" id="tMain">
+          <h3>Main deck</h3>
+          <div class="amt" id="mainAmt">$0.00</div>
+          <div class="meta" id="mainMeta"></div>
+        </div>
+        <div id="mainTable"></div>
+      </div>
+      <div class="board">
+        <div class="tcard" id="tSide">
+          <h3>Sideboard</h3>
+          <div class="amt" id="sideAmt">$0.00</div>
+          <div class="meta" id="sideMeta"></div>
+        </div>
+        <div id="sideTable"></div>
+      </div>
+    </div>
+
+    <div id="visual"></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+const SCRYFALL = "https://api.scryfall.com";
+const SLEEP = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+const money = n => "$" + Number(n).toFixed(2);
+
+let lastReport = null; // { text, filename } — .txt report (always current)
+let lastCsv = null;    // { text, filename } — .csv export (always current)
+
+// Result-affecting inputs -> a debounced recompute fires on any change.
+const RECOMPUTE_INPUTS = ["decklist","sideboard","budgetMain","budgetSide",
+  "deckname","format","cheapest","ignoreBasics","colorCost"];
+function setExportsEnabled(on){
+  for (const id of ["exportBtn","csvBtn","copyBtn"]) $(id).disabled = !on;
+}
+
+/* ---- decklist parsing ---------------------------------------------- */
+// One "<qty> <name>" line -> {qty,name}, or null. Strips MTGA/MTGO cruft.
+function parseCardLine(line){
+  const m = line.match(/^(\d+)\s*[xX]?\s+(.+?)\s*$/);
+  if (!m) return null;
+  const qty = parseInt(m[1],10);
+  const name = m[2]
+    .replace(/\s+\*[A-Za-z]\*\s*$/,"")                  // trailing *F* foil marker
+    .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+\S+)?\s*$/,"")  // (SET) 123
+    .replace(/\s*\[[^\]]*\]\s*$/,"")                     // [tags]
+    .replace(/\s*\/+\s*/g, " // ")                       // DFC/split: "A / B" or "A/B" -> canonical "A // B"
+    .trim();
+  if (!name || !qty) return null;
+  return { qty, name };
+}
+function addTo(map, name, qty){ map.set(name, (map.get(name)||0) + qty); }
+
+// Main paste box: split ONLY on an explicit "Sideboard" header or an "SB:"
+// line prefix (no blank-line guessing — blank lines are ignored). Standard
+// exports all carry one of these markers, so paste-and-go still works.
+function parseDecklist(raw){
+  const main = new Map(), side = new Map();
+  let board = main;
+  for (let rawLine of (raw||"").split(/\r?\n/)){
+    let line = rawLine.trim();
+    if (!line || /^(\/\/|#)/.test(line)) continue;
+    if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(line)) { board = main; continue; }
+    if (/^(sideboard)\s*:?\s*$/i.test(line)) { board = side; continue; }
+    let sb = false;
+    if (/^sb:\s*/i.test(line)){ sb = true; line = line.replace(/^sb:\s*/i,""); }
+    const c = parseCardLine(line);
+    if (c) addTo(sb ? side : board, c.name, c.qty);
+  }
+  return { main, side };
+}
+
+// Optional sideboard box: every card line is sideboard, no markers needed.
+function parseSideboardBox(raw){
+  const side = new Map();
+  for (const rawLine of (raw||"").split(/\r?\n/)){
+    const line = rawLine.trim();
+    if (!line || /^(\/\/|#)/.test(line) || /^(sideboard)\s*:?\s*$/i.test(line)) continue;
+    const c = parseCardLine(line.replace(/^sb:\s*/i,""));
+    if (c) addTo(side, c.name, c.qty);
+  }
+  return side;
+}
+
+/* ---- daily data from the jsDelivr CDN (orphan price-data branch) ----
+   tcg-prices.json  { prices:{ productId: Mid } }
+   cards-index.json { fmt:[...], cards:{ name: {p:[[id,set,cn]], l, i} } }
+   data-meta.json   { generatedAt, fmt, counts }
+   Per-UTC-day query key => fresh each day, cached within the day.        */
+const CDN = "https://cdn.jsdelivr.net/gh/Toskicologist/MTG-draft-sets-infographics@price-data";
+const LEGWORD = { l:"legal", n:"not_legal", b:"banned", r:"restricted", "-":null };
+const utcDay = () => new Date().toISOString().slice(0,10);
+let _cdn = null; // { prices, index, meta }
+async function loadCdn(){
+  if (_cdn) return _cdn;
+  const d = "?d=" + utcDay();
+  const grab = async f => {
+    const r = await fetch(`${CDN}/${f}${d}`);
+    if (!r.ok) throw new Error(`${f} HTTP ${r.status}`);
+    return r.json();
+  };
+  const [prices, index, meta] = await Promise.all([
+    grab("tcg-prices.json"), grab("cards-index.json"), grab("data-meta.json"),
+  ]);
+  if (!prices || !prices.prices || !index || !index.cards) throw new Error("CDN data malformed");
+  _cdn = { prices: prices.prices, index, meta };
+  return _cdn;
+}
+// Beta item 2: NO automatic in-memory typo correction. Correction happens
+// only via the explicit "Resolve via Scryfall" button (Scryfall's fuzzy
+// search), which then rewrites the decklist text + preview and flags it.
+const norm = s => String(s || "").toLowerCase().trim();
+
+// Price one card purely from the CDN index + price map (zero Scryfall calls).
+// Returns the same shape as priceCard, or null if the card isn't in the index
+// (caller then falls back to a live Scryfall lookup for that one card).
+function priceFromIndex(name, cdn){
+  const e = cdn.index.cards[name.toLowerCase().trim()];
+  if (!e) return null;
+  let best = null, bestP = null;
+  for (const ent of e.p){
+    const [id] = ent;
+    const m = cdn.prices[id];
+    if (typeof m === "number" && m > 0 && (best == null || m < best.price)){
+      best = { price:m, set:(ent[1]||"").toUpperCase(), cn:ent[2] };
+      bestP = ent;
+    }
+  }
+  const legal = {};
+  const order = cdn.index.fmt || [];
+  for (let k = 0; k < order.length; k++) legal[order[k]] = LEGWORD[e.l[k]] ?? null;
+  // Image + Scryfall link key off the CHEAPEST printing actually shown
+  // (fallback: first printing). /(set)/(collector) is a direct Scryfall
+  // endpoint — same single lazy redirect as before, just the right card.
+  const imgP = bestP || e.p[0] || null;
+  const uri = imgP
+    ? `https://scryfall.com/card/${imgP[1]}/${encodeURIComponent(imgP[2])}`
+    : `https://scryfall.com/search?q=${encodeURIComponent('!"'+name+'"')}`;
+  const img = imgP
+    ? `${SCRYFALL}/cards/${imgP[1]}/${encodeURIComponent(imgP[2])}?format=image&version=normal`
+    : null;
+  return { name, found:true, price: best ? best.price : null, foilOnly:false,
+           set: best ? best.set : null, cn: best ? best.cn : null, legal, uri, img };
+}
+
+/* ---- Scryfall lookup ----------------------------------------------- */
+async function fetchJSON(url){
+  const r = await fetch(url, { headers:{ "Accept":"application/json" } });
+  if (r.status === 404) return { __notfound:true };
+  if (!r.ok) throw new Error("Scryfall HTTP " + r.status);
+  return r.json();
+}
+
+// Unit price = the cheapest printing's TCGplayer **Mid**, looked up by its
+// tcgplayer_id in the TCGcsv price map (snap.prices). Scryfall is used ONLY
+// to resolve name -> tcgplayer_id; the PRICE is *always* TCGcsv Mid. No Mid
+// in TCGcsv -> null (card is flagged + excluded; never substituted with a
+// Scryfall / market price).
+function cardUnit(c, snap){
+  const v = c.tcgplayer_id != null ? snap.prices[c.tcgplayer_id] : undefined;
+  return (typeof v === "number" && v > 0) ? v : null;
+}
+
+// front-face image (handles double-faced cards). Captured from the fetch we
+// already do for pricing — the hover popup costs zero extra API calls.
+function imgOf(c){
+  if (c.image_uris) return c.image_uris.normal || c.image_uris.large || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.normal || null;
+  return null;
+}
+
+// Resolve a card NOT in the daily index. Scryfall supplies identity only
+// (each printing's tcgplayer_id, legalities, image); every price is the
+// TCGcsv Mid for that tcgplayer_id. TCGcsv is always the price source.
+async function priceCard(name, cheapest, snap){
+  if (cheapest){
+    let url = SCRYFALL + "/cards/search?unique=prints&q=" +
+      encodeURIComponent(`!"${name}" game:paper`);
+    let best = null, legal = null, found = false, fb = null;
+    while (url){
+      const data = await fetchJSON(url);
+      if (data.__notfound || data.object === "error" || !data.data) break;
+      found = true;
+      for (const c of data.data){
+        if (legal == null && c.legalities) legal = c.legalities;
+        if (fb == null) fb = { uri:c.scryfall_uri, img:imgOf(c) };
+        const price = cardUnit(c, snap);              // TCGcsv Mid or null
+        if (price == null) continue;
+        if (best == null || price < best.price)
+          best = { price, set:c.set.toUpperCase(), cn:c.collector_number,
+                   uri:c.scryfall_uri, img:imgOf(c) };
+      }
+      url = data.has_more ? data.next_page : null;
+      if (url) await SLEEP(90);
+    }
+    if (!found) return await priceNamed(name, snap);
+    if (best) return { name, found:true, price:best.price, foilOnly:false,
+                       set:best.set, cn:best.cn, legal, uri:best.uri, img:best.img };
+    return { name, found:true, price:null, foilOnly:false, set:null, cn:null,
+             legal, uri:fb&&fb.uri, img:fb&&fb.img };
+  }
+  return await priceNamed(name, snap);
+}
+
+async function priceNamed(name, snap){
+  const c = await fetchJSON(SCRYFALL + "/cards/named?fuzzy=" + encodeURIComponent(name));
+  if (c.__notfound || c.object === "error")
+    return { name, found:false, price:null, foilOnly:false, set:null, cn:null,
+             legal:null, uri:null, img:null };
+  const price = cardUnit(c, snap);                    // TCGcsv Mid or null
+  return { name:c.name, found:true, price, foilOnly:false,
+           set:c.set?c.set.toUpperCase():null, cn:c.collector_number,
+           legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
+}
+
+/* ---- decklist -> boards (shared by run() and live preview) --------- */
+function buildBoards(){
+  const { main, side } = parseDecklist($("decklist").value);
+  for (const [name, qty] of parseSideboardBox($("sideboard").value))
+    side.set(name, (side.get(name)||0) + qty);
+  let basicsDropped = 0;
+  if ($("ignoreBasics").checked){
+    const isBasic = n => /^(snow-covered\s+)?(plains|island|swamp|mountain|forest|wastes)$/i.test(n.trim());
+    for (const mp of [main, side])
+      for (const n of [...mp.keys()])
+        if (isBasic(n)){ basicsDropped += mp.get(n); mp.delete(n); }
+  }
+  return { main, side, basicsDropped };
+}
+
+/* ---- always-on recompute (Mid only, index-only, ZERO Scryfall) ----
+   No "Calculate" button: any edit re-renders from the in-memory CDN
+   index. Cards not in the index are flagged and listed for an explicit,
+   throttled, opt-in Scryfall resolve.                                   */
+let _cdnPrefetch = null, RESOLVING = false, _pending = [];
+const _resolved = new Map();          // name -> priced via Scryfall this session
+function ensureCdn(){
+  if (_cdn) return Promise.resolve(_cdn);
+  if (!_cdnPrefetch) _cdnPrefetch = loadCdn().catch(e => { _cdnPrefetch = null; throw e; });
+  return _cdnPrefetch;
+}
+let _liveTimer = null;
+function scheduleRecompute(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(recompute, 350); }
+
+async function recompute(){
+  let cdn;
+  try { cdn = await ensureCdn(); }
+  catch(e){
+    $("status").innerHTML = "Couldn't load the daily TCG Mid data (" +
+      escapeHtml(String(e.message||e)) + "). It's served from a CDN — check " +
+      "your connection, then edit the list to retry.";
+    return;
+  }
+  const { main, side, basicsDropped } = buildBoards();
+  if (!main.size && !side.size){
+    $("results").classList.add("hidden");
+    $("resolveBtn").style.display = "none";
+    $("status").textContent = "Paste a decklist above — totals appear automatically.";
+    setExportsEnabled(false); lastReport = lastCsv = null; return;
+  }
+  // Pass 1: price each name. NO automatic correction (beta item 2): an exact
+  // index miss stays "pending" until the user clicks Resolve. A card the user
+  // resolved via Scryfall carries its canonical spelling in `p.name`; that
+  // (and only that) drives a rename/flag below. `prov` = provisional name.
+  _pending = [];
+  const recs = [];                                  // {nm, p, prov}
+  for (const nm of new Set([...main.keys(), ...side.keys()])){
+    let p = _resolved.get(nm) || priceFromIndex(nm, cdn);
+    let prov = nm;
+    if (!p){
+      _pending.push(nm);
+      p = { name:nm, found:true, price:null, foilOnly:false, set:null, cn:null,
+            legal:null, pending:true, img:null,
+            uri:"https://scryfall.com/search?q=" + encodeURIComponent('!"'+nm+'"') };
+    } else if (p.found && !p.pending && p.name && norm(p.name) !== norm(nm)){
+      prov = p.name;                                 // Scryfall canonical (resolved)
+    }
+    recs.push({ nm, p, prov });
+  }
+  // Prefer an already-correctly-spelled entry's exact casing when a correction
+  // collides with one (avoids a duplicate row differing only by case).
+  const stable = new Map();
+  for (const r of recs) if (norm(r.prov) === norm(r.nm)) stable.set(norm(r.nm), r.nm);
+  const priceMap = new Map(), renameOf = new Map(), corrections = [];
+  for (const r of recs){
+    let final = r.prov;
+    if (norm(final) !== norm(r.nm) && stable.has(norm(final))) final = stable.get(norm(final));
+    if (norm(final) !== norm(r.nm)) corrections.push({ from:r.nm, to:final });
+    renameOf.set(r.nm, final);
+    r.p.name = final;
+    priceMap.set(final, r.p);
+  }
+  const remap = m => { for (const [k, q] of [...m]){ const f = renameOf.get(k);
+    if (f && f !== k){ m.delete(k); m.set(f, (m.get(f) || 0) + q); } } };
+  remap(main); remap(side);
+
+  render(main, side, priceMap, { source:"mid", priceAt:new Date(cdn.meta.generatedAt),
+    runAt:new Date(), format:$("format").value, basicsDropped,
+    colorCost:$("colorCost").checked }, $("cheapest").checked);
+  setExportsEnabled(true);
+  showFixNote(corrections);
+  applyTextCorrections(corrections);
+
+  const rb = $("resolveBtn");
+  if (_pending.length && !RESOLVING){
+    rb.style.display = ""; rb.disabled = false;
+    rb.textContent = "Resolve " + _pending.length + " card" +
+      (_pending.length>1?"s":"") + " not in the daily index via Scryfall";
+  } else if (!_pending.length){
+    rb.style.display = "none";
+  }
+  $("status").textContent = _pending.length
+    ? (_pending.length + " card" + (_pending.length>1?"s":"") +
+       " not in the daily index — priced the rest; click Resolve for those.")
+    : "Updated — TCG Mid.";
+}
+
+// Opt-in: throttled Scryfall lookup for ONLY the cards missing from the index.
+// Resolve via Scryfall. With no argument, resolves every pending card (top
+// button). With an array of names (the inline per-row button), resolves just
+// those — the rest stay pending until clicked.
+async function resolveMissing(names){
+  const todo = ((names && names.length) ? names : _pending)
+    .filter(nm => _pending.includes(nm));
+  if (RESOLVING || !todo.length || !_cdn) return;
+  RESOLVING = true;
+  const rb = $("resolveBtn"); if (rb) rb.disabled = true;
+  $("barWrap").classList.remove("hidden");
+  let done = 0;
+  for (const nm of todo){
+    if (rb) rb.textContent = "Resolving " + (++done) + "/" + todo.length + ": " + nm;
+    try {
+      const res = await priceCard(nm, $("cheapest").checked, { prices:_cdn.prices });
+      _resolved.set(nm, res);
+      // Also key by the canonical name so the post-rewrite recompute (the
+      // decklist text becomes the canonical name) still finds it.
+      if (res && res.found && res.name && norm(res.name) !== norm(nm))
+        _resolved.set(res.name, res);
+    } catch(e){ _resolved.set(nm, { name:nm, found:false, price:null, foilOnly:false,
+      set:null, cn:null, legal:null, uri:null, img:null }); }
+    $("bar").style.width = (done/todo.length*100) + "%";
+    await SLEEP(95);                                   // Scryfall rate-limit
+  }
+  $("barWrap").classList.add("hidden");
+  RESOLVING = false;
+  await recompute();                                   // re-render with resolved
+}
+
+function sectionRows(map, priceMap){
+  let total = 0, anyMissing = false;
+  const rows = [];
+  for (const [name, qty] of map){
+    const p = priceMap.get(name) || {};
+    const unit = (p.found && p.price != null) ? p.price : null;
+    const lineT = unit != null ? unit * qty : null;
+    if (lineT != null) total += lineT; else anyMissing = true;
+    rows.push({ name, qty, p, unit, lineT });
+  }
+  return { rows, total, anyMissing };
+}
+
+function fmtName(f){
+  return ({standard:"Standard",pioneer:"Pioneer",modern:"Modern",legacy:"Legacy",
+    vintage:"Vintage",pauper:"Pauper",premodern:"Premodern",commander:"Commander"})[f]
+    || (f.charAt(0).toUpperCase()+f.slice(1));
+}
+// price -> color tier class (green c0 .. red c4); null -> "".
+function costClass(v){
+  if (v == null) return "";
+  if (v < 0.5) return "c0";
+  if (v < 2)   return "c1";
+  if (v < 5)   return "c2";
+  if (v < 15)  return "c3";
+  return "c4";
+}
+// legality status of p in the current format: "legal" | "bad" | "warn" | "ok-none"
+function legalStatus(p){
+  if (CUR_FMT === "__none" || !p.found) return "ok-none";
+  const v = p.legal ? p.legal[CUR_FMT] : undefined;
+  if (v === "legal") return "ok";
+  if (v === "restricted") return "warn";
+  return "bad"; // not_legal / banned / unknown
+}
+function flags(p){
+  const out = [];
+  if (p.pending) out.push('<span class="tag warn">not in daily index</span>');
+  else if (!p.found) out.push('<span class="tag bad">not found</span>');
+  else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
+  if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
+  if (CUR_FMT !== "__none" && p.found){
+    const v = p.legal ? p.legal[CUR_FMT] : undefined;
+    const F = fmtName(CUR_FMT);
+    if (v === "banned") out.push(`<span class="tag bad">${F} banned</span>`);
+    else if (v === "restricted") out.push(`<span class="tag warn">${F} restricted</span>`);
+    else if (v === "not_legal") out.push(`<span class="tag bad">not ${F}-legal</span>`);
+    else if (v == null) out.push(`<span class="tag warn">${F} legality unknown</span>`);
+  }
+  return out.join("");
+}
+
+function cardLink(p, name){
+  const href = p.uri || ("https://scryfall.com/search?q=" +
+    encodeURIComponent('!"' + name + '"'));
+  const img = p.img ? ` data-img="${escapeHtml(p.img)}"` : "";
+  return `<a class="cardlink" href="${escapeHtml(href)}" target="_blank" ` +
+         `rel="noopener"${img}>${escapeHtml(name)}</a>`;
+}
+function renderTable(title, sec, board){
+  let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
+  h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th><th></th></tr></thead><tbody>`;
+  for (const r of sec.rows){
+    // Resolved/indexed but TCGcsv has no Mid -> same prominent red flag as
+    // a not-format-legal card (price is always TCGcsv Mid, or clearly absent).
+    const noMid = r.p.found && r.p.price == null && !r.p.pending;
+    const priceFlagged = (!r.p.found || r.p.price==null || r.p.foilOnly);
+    const illegal = legalStatus(r.p) === "bad";
+    const cls = [priceFlagged?'flagged':'', (illegal||noMid)?'illegal':''].filter(Boolean).join(' ');
+    const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
+    const uc = CUR_COLOR ? " " + costClass(r.unit) : "";
+    const lc = CUR_COLOR ? " " + costClass(r.lineT) : "";
+    const dn = escapeHtml(r.name), db = escapeHtml(board);
+    const qctl = `<span class="qctl">`+
+      `<button type="button" class="qbtn" data-act="dec" data-board="${db}" data-name="${dn}" title="one fewer" aria-label="one fewer">&minus;</button>`+
+      `<b>${r.qty}</b>`+
+      `<button type="button" class="qbtn" data-act="inc" data-board="${db}" data-name="${dn}" title="one more" aria-label="one more">+</button></span>`;
+    const rsv = r.p.pending
+      ? ` <button type="button" class="rsv" data-act="resolve" data-name="${dn}" title="look this card up on Scryfall">Resolve</button>`
+      : "";
+    h += `<tr class="${cls}"><td class="num">${qctl}</td>`+
+         `<td>${cardLink(r.p, r.name)}${flags(r.p)}${rsv}</td>`+
+         `<td>${print}</td>`+
+         `<td class="num${uc}">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
+         `<td class="num${lc}">${r.lineT!=null?money(r.lineT):"&mdash;"}</td>`+
+         `<td class="num"><button type="button" class="xbtn" data-act="remove" data-board="${db}" data-name="${dn}" title="remove card" aria-label="remove ${dn}">&times;</button></td></tr>`;
+  }
+  h += `</tbody></table>`;
+  h += `<form class="addcard" data-board="${escapeHtml(board)}">`+
+       `<input type="text" class="addinput" placeholder="Add to ${board==="side"?"sideboard":"main deck"}: e.g. 2 Lightning Bolt" aria-label="add card to ${board}">`+
+       `<button type="submit" class="ghost addbtn">Add</button></form>`;
+  return h;
+}
+
+let LAST = null, CUR_SRC = "mid", CUR_FMT = "modern", CUR_COLOR = true;
+function render(main, side, priceMap, meta, cheapest){
+  CUR_SRC = "mid"; CUR_FMT = meta.format; CUR_COLOR = meta.colorCost;
+  const m = sectionRows(main, priceMap);
+  const s = sectionRows(side, priceMap);
+  const bM = parseFloat($("budgetMain").value)||0;
+  const bS = parseFloat($("budgetSide").value)||0;
+  LAST = { m, s, bM, bS, ...meta, cheapest, deckname:$("deckname").value.trim()||"Deck" };
+
+  $("results").classList.remove("hidden");
+  $("stamp").textContent =
+    "Prices: " + meta.priceAt.toLocaleString() +
+    "  (" + meta.priceAt.toISOString() + ") — TCG Mid (daily snapshot)" +
+    "  ·  checked " + meta.runAt.toLocaleString() +
+    (meta.format !== "__none" ? "  ·  legality: " + fmtName(meta.format) : "") +
+    (meta.basicsDropped ? ("  ·  " + meta.basicsDropped + " basic land" +
+       (meta.basicsDropped>1?"s":"") + " ignored") : "");
+
+  const setCard = (idEl, idAmt, idMeta, sec, budget) => {
+    const over = sec.total > budget;
+    const el = $(idEl); el.classList.toggle("pass", !over); el.classList.toggle("over", over);
+    $(idAmt).textContent = money(sec.total);
+    const diff = budget - sec.total;
+    $(idMeta).innerHTML =
+      `Budget ${money(budget)} &middot; ` +
+      `<span class="badge ${over?'over':'pass'}">${over?'OVER by '+money(-diff):'UNDER by '+money(diff)}</span>` +
+      (sec.anyMissing ? `<br><span class="tag bad">some cards unpriced — total is a floor</span>` : "");
+  };
+  setCard("tMain","mainAmt","mainMeta", m, bM);
+  setCard("tSide","sideAmt","sideMeta", s, bS);
+
+  $("mainTable").innerHTML = renderTable("Main deck", m, "main");
+  $("sideTable").innerHTML = s.rows.length
+    ? renderTable("Sideboard", s, "side")
+    : `<div class="sechead"><h2>Sideboard</h2><span>$0.00</span></div>`+
+      `<p class="sub" style="margin:8px 0 10px">No sideboard cards.</p>`+
+      `<form class="addcard" data-board="side">`+
+      `<input type="text" class="addinput" placeholder="Add to sideboard: e.g. 2 Roiling Vortex" aria-label="add card to sideboard">`+
+      `<button type="submit" class="ghost addbtn">Add</button></form>`;
+
+  lastReport = buildReport(LAST);
+  lastCsv = buildCsv(LAST);
+  renderVisualAll();   // always-on: charts + treemap/grid drawn from cached Scryfall data
+  scheduleEnrich();    // debounced: fetch ONLY printings not yet cached (typing never fetches)
+}
+
+/* ---- visual breakdown — ALWAYS ON (live) ---------------------------
+   The charts + treemap/grid update on EVERY edit. Scryfall is queried only
+   for printings not already cached, and only after a short idle (see
+   scheduleEnrich), so the call pattern is:
+     - typing a name letter-by-letter  -> NO fetch (a half-typed name has no
+       set/collector_number yet, so it's skipped until it resolves);
+     - paste a list / a name resolves   -> ONE batched, incremental fetch;
+     - qty +/- / remove / add-known     -> NO fetch (re-render from cache).
+   /cards/collection is <=75 ids/call; results are merged into _scCache and
+   reused across qty edits. cmc + colours + images all come from there.    */
+let _vbRows = null;                      // current rows (qty/price + cached card obj)
+let _vbLayout = "treemap";               // "grid" | "treemap"
+let _vbFill = "art";                     // treemap fill: "cover" | "contain" | "art" (Art only = default)
+const _scCache = new Map();              // persistent Scryfall objs: _scKey / name / front-face alias -> card
+let _enrichTimer = null;
+// Rows for the visual/charts, rebuilt from LAST (qty/price) every render with
+// whatever card objects are already cached attached (no fetch here).
+function vbRowsFromLast(){
+  const rows = [];
+  for (const [board, sec] of [["main", LAST.m], ["side", LAST.s]])
+    for (const r of sec.rows){
+      const set = r.p && r.p.set, cn = r.p && r.p.cn;
+      const c = (set && cn && _scCache.get(_scKey(set, cn))) || _scCache.get(norm(r.name)) || null;
+      rows.push({ name:r.name, qty:r.qty, unit:r.unit, lineT:r.lineT, set, cn, board, c });
+    }
+  return rows;
+}
+function renderVisualAll(){
+  if (!LAST) return;
+  _vbRows = vbRowsFromLast();
+  renderCharts(_vbRows);
+  renderVisual(_vbRows);
+}
+function scheduleEnrich(){ clearTimeout(_enrichTimer); _enrichTimer = setTimeout(enrich, 600); }
+// Fetch ONLY the resolved printings we haven't cached yet (incremental, batched).
+async function enrich(){
+  if (!LAST) return;
+  const idents = [], seen = new Set();
+  for (const sec of [LAST.m, LAST.s])
+    for (const r of sec.rows){
+      const set = r.p && r.p.set, cn = r.p && r.p.cn;
+      if (!(set && cn)) continue;                 // pending / unpriced -> skip (no typing fetches)
+      const key = _scKey(set, cn);
+      if (_scCache.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      idents.push({ set:String(set).toLowerCase(), collector_number:String(cn) });
+    }
+  if (!idents.length) return;                     // nothing new -> zero Scryfall calls
+  try {
+    const map = await scryfallCollection(idents);
+    for (const [k, v] of map) _scCache.set(k, v); // merge: _scKey + name + front-face alias keys
+    renderVisualAll();                            // redraw with images + curve/colours
+  } catch(e){ /* keep prior visual; charts already drawn from whatever's cached */ }
+}
+// beta.2: takes a list of identifier objects (mix of {set, collector_number}
+// and {name}). Keys the result map by card name (+ front-face alias) AND by
+// "set|cn" so callers can look up by whichever they have. set+collector is
+// preferred because /cards/collection's {name} identifier is EXACT-match and
+// fails for split/DFC/adventure front-face aliases (e.g. "Wear" alone won't
+// resolve to "Wear // Tear").
+const _scKey = (s, n) => `sc:${String(s||"").toLowerCase()}|${String(n||"").toLowerCase()}`;
+async function scryfallCollection(identifiers){
+  const out = new Map();
+  for (let i = 0; i < identifiers.length; i += 75){
+    const chunk = identifiers.slice(i, i + 75);
+    const r = await fetch(SCRYFALL + "/cards/collection", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify({ identifiers: chunk }) });
+    if (r.ok){
+      const j = await r.json();
+      for (const c of (j.data || [])){
+        const k = norm(c.name); out.set(k, c);
+        const sl = k.indexOf(" // "); if (sl > 0) out.set(k.slice(0, sl), c);
+        if (c.set && c.collector_number) out.set(_scKey(c.set, c.collector_number), c);
+      }
+    }
+    if (i + 75 < identifiers.length) await SLEEP(95);
+  }
+  return out;
+}
+function vImg(c){
+  if (!c) return null;
+  if (c.image_uris) return c.image_uris.normal || c.image_uris.small || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.normal || null;
+  return null;
+}
+// art_crop (just the artwork) for the treemap "Art only" fill mode.
+function vArt(c){
+  if (!c) return null;
+  if (c.image_uris) return c.image_uris.art_crop || c.image_uris.normal || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.art_crop || c.card_faces[0].image_uris.normal || null;
+  return null;
+}
+const vIsLand = c => !!c && /\bLand\b/.test(c.type_line || "");
+const vCmc = c => (c && typeof c.cmc === "number") ? c.cmc : 0;
+function vColors(c){
+  const a = c && (c.colors ||
+    (c.card_faces && c.card_faces[0] && c.card_faces[0].colors));
+  return Array.isArray(a) ? a : ((c && c.color_identity) || []);
+}
+const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
+  R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
+/* ---- cost treemap (beta v3.5.0-beta.3) -----------------------------
+   Squarified treemap: each card tile's AREA is proportional to its line
+   cost (qty x unit); the canvas represents the budget, so unspent budget
+   shows as a hatched "free space" tile (WinDirStat-style). $1 occupies the
+   same pixel area in BOTH boards (shared px-per-$ constant k). Ported from
+   mtg/pauper/gen-poster.mjs and unit-tested (138/138) in _scratch/.       */
+function squarify(items, rect){
+  if (!items.length) return [];
+  if (items.length === 1)
+    return [{ item:items[0].item, x:rect.x, y:rect.y, w:rect.w, h:rect.h }];
+  const total = items.reduce((s, it) => s + it.value, 0);
+  if (total <= 0) return [];
+  const vertical = rect.w <= rect.h;
+  const side = vertical ? rect.h : rect.w, other = vertical ? rect.w : rect.h;
+  // ASYMMETRIC badness: a tile WIDER than tall is penalised far more than one
+  // taller than wide, so the packer biases toward portrait/square tiles and
+  // avoids wide-short ones (cards are portrait anyway). WIDE_BIAS<1 makes a
+  // tall tile "cheaper" than an equally-lopsided wide tile.
+  const WIDE_BIAS = 0.8;
+  const badness = (w, h) => { const ar = w / h; return ar >= 1 ? ar : (1 / ar) * WIDE_BIAS; };
+  let bestRow = [items[0]], bestWorst = Infinity, rowSum = 0;
+  for (let i = 0; i < items.length; i++){
+    rowSum += items[i].value;
+    const rowThickness = (rowSum / total) * other;
+    let worst = 0;
+    for (let j = 0; j <= i; j++){
+      const len = (items[j].value / rowSum) * side;
+      const ratio = vertical ? badness(rowThickness, len) : badness(len, rowThickness);
+      if (ratio > worst) worst = ratio;
+    }
+    if (worst <= bestWorst){ bestWorst = worst; bestRow = items.slice(0, i + 1); }
+    else break;
+  }
+  const rowTotal = bestRow.reduce((s, it) => s + it.value, 0);
+  const rowThickness = (rowTotal / total) * other;
+  const result = []; let offset = 0;
+  for (const it of bestRow){
+    const len = (it.value / rowTotal) * side;
+    result.push(vertical
+      ? { item:it.item, x:rect.x, y:rect.y + offset, w:rowThickness, h:len }
+      : { item:it.item, x:rect.x + offset, y:rect.y, w:len, h:rowThickness });
+    offset += len;
+  }
+  const rem = items.slice(bestRow.length);
+  const next = vertical
+    ? { x:rect.x + rowThickness, y:rect.y, w:rect.w - rowThickness, h:rect.h }
+    : { x:rect.x, y:rect.y + rowThickness, w:rect.w, h:rect.h - rowThickness };
+  return result.concat(squarify(rem, next));
+}
+// cards: [{...row, cost}] -> {items (desc, +free tile if under budget), spent, V, free, over}
+function budgetTiles(cards, budget){
+  const spent = cards.reduce((s, c) => s + Math.max(0, c.cost || 0), 0);
+  const b = Math.max(0, budget || 0), V = Math.max(spent, b), free = Math.max(0, b - spent);
+  const items = [];
+  for (const c of cards){ const v = Math.max(0, c.cost || 0); if (v > 0) items.push({ item:c, value:v }); }
+  if (free > 0) items.push({ item:{ __free:true, amount:free }, value:free });
+  items.sort((a, b2) => b2.value - a.value);
+  return { items, spent, V, free, over: spent > b };
+}
+// One board's box HTML (absolutely-positioned tiles inside a relative .tmbox).
+// The box is the BUDGET (width × budgetHeight = budget area, constant size):
+//  - UNDER budget: cards fill a SQUARE-ish region (area ∝ spend) anchored
+//    top-left; the leftover L-shape is empty = unspent (the box's hatched bg
+//    shows through; "$X unspent" centred in the larger empty strip).
+//  - OVER budget: the budget box fills with cards and the SPEND overflows BELOW
+//    it — the box grows downward to spentHeight, the cards squarify into the
+//    full width × spentHeight (square-or-taller, so tiles stay legible), a
+//    dashed budget line marks the budget level and a translucent red strip
+//    washes everything below it ("$X OVER"). Returns the drawn height.
+function treemapBox(boardRows, budget, width, budgetHeight){
+  const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
+  const g = 2;                                     // gutter between tiles
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const cardItems = bt.items.filter(i => !i.item.__free);
+  const b = Math.max(0, budget || 0);
+  const budgetArea = width * budgetHeight;
+  // Card area uses the SAME px-per-$ as the budget box. Over budget ⇒ card area
+  // exceeds the box and it grows downward; under ⇒ a square region + empty rest.
+  const spentArea = b > 0 ? budgetArea * (bt.spent / b) : budgetArea;
+  const over = b > 0 && bt.spent > b;
+  // Cap how tall a wildly-over board can get (e.g. 5× over) so it stays usable;
+  // the "$X OVER" label still reports the true amount. Typical over (≤~2.5×)
+  // is uncapped and stays area-proportional.
+  const OVER_CAP = 2.6;
+  const spentHeight = Math.min(width > 0 ? spentArea / width : budgetHeight, budgetHeight * OVER_CAP);
+  const boxHeight = Math.max(budgetHeight, spentHeight);
+
+  let cardsRect = { x:0, y:0, w:width, h:budgetHeight }, emptyRect = null;
+  if (over){
+    cardsRect = { x:0, y:0, w:width, h:spentHeight };         // fill budget box + overflow
+  } else if (bt.free > 0 && cardItems.length){
+    const A = spentArea;                                      // square-ish region, area ∝ spend
+    let rw = Math.sqrt(A), rh = rw;
+    if (rw > width)        { rw = width;        rh = A / width; }
+    if (rh > budgetHeight) { rh = budgetHeight; rw = A / budgetHeight; }
+    cardsRect = { x:0, y:0, w:Math.min(rw, width), h:Math.min(rh, budgetHeight) };
+    const right  = { x:cardsRect.w, y:0, w:width - cardsRect.w, h:budgetHeight };
+    const bottom = { x:0, y:cardsRect.h, w:cardsRect.w, h:budgetHeight - cardsRect.h };
+    emptyRect = (right.w * right.h >= bottom.w * bottom.h) ? right : bottom;
+  } else if (!cardItems.length){
+    cardsRect = { x:0, y:0, w:0, h:0 };
+    emptyRect = { x:0, y:0, w:width, h:budgetHeight };
+  }
+  const tiles = cardItems.length ? squarify(cardItems, cardsRect) : [];
+
+  let html = tiles.map(t => {
+    const x = t.x + g, y = t.y + g, w = Math.max(1, t.w - 2*g), h = Math.max(1, t.h - 2*g);
+    const pos = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
+    const r = t.item, img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
+    const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "");
+    const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
+
+    // COST: single line (no wrap), sized to fit the tile WIDTH so it shrinks
+    // on narrow tiles rather than wrapping one digit onto a second line. Low
+    // min (5px) lets it get small instead of breaking. Also capped by height.
+    const costStr = r.lineT != null ? money(r.lineT) : "";
+    const len = Math.max(2, costStr.length);
+    const costF = clamp(Math.floor(Math.min((w - 6) / (len * 0.62), h * 0.4)), 5, 46);
+    const costCY = h * 0.40;                          // cost centre Y
+    const nameTop = costCY + costF / 2 + 3;
+    const nameH = h - nameTop - 1;
+    const nameF = clamp(Math.round(Math.min(w * 0.17, h * 0.14)), 7, 18);
+    const title = escapeHtml(r.name) + (r.lineT != null ? " — " + money(r.lineT) : "");
+    const costHtml = costStr
+      ? `<div class="tcost" style="font-size:${costF}px;top:${costCY.toFixed(1)}px">${costStr}</div>` : "";
+    const nameHtml = nameH > 7
+      ? `<div class="tnmwrap" style="top:${nameTop.toFixed(1)}px;height:${nameH.toFixed(1)}px">` +
+        `<div class="tnm" style="font-size:${nameF}px">${r.qty}&times; ${escapeHtml(r.name)}</div></div>`
+      : "";
+    const popImg = vImg(r.c);                       // full normal card for the hover popup
+    const uri = r.c && r.c.scryfall_uri;            // click target
+    const dataImg = popImg ? ` data-img="${escapeHtml(popImg)}"` : "";
+    const href = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
+    return `<a class="${cls}"${href} style="${pos};${bg}" title="${title}"${dataImg}>${costHtml}${nameHtml}</a>`;
+  }).join("");
+
+  // Unspent label, centred in the larger empty strip. The empty L-shape itself
+  // is just the box's hatched background showing through (no rectangle drawn).
+  if (emptyRect && bt.free > 0 && emptyRect.w > 8 && emptyRect.h > 8){
+    const pos = `left:${emptyRect.x.toFixed(1)}px;top:${emptyRect.y.toFixed(1)}px;` +
+                `width:${emptyRect.w.toFixed(1)}px;height:${emptyRect.h.toFixed(1)}px`;
+    const ff = clamp(Math.floor(Math.min(emptyRect.w / 4.2, emptyRect.h * 0.4)), 9, 32);
+    const inner = (emptyRect.w > 40 && emptyRect.h > 22)
+      ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(bt.free)}` +
+        `<br><span style="font-size:${Math.max(8, Math.round(ff*0.42))}px;font-weight:600;opacity:.85">unspent</span></span>`
+      : "";
+    html += `<div class="tmfree" style="${pos}">${inner}</div>`;
+  }
+
+  // Over budget: the budget box (top, height = budgetHeight) is full and the
+  // SPEND overflows into a red strip BELOW it (always the bottom — consistent).
+  // A dashed line marks the budget level; the red strip's height ∝ over-spend.
+  if (over){
+    const ovY = budgetHeight, ovH = spentHeight - budgetHeight, overAmt = bt.spent - b;
+    const pos = `left:0;top:${ovY.toFixed(1)}px;width:${width.toFixed(1)}px;height:${ovH.toFixed(1)}px`;
+    const ff = clamp(Math.floor(Math.min(width / 6, ovH * 0.5)), 9, 24);
+    const inner = (width > 38 && ovH > 16)
+      ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(overAmt)} OVER</span>`
+      : "";
+    html += `<div class="tmover" style="${pos}">${inner}</div>`;
+    html += `<div class="tmbudgetline" style="top:${budgetHeight.toFixed(1)}px;width:${width.toFixed(1)}px"><span>budget</span></div>`;
+  }
+  return { html, bt, height: boxHeight };
+}
+function buildTreemapHTML(rows){
+  const cw = Math.max(300, ($("visual").clientWidth || 700));
+  const mainRows = rows.filter(r => r.board === "main");
+  const sideRows = rows.filter(r => r.board === "side");
+  const mainBT = budgetTiles(mainRows.map(r => ({ ...r, cost: r.lineT || 0 })), LAST.bM);
+  const sideBT = budgetTiles(sideRows.map(r => ({ ...r, cost: r.lineT || 0 })), LAST.bS);
+  // Box FOOTPRINT tracks the BUDGET (constant size); over-budget spends spill
+  // BELOW the budget box as a red overflow strip (in treemapBox). Fall back to
+  // spend when a board has no budget set so it still renders.
+  const fM = LAST.bM > 0 ? LAST.bM : mainBT.spent;
+  const fS = LAST.bS > 0 ? LAST.bS : sideBT.spent;
+  const both = fM > 0 && fS > 0;
+  const GAP = 22;
+
+  // Stacked sizing (also the narrow-window fallback): the budget box keeps a
+  // square-ish ASPECT and AREA ∝ its BUDGET; width capped to the container.
+  // $1 = equal area in both boards (shared k = px² per $).
+  const ASPECT = 1.1;
+  const wBig = Math.min(cw, 760), hBig = Math.round(wBig / ASPECT);
+  const k = (wBig * hBig) / Math.max(fM, fS, 1);   // px² per budget-$
+  const boxFor = F => {
+    if (F <= 0) return null;
+    const area = k * F;
+    const w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
+    return { w, h: Math.max(1, Math.round(area / w)) };
+  };
+
+  // Side-by-side when both boards have a budget AND the window is wide enough:
+  // the two BUDGET boxes share one HEIGHT and have WIDTH ∝ budget (so $1 is
+  // equal-area across them — same H, width∝budget => area∝budget). The shared
+  // height keeps the larger box square-ish (over-budget boards then spill below
+  // that shared budget line). Otherwise they stack, each its own square-ish box.
+  let sideBySide = false, mBox, sBox;
+  if (both && cw >= 700){
+    sideBySide = true;
+    const availW = cw - GAP - 16, Ft = fM + fS;      // reserve flex gap + borders + slack
+    let wm = availW * fM / Ft, ws = availW - wm;
+    const TARGET = 0.92, MAXH = 600, MINH = 240;     // big-box aspect ≈ 1/0.92 ≈ 1.09
+    let H = Math.max(wm, ws) * TARGET;
+    if (H > MAXH){ const sc = MAXH / H; wm *= sc; ws *= sc; H = MAXH; }
+    H = Math.max(MINH, H);
+    mBox = { w:Math.round(wm), h:Math.round(H) }; sBox = { w:Math.round(ws), h:Math.round(H) };
+  } else {
+    mBox = boxFor(fM); sBox = boxFor(fS);
+  }
+
+  const unit = (title, boardRows, budget, bt, box) => {
+    if (!box) return "";
+    const tm = treemapBox(boardRows, budget, box.w, box.h);   // box.h = budget box height
+    const meta = bt.over
+      ? `<span class="tmeta over" data-short="${money(bt.spent - budget)} OVER">${money(bt.spent)} of ${money(budget)} &middot; ${money(bt.spent - budget)} OVER</span>`
+      : `<span class="tmeta" data-short="${money(bt.free)} unspent">${money(bt.spent)} of ${money(budget)} &middot; ${money(bt.free)} unspent</span>`;
+    // In side-by-side mode the unit is pinned to the box WIDTH so a long header
+    // can't make the flex item wider than its box and force a wrap; it wraps the
+    // header instead. The box ELEMENT uses tm.height (grows when over budget).
+    const uw = sideBySide ? ` style="width:${box.w}px"` : "";
+    return `<div class="tmunit"${uw}><div class="tmhead"><h2>${title}</h2>${meta}</div>` +
+           `<div class="tmbox" style="width:${box.w}px;height:${tm.height.toFixed(1)}px">${tm.html}</div></div>`;
+  };
+  const mainHTML = unit("Main deck", mainRows, LAST.bM, mainBT, mBox);
+  const sideHTML = unit("Sideboard", sideRows, LAST.bS, sideBT, sBox);
+  return sideBySide ? `<div class="tmrow">${mainHTML}${sideHTML}</div>` : mainHTML + sideHTML;
+}
+// Pauper-poster shrink-to-fit: reduce each tile name's font until it fits its
+// wrap box (so the name always shows at the largest size that fits the space).
+function fitTreemapLabels(){
+  for (const wrap of $("visual").querySelectorAll(".tnmwrap")){
+    const lab = wrap.firstElementChild; if (!lab) continue;
+    let fs = parseFloat(lab.style.fontSize) || 12, guard = 0;
+    while (fs > 5 && lab.scrollHeight > wrap.clientHeight && guard++ < 40){
+      fs *= 0.85; lab.style.fontSize = fs + "px";
+    }
+  }
+  // Header meta: if the full "$X of $Y · $Z OVER/unspent" would clip (ellipsis),
+  // drop the prefix and show just the short form ("$Z OVER" / "$Z unspent").
+  for (const m of $("visual").querySelectorAll(".tmeta[data-short]")){
+    if (m.scrollWidth > m.clientWidth + 1) m.textContent = m.dataset.short;
+  }
+}
+// One vertical bar column (value on top, bar, label below).
+function vcol(label, val, max){
+  const pct = max > 0 ? Math.round(val / max * 100) : 0;
+  return `<div class="col"><b>${val}</b><i style="height:${pct}%"></i>` +
+    `<span class="cl">${escapeHtml(label)}</span></div>`;
+}
+// Compact charts above the table. Price spread reads CDN unit prices (instant);
+// mana curve + colours need the Scryfall card objects and fill in once enrich()
+// lands. All recompute live with qty / list edits (no Scryfall just to redraw).
+function renderCharts(rows){
+  const el = $("charts"); if (!el) return;
+  const known = rows.filter(r => r.c && !vIsLand(r.c));
+  const curve = [0,0,0,0,0,0,0,0];
+  for (const r of known) curve[Math.min(7, Math.round(vCmc(r.c)))] += r.qty;
+  const cmax = Math.max(1, ...curve);
+  const curveCols = curve.map((v, i) => vcol(i === 7 ? "7+" : String(i), v, cmax)).join("");
+  const buckets = [["<$1",0],["$1–5",0],["$5–15",0],["$15+",0]];
+  for (const r of rows){ if (r.unit == null) continue;
+    buckets[r.unit < 1 ? 0 : r.unit < 5 ? 1 : r.unit < 15 ? 2 : 3][1] += r.qty; }
+  const bmax = Math.max(1, ...buckets.map(b => b[1]));
+  const priceCols = buckets.map(b => vcol(b[0], b[1], bmax)).join("");
+  const colC = { W:0,U:0,B:0,R:0,G:0,C:0 };
+  for (const r of known){ const cs = vColors(r.c);
+    if (!cs.length) colC.C += r.qty; else for (const c of cs) if (colC[c] != null) colC[c] += r.qty; }
+  const pie = Object.entries(colC).filter(([,v]) => v > 0).map(([k,v]) =>
+    `<span class="pip"><span class="sw" style="background:${VCOL[k][0]}"></span>${VCOL[k][1]} ${v}</span>`).join("");
+  el.innerHTML =
+    `<div class="chartstrip">` +
+      `<div class="vchart"><h4>Mana curve · non-land</h4><div class="cols">${curveCols}</div></div>` +
+      `<div class="vchart"><h4>Price spread · by copies</h4><div class="cols">${priceCols}</div></div>` +
+      `<div class="vchart"><h4>Colours · by copies</h4><div class="pie">${pie || '<span class="pip">&mdash;</span>'}</div></div>` +
+    `</div>`;
+}
+function renderVisual(rows){
+  const miss = rows.filter(r => !r.c).length;
+  // Uniform-grid builder (alternative layout).
+  const gridCards = side => rows.filter(r => r.board === side).map(r => {
+    const img = vImg(r.c);
+    const uri = r.c && r.c.scryfall_uri;
+    const dataImg = img ? ` data-img="${escapeHtml(img)}"` : "";
+    const href = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
+    return `<a class="vcard${img ? "" : " miss"}"${href}${dataImg}>` +
+      (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
+           : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
+      `<div class="vq">${r.qty}&times;</div>` +
+      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}` +
+        (r.lineT != null ? ` <span style="opacity:.6">/ ${money(r.lineT)}</span>` : "") +
+      `</div></a>`;
+  }).join("");
+
+  const controls =
+    `<div class="vctrl">` +
+      `<label>Layout <select id="vLayout">` +
+        `<option value="grid"${_vbLayout==="grid"?" selected":""}>Uniform grid</option>` +
+        `<option value="treemap"${_vbLayout==="treemap"?" selected":""}>Cost treemap</option>` +
+      `</select></label>` +
+      `<label id="vFillWrap"${_vbLayout==="treemap"?"":' style="display:none"'}>Fill <select id="vFill">` +
+        `<option value="cover"${_vbFill==="cover"?" selected":""}>Crop to fill</option>` +
+        `<option value="contain"${_vbFill==="contain"?" selected":""}>Whole card</option>` +
+        `<option value="art"${_vbFill==="art"?" selected":""}>Art only</option>` +
+      `</select></label>` +
+      (_vbLayout==="treemap"
+        ? `<span class="vbnote">Tile area &prop; line cost; hatched space = unspent budget. $1 is the same size in both decks.</span>`
+        : "") +
+    `</div>`;
+
+  $("visual").classList.remove("hidden");   // ensure a measurable width before the treemap
+  const body = _vbLayout === "treemap"
+    ? buildTreemapHTML(rows)
+    : `<h2>Main deck</h2><div class="vgrid">${gridCards("main") || '<span class="vp">&mdash;</span>'}</div>` +
+      (rows.some(r => r.board === "side")
+        ? `<h2>Sideboard</h2><div class="vgrid">${gridCards("side")}</div>` : "");
+
+  $("visual").innerHTML =
+    `<h2>Visual breakdown</h2>` + controls + body +
+    (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} without Scryfall data yet — shown without image and excluded from the charts/treemap.</p>` : "");
+  if (_vbLayout === "treemap") fitTreemapLabels();   // shrink names to fit
+}
+// Layout / fill selectors re-render from the cached Scryfall rows — no API call.
+document.addEventListener("change", e => {
+  if (!e.target) return;
+  if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+});
+
+/* ---- editable output (beta item 2) ---------------------------------
+   Single source of truth = the decklist text. The +/- / remove / add
+   controls do TARGETED line edits on the textarea (other lines, comments,
+   ignored basics untouched) then recompute, so the table is always exactly
+   what the text says — they can never disagree.                          */
+function _setQty(raw, q){
+  return raw.replace(/^(\s*)(sb:\s*)?(\d+)/i, (m,a,b) => (a||"") + (b||"") + q);
+}
+// Walk decklist text with parseDecklist's board rules; onCard returns
+// "keep" | "remove" | newRawLine.
+function _walkDeck(text, onCard){
+  const out = [];
+  let cur = "main";
+  for (const raw of (text||"").split(/\r?\n/)){
+    const t = raw.trim();
+    let handled = false;
+    if (t && !/^(\/\/|#)/.test(t)){
+      if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(t)) cur = "main";
+      else if (/^(sideboard)\s*:?\s*$/i.test(t)) cur = "side";
+      else {
+        const sb = /^sb:\s*/i.test(t);
+        const c = parseCardLine(sb ? t.replace(/^sb:\s*/i,"") : t);
+        if (c){
+          const r = onCard({ board: sb ? "side" : cur, name:c.name, qty:c.qty, raw });
+          if (r === "remove") handled = true;
+          else if (typeof r === "string"){ out.push(r); handled = true; }
+        }
+      }
+    }
+    if (!handled) out.push(raw);
+  }
+  return out.join("\n");
+}
+function _sideBoxStrip(text, N){              // remove a name from the side box
+  return (text||"").split(/\r?\n/).filter(l => {
+    const t = l.trim();
+    if (!t || /^(\/\/|#)/.test(t) || /^sideboard\s*:?\s*$/i.test(t)) return true;
+    const c = parseCardLine(t.replace(/^sb:\s*/i,""));
+    return !(c && norm(c.name) === N);
+  }).join("\n");
+}
+function editDeck(board, name, op){
+  const dEl = $("decklist"), sEl = $("sideboard"), N = norm(name);
+  let changed = false;
+  if (op === "remove"){
+    const nv = _walkDeck(dEl.value, c =>
+      (c.board === board && norm(c.name) === N) ? "remove" : null);
+    if (nv !== dEl.value){ dEl.value = nv; changed = true; }
+    if (board === "side"){
+      const sv = _sideBoxStrip(sEl.value, N);
+      if (sv !== sEl.value){ sEl.value = sv; changed = true; }
+    }
+  } else {                                    // inc / dec
+    const d = op === "inc" ? 1 : -1;
+    let hit = false;
+    dEl.value = _walkDeck(dEl.value, c => {
+      if (hit || c.board !== board || norm(c.name) !== N) return null;
+      hit = true;
+      const q = c.qty + d;
+      return q < 1 ? "remove" : _setQty(c.raw, q);
+    });
+    if (hit) changed = true;
+    if (!hit && board === "side"){            // maybe it's in the side box
+      const lines = sEl.value.split(/\r?\n/);
+      for (let i = 0; i < lines.length; i++){
+        const t = lines[i].trim();
+        if (!t || /^(\/\/|#)/.test(t) || /^sideboard\s*:?\s*$/i.test(t)) continue;
+        const c = parseCardLine(t.replace(/^sb:\s*/i,""));
+        if (c && norm(c.name) === N){
+          const q = c.qty + d;
+          lines[i] = q < 1 ? null : _setQty(lines[i], q);
+          changed = true; break;
+        }
+      }
+      if (changed) sEl.value = lines.filter(l => l !== null).join("\n");
+    }
+  }
+  if (changed) recompute();                   // text is canonical -> rebuild
+}
+function addCard(board, text){
+  const s = (text || "").trim();
+  const c = parseCardLine(/^\d/.test(s) ? s : "1 " + s);
+  if (!c) return;
+  const line = c.qty + " " + c.name;
+  if (board === "side"){
+    const sEl = $("sideboard"), v = sEl.value.replace(/\s+$/,"");
+    sEl.value = (v ? v + "\n" : "") + line;
+  } else {
+    const dEl = $("decklist"), lines = dEl.value.split(/\r?\n/);
+    let idx = lines.findIndex(l => /^(sideboard)\s*:?\s*$/i.test(l.trim()));
+    if (idx < 0) idx = lines.length;
+    lines.splice(idx, 0, line);
+    dEl.value = lines.join("\n");
+  }
+  recompute();
+}
+document.addEventListener("click", e => {
+  const rsv = e.target.closest && e.target.closest(".rsv[data-act='resolve']");
+  if (rsv){ e.preventDefault(); resolveMissing([rsv.dataset.name]); return; }
+  const b = e.target.closest && e.target.closest(".qbtn[data-act],.xbtn[data-act]");
+  if (!b) return;
+  e.preventDefault();
+  editDeck(b.dataset.board, b.dataset.name, b.dataset.act);
+});
+document.addEventListener("submit", e => {
+  const f = e.target.closest && e.target.closest("form.addcard");
+  if (!f) return;
+  e.preventDefault();
+  const inp = f.querySelector(".addinput");
+  if (inp && inp.value.trim()){ addCard(f.dataset.board, inp.value); inp.value = ""; }
+});
+
+/* ---- card-image hover popup (uses imgs captured during pricing) ----- */
+(function(){
+  const tip = document.createElement("div");
+  tip.id = "cardTip"; document.body.appendChild(tip);
+  let cur = null;
+  function move(e){
+    const m = 14;
+    let x = e.clientX + m, y = e.clientY + m;
+    if (x + tip.offsetWidth  > innerWidth  - m) x = e.clientX - tip.offsetWidth  - m;
+    if (y + tip.offsetHeight > innerHeight - m) y = e.clientY - tip.offsetHeight - m;
+    tip.style.left = Math.max(m,x) + "px"; tip.style.top = Math.max(m,y) + "px";
+  }
+  document.addEventListener("mouseover", e => {
+    const a = e.target.closest && e.target.closest("[data-img]");
+    if (!a) return;
+    cur = a.getAttribute("data-img");
+    tip.innerHTML = `<img alt="" src="${cur}">`;
+    tip.style.display = "block"; move(e);
+  });
+  document.addEventListener("mousemove", e => { if (tip.style.display==="block") move(e); });
+  document.addEventListener("mouseout", e => {
+    if (e.target.closest && e.target.closest("[data-img]")) { tip.style.display="none"; cur=null; }
+  });
+})();
+
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---- spelling-correction notice + decklist rewrite ------------------
+   A correction is shown immediately and the totals/tables already use the
+   corrected name. The decklist *text* is only rewritten when the relevant
+   box isn't focused (never fight the user mid-type) — otherwise it's queued
+   and applied on blur. `_progEdit` marks our own writes so the user-edit
+   listener doesn't treat them as a manual change.                        */
+let _progEdit = false, _pendingTextFix = [];
+function showFixNote(corrections){
+  const box = $("fixNote");
+  if (!corrections.length) return;        // keep any prior notice (it's accurate
+                                          // until the user edits again)
+  box.innerHTML =
+    `<span class="dot"></span><span><b>Resolved via Scryfall</b> &mdash; ` +
+    corrections.map(c =>
+      `&ldquo;${escapeHtml(c.from)}&rdquo; &rarr; <b>${escapeHtml(c.to)}</b>`
+    ).join(" &nbsp;&middot;&nbsp; ") +
+    `. Your decklist text and the totals were updated to the matched card` +
+    ` (cheapest printing).</span>` +
+    `<button class="fixx" type="button" title="dismiss" aria-label="dismiss">&times;</button>`;
+  box.classList.remove("hidden");
+  box.querySelector(".fixx").onclick = () => box.classList.add("hidden");
+}
+// Rewrite a textarea's value, swapping any line whose parsed card name was
+// corrected to the corrected name (qty + SB: prefix preserved; other lines
+// untouched verbatim). Only corrected lines are normalised.
+function rewriteList(raw, map){
+  return (raw || "").split(/\r?\n/).map(line => {
+    const t = line.trim();
+    if (!t || /^(\/\/|#)/.test(t) ||
+        /^(deck|maindeck|main deck|commander|companion|sideboard)\s*:?\s*$/i.test(t))
+      return line;
+    const sb = t.match(/^sb:\s*/i);
+    const body = sb ? t.slice(sb[0].length) : t;
+    const c = parseCardLine(body);
+    if (!c) return line;
+    const to = map.get(norm(c.name));
+    return to ? (sb ? sb[0] : "") + c.qty + " " + to : line;
+  }).join("\n");
+}
+function applyTextCorrections(corrections){
+  if (!corrections.length) return;
+  const dEl = $("decklist"), sEl = $("sideboard");
+  const focused = document.activeElement === dEl || document.activeElement === sEl;
+  if (focused){ _pendingTextFix = corrections.slice(); return; }   // defer to blur
+  const map = new Map();
+  for (const c of corrections) map.set(norm(c.from), c.to);
+  for (const el of [dEl, sEl]){
+    const next = rewriteList(el.value, map);
+    if (next !== el.value){
+      const top = el.scrollTop;
+      _progEdit = true;                 // our write, not a manual edit
+      el.value = next;
+      el.dispatchEvent(new Event("input", { bubbles:true }));
+      el.scrollTop = top;
+    }
+  }
+  _pendingTextFix = [];
+}
+
+/* ---- export -------------------------------------------------------- */
+function buildReport(L){
+  const pad = (s,n) => String(s).padEnd(n);
+  const lines = [];
+  lines.push("=".repeat(60));
+  lines.push(L.deckname);
+  lines.push("Budget Modern Deckbuilder report");
+  lines.push("=".repeat(60));
+  lines.push("Prices calculated: " + L.priceAt.toISOString() + " (UTC)");
+  lines.push("                   " + L.priceAt.toLocaleString() + " (local)");
+  lines.push("Price figure     : TCGplayer Mid USD (cheapest printing) — daily TCGcsv snapshot");
+  lines.push("Report generated : " + L.runAt.toISOString() + " (UTC)");
+  lines.push("Printing basis   : " + (L.cheapest ? "cheapest paper printing" : "Scryfall default/fuzzy printing"));
+  lines.push("Legality format  : " + (L.format === "__none" ? "(not checked)" : fmtName(L.format)));
+  if (L.basicsDropped) lines.push("Basic lands      : " + L.basicsDropped + " ignored (excluded from totals)");
+  lines.push("");
+  const sec = (title, s, budget) => {
+    lines.push("-".repeat(60));
+    lines.push(title + "  (budget " + money(budget) + ")");
+    lines.push("-".repeat(60));
+    for (const r of s.rows){
+      const f = [];
+      if (!r.p.found) f.push("NOT FOUND");
+      else if (r.p.price==null) f.push(L.source==="mid" ? "NO TCG MID" : "NO USD");
+      if (r.p.foilOnly) f.push("foil-only");
+      if (L.format !== "__none" && r.p.found){
+        const v = r.p.legal ? r.p.legal[L.format] : undefined;
+        const F = fmtName(L.format).toUpperCase();
+        if (v === "banned") f.push(F+"-BANNED");
+        else if (v === "restricted") f.push(F+"-restricted");
+        else if (v === "not_legal") f.push("not-"+L.format+"-legal");
+        else if (v == null) f.push(L.format+"-legality-unknown");
+      }
+      lines.push(pad(r.qty+"x",4) + pad(r.name,34) +
+        pad(r.p.set?(r.p.set+" "+(r.p.cn||"")):"-",12) +
+        pad(r.unit!=null?money(r.unit):"-",9) +
+        pad(r.lineT!=null?money(r.lineT):"-",9) +
+        (f.length?("  ["+f.join(", ")+"]"):""));
+    }
+    const over = s.total > budget;
+    lines.push("");
+    lines.push(pad("",4)+pad("TOTAL"+(s.anyMissing?" (floor, unpriced cards)":""),34)+
+      pad("",12)+pad("",9)+money(s.total));
+    lines.push(pad("",4)+pad(over?"OVER BUDGET by "+money(s.total-budget):"under budget by "+money(budget-s.total),34));
+    lines.push("");
+  };
+  sec("MAIN DECK", L.m, L.bM);
+  if (L.s.rows.length) sec("SIDEBOARD", L.s, L.bS);
+  lines.push("=".repeat(60));
+  lines.push("Combined: " + money(L.m.total + L.s.total) +
+    " vs combined budget " + money(L.bM + L.bS));
+  lines.push("=".repeat(60));
+
+  const ts = L.priceAt.toISOString().replace(/[:.]/g,"-");
+  const safe = L.deckname.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase() || "deck";
+  return { text: lines.join("\n"), filename: `budget-modern_${safe}_${L.source}_${ts}.txt` };
+}
+
+function csvEsc(v){
+  v = (v == null) ? "" : String(v);
+  return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+}
+function buildCsv(L){
+  const fmt = L.format;
+  const out = [[
+    "Board","Qty","Card","Set","Collector","Unit USD","Line USD",
+    fmt === "__none" ? "Legality" : ("Legality (" + fmtName(fmt) + ")"), "Notes"
+  ]];
+  const add = (board, s) => { for (const r of s.rows){
+    const p = r.p, notes = [];
+    if (!p.found) notes.push("not found");
+    else if (p.price == null) notes.push(L.source === "mid" ? "no TCG Mid" : "no USD price");
+    if (p.foilOnly) notes.push("foil only");
+    let leg = "";
+    if (fmt !== "__none" && p.found){
+      const v = p.legal ? p.legal[fmt] : undefined;
+      leg = v || "unknown";
+      if (v && v !== "legal") notes.push(v === "not_legal" ? ("not " + fmtName(fmt) + "-legal") : (fmtName(fmt) + " " + v));
+    }
+    out.push([ board, r.qty, r.name, p.set || "", p.cn || "",
+      r.unit != null ? r.unit.toFixed(2) : "",
+      r.lineT != null ? r.lineT.toFixed(2) : "", leg, notes.join("; ") ]);
+  }};
+  add("Main", L.m);
+  add("Sideboard", L.s);
+  out.push([]);
+  const tot = (label, s, budget) => out.push([ label,"","","","","",
+    s.total.toFixed(2), "",
+    "budget " + budget.toFixed(2) + (s.total > budget ? " — OVER" : " — under") +
+    (s.anyMissing ? " (floor: unpriced cards)" : "") ]);
+  tot("TOTAL Main deck", L.m, L.bM);
+  tot("TOTAL Sideboard", L.s, L.bS);
+  const ts = L.priceAt.toISOString().replace(/[:.]/g,"-");
+  const safe = L.deckname.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase() || "deck";
+  return {
+    text: out.map(row => row.map(csvEsc).join(",")).join("\r\n"),
+    filename: `budget-modern_${safe}_${L.source}_${ts}.csv`,
+  };
+}
+
+function downloadFile(file, mime){
+  if (!file) return;
+  const blob = new Blob([file.text], { type: mime + ";charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = file.filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+$("exportBtn").addEventListener("click", () => downloadFile(lastReport, "text/plain"));
+$("csvBtn").addEventListener("click", () => downloadFile(lastCsv, "text/csv"));
+$("copyBtn").addEventListener("click", async () => {
+  if (!lastReport) return;
+  try { await navigator.clipboard.writeText(lastReport.text);
+        $("status").textContent = "Report copied to clipboard."; }
+  catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
+});
+// Any result-affecting edit -> debounced recompute (Mid, index-only).
+RECOMPUTE_INPUTS.forEach(id => {
+  const el = $(id);
+  const ev = (el.tagName === "SELECT" || el.type === "checkbox") ? "change" : "input";
+  el.addEventListener(ev, scheduleRecompute);
+});
+$("resolveBtn").addEventListener("click", resolveMissing);
+// Preset: restore the $25 Budget Modern defaults ($25 / $10 / Modern).
+$("presetBtn").addEventListener("click", () => {
+  $("budgetMain").value = "25";
+  $("budgetSide").value = "10";
+  $("format").value = "modern";
+  scheduleRecompute();
+  $("status").textContent = "Preset applied: $25 main · $10 side · Modern.";
+});
+
+// A *manual* edit to either list dismisses the correction notice (it'll
+// re-appear from the next recompute if a typo still stands). Our own
+// programmatic rewrite (_progEdit) must not count as a manual edit.
+["decklist","sideboard"].forEach(id => {
+  const el = $(id);
+  el.addEventListener("input", () => {
+    if (_progEdit){ _progEdit = false; return; }
+    $("fixNote").classList.add("hidden");
+  });
+  // Apply any deferred text correction once the user leaves the box.
+  el.addEventListener("blur", () => {
+    if (_pendingTextFix.length &&
+        document.activeElement !== $("decklist") &&
+        document.activeElement !== $("sideboard"))
+      applyTextCorrections(_pendingTextFix);
+  });
+});
+
+/* ---- "prices last updated" banner ---------------------------------- */
+function ago(d){
+  const s = Math.max(0, (Date.now() - d.getTime())/1000);
+  if (s < 90)    return "just now";
+  if (s < 5400)  return Math.round(s/60) + " min ago";
+  if (s < 172800)return Math.round(s/3600) + " h ago";
+  return Math.round(s/86400) + " days ago";
+}
+async function showLastUpdated(){
+  const box = $("updated"), txt = $("updatedText");
+  try{
+    const r = await fetch(`${CDN}/data-meta.json?d=${utcDay()}`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const meta = await r.json();
+    const d = new Date(meta.generatedAt);
+    const stale = (Date.now() - d.getTime()) > 36*3600*1000; // refreshed daily
+    box.classList.toggle("stale", stale);
+    txt.classList.remove("dim");
+    txt.innerHTML =
+      "<b>TCG Mid prices last updated:</b> " + d.toLocaleString() +
+      " <span class='dim'>(" + ago(d) + " · " + d.toISOString() + ")</span>" +
+      " <span class='dim'>· " + (meta.priceCount||0).toLocaleString() +
+      " priced products · " + (meta.cardCount||0).toLocaleString() +
+      " cards indexed · via TCGcsv + Scryfall</span>" +
+      (stale ? " <span class='tag warn'>data &gt;36 h old</span>" : "");
+  }catch(e){
+    box.classList.add("err");
+    txt.classList.remove("dim");
+    txt.innerHTML =
+      "Daily price-data date unavailable (" + escapeHtml(String(e.message||e)) +
+      "). Edit the list to retry.";
+  }
+}
+/* ---- self-contained share link (beta item 4) -----------------------
+   The entire input state is encoded into the URL fragment (UTF-8 -> bytes
+   -> URL-safe base64). No backend, no account: the link IS the data.    */
+const SHARE_KEYS = {                       // short URL key -> element id
+  d:"decklist", s:"sideboard", n:"deckname", bm:"budgetMain", bs:"budgetSide",
+  f:"format", c:"cheapest", ib:"ignoreBasics", cc:"colorCost" };
+function b64urlEncode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64urlDecode(s){
+  s = s.replace(/-/g,"+").replace(/_/g,"/");
+  const bin = atob(s);
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+function buildShareLink(){
+  const st = {};
+  for (const [k, id] of Object.entries(SHARE_KEYS)){
+    const el = $(id);
+    st[k] = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value;
+  }
+  return location.origin + location.pathname + "#d=" +
+    b64urlEncode(JSON.stringify(st));
+}
+function loadShared(){
+  const m = /[#&]d=([^&]+)/.exec(location.hash || "");
+  if (!m) return;
+  let st; try { st = JSON.parse(b64urlDecode(m[1])); } catch { return; }
+  for (const [k, id] of Object.entries(SHARE_KEYS)){
+    if (!(k in st)) continue;
+    const el = $(id);
+    if (el.type === "checkbox") el.checked = !!st[k];
+    else el.value = st[k];
+  }
+}
+$("shareBtn").addEventListener("click", async () => {
+  const url = buildShareLink();
+  try {
+    await navigator.clipboard.writeText(url);
+    history.replaceState(null, "", url);     // reflect it in the address bar
+    $("status").textContent = "Share link copied to clipboard.";
+  } catch {
+    history.replaceState(null, "", url);
+    $("status").textContent = "Clipboard blocked — the link is now in the address bar; copy it from there.";
+  }
+});
+
+loadShared();                                // shared state before first render
+showLastUpdated();
+recompute();
+</script>
+</body>
+</html>
