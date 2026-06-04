@@ -8,9 +8,32 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.6.0-beta.1)  [BETA — sandbox; main is v3.5.0]
+  MTG Budget Deckbuilder (v3.6.0-beta.3)  [BETA — sandbox; main is v3.5.0]
 
   Changelog:
+  v3.6.0-beta.3 (2026-06-04T18:26:51Z) - Fix side-by-side wrongly wrapping to a
+                        second row. The fit math assumed each board's flex item
+                        was exactly its box width, but a long HEADER (e.g.
+                        "$31 spent — OVER by $6" on a small over-budget board)
+                        was wider than a narrow box, so the item overflowed and
+                        forced a wrap (it "won't fit even at full width" for some
+                        price/size combos). Now each unit is pinned to its box
+                        width and the header wraps instead; also reserves more
+                        horizontal slack (flex gap + borders + rounding).
+  v3.6.0-beta.2 (2026-06-04T18:20:01Z) - Fix regressions from beta.1's side-by-
+                        side layout + tweak the over-budget label:
+                        - Side-by-side boxes were sized to FILL the row, which
+                          made the bigger (main) box wide-short — bringing back
+                          wide-short tiles and a rectangular (not L-shaped)
+                          unspent region. Now the shared HEIGHT is chosen so the
+                          larger box stays square-ish (≈1.09 aspect); on very
+                          wide windows the widths shrink (keeping the ∝-value
+                          ratio) and the row centres, instead of going wide-short.
+                          Restores the square card-region + L-shaped unspent.
+                        - Over-budget red label: amount FIRST, "OVER" the SAME
+                          size, on one line where it fits (wraps only if not).
+                        (The under=hatched / over=red-wash visual language is
+                        under review — see notes; this is an interim fix.)
   v3.6.0-beta.1 (2026-06-04T17:48:41Z) - Big visual/UX pass:
                         - Visual breakdown is now ALWAYS ON and live: charts +
                           treemap/grid update on every edit. Scryfall is queried
@@ -444,12 +467,13 @@
   .tmline.v{width:2px}
   .tmline.h{height:2px}
   .tmhead{display:flex;align-items:baseline;justify-content:space-between;
-    margin:18px 0 8px}
+    flex-wrap:wrap;gap:2px 10px;margin:18px 0 8px;min-width:0}
+  .tmhead h2{min-width:0}
   .tmhead h2{margin:0}
   .tmhead .tmeta{color:var(--dim);font-size:12.5px}
   .tmhead .tmeta.over{color:var(--bad);font-weight:700}
-  .tmrow{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
-  .tmunit{flex:0 0 auto}
+  .tmrow{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+  .tmunit{flex:0 0 auto;min-width:0;max-width:100%}
   .tmrow .tmbox{margin-bottom:0}
   .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:8px;text-align:center}
@@ -516,7 +540,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.6.0-beta.1 &middot; 2026-06-04 17:48 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.6.0-beta.3 &middot; 2026-06-04 18:26 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1391,10 +1415,10 @@ function treemapBox(boardRows, budget, width, height){
     const big = washes.slice().sort((a, b) => b.w * b.h - a.w * a.h)[0];
     for (const s of washes){
       const pos = `left:${s.x.toFixed(1)}px;top:${s.y.toFixed(1)}px;width:${s.w.toFixed(1)}px;height:${s.h.toFixed(1)}px`;
-      const ff = clamp(Math.floor(Math.min(s.w / 5, s.h * 0.4)), 9, 26);
-      const inner = (s === big && s.w > 46 && s.h > 24)
-        ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.05">OVER<br>` +
-          `<span style="font-size:${Math.max(9, Math.round(ff * 0.6))}px">${money(over)}</span></span>`
+      const ff = clamp(Math.floor(Math.min(s.w / 5.5, s.h * 0.4)), 9, 24);
+      // number first, "OVER" the SAME size, on one line where it fits (wraps if not)
+      const inner = (s === big && s.w > 38 && s.h > 18)
+        ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(over)} OVER</span>`
         : "";
       html += `<div class="tmover" style="${pos}">${inner}</div>`;
     }
@@ -1434,11 +1458,19 @@ function buildTreemapHTML(rows){
   let sideBySide = false, mBox, sBox;
   if (both && cw >= 700){
     sideBySide = true;
-    const availW = cw - GAP - 4, Vt = mainBT.V + sideBT.V;
-    const wm = Math.max(90, Math.round(availW * mainBT.V / Vt));
-    const ws = Math.max(90, availW - wm);
-    const H = Math.max(220, Math.min(480, Math.round(Math.max(wm, ws) * 0.8)));
-    mBox = { w:wm, h:H }; sBox = { w:ws, h:H };
+    const availW = cw - GAP - 16, Vt = mainBT.V + sideBT.V;   // reserve flex gap + borders + slack
+    // Widths ∝ value (so $1 is equal-area across both at a shared height). Pick
+    // the shared HEIGHT so the LARGER box stays square-ish (slightly portrait) —
+    // NOT just by filling the row, which made the bigger board wide-short and
+    // broke the square-card-region / L-shaped-unspent layout. On very wide
+    // windows we shrink the widths (keeping the ratio) rather than let the big
+    // box go wide-short, so the row centres with some slack.
+    let wm = availW * mainBT.V / Vt, ws = availW - wm;
+    const TARGET = 0.92, MAXH = 600, MINH = 240;     // big-box aspect ≈ 1/0.92 ≈ 1.09
+    let H = Math.max(wm, ws) * TARGET;
+    if (H > MAXH){ const sc = MAXH / H; wm *= sc; ws *= sc; H = MAXH; }
+    H = Math.max(MINH, H);
+    mBox = { w:Math.round(wm), h:Math.round(H) }; sBox = { w:Math.round(ws), h:Math.round(H) };
   } else {
     mBox = boxFor(mainBT.V); sBox = boxFor(sideBT.V);
   }
@@ -1449,7 +1481,11 @@ function buildTreemapHTML(rows){
     const meta = bt.over
       ? `<span class="tmeta over">$${bt.spent.toFixed(2)} spent — OVER by ${money(bt.spent - budget)}</span>`
       : `<span class="tmeta">$${bt.spent.toFixed(2)} of ${money(budget)} · ${money(bt.free)} unspent</span>`;
-    return `<div class="tmunit"><div class="tmhead"><h2>${title}</h2>${meta}</div>` +
+    // In side-by-side mode the unit is pinned to the box WIDTH so a long header
+    // (e.g. "$31 spent — OVER by $6") can't make the flex item wider than its
+    // box and wrongly force a wrap to a second row; the header wraps instead.
+    const uw = sideBySide ? ` style="width:${box.w}px"` : "";
+    return `<div class="tmunit"${uw}><div class="tmhead"><h2>${title}</h2>${meta}</div>` +
            `<div class="tmbox" style="width:${box.w}px;height:${box.h}px">${tm.html}</div></div>`;
   };
   const mainHTML = unit("Main deck", mainRows, LAST.bM, mainBT, mBox);
