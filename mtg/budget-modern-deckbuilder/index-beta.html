@@ -8,9 +8,24 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.6.0-beta.3)  [BETA — sandbox; main is v3.5.0]
+  MTG Budget Deckbuilder (v3.6.0-beta.4)  [BETA — sandbox; main is v3.5.0]
 
   Changelog:
+  v3.6.0-beta.4 (2026-06-04T22:12:38Z) - Rework the budget visual language to a
+                        single consistent metaphor (was: under=hatched space,
+                        over=red L-wash — felt inconsistent; prior art = bullet
+                        graph / thermometer-past-goal). Now the box is the BUDGET
+                        (constant size, area ∝ budget; $1 = equal area in both
+                        boards). UNDER budget: cards in a square-ish region,
+                        leftover L is empty = unspent. OVER budget: the budget
+                        box fills and the spend OVERFLOWS into a red strip BELOW
+                        a dashed "budget" line (always the bottom — answers
+                        "top or bottom?"); strip height ∝ over-spend, capped at
+                        2.6× so a wildly-over deck stays usable ("$X OVER" still
+                        reports the true amount). Side-by-side boxes now size by
+                        BUDGET (constant footprint) and the over board spills
+                        below the shared budget line. Verified in-browser
+                        (side-by-side + stacked, over/under, cap, charts).
   v3.6.0-beta.3 (2026-06-04T18:26:51Z) - Fix side-by-side wrongly wrapping to a
                         second row. The fit math assumed each board's flex item
                         was exactly its box width, but a long HEADER (e.g.
@@ -466,6 +481,12 @@
     z-index:3;box-shadow:0 0 4px rgba(0,0,0,.7)}
   .tmline.v{width:2px}
   .tmline.h{height:2px}
+  /* dashed "budget level" line; overspend (the red .tmover strip) sits below it */
+  .tmbudgetline{position:absolute;left:0;height:0;z-index:4;pointer-events:none;
+    border-top:2px dashed rgba(255,255,255,.95);
+    filter:drop-shadow(0 0 3px rgba(0,0,0,.8))}
+  .tmbudgetline span{position:absolute;right:4px;top:3px;font-size:10px;font-weight:700;
+    letter-spacing:.03em;color:#fff;background:rgba(0,0,0,.6);padding:0 5px;border-radius:3px}
   .tmhead{display:flex;align-items:baseline;justify-content:space-between;
     flex-wrap:wrap;gap:2px 10px;margin:18px 0 8px;min-width:0}
   .tmhead h2{min-width:0}
@@ -540,7 +561,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.6.0-beta.3 &middot; 2026-06-04 18:26 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.6.0-beta.4 &middot; 2026-06-04 22:12 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1320,34 +1341,48 @@ function budgetTiles(cards, budget){
   return { items, spent, V, free, over: spent > b };
 }
 // One board's box HTML (absolutely-positioned tiles inside a relative .tmbox).
-// Free space is pulled OUT of the squarify; the cards get a SQUARE-ish region
-// (area = spent/V of the box) anchored top-left, so squarify has room in both
-// axes and makes legible square/portrait tiles (no thin slivers). The leftover
-// is an L-shaped empty region — it just shows the box's hatched bg as the
-// unspent budget (no rectangle needed); the "$X unspent" label is centred in
-// the larger empty strip.
-function treemapBox(boardRows, budget, width, height){
+// The box is the BUDGET (width × budgetHeight = budget area, constant size):
+//  - UNDER budget: cards fill a SQUARE-ish region (area ∝ spend) anchored
+//    top-left; the leftover L-shape is empty = unspent (the box's hatched bg
+//    shows through; "$X unspent" centred in the larger empty strip).
+//  - OVER budget: the budget box fills with cards and the SPEND overflows BELOW
+//    it — the box grows downward to spentHeight, the cards squarify into the
+//    full width × spentHeight (square-or-taller, so tiles stay legible), a
+//    dashed budget line marks the budget level and a translucent red strip
+//    washes everything below it ("$X OVER"). Returns the drawn height.
+function treemapBox(boardRows, budget, width, budgetHeight){
   const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
   const g = 2;                                     // gutter between tiles
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const cardItems = bt.items.filter(i => !i.item.__free);
-  const boxArea = width * height;
+  const b = Math.max(0, budget || 0);
+  const budgetArea = width * budgetHeight;
+  // Card area uses the SAME px-per-$ as the budget box. Over budget ⇒ card area
+  // exceeds the box and it grows downward; under ⇒ a square region + empty rest.
+  const spentArea = b > 0 ? budgetArea * (bt.spent / b) : budgetArea;
+  const over = b > 0 && bt.spent > b;
+  // Cap how tall a wildly-over board can get (e.g. 5× over) so it stays usable;
+  // the "$X OVER" label still reports the true amount. Typical over (≤~2.5×)
+  // is uncapped and stays area-proportional.
+  const OVER_CAP = 2.6;
+  const spentHeight = Math.min(width > 0 ? spentArea / width : budgetHeight, budgetHeight * OVER_CAP);
+  const boxHeight = Math.max(budgetHeight, spentHeight);
 
-  let cardsRect = { x:0, y:0, w:width, h:height }, emptyRect = null;
-  if (bt.free > 0 && cardItems.length){
-    // square-ish cards region of area = spent/V * boxArea, clamped to the box.
-    const A = (bt.spent / bt.V) * boxArea;
+  let cardsRect = { x:0, y:0, w:width, h:budgetHeight }, emptyRect = null;
+  if (over){
+    cardsRect = { x:0, y:0, w:width, h:spentHeight };         // fill budget box + overflow
+  } else if (bt.free > 0 && cardItems.length){
+    const A = spentArea;                                      // square-ish region, area ∝ spend
     let rw = Math.sqrt(A), rh = rw;
-    if (rw > width)  { rw = width;  rh = A / width;  }
-    if (rh > height) { rh = height; rw = A / height; }
-    cardsRect = { x:0, y:0, w:Math.min(rw, width), h:Math.min(rh, height) };
-    // unspent label goes in whichever leftover strip (right vs bottom) is bigger
-    const right  = { x:cardsRect.w, y:0, w:width - cardsRect.w, h:height };
-    const bottom = { x:0, y:cardsRect.h, w:cardsRect.w, h:height - cardsRect.h };
+    if (rw > width)        { rw = width;        rh = A / width; }
+    if (rh > budgetHeight) { rh = budgetHeight; rw = A / budgetHeight; }
+    cardsRect = { x:0, y:0, w:Math.min(rw, width), h:Math.min(rh, budgetHeight) };
+    const right  = { x:cardsRect.w, y:0, w:width - cardsRect.w, h:budgetHeight };
+    const bottom = { x:0, y:cardsRect.h, w:cardsRect.w, h:budgetHeight - cardsRect.h };
     emptyRect = (right.w * right.h >= bottom.w * bottom.h) ? right : bottom;
-  } else if (bt.free > 0 && !cardItems.length){
+  } else if (!cardItems.length){
     cardsRect = { x:0, y:0, w:0, h:0 };
-    emptyRect = { x:0, y:0, w:width, h:height };
+    emptyRect = { x:0, y:0, w:width, h:budgetHeight };
   }
   const tiles = cardItems.length ? squarify(cardItems, cardsRect) : [];
 
@@ -1395,38 +1430,20 @@ function treemapBox(boardRows, budget, width, height){
     html += `<div class="tmfree" style="${pos}">${inner}</div>`;
   }
 
-  // Over budget: the whole box is the SPEND (its area ∝ spent, so the box is
-  // visibly larger than a budget-sized one). We mark the budget level and lay a
-  // translucent RED wash over the EXCESS region — a budget-sized square sits in
-  // the corner, and the leftover L-shape (area = over-spend / spend × box) is
-  // the overspend. The card tiles span the boundary, so the wash + guide line
-  // are an approximate area indicator, not a per-tile cut.
-  if (bt.over && budget > 0){
-    const A = (budget / bt.V) * boxArea;            // budget's share of the box
-    let rw = Math.sqrt(A), rh = rw;
-    if (rw > width)  { rw = width;  rh = A / width;  }
-    if (rh > height) { rh = height; rw = A / height; }
-    rw = Math.min(rw, width); rh = Math.min(rh, height);
-    const over = bt.spent - budget;
-    const washes = [
-      { x:rw, y:0,  w:width - rw, h:height },        // right arm of the L
-      { x:0,  y:rh, w:rw,         h:height - rh },   // bottom arm of the L
-    ].filter(s => s.w > 1 && s.h > 1);
-    const big = washes.slice().sort((a, b) => b.w * b.h - a.w * a.h)[0];
-    for (const s of washes){
-      const pos = `left:${s.x.toFixed(1)}px;top:${s.y.toFixed(1)}px;width:${s.w.toFixed(1)}px;height:${s.h.toFixed(1)}px`;
-      const ff = clamp(Math.floor(Math.min(s.w / 5.5, s.h * 0.4)), 9, 24);
-      // number first, "OVER" the SAME size, on one line where it fits (wraps if not)
-      const inner = (s === big && s.w > 38 && s.h > 18)
-        ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(over)} OVER</span>`
-        : "";
-      html += `<div class="tmover" style="${pos}">${inner}</div>`;
-    }
-    // budget boundary guide (the L between the budget square and the excess)
-    if (width - rw > 1)  html += `<div class="tmline v" style="left:${rw.toFixed(1)}px;top:0;height:${height}px"></div>`;
-    if (height - rh > 1) html += `<div class="tmline h" style="left:0;top:${rh.toFixed(1)}px;width:${rw.toFixed(1)}px"></div>`;
+  // Over budget: the budget box (top, height = budgetHeight) is full and the
+  // SPEND overflows into a red strip BELOW it (always the bottom — consistent).
+  // A dashed line marks the budget level; the red strip's height ∝ over-spend.
+  if (over){
+    const ovY = budgetHeight, ovH = spentHeight - budgetHeight, overAmt = bt.spent - b;
+    const pos = `left:0;top:${ovY.toFixed(1)}px;width:${width.toFixed(1)}px;height:${ovH.toFixed(1)}px`;
+    const ff = clamp(Math.floor(Math.min(width / 6, ovH * 0.5)), 9, 24);
+    const inner = (width > 38 && ovH > 16)
+      ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(overAmt)} OVER</span>`
+      : "";
+    html += `<div class="tmover" style="${pos}">${inner}</div>`;
+    html += `<div class="tmbudgetline" style="top:${budgetHeight.toFixed(1)}px;width:${width.toFixed(1)}px"><span>budget</span></div>`;
   }
-  return { html, bt, height };
+  return { html, bt, height: boxHeight };
 }
 function buildTreemapHTML(rows){
   const cw = Math.max(300, ($("visual").clientWidth || 700));
@@ -1434,59 +1451,58 @@ function buildTreemapHTML(rows){
   const sideRows = rows.filter(r => r.board === "side");
   const mainBT = budgetTiles(mainRows.map(r => ({ ...r, cost: r.lineT || 0 })), LAST.bM);
   const sideBT = budgetTiles(sideRows.map(r => ({ ...r, cost: r.lineT || 0 })), LAST.bS);
-  const both = mainBT.V > 0 && sideBT.V > 0;
+  // Box FOOTPRINT tracks the BUDGET (constant size); over-budget spends spill
+  // BELOW the budget box as a red overflow strip (in treemapBox). Fall back to
+  // spend when a board has no budget set so it still renders.
+  const fM = LAST.bM > 0 ? LAST.bM : mainBT.spent;
+  const fS = LAST.bS > 0 ? LAST.bS : sideBT.spent;
+  const both = fM > 0 && fS > 0;
   const GAP = 22;
 
-  // Stacked sizing (also the narrow-window fallback): each box keeps a square-
-  // ish ASPECT and AREA ∝ its budget-value V; width is capped to the container,
-  // and when capped the height grows so AREA is preserved (the box gets taller
-  // & thinner rather than overflowing). $1 = equal area in both boards.
+  // Stacked sizing (also the narrow-window fallback): the budget box keeps a
+  // square-ish ASPECT and AREA ∝ its BUDGET; width capped to the container.
+  // $1 = equal area in both boards (shared k = px² per $).
   const ASPECT = 1.1;
   const wBig = Math.min(cw, 760), hBig = Math.round(wBig / ASPECT);
-  const k = (wBig * hBig) / Math.max(mainBT.V, sideBT.V, 1);   // px² per $
-  const boxFor = V => {
-    if (V <= 0) return null;
-    const area = k * V;
+  const k = (wBig * hBig) / Math.max(fM, fS, 1);   // px² per budget-$
+  const boxFor = F => {
+    if (F <= 0) return null;
+    const area = k * F;
     const w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
     return { w, h: Math.max(1, Math.round(area / w)) };
   };
 
-  // Side-by-side when both boards exist AND the window is wide enough: the two
-  // boxes share one HEIGHT and have WIDTH ∝ value (so $1 is STILL equal-area
-  // across them — same H, width∝V => area∝V), filling the row like the tables.
-  // Otherwise they stack, each its own square-ish box.
+  // Side-by-side when both boards have a budget AND the window is wide enough:
+  // the two BUDGET boxes share one HEIGHT and have WIDTH ∝ budget (so $1 is
+  // equal-area across them — same H, width∝budget => area∝budget). The shared
+  // height keeps the larger box square-ish (over-budget boards then spill below
+  // that shared budget line). Otherwise they stack, each its own square-ish box.
   let sideBySide = false, mBox, sBox;
   if (both && cw >= 700){
     sideBySide = true;
-    const availW = cw - GAP - 16, Vt = mainBT.V + sideBT.V;   // reserve flex gap + borders + slack
-    // Widths ∝ value (so $1 is equal-area across both at a shared height). Pick
-    // the shared HEIGHT so the LARGER box stays square-ish (slightly portrait) —
-    // NOT just by filling the row, which made the bigger board wide-short and
-    // broke the square-card-region / L-shaped-unspent layout. On very wide
-    // windows we shrink the widths (keeping the ratio) rather than let the big
-    // box go wide-short, so the row centres with some slack.
-    let wm = availW * mainBT.V / Vt, ws = availW - wm;
+    const availW = cw - GAP - 16, Ft = fM + fS;      // reserve flex gap + borders + slack
+    let wm = availW * fM / Ft, ws = availW - wm;
     const TARGET = 0.92, MAXH = 600, MINH = 240;     // big-box aspect ≈ 1/0.92 ≈ 1.09
     let H = Math.max(wm, ws) * TARGET;
     if (H > MAXH){ const sc = MAXH / H; wm *= sc; ws *= sc; H = MAXH; }
     H = Math.max(MINH, H);
     mBox = { w:Math.round(wm), h:Math.round(H) }; sBox = { w:Math.round(ws), h:Math.round(H) };
   } else {
-    mBox = boxFor(mainBT.V); sBox = boxFor(sideBT.V);
+    mBox = boxFor(fM); sBox = boxFor(fS);
   }
 
   const unit = (title, boardRows, budget, bt, box) => {
     if (!box) return "";
-    const tm = treemapBox(boardRows, budget, box.w, box.h);
+    const tm = treemapBox(boardRows, budget, box.w, box.h);   // box.h = budget box height
     const meta = bt.over
-      ? `<span class="tmeta over">$${bt.spent.toFixed(2)} spent — OVER by ${money(bt.spent - budget)}</span>`
-      : `<span class="tmeta">$${bt.spent.toFixed(2)} of ${money(budget)} · ${money(bt.free)} unspent</span>`;
+      ? `<span class="tmeta over">${money(bt.spent)} of ${money(budget)} &middot; ${money(bt.spent - budget)} OVER</span>`
+      : `<span class="tmeta">${money(bt.spent)} of ${money(budget)} &middot; ${money(bt.free)} unspent</span>`;
     // In side-by-side mode the unit is pinned to the box WIDTH so a long header
-    // (e.g. "$31 spent — OVER by $6") can't make the flex item wider than its
-    // box and wrongly force a wrap to a second row; the header wraps instead.
+    // can't make the flex item wider than its box and force a wrap; it wraps the
+    // header instead. The box ELEMENT uses tm.height (grows when over budget).
     const uw = sideBySide ? ` style="width:${box.w}px"` : "";
     return `<div class="tmunit"${uw}><div class="tmhead"><h2>${title}</h2>${meta}</div>` +
-           `<div class="tmbox" style="width:${box.w}px;height:${box.h}px">${tm.html}</div></div>`;
+           `<div class="tmbox" style="width:${box.w}px;height:${tm.height.toFixed(1)}px">${tm.html}</div></div>`;
   };
   const mainHTML = unit("Main deck", mainRows, LAST.bM, mainBT, mBox);
   const sideHTML = unit("Sideboard", sideRows, LAST.bS, sideBT, sBox);
