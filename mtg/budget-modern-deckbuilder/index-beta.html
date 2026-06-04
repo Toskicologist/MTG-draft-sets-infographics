@@ -8,9 +8,17 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.6.0-beta.4)  [BETA — sandbox; main is v3.5.0]
+  MTG Budget Deckbuilder (v3.6.0-beta.5)  [BETA — sandbox; main is v3.5.0]
 
   Changelog:
+  v3.6.0-beta.5 (2026-06-04T22:28:33Z) - Side-by-side boxes now START at the
+                        same Y. The board header (title + "$X of $Y · …") was
+                        wrapping to a 2nd line on the narrower board (longer
+                        over-budget meta), making that header taller so its box
+                        sat lower. Header is now kept to ONE line (nowrap; the
+                        meta ellipsises on a very narrow box), so both headers
+                        are equal height and the boxes top-align. Verified
+                        in-browser (both box tops equal).
   v3.6.0-beta.4 (2026-06-04T22:12:38Z) - Rework the budget visual language to a
                         single consistent metaphor (was: under=hatched space,
                         over=red L-wash — felt inconsistent; prior art = bullet
@@ -487,11 +495,14 @@
     filter:drop-shadow(0 0 3px rgba(0,0,0,.8))}
   .tmbudgetline span{position:absolute;right:4px;top:3px;font-size:10px;font-weight:700;
     letter-spacing:.03em;color:#fff;background:rgba(0,0,0,.6);padding:0 5px;border-radius:3px}
+  /* Header is kept to ONE line (title + meta), so both boards' headers are the
+     same height and their boxes start at the same Y when side by side. The meta
+     shrinks with an ellipsis on a narrow box instead of wrapping to a 2nd line. */
   .tmhead{display:flex;align-items:baseline;justify-content:space-between;
-    flex-wrap:wrap;gap:2px 10px;margin:18px 0 8px;min-width:0}
-  .tmhead h2{min-width:0}
-  .tmhead h2{margin:0}
-  .tmhead .tmeta{color:var(--dim);font-size:12.5px}
+    flex-wrap:nowrap;gap:10px;margin:18px 0 8px;min-width:0}
+  .tmhead h2{margin:0;flex:0 0 auto;white-space:nowrap;min-width:0}
+  .tmhead .tmeta{color:var(--dim);font-size:12.5px;flex:0 1 auto;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tmhead .tmeta.over{color:var(--bad);font-weight:700}
   .tmrow{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
   .tmunit{flex:0 0 auto;min-width:0;max-width:100%}
@@ -561,7 +572,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.6.0-beta.4 &middot; 2026-06-04 22:12 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.6.0-beta.5 &middot; 2026-06-04 22:28 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
