@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorwyn Eclipsed - Color Wheel Preview</title>
+  <!-- Open Graph meta tags for link previews -->
+  <meta property="og:title" content="Lorwyn Eclipsed - Color Wheel Preview">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel visualization for Lorwyn Eclipsed">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/og-preview.png?v=2">
+  <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lorwyn Eclipsed - Color Wheel Preview">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel visualization">
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/og-preview.png?v=2">
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Mana Font CSS from jsDelivr (official npm CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    /* On mobile, maximize the SVG size */
+    @media (max-width: 768px) {
+      .color-wheel-svg {
+        max-height: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .main-container {
+        padding: 4px !important;
+      }
+      .archetype-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .color-grid {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;
+      }
+      .beta-banner {
+        font-size: 1.5rem !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+/**
+ * Lorwyn Eclipsed Draft Archetypes - Color Wheel Visualization
+ * 13.1.0 React (STABLE) - Archetype layout improvements from beta experiments
+ *
+ * INSTRUCTIONS FOR FUTURE EDITORS:
+ * When making changes, please:
+ * 1. Update version with SemVer (MAJOR.MINOR.PATCH)
+ * 2. Update the version in the page subtitle
+ * 3. Add changelog entry at TOP of changelog with format:
+ *    X.Y.Z (YYYY-MM-DD, HH:MM UTC) - [Model Name] - Description
+ * 4. Include timestamp (UTC), model used, and detailed description
+ * 5. Archive major releases: when releasing X.Y.0, create vX.html snapshot
+ *
+ * CHANGELOG:
+ * 13.1.0 (2026-01-16, 00:29 UTC) - [Claude Haiku 4.5] - STABLE RELEASE - Archetype layout improvements from beta testing
+ *                                                        - Promoted from 13.0.0-beta.11 with finalized layout optimizations
+ *                                                        - Archetype grid: flexible columns with min(100%, 150px) constraint for smooth transitions
+ *                                                        - Added alignSelf: stretch to override container flex centering
+ *                                                        - Experimental layout refinements validated: 1-2-3-4-5 column scaling without gaps
+ *                                                        - Export image button remains disabled on production
+ * 13.0.0-beta.11 (2026-01-16, 04:22 UTC) - [Claude Haiku 4.5] - FIX: Use min(100%, 150px) in minmax to allow smooth 1-2-3-4-5 column transitions, avoiding gaps in column counts
+ * 13.0.0-beta.10 (2026-01-15, 21:54 UTC) - [Claude Sonnet 4.5] - FIX: Add alignSelf: stretch to override parent flex container centering
+ * 13.0.0-beta.9 (2026-01-15, 21:49 UTC) - [Claude Haiku 4.5] - Experimental: Revert maxWidth/padding, increase minmax to 180px for 1-3-5 column layout
+ * 13.0.0-beta.8 (2026-01-15, 21:45 UTC) - [Claude Haiku 4.5] - Experimental: Reduce minmax to 120px (match colors), add explicit maxWidth: none + padding: 0
+ * 13.0.0-beta.7 (2026-01-15, 21:42 UTC) - [Claude Haiku 4.5] - Experimental: Remove maxWidth constraint on archetypes, reduce minmax to 140px for smoother column transitions
+ * 13.0.0-beta.6 (2026-01-15, 21:38 UTC) - [Claude Haiku 4.5] - Experimental: Made all diagram text uniform size
+ * 13.0.0-beta.5 (2026-01-15, 21:36 UTC) - [Claude Haiku 4.5] - Experimental: Made subtitle and subtext the same size in diagram labels
+ * 13.0.0-beta.4 (2026-01-15, 21:33 UTC) - [Claude Haiku 4.5] - Experimental: Dynamic columns with proportional min width (160px, 1.333x color box size)
+ * 13.0.0-beta.3 (2026-01-15, 21:27 UTC) - [Claude Haiku 4.5] - Experimental: Changed archetype grid to fixed 5 columns for smoother scaling
+ * 13.0.0-beta.2 (2026-01-15, 21:24 UTC) - [Claude Haiku 4.5] - Experimental: Reduced archetype box minimum width to 120px (matches color boxes)
+ * 13.0.0-beta.1 (2026-01-15, 21:17 UTC) - [Claude Haiku 4.5] - BETA: Experimental version synchronized with stable 13.0.0
+ *                                                               - Text size slider (50%-200%) with auto-resizing
+ *                                                               - B&W toggle renamed from "Simple" mode
+ *                                                               - Mana symbol export fix (canvas-based rendering)
+ *                                                               - Prominent red BETA banner at top
+ *                                                               - Export image button enabled on beta
+ */
+
+const { useState, useEffect, useRef } = React;
+
+// Detect mobile for responsive sizing
+const isMobile = () => window.innerWidth <= 768;
+
+const getConfig = (textSizeMultiplier = 1.0) => {
+  const mobile = isMobile();
+  const baseFontSize = mobile ? 10 : 11;
+  const scaledFontSize = Math.round(baseFontSize * textSizeMultiplier);
+  return {
+    width: 700,
+    height: 700,
+    cx: 350,
+    cy: 330,
+    radius: mobile ? 140 : 180,
+    nodeRadius: mobile ? 24 : 30,
+    edgeWidth: mobile ? 4 : 5,
+    boxW: mobile ? 58 : 62,
+    boxH: mobile ? 32 : 36,
+    primaryBoxW: mobile ? 68 : 72,
+    primaryBoxH: mobile ? 40 : 44,
+    fontSize: scaledFontSize,
+    lineSpacing: mobile ? 9 : 10,
+    iterMax: 240,
+    pushStep: 6,
+  };
+};
+
+// Initial config - will be updated reactively
+let CONFIG = getConfig();
+
+const baseHex = {
+  W: "#FFFFFF",
+  U: "#3366FF",
+  B: "#000000",
+  R: "#FF3333",
+  G: "#2ECC40",
+};
+
+const primaryArchetypes = ['WU', 'BR', 'GW', 'UR', 'BG'];
+
+const sourceLinks = {
+  WU: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide' },
+  UB: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
+  BR: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide' },
+  RG: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
+  GW: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide' },
+  WB: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
+  UR: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide' },
+  BG: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide' },
+  RW: { source: 'Wizards of the Coast', url: 'https://magic.wizards.com/en/news/making-magic/total-eclipsed-of-the-sun' },
+  GU: { source: 'Draftsim', url: 'https://draftsim.com/mtg-ecl-limited-set-review/' },
+};
+
+// Mana font monochrome classes (for use on colored backgrounds)
+const manaClasses = {
+  W: 'ms ms-w',
+  U: 'ms ms-u',
+  B: 'ms ms-b',
+  R: 'ms ms-r',
+  G: 'ms ms-g',
+};
+
+const colorDescriptions = {
+  W: {
+    name: "White",
+    description: "Kithkin typal synergies and go-wide strategies. Features Merfolk with tap triggers and persist creatures for resilience."
+  },
+  U: {
+    name: "Blue",
+    description: "Flash creatures (Faeries and Merfolk) for instant-speed trickery. Supports Elementals and enables vivid splashing with color fixing."
+  },
+  B: {
+    name: "Black",
+    description: "Graveyard value with Elves and recursion effects. Goblins with blight and sacrifice synergies. Persist creatures for resilient threats."
+  },
+  R: {
+    name: "Red",
+    description: "Aggressive Goblins with sacrifice payoffs. Big Elementals rewarding 4+ CMC spells. Vivid beatdown strategies leveraging color diversity."
+  },
+  G: {
+    name: "Green",
+    description: "Elf typal with graveyard synergies. Kithkin go-wide tokens. Vivid ramp strategies that enable splashing and big threats."
+  }
+};
+
+const labels = {
+  WU: { text: "Merfolk", sub: "Tap triggers", details: "Tricksy Merfolk disrupt opponents and accrue value over time. Key Merfolk have abilities that trigger when tapped. Convoke spells let you trigger these abilities without endangering creatures in combat.", source: "WotC Prerelease Guide" },
+  UB: { text: "Flash", sub: "Trickery", details: "Play on your opponent's turn with flash creatures (mostly Faeries) and instants. This archetype rewards trickery and reactive play, ambushing attackers and controlling tempo through surprise.", source: "WotC Prerelease Guide" },
+  BR: { text: "Goblins", sub: "Blight\nsacrifice", details: "Rambunctious Goblins combine with the blight mechanic. Goblins trigger powerful abilities when they die, rewarding aggressive sacrifice strategies and death triggers for overwhelming value.", source: "WotC Prerelease Guide" },
+  RG: { text: "Vivid", sub: "Beatdown", details: "Vivid abilities care about the number of colors among your permanents. Thanks to hybrid mana, even 2-color decks can achieve all five colors. Play efficient beaters and leverage color diversity for bonuses.", source: "Draftsim Set Review" },
+  GW: { text: "Kithkin", sub: "Go-wide tokens", details: "Swarm the board with Kithkin tokens and strengthen them with anthem effects and team buffs for an overwhelming board presence.", source: "WotC Prerelease Guide" },
+  WB: { text: "Persist", sub: "Recursion", details: "Creatures with persist keep coming back with -1/-1 counters. Layer counter removal effects for repeated value and grind out opponents with resilient threats.", source: "Draftsim Set Review" },
+  UR: { text: "Elementals", sub: "Big spells 4+", details: "Blue-red Elementals represent the four elements and reward casting big spells (CMC 4+). Can enable vivid for 3+ colors and splash cards effectively. Evoke for tempo.", source: "WotC Prerelease Guide" },
+  BG: { text: "Elves", sub: "Graveyard\nvalue", details: "Elves fuel your graveyard and convert it into advantage. Recursion effects and death triggers create a value engine that snowballs over the game.", source: "WotC Prerelease Guide" },
+  RW: { text: "-1/-1 Aggro", sub: "Counter removal", details: "Red-white takes big creatures that enter with a lot of -1/-1 counters and removes the counters to turn them into giant threats and clear the path to attack.", source: "Wizards of the Coast" },
+  GU: { text: "Vivid", sub: "Ramp", details: "Vivid cares about color diversity among your permanents. Ramp into big threats while accumulating multiple colors. Hybrid mana and color fixing enable splashing powerful cards for late-game advantage.", source: "Draftsim Set Review" },
+};
+
+const hexToRgb = (h) => {
+  const hex = h.replace('#', '');
+  return [
+    parseInt(hex.substring(0, 2), 16),
+    parseInt(hex.substring(2, 4), 16),
+    parseInt(hex.substring(4, 6), 16),
+  ];
+};
+
+const rgbToHex = (r, g, b) =>
+  '#' + [r, g, b].map(x => Math.round(x).toString(16).padStart(2, '0')).join('');
+
+const darken = (h, amt = 0.4) => {
+  const [r, g, b] = hexToRgb(h);
+  return rgbToHex(r * (1 - amt), g * (1 - amt), b * (1 - amt));
+};
+
+const blend = (u, v) => {
+  const [r1, g1, b1] = hexToRgb(baseHex[u]);
+  const [r2, g2, b2] = hexToRgb(baseHex[v]);
+  return rgbToHex((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
+};
+
+const relLum = (h) => {
+  const [r, g, b] = hexToRgb(h).map(x => x / 255);
+  const f = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+
+const contrastRatio = (bg, fg) => {
+  const [L1, L2] = [relLum(bg), relLum(fg)].sort((a, b) => b - a);
+  return (L1 + 0.05) / (L2 + 0.05);
+};
+
+const getLabelColors = (u, v) => {
+  let bg, fg;
+  if (u === 'B' || v === 'B') {
+    bg = '#000000';
+    const partner = u === 'B' ? v : u;
+    fg = partner === 'W' ? '#FFFFFF' : baseHex[partner];
+  } else if (u === 'W' || v === 'W') {
+    const partner = u === 'W' ? v : u;
+    bg = darken(baseHex[partner], 0.4);
+    fg = '#FFFFFF';
+  } else {
+    bg = darken(baseHex[u], 0.4);
+    fg = baseHex[v];
+    if (contrastRatio(bg, fg) < 4.5) {
+      const [r, g, b] = hexToRgb(fg);
+      fg = rgbToHex(Math.min(r + 140, 255), Math.min(g + 140, 255), Math.min(b + 140, 255));
+    }
+  }
+  return { bg, fg };
+};
+
+const colorOrder = ['W', 'U', 'B', 'R', 'G'];
+
+const edges = Object.keys(labels).map(pair => ({
+  u: pair[0],
+  v: pair[1],
+  uIdx: colorOrder.indexOf(pair[0]),
+  vIdx: colorOrder.indexOf(pair[1]),
+}));
+
+// These functions now take config as parameter for reactivity
+const getNodePos = (index, config) => {
+  const angle = (index * 72 - 90) * (Math.PI / 180);
+  return {
+    x: config.cx + config.radius * Math.cos(angle),
+    y: config.cy + config.radius * Math.sin(angle),
+  };
+};
+
+const getNodePositions = (config) => colorOrder.map((_, i) => getNodePos(i, config));
+
+const getEdgeGeometry = (uIdx, vIdx, config) => {
+  const nodePositions = getNodePositions(config);
+  const p1 = nodePositions[uIdx];
+  const p2 = nodePositions[vIdx];
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const L = Math.hypot(dx, dy);
+  const ux = dx / L;
+  const uy = dy / L;
+
+  const x = (p1.x + ux * config.nodeRadius + p2.x - ux * config.nodeRadius) / 2;
+  const y = (p1.y + uy * config.nodeRadius + p2.y - uy * config.nodeRadius) / 2;
+
+  const tx = ux, ty = uy;
+  const nx = -uy, ny = ux;
+
+  return { x, y, tx, ty, nx, ny };
+};
+
+const getBbox = (cx, cy, isPrimary, config) => {
+  const w = isPrimary ? config.primaryBoxW : config.boxW;
+  const h = isPrimary ? config.primaryBoxH : config.boxH;
+  return {
+    x1: cx - w / 2,
+    x2: cx + w / 2,
+    y1: cy - h / 2,
+    y2: cy + h / 2,
+  };
+};
+
+const isOverlap = (b1, b2, margin = 2) => {
+  return !(b1.x2 + margin < b2.x1 || b2.x2 + margin < b1.x1 ||
+           b1.y2 + margin < b2.y1 || b2.y2 + margin < b1.y1);
+};
+
+const computeLabelPositions = (config) => {
+  const groups = edges.map(edge => {
+    const pairCode = edge.u + edge.v;
+    const isPrimary = primaryArchetypes.includes(pairCode);
+    const { x, y, tx, ty, nx, ny } = getEdgeGeometry(edge.uIdx, edge.vIdx, config);
+
+    const sgn = (x - config.cx) * nx + (y - config.cy) * ny > 0 ? 1 : -1;
+    const off = sgn * (isPrimary ? 20 : 15);
+    const tshift = edge.u < edge.v ? 3 : -3;
+
+    const cx = x + nx * off + tx * tshift;
+    const cy = y + ny * off + ty * tshift;
+
+    return {
+      ...edge,
+      cx,
+      cy,
+      isPrimary,
+      bbox: getBbox(cx, cy, isPrimary, config),
+    };
+  });
+
+  for (let iter = 0; iter < config.iterMax; iter++) {
+    let moved = false;
+    for (let i = 0; i < groups.length; i++) {
+      for (let j = i + 1; j < groups.length; j++) {
+        if (isOverlap(groups[i].bbox, groups[j].bbox)) {
+          const dx = groups[i].cx - groups[j].cx;
+          const dy = groups[i].cy - groups[j].cy;
+          const L = Math.hypot(dx, dy) + 0.001;
+
+          groups[i].cx += (dx / L) * config.pushStep;
+          groups[i].cy += (dy / L) * config.pushStep;
+          groups[j].cx -= (dx / L) * config.pushStep;
+          groups[j].cy -= (dy / L) * config.pushStep;
+
+          groups[i].bbox = getBbox(groups[i].cx, groups[i].cy, groups[i].isPrimary, config);
+          groups[j].bbox = getBbox(groups[j].cx, groups[j].cy, groups[j].isPrimary, config);
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+
+  return groups;
+};
+
+const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
+  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+
+  return (
+    <i
+      className={manaClasses[color]}
+      style={{
+        fontSize: `${size}px`,
+        color: fontColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    />
+  );
+};
+
+const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
+  const nodePositions = getNodePositions(config);
+  const pos = nodePositions[index];
+  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+  const nodeColor = isSimple ? '#FFFFFF' : baseHex[color];
+  const glowColor = isSimple ? 'transparent' : baseHex[color];
+
+  return (
+    <g
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+      opacity={isDimmed ? 0.3 : 1}
+    >
+      {/* Outer glow circle */}
+      <circle
+        cx={pos.x}
+        cy={pos.y}
+        r={config.nodeRadius + (isHighlighted ? 12 : 8)}
+        fill={isHighlighted ? "#FFD700" : glowColor}
+        opacity={isHighlighted ? 0.6 : 0.25}
+        style={{ transition: 'all 0.2s ease' }}
+      />
+      {/* Main colored node circle */}
+      <circle
+        cx={pos.x}
+        cy={pos.y}
+        r={config.nodeRadius}
+        fill={nodeColor}
+        stroke={isHighlighted ? "#FFD700" : "#000000"}
+        strokeWidth={isHighlighted ? 4 : 3}
+        style={{ transition: 'all 0.2s ease' }}
+      />
+      {/* Monochrome mana symbol */}
+      <foreignObject
+        x={pos.x - 20}
+        y={pos.y - 20}
+        width={40}
+        height={40}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '40px',
+          height: '40px',
+          color: fontColor,
+        }}>
+          <ManaSymbol
+            color={color}
+            size={30}
+            isSimple={isSimple}
+          />
+        </div>
+      </foreignObject>
+    </g>
+  );
+};
+
+const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) => {
+  const nodePositions = getNodePositions(config);
+  const p1 = nodePositions[edge.uIdx];
+  const p2 = nodePositions[edge.vIdx];
+  const pairCode = edge.u + edge.v;
+  const isPrimary = primaryArchetypes.includes(pairCode);
+  const lineColor = isSimple ? '#000000' : blend(edge.u, edge.v);
+  const lineOpacity = isDimmed ? 0.2 : 1;
+
+  return (
+    <line
+      x1={p1.x}
+      y1={p1.y}
+      x2={p2.x}
+      y2={p2.y}
+      stroke={isHighlighted ? "#FFD700" : lineColor}
+      strokeWidth={isHighlighted ? config.edgeWidth + 3 : (isPrimary ? config.edgeWidth + 2 : config.edgeWidth)}
+      opacity={lineOpacity}
+      style={{ transition: 'all 0.2s ease' }}
+    />
+  );
+};
+
+const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
+  const groupRef = useRef(null);
+  const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
+
+  const code = group.u + group.v;
+  const labelData = labels[code] || labels[group.v + group.u];
+  const { bg, fg } = getLabelColors(group.u, group.v);
+  const edgeColor = blend(group.u, group.v);
+  const isPrimary = group.isPrimary;
+  const subLines = labelData.sub.split('\n');
+  const boxBg = isSimple ? '#FFFFFF' : bg;
+  const boxStroke = isSimple ? '#000000' : edgeColor;
+  const textColor = isSimple ? '#000000' : fg;
+
+  // Font sizes
+  const fontSize1 = config.fontSize;
+  const fontSize2 = config.fontSize;
+  const fontSize3 = config.fontSize;
+
+  // Line heights (roughly 1.2x font size)
+  const lh1 = fontSize1 * 1.1;
+  const lh2 = fontSize2 * 1.1;
+  const lh3 = fontSize3 * 1.1;
+  const subLineSpacing = 7;
+
+  // Total text height
+  const numSubLines = subLines.length;
+  const totalTextHeight = lh1 + lh2 + lh3 + (numSubLines - 1) * subLineSpacing;
+
+  // Calculate y positions to center all text
+  const startY = group.cy - totalTextHeight / 2;
+  const y1 = startY + lh1 * 0.8;
+  const y2 = y1 + lh2;
+  const y3 = y2 + lh3 * 0.9;
+
+  // Measure text and auto-size box after render
+  useEffect(() => {
+    if (groupRef.current) {
+      const texts = groupRef.current.querySelectorAll('text');
+      let maxWidth = 0;
+      texts.forEach((text) => {
+        try {
+          const bbox = text.getBBox();
+          maxWidth = Math.max(maxWidth, bbox.width);
+        } catch (e) {}
+      });
+      const padding = 4;
+      const heightPadding = 3;
+      setBoxSize({
+        width: Math.max(maxWidth + padding * 2, 35),
+        height: totalTextHeight + heightPadding * 2
+      });
+    }
+  }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
+
+  return (
+    <g
+      ref={groupRef}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      style={{
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      opacity={isDimmed ? 0.3 : 1}
+      transform={isHighlighted ? `translate(${group.cx}, ${group.cy}) scale(1.08) translate(${-group.cx}, ${-group.cy})` : undefined}
+    >
+      <rect
+        x={group.cx - boxSize.width / 2}
+        y={group.cy - boxSize.height / 2}
+        width={boxSize.width}
+        height={boxSize.height}
+        rx={4}
+        fill={boxBg}
+        stroke={isHighlighted ? "#FFD700" : boxStroke}
+        strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
+        style={{ transition: 'all 0.2s ease' }}
+      />
+      <text
+        x={group.cx}
+        y={y1}
+        textAnchor="middle"
+        fontSize={fontSize1}
+        fontWeight="bold"
+        fill={textColor}
+      >
+        {code}
+      </text>
+      <text
+        x={group.cx}
+        y={y2}
+        textAnchor="middle"
+        fontSize={fontSize2}
+        fontWeight={isPrimary ? "bold" : "normal"}
+        fill={textColor}
+      >
+        {labelData.text}
+      </text>
+      <text
+        x={group.cx}
+        y={y3}
+        textAnchor="middle"
+        fontSize={fontSize3}
+        fill={textColor}
+        opacity={0.85}
+      >
+        {subLines.map((line, i) => (
+          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : subLineSpacing}>{line}</tspan>
+        ))}
+      </text>
+    </g>
+  );
+};
+
+const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
+  return (
+    <div id="colors" className="color-grid" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+      gap: '12px',
+      marginTop: '24px',
+      width: '100%',
+    }}>
+      {colorOrder.map((color) => {
+        const colorData = colorDescriptions[color];
+        const colorMap = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
+        const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+color%3D${colorMap[color]}`;
+        const otherColors = colorOrder.filter(c => c !== color);
+        const hybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${color}+or+m%3E%7B${color}%2F${otherColors[0]}%7D+or+m%3E%7B${color}%2F${otherColors[1]}%7D+or+m%3E%7B${color}%2F${otherColors[2]}%7D+or+m%3E%7B${color}%2F${otherColors[3]}%7D)`;
+        const bg = baseHex[color];
+        const fg = color === 'W' ? '#000000' : '#FFFFFF';
+        const isHovered = hoveredColor === color;
+
+        return (
+          <div
+            key={color}
+            onMouseEnter={() => onColorHover(color)}
+            onMouseLeave={onColorLeave}
+            style={{
+              backgroundColor: bg,
+              color: fg,
+              padding: '12px',
+              borderRadius: '6px',
+              textAlign: 'center',
+              border: isHovered ? `3px solid #FFD700` : `2px solid ${darken(bg, 0.2)}`,
+              boxShadow: isHovered ? '0 0 8px rgba(255, 215, 0, 0.4)' : '0 2px 4px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}>
+              <i className={manaClasses[color]} />
+            </div>
+            <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>
+              {color}: {colorData.name}
+            </div>
+            <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>
+              {colorData.description}
+            </div>
+            <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>
+              Scryfall search:
+            </div>
+            <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
+              <a
+                href={exactSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '4px 8px',
+                  backgroundColor: fg,
+                  color: bg,
+                  textDecoration: 'none',
+                  borderRadius: '3px',
+                  fontSize: '0.65rem',
+                  fontWeight: '600',
+                  transition: 'opacity 0.2s ease',
+                  opacity: 0.95,
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+              >
+                {color} only
+              </a>
+              <a
+                href={hybridSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '4px 8px',
+                  backgroundColor: fg,
+                  color: bg,
+                  textDecoration: 'none',
+                  borderRadius: '3px',
+                  fontSize: '0.65rem',
+                  fontWeight: '600',
+                  transition: 'opacity 0.2s ease',
+                  opacity: 0.95,
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = '1'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+              >
+                {color} + hybrids
+              </a>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const InfoPanel = ({ pair, onHover, onLeave }) => {
+  if (!pair) return null;
+
+  const labelData = labels[pair];
+  const { bg, fg } = getLabelColors(pair[0], pair[1]);
+  const sourceLink = sourceLinks[pair];
+
+  const getTypeName = (p) => {
+    const typeMap = {
+      'WU': 'Merfolk',
+      'BR': 'Goblin',
+      'GW': 'Kithkin',
+      'UR': 'Elemental',
+      'BG': 'Elf'
+    };
+    return typeMap[p];
+  };
+
+  const getTypePluralName = (p) => {
+    const typePluralMap = {
+      'WU': 'Merfolk',
+      'BR': 'Goblins',
+      'GW': 'Kithkin',
+      'UR': 'Elementals',
+      'BG': 'Elves'
+    };
+    return typePluralMap[p];
+  };
+
+  const typeName = getTypeName(pair);
+  const typePluralName = getTypePluralName(pair);
+
+  const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+id%3D${pair}`;
+  const orSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+  const typeSearchUrl = typeName ? `https://scryfall.com/search?q=set%3Aecl+type%3A${typeName}` : null;
+
+  const otherColors1 = colorOrder.filter(c => c !== pair[0]);
+  const otherColors2 = colorOrder.filter(c => c !== pair[1]);
+  const pairHybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair}+or+(id%3D${pair[0]}+or+m%3E%7B${pair[0]}%2F${otherColors1[0]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[1]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[2]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[3]}%7D)+or+(id%3D${pair[1]}+or+m%3E%7B${pair[1]}%2F${otherColors2[0]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[1]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[2]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[3]}%7D))`;
+
+  return (
+    <div
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: bg,
+        color: fg,
+        padding: '16px 24px',
+        borderRadius: '8px',
+        border: `2px solid ${blend(pair[0], pair[1])}`,
+        maxWidth: '500px',
+        textAlign: 'center',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        transition: 'all 0.2s ease',
+        zIndex: 1000,
+      }}>
+      <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>
+        {pair}: {labelData.text}
+      </div>
+      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '8px' }}>
+        {labelData.sub}
+      </div>
+      <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>
+        {labelData.details}
+      </div>
+      {sourceLink && (
+        <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '12px', fontStyle: 'italic' }}>
+          Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+        </div>
+      )}
+      <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '8px', fontWeight: '600' }}>
+        Scryfall search:
+      </div>
+      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <a
+          href={exactSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '6px 14px',
+            backgroundColor: fg,
+            color: bg,
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            transition: 'opacity 0.2s ease',
+            opacity: 0.95,
+          }}
+          onMouseEnter={(e) => e.target.style.opacity = '1'}
+          onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+        >
+          {pair[0]}&{pair[1]}
+        </a>
+        <a
+          href={orSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '6px 14px',
+            backgroundColor: fg,
+            color: bg,
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            transition: 'opacity 0.2s ease',
+            opacity: 0.95,
+          }}
+          onMouseEnter={(e) => e.target.style.opacity = '1'}
+          onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+        >
+          {pair[0]}∪{pair[1]}
+        </a>
+        {typeSearchUrl && (
+          <a
+            href={typeSearchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '6px 14px',
+              backgroundColor: fg,
+              color: bg,
+              textDecoration: 'none',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              transition: 'opacity 0.2s ease',
+              opacity: 0.95,
+            }}
+            onMouseEnter={(e) => e.target.style.opacity = '1'}
+            onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+          >
+            All {typePluralName}
+          </a>
+        )}
+        <a
+          href={pairHybridSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '6px 14px',
+            backgroundColor: fg,
+            color: bg,
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            transition: 'opacity 0.2s ease',
+            opacity: 0.95,
+          }}
+          onMouseEnter={(e) => e.target.style.opacity = '1'}
+          onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+        >
+          All spells castable with {pair}
+        </a>
+      </div>
+    </div>
+  );
+};
+
+function LorwynColorWheel() {
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const [hoveredPair, setHoveredPair] = useState(null);
+  const [hoveredColor, setHoveredColor] = useState(null);
+  const [isSimple, setIsSimple] = useState(false);
+  const [textSize, setTextSize] = useState(1.0);
+  const [config, setConfig] = useState(() => getConfig(1.0));
+  const pairTimeoutRef = useRef(null);
+  const colorTimeoutRef = useRef(null);
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setConfig(getConfig(textSize));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [textSize]);
+
+  useEffect(() => {
+    setConfig(getConfig(textSize));
+  }, [textSize]);
+
+  const labelPositions = computeLabelPositions(config);
+
+  const handleExportImage = async () => {
+    if (!svgRef.current) return;
+
+    const svg = svgRef.current;
+    const svgData = new XMLSerializer().serializeToString(svg);
+
+    const canvas = document.createElement('canvas');
+    const scale = 2;
+    const titleHeight = 80;
+    const subtitleHeight = 30;
+    canvas.width = 700 * scale;
+    canvas.height = (480 + titleHeight + subtitleHeight) * scale;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#111827';
+    ctx.font = `bold ${28 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Lorwyn Eclipsed', canvas.width / 2, 40 * scale);
+
+    ctx.fillStyle = '#6B7280';
+    ctx.font = `${16 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.fillText('Draft Archetypes Color Wheel', canvas.width / 2, 65 * scale);
+
+    const img = new Image();
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      const svgWidth = 460 * scale;
+      const svgHeight = 480 * scale;
+      const xOffset = (canvas.width - svgWidth) / 2;
+      ctx.drawImage(img, xOffset, titleHeight * scale, svgWidth, svgHeight);
+
+      const viewBoxX = 120, viewBoxY = 100, viewBoxW = 460, viewBoxH = 480;
+      const nodePositions = getNodePositions(config);
+      const colorOrder = ['W', 'U', 'B', 'R', 'G'];
+
+      colorOrder.forEach((color, i) => {
+        const pos = nodePositions[i];
+        const canvasX = ((pos.x - viewBoxX) / viewBoxW) * svgWidth + xOffset;
+        const canvasY = ((pos.y - viewBoxY) / viewBoxH) * svgHeight + (titleHeight * scale);
+
+        const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+        ctx.fillStyle = fontColor;
+        ctx.font = `bold ${24 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(color, canvasX, canvasY);
+      });
+
+      ctx.fillStyle = '#9CA3AF';
+      ctx.font = `${12 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('toskicologist.github.io/MTG-draft-sets-infographics', canvas.width / 2, (480 + titleHeight + 15) * scale);
+
+      const link = document.createElement('a');
+      link.download = `lorwyn-eclipsed-color-wheel${isSimple ? '-simple' : ''}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+  };
+
+  const handlePairHover = (pairCode) => {
+    if (pairTimeoutRef.current) {
+      clearTimeout(pairTimeoutRef.current);
+      pairTimeoutRef.current = null;
+    }
+    setHoveredPair(pairCode);
+  };
+
+  const handlePairLeave = () => {
+    pairTimeoutRef.current = setTimeout(() => {
+      setHoveredPair(null);
+    }, 800);
+  };
+
+  const handleColorHover = (color) => {
+    if (colorTimeoutRef.current) {
+      clearTimeout(colorTimeoutRef.current);
+      colorTimeoutRef.current = null;
+    }
+    setHoveredColor(color);
+  };
+
+  const handleColorLeave = () => {
+    colorTimeoutRef.current = setTimeout(() => {
+      setHoveredColor(null);
+    }, 800);
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange();
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pairTimeoutRef.current) clearTimeout(pairTimeoutRef.current);
+      if (colorTimeoutRef.current) clearTimeout(colorTimeoutRef.current);
+    };
+  }, []);
+
+  const activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : (hoveredNode ? [hoveredNode] : []);
+  const activePair = hoveredPair;
+
+  const primaryPairs = Object.entries(labels).filter(([pair]) => primaryArchetypes.includes(pair));
+  const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
+
+  return (
+    <div className="main-container" style={{
+      minHeight: '100vh',
+      backgroundColor: '#FFFFFF',
+      padding: '24px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      position: 'relative',
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
+          Lorwyn Eclipsed
+        </h1>
+        <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
+          Draft Archetypes Color Wheel (13.1.0 Interactive)
+        </p>
+        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
+          Last updated: 2026-01-16 00:29 UTC
+        </p>
+        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '0 0 8px 0' }}>
+          Mouse over archetypes for details • Scroll down: <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Secondary Archetypes</a>
+        </p>
+        <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: 0 }}>
+          First prerelease? Go to <a href="https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Prerelease Guide (Wizards of the Coast)</a>.<br />
+          Want more details? Go to <a href="https://draftsim.com/mtg-ecl-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>The Ultimate Lorwyn Eclipsed Limited Set Review (Draftsim)</a>.
+        </p>
+      </div>
+
+      {/* Controls */}
+      <div style={{
+        display: 'flex',
+        gap: '24px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '12px',
+        flexWrap: 'wrap',
+      }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          fontSize: '0.9rem',
+          fontWeight: '500',
+          color: '#374151',
+        }}>
+          <input
+            type="checkbox"
+            checked={isSimple}
+            onChange={(e) => setIsSimple(e.target.checked)}
+            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+          />
+          B&W
+        </label>
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '0.9rem',
+          fontWeight: '500',
+          color: '#374151',
+        }}>
+          Text Size:
+          <input
+            type="range"
+            min="0.5"
+            max="2.0"
+            step="0.1"
+            value={textSize}
+            onChange={(e) => setTextSize(parseFloat(e.target.value))}
+            style={{ width: '80px', cursor: 'pointer' }}
+          />
+          <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>
+            {Math.round(textSize * 100)}%
+          </span>
+        </label>
+        <button
+          onClick={handleExportImage}
+          style={{
+            display: 'none',
+            padding: '8px 16px',
+            backgroundColor: '#2563EB',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#1D4ED8'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#2563EB'}
+        >
+          Export Image
+        </button>
+      </div>
+
+      <svg
+        ref={svgRef}
+        className="color-wheel-svg"
+        viewBox={isMobile() ? "160 140 380 400" : "120 100 460 480"}
+        style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
+      >
+        {edges.map((edge, i) => {
+          const pairCode = edge.u + edge.v;
+          const isHighlighted = activePair === pairCode;
+          const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
+          return (
+            <EdgeLine
+              key={`edge-${i}`}
+              edge={edge}
+              isHighlighted={isHighlighted}
+              isDimmed={isDimmed}
+              isSimple={isSimple}
+              config={config}
+            />
+          );
+        })}
+
+        {colorOrder.map((color, i) => {
+          const isHighlighted = activeColors.includes(color) || hoveredColor === color;
+          const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
+          return (
+            <ColorNode
+              key={color}
+              color={color}
+              index={i}
+              isHighlighted={isHighlighted}
+              isDimmed={isDimmed}
+              isSimple={isSimple}
+              config={config}
+              onHover={() => {
+                setHoveredNode(color);
+                handleColorHover(color);
+              }}
+              onLeave={() => {
+                setHoveredNode(null);
+                handleColorLeave();
+              }}
+            />
+          );
+        })}
+
+        {labelPositions.map((group, i) => {
+          const pairCode = group.u + group.v;
+          const isHighlighted = activePair === pairCode ||
+            (hoveredNode && (group.u === hoveredNode || group.v === hoveredNode));
+          const isDimmed = activeColors.length > 0 && !activeColors.includes(group.u) && !activeColors.includes(group.v);
+          return (
+            <LabelBox
+              key={`label-${i}`}
+              group={group}
+              isHighlighted={isHighlighted}
+              isDimmed={isDimmed}
+              isSimple={isSimple}
+              config={config}
+              onHover={() => handlePairHover(pairCode)}
+              onLeave={handlePairLeave}
+            />
+          );
+        })}
+      </svg>
+
+      <ColorGrid
+        hoveredColor={hoveredColor}
+        onColorHover={handleColorHover}
+        onColorLeave={handleColorLeave}
+      />
+
+      <InfoPanel
+        pair={hoveredPair}
+        onHover={() => handlePairHover(hoveredPair)}
+        onLeave={handlePairLeave}
+      />
+
+      <div id="primary-archetypes" style={{
+        marginTop: '32px',
+        width: '100%',
+        alignSelf: 'stretch',
+      }}>
+        <h2 style={{
+          fontSize: '1.4rem',
+          fontWeight: '700',
+          color: '#111827',
+          marginBottom: '8px',
+          textAlign: 'center',
+        }}>
+          Primary Archetypes (Typal)
+        </h2>
+        <p style={{
+          fontSize: '0.85rem',
+          color: '#6B7280',
+          marginBottom: '8px',
+          textAlign: 'center',
+        }}>
+          Lorwyn Eclipsed has an unusual set structure with 5 main typal archetypes, which beginners are encouraged to focus on. And 5 secondary archetypes focused on set mechanics.
+        </p>
+        <p style={{
+          fontSize: '0.85rem',
+          color: '#6B7280',
+          marginBottom: '16px',
+          textAlign: 'center',
+        }}>
+          These five archetypes have gold signpost uncommons and strong typal synergies
+        </p>
+        <div className="archetype-grid" style={{
+          display: 'grid',
+          gap: '12px',
+          width: '100%',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+        }}>
+          {primaryPairs.map(([pair, data]) => {
+            const { bg, fg } = getLabelColors(pair[0], pair[1]);
+            const sourceLink = sourceLinks[pair];
+
+            const typeMap = {
+              'WU': 'Merfolk',
+              'BR': 'Goblin',
+              'GW': 'Kithkin',
+              'UR': 'Elemental',
+              'BG': 'Elf'
+            };
+            const typePluralMap = {
+              'WU': 'Merfolk',
+              'BR': 'Goblins',
+              'GW': 'Kithkin',
+              'UR': 'Elementals',
+              'BG': 'Elves'
+            };
+            const typeName = typeMap[pair];
+            const typePluralName = typePluralMap[pair];
+
+            const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+id%3D${pair}`;
+            const orSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+            const typeSearchUrl = `https://scryfall.com/search?q=set%3Aecl+type%3A${typeName}`;
+            const otherColors1 = colorOrder.filter(c => c !== pair[0]);
+            const otherColors2 = colorOrder.filter(c => c !== pair[1]);
+            const pairHybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair}+or+(id%3D${pair[0]}+or+m%3E%7B${pair[0]}%2F${otherColors1[0]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[1]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[2]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[3]}%7D)+or+(id%3D${pair[1]}+or+m%3E%7B${pair[1]}%2F${otherColors2[0]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[1]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[2]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[3]}%7D))`;
+
+            return (
+              <div
+                key={pair}
+                style={{
+                  backgroundColor: bg,
+                  color: fg,
+                  padding: '18px',
+                  borderRadius: '8px',
+                  border: `3px solid ${blend(pair[0], pair[1])}`,
+                  boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+                        {pair}: {data.text}
+                      </div>
+                      <div style={{ fontSize: '0.95rem', opacity: 0.9, marginTop: '2px' }}>
+                        {data.sub}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.87rem', lineHeight: '1.5', marginBottom: '8px' }}>
+                    {data.details}
+                  </div>
+                  {sourceLink && (
+                    <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
+                      Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600', marginTop: 'auto' }}>
+                  Scryfall search:
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <a
+                    href={exactSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '5px 12px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    {pair[0]}&{pair[1]}
+                  </a>
+                  <a
+                    href={orSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '5px 12px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    {pair[0]}∪{pair[1]}
+                  </a>
+                  <a
+                    href={typeSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '5px 12px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    All {typePluralName}
+                  </a>
+                  <a
+                    href={pairHybridSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '5px 12px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    All spells castable with {pair}
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div id="secondary-archetypes" style={{
+        marginTop: '32px',
+        width: '100%',
+        alignSelf: 'stretch',
+      }}>
+        <h2 style={{
+          fontSize: '1.3rem',
+          fontWeight: '600',
+          color: '#111827',
+          marginBottom: '8px',
+          textAlign: 'center',
+        }}>
+          Secondary Archetypes (Mechanical)
+        </h2>
+        <p style={{
+          fontSize: '0.85rem',
+          color: '#6B7280',
+          marginBottom: '16px',
+          textAlign: 'center',
+        }}>
+          These archetypes focus on mechanical synergies with hybrid mana only
+        </p>
+        <div className="archetype-grid" style={{
+          display: 'grid',
+          gap: '12px',
+          width: '100%',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+        }}>
+          {secondaryPairs.map(([pair, data]) => {
+            const { bg, fg } = getLabelColors(pair[0], pair[1]);
+            const sourceLink = sourceLinks[pair];
+
+            const exactSearchUrl = `https://scryfall.com/search?q=set%3Aecl+id%3D${pair}`;
+            const orSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
+            const otherColors1 = colorOrder.filter(c => c !== pair[0]);
+            const otherColors2 = colorOrder.filter(c => c !== pair[1]);
+            const pairHybridSearchUrl = `https://scryfall.com/search?q=set%3Aecl+(id%3D${pair}+or+(id%3D${pair[0]}+or+m%3E%7B${pair[0]}%2F${otherColors1[0]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[1]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[2]}%7D+or+m%3E%7B${pair[0]}%2F${otherColors1[3]}%7D)+or+(id%3D${pair[1]}+or+m%3E%7B${pair[1]}%2F${otherColors2[0]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[1]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[2]}%7D+or+m%3E%7B${pair[1]}%2F${otherColors2[3]}%7D))`;
+
+            return (
+              <div
+                key={pair}
+                style={{
+                  backgroundColor: bg,
+                  color: fg,
+                  padding: '16px',
+                  borderRadius: '8px',
+                  border: `2px solid ${blend(pair[0], pair[1])}`,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        {pair}: {data.text}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginTop: '2px' }}>
+                        {data.sub}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '8px' }}>
+                    {data.details}
+                  </div>
+                  {sourceLink && (
+                    <div style={{ fontSize: '0.7rem', opacity: 0.8, marginBottom: '10px', fontStyle: 'italic' }}>
+                      Source: <a href={sourceLink.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{sourceLink.source}</a>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600', marginTop: 'auto' }}>
+                  Scryfall search:
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <a
+                    href={exactSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '4px 10px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    {pair[0]}&{pair[1]}
+                  </a>
+                  <a
+                    href={orSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '4px 10px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    {pair[0]}∪{pair[1]}
+                  </a>
+                  <a
+                    href={pairHybridSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '4px 10px',
+                      backgroundColor: fg,
+                      color: bg,
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.95,
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '1'}
+                    onMouseLeave={(e) => e.target.style.opacity = '0.95'}
+                  >
+                    All spells castable with {pair}
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <p style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '12px', textAlign: 'center' }}>
+        Lorwyn Eclipsed Limited Draft Archetypes
+      </p>
+
+      <div style={{
+        marginTop: '24px',
+        padding: '16px',
+        backgroundColor: '#F9FAFB',
+        borderRadius: '8px',
+        border: '1px solid #E5E7EB',
+        maxWidth: '900px',
+        width: '100%',
+      }}>
+        <div style={{ fontSize: '0.8rem', color: '#6B7280', lineHeight: '1.6' }}>
+          <strong style={{ color: '#374151' }}>Sources & Citations:</strong><br />
+          Archetype information sourced from official Wizards of the Coast materials and community resources:<br />
+          • <a href="https://magic.wizards.com/en/news/feature/lorwyn-eclipsed-prerelease-guide" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Prerelease Guide</a> (Wizards of the Coast)<br />
+          • <a href="https://draftsim.com/mtg-ecl-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>The Ultimate Lorwyn Eclipsed Limited Set Review</a> (Draftsim)<br />
+          • <a href="https://draftsim.com/mtg-lorwyn-eclipsed/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Lorwyn Eclipsed Spoilers and Set Information</a> (Draftsim)<br />
+          • <a href="https://mana.andrewgioia.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Mana Font</a> (Andrew Gioia)<br />
+          <br />
+          <strong style={{ color: '#374151' }}>Interactive Features:</strong><br />
+          • Hover over any color node (W/U/B/R/G) to see that color's role in the set<br />
+          • Hover over archetype labels for detailed strategy and Scryfall links<br />
+          • Click "A&B" to see cards that are both colors (exactly those two)<br />
+          • Click "A∪B" to see cards with at least one of those colors<br />
+          • Click "All [Type]" to see all creatures of that type in the set
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<LorwynColorWheel />);
+  </script>
+</body>
+</html>
