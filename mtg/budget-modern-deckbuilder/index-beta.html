@@ -8,9 +8,24 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.5.0-beta.6)  [BETA — sandbox; main is v3.4.1]
+  Budget Modern Deckbuilder (v3.5.0-beta.7)  [BETA — sandbox; main is v3.4.1]
 
   Changelog:
+  v3.5.0-beta.7 (2026-06-04T11:24:22Z) - Treemap: fix illegibly tall/thin tiles
+                        (from beta.6's vertical cut + over-strong bias).
+                        - Cards now fill a SQUARE-ish region (area = spent/V of
+                          the box) anchored top-left, instead of a narrow
+                          full-height column — squarify has room in both axes
+                          so tiles stay legible (square/portrait), maintaining
+                          a sensible minimum width. The leftover is an L-shaped
+                          empty region that simply shows the box's hatched
+                          "unspent" background (the empty section no longer
+                          needs to be a rectangle); "$X unspent" is centred in
+                          the larger empty strip.
+                        - WIDE_BIAS 0.5 -> 0.8 (less aggressive; avoids both
+                          wide AND extreme-tall tiles).
+                        - Cost text now WRAPS (sized to fit ~2 lines) so a
+                          narrow tile still shows a readable price.
   v3.5.0-beta.6 (2026-06-03T22:44:07Z) - Treemap: stop wide-short card tiles.
                         (1) Free/unspent space is now pulled OUT of the
                         squarify and given the leftover region directly (a
@@ -348,28 +363,35 @@
   .vctrl select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
     border-radius:7px;padding:4px 8px;font-size:12.5px}
   /* ---- cost treemap (beta v3.5.0-beta.3) ---- */
+  /* Box bg IS the hatched "unspent" texture; card tiles (opaque) sit on top in
+     a square-ish region, so the leftover empty space (an L-shape) reads as the
+     unspent budget without needing its own rectangle. */
   .tmbox{position:relative;border:1px solid rgba(255,255,255,.85);
-    border-radius:8px;overflow:hidden;background:#05070e;margin:0 auto 16px}
+    border-radius:8px;overflow:hidden;margin:0 auto 16px;background:#05070e;
+    background-image:repeating-linear-gradient(45deg,
+      rgba(255,255,255,.05),rgba(255,255,255,.05) 9px,
+      rgba(255,255,255,.10) 9px,rgba(255,255,255,.10) 18px)}
   .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.7);
     background-size:cover;background-position:center;background-repeat:no-repeat;
     background-color:var(--panel2)}
   .tmtile.contain{background-size:contain;background-color:#0a0d18}
-  /* pauper-poster label: cost centered & sized by WIDTH (so a big number
-     never forces the name out); name wraps in the space below and is
-     shrunk-to-fit by JS (fitTreemapLabels). Both heavily shadowed for any bg. */
+  /* pauper-poster label: cost centred & sized to the tile; WRAPS over lines so
+     a tall/thin tile still gets a readable number. Name wraps below and is
+     shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
   .tmtile .tcost{position:absolute;left:0;width:100%;text-align:center;
-    transform:translateY(-50%);font-weight:800;line-height:1;color:#fff;
-    pointer-events:none;text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
+    transform:translateY(-50%);font-weight:800;line-height:1.02;color:#fff;
+    pointer-events:none;word-break:break-word;
+    text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
   .tmtile .tnmwrap{position:absolute;left:0;width:100%;display:flex;
     align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none}
   .tmtile .tnm{color:#fff;font-weight:700;line-height:1.13;text-align:center;
     word-break:break-word;overflow-wrap:break-word;padding:0 3px 2px;max-width:100%;
     text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
-  .tmtile.free{background:repeating-linear-gradient(45deg,
-    rgba(255,255,255,.05),rgba(255,255,255,.05) 9px,
-    rgba(255,255,255,.10) 9px,rgba(255,255,255,.10) 18px);
-    border:1px dashed rgba(255,255,255,.85);display:flex;align-items:center;
-    justify-content:center;text-align:center;color:var(--ink);padding:6px}
+  /* unspent label, centred in the largest empty strip (no border/bg — the box
+     hatch shows through as the "empty" region). */
+  .tmfree{position:absolute;display:flex;align-items:center;justify-content:center;
+    text-align:center;color:var(--ink);pointer-events:none;
+    text-shadow:0 0 4px #000,0 0 8px #000}
   .tmhead{display:flex;align-items:baseline;justify-content:space-between;
     margin:18px 0 8px}
   .tmhead h2{margin:0}
@@ -418,7 +440,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.6 &middot; 2026-06-03 22:44 UTC &middot; BETA</span></h1>
+      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.7 &middot; 2026-06-04 11:24 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1121,7 +1143,7 @@ function squarify(items, rect){
   // taller than wide, so the packer biases toward portrait/square tiles and
   // avoids wide-short ones (cards are portrait anyway). WIDE_BIAS<1 makes a
   // tall tile "cheaper" than an equally-lopsided wide tile.
-  const WIDE_BIAS = 0.5;
+  const WIDE_BIAS = 0.8;
   const badness = (w, h) => { const ar = w / h; return ar >= 1 ? ar : (1 / ar) * WIDE_BIAS; };
   let bestRow = [items[0]], bestWorst = Infinity, rowSum = 0;
   for (let i = 0; i < items.length; i++){
@@ -1163,26 +1185,34 @@ function budgetTiles(cards, budget){
   return { items, spent, V, free, over: spent > b };
 }
 // One board's box HTML (absolutely-positioned tiles inside a relative .tmbox).
-// Free space is pulled OUT of the squarify and given the leftover region (a
-// vertical cut: cards fill the left, full height; free is the right strip).
-// This hands the CARDS a clean, tall region so squarify makes square-ish
-// tiles (never substantially wider than tall) and dumps any odd leftover
-// shape into the empty/unspent area, where it doesn't matter.
+// Free space is pulled OUT of the squarify; the cards get a SQUARE-ish region
+// (area = spent/V of the box) anchored top-left, so squarify has room in both
+// axes and makes legible square/portrait tiles (no thin slivers). The leftover
+// is an L-shaped empty region — it just shows the box's hatched bg as the
+// unspent budget (no rectangle needed); the "$X unspent" label is centred in
+// the larger empty strip.
 function treemapBox(boardRows, budget, width, height){
   const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
   const g = 2;                                     // gutter between tiles
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const cardItems = bt.items.filter(i => !i.item.__free);
+  const boxArea = width * height;
 
-  // Vertical cut: cards occupy the left fraction (spent/V) of the width.
-  let cardsRect = { x:0, y:0, w:width, h:height }, freeRect = null;
+  let cardsRect = { x:0, y:0, w:width, h:height }, emptyRect = null;
   if (bt.free > 0 && cardItems.length){
-    const cw = Math.max(1, width * (bt.spent / bt.V));
-    cardsRect = { x:0, y:0, w:cw, h:height };
-    freeRect  = { x:cw, y:0, w:width - cw, h:height };
+    // square-ish cards region of area = spent/V * boxArea, clamped to the box.
+    const A = (bt.spent / bt.V) * boxArea;
+    let rw = Math.sqrt(A), rh = rw;
+    if (rw > width)  { rw = width;  rh = A / width;  }
+    if (rh > height) { rh = height; rw = A / height; }
+    cardsRect = { x:0, y:0, w:Math.min(rw, width), h:Math.min(rh, height) };
+    // unspent label goes in whichever leftover strip (right vs bottom) is bigger
+    const right  = { x:cardsRect.w, y:0, w:width - cardsRect.w, h:height };
+    const bottom = { x:0, y:cardsRect.h, w:cardsRect.w, h:height - cardsRect.h };
+    emptyRect = (right.w * right.h >= bottom.w * bottom.h) ? right : bottom;
   } else if (bt.free > 0 && !cardItems.length){
     cardsRect = { x:0, y:0, w:0, h:0 };
-    freeRect  = { x:0, y:0, w:width, h:height };
+    emptyRect = { x:0, y:0, w:width, h:height };
   }
   const tiles = cardItems.length ? squarify(cardItems, cardsRect) : [];
 
@@ -1193,14 +1223,14 @@ function treemapBox(boardRows, budget, width, height){
     const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "");
     const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
 
-    // Pauper-poster style: COST sized by WIDTH (so a big number fits across,
-    // not forcing the name out vertically), centred at 42% height. NAME wraps
-    // in the area below and is shrunk-to-fit later by fitTreemapLabels().
+    // COST sized to the tile and centred; it WRAPS (CSS) so a narrow/tall tile
+    // still gets a readable number over 2 lines (height cap leaves room).
+    // NAME wraps below and is shrunk-to-fit later by fitTreemapLabels().
     const costStr = r.lineT != null ? money(r.lineT) : "";
     const len = Math.max(2, costStr.length);
-    const costF = clamp(Math.floor(Math.min((w * 0.84) / (len * 0.6), h * 0.5)), 7, 48);
-    const costCY = h * 0.42;                          // cost centre Y
-    const nameTop = costCY + costF / 2 + 2;
+    const costF = clamp(Math.floor(Math.min((w * 0.9) / (len * 0.55), h * 0.4)), 7, 46);
+    const costCY = h * 0.40;                          // cost centre Y
+    const nameTop = costCY + costF + 3;               // clears up to ~2 wrapped lines
     const nameH = h - nameTop - 1;
     const nameF = clamp(Math.round(Math.min(w * 0.17, h * 0.14)), 7, 18);
     const title = escapeHtml(r.name) + (r.lineT != null ? " — " + money(r.lineT) : "");
@@ -1213,17 +1243,17 @@ function treemapBox(boardRows, budget, width, height){
     return `<div class="${cls}" style="${pos};${bg}" title="${title}">${costHtml}${nameHtml}</div>`;
   }).join("");
 
-  // Free/unspent region as one clean rectangle (placed last, any shape).
-  if (freeRect && freeRect.w > 3 && freeRect.h > 3){
-    const x = freeRect.x + g, y = freeRect.y + g,
-          w = Math.max(1, freeRect.w - 2*g), h = Math.max(1, freeRect.h - 2*g);
-    const pos = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
-    const ff = clamp(Math.floor(Math.min(w / 4.2, h * 0.4)), 9, 32);
-    const inner = (w > 40 && h > 22)
+  // Unspent label, centred in the larger empty strip. The empty L-shape itself
+  // is just the box's hatched background showing through (no rectangle drawn).
+  if (emptyRect && bt.free > 0 && emptyRect.w > 8 && emptyRect.h > 8){
+    const pos = `left:${emptyRect.x.toFixed(1)}px;top:${emptyRect.y.toFixed(1)}px;` +
+                `width:${emptyRect.w.toFixed(1)}px;height:${emptyRect.h.toFixed(1)}px`;
+    const ff = clamp(Math.floor(Math.min(emptyRect.w / 4.2, emptyRect.h * 0.4)), 9, 32);
+    const inner = (emptyRect.w > 40 && emptyRect.h > 22)
       ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(bt.free)}` +
         `<br><span style="font-size:${Math.max(8, Math.round(ff*0.42))}px;font-weight:600;opacity:.85">unspent</span></span>`
       : "";
-    html += `<div class="tmtile free" style="${pos}">${inner}</div>`;
+    html += `<div class="tmfree" style="${pos}">${inner}</div>`;
   }
   return { html, bt, height };
 }
