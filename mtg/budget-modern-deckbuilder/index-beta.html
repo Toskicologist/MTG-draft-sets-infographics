@@ -3,14 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget Modern Deckbuilder</title>
-<meta property="og:title" content="Budget Modern Deckbuilder">
+<title>MTG Budget Deckbuilder</title>
+<meta property="og:title" content="MTG Budget Deckbuilder">
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.5.0-beta.7)  [BETA — sandbox; main is v3.4.1]
+  Budget Modern Deckbuilder (v3.5.0-beta.9)  [BETA — sandbox; main is v3.4.1]
 
   Changelog:
+  v3.5.0-beta.9 (2026-06-04T16:57:05Z) - Renamed the preset button to
+                        "Preset: $25 Budget Modern".
+  v3.5.0-beta.8 (2026-06-04T16:49:32Z) - Title renamed to "MTG Budget
+                        Deckbuilder". Added a "Preset: $25 Budget Modern"
+                        button ($25 main / $10 side / Modern format). Treemap
+                        price text: now single-line (no wrap), sized to fit
+                        the tile WIDTH with a lower minimum (5px) so small
+                        tiles shrink the number instead of wrapping one digit
+                        to a second line. Cost no longer over-reserves vertical
+                        space, so card NAMES show on more tiles (incl. the
+                        smaller sideboard box — same layout logic as main,
+                        just a smaller box because area ∝ its $10 budget).
   v3.5.0-beta.7 (2026-06-04T11:24:22Z) - Treemap: fix illegibly tall/thin tiles
                         (from beta.6's vertical cut + over-strong bias).
                         - Cards now fill a SQUARE-ish region (area = spent/V of
@@ -379,8 +391,8 @@
      a tall/thin tile still gets a readable number. Name wraps below and is
      shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
   .tmtile .tcost{position:absolute;left:0;width:100%;text-align:center;
-    transform:translateY(-50%);font-weight:800;line-height:1.02;color:#fff;
-    pointer-events:none;word-break:break-word;
+    transform:translateY(-50%);font-weight:800;line-height:1;color:#fff;
+    pointer-events:none;white-space:nowrap;
     text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
   .tmtile .tnmwrap{position:absolute;left:0;width:100%;display:flex;
     align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none}
@@ -440,7 +452,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.5.0-beta.7 &middot; 2026-06-04 11:24 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.5.0-beta.9 &middot; 2026-06-04 16:57 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -501,6 +513,10 @@ Sideboard
     </div>
 
     <div class="panel">
+      <div class="field">
+        <button class="ghost" id="presetBtn" type="button" style="width:100%">Preset: $25 Budget Modern</button>
+        <p class="sub" style="margin:6px 0 0">Sets main $25, sideboard $10, format Modern.</p>
+      </div>
       <div class="field">
         <label for="deckname">Deck name (for export)</label>
         <input type="text" id="deckname" value="Budget Modern Deck">
@@ -1223,14 +1239,14 @@ function treemapBox(boardRows, budget, width, height){
     const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "");
     const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
 
-    // COST sized to the tile and centred; it WRAPS (CSS) so a narrow/tall tile
-    // still gets a readable number over 2 lines (height cap leaves room).
-    // NAME wraps below and is shrunk-to-fit later by fitTreemapLabels().
+    // COST: single line (no wrap), sized to fit the tile WIDTH so it shrinks
+    // on narrow tiles rather than wrapping one digit onto a second line. Low
+    // min (5px) lets it get small instead of breaking. Also capped by height.
     const costStr = r.lineT != null ? money(r.lineT) : "";
     const len = Math.max(2, costStr.length);
-    const costF = clamp(Math.floor(Math.min((w * 0.9) / (len * 0.55), h * 0.4)), 7, 46);
+    const costF = clamp(Math.floor(Math.min((w - 6) / (len * 0.62), h * 0.4)), 5, 46);
     const costCY = h * 0.40;                          // cost centre Y
-    const nameTop = costCY + costF + 3;               // clears up to ~2 wrapped lines
+    const nameTop = costCY + costF / 2 + 3;
     const nameH = h - nameTop - 1;
     const nameF = clamp(Math.round(Math.min(w * 0.17, h * 0.14)), 7, 18);
     const title = escapeHtml(r.name) + (r.lineT != null ? " — " + money(r.lineT) : "");
@@ -1736,6 +1752,14 @@ RECOMPUTE_INPUTS.forEach(id => {
 });
 $("resolveBtn").addEventListener("click", resolveMissing);
 $("visualBtn").addEventListener("click", showVisual);
+// Preset: restore the $25 Budget Modern defaults ($25 / $10 / Modern).
+$("presetBtn").addEventListener("click", () => {
+  $("budgetMain").value = "25";
+  $("budgetSide").value = "10";
+  $("format").value = "modern";
+  scheduleRecompute();
+  $("status").textContent = "Preset applied: $25 main · $10 side · Modern.";
+});
 
 // A *manual* edit to either list dismisses the correction notice (it'll
 // re-appear from the next recompute if a typo still stands). Our own
