@@ -3,45 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget Modern Deckbuilder</title>
-<meta property="og:title" content="Budget Modern Deckbuilder">
+<title>MTG Budget Deckbuilder</title>
+<meta property="og:title" content="MTG Budget Deckbuilder">
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  Budget Modern Deckbuilder (v3.4.1)
+  MTG Budget Deckbuilder (v3.5.0)
 
   Changelog:
-  v3.4.1 (2026-06-03T13:23:04Z) - FIX (ported from beta v3.5.0-beta.2): visual
-                        breakdown failed to fetch the image for split / DFC /
-                        adventure cards (e.g. "Wear // Tear") when the row
-                        name was the front-face alias ("Wear"). The previous
-                        code sent {name: ...} identifiers to /cards/collection,
-                        which does EXACT name matching — aliases never
-                        resolved. Now sends {set, collector_number} identifiers
-                        (same layout-agnostic basis as the working table hover
-                        popup) and keys the response back under both card name
-                        AND set+collector, so the lookup is reliable for every
-                        layout. Unpriced rows (no set/cn) still use {name} as
-                        a best-effort fallback. See
-                        mtg/MULTI_FACE_CARD_LOOKUPS.md.
-  v3.4.0 (2026-06-02T16:42:46Z) - Promoted v3.3.0-beta.3 to main. Three new
-                        features carried over from the beta sandbox:
-                        - Editable output table: per-row -/+ steppers, a
-                          remove x, and an "Add" box per board. Each control
-                          does a targeted line edit on the decklist text and
-                          recomputes, so the table and the textarea are
-                          always identical.
-                        - "Show visual breakdown" button (opt-in): one
-                          batched Scryfall /cards/collection request renders
-                          a card-image grid + mana-curve / price-spread /
-                          colour-breakdown charts.
-                        - "Copy share link" button: full input state encoded
-                          in the URL fragment (URL-safe base64 of UTF-8 JSON
-                          with short keys); zero backend.
-                        See the v3.3.0-beta.1..beta.3 entries below for
-                        development history, incl. the _walkDeck "keep"
-                        sentinel data-corruption bug fix in beta.3 (covered
-                        by a regression unit test).
+  v3.5.0 (2026-06-04T17:24:56Z) - Promoted v3.5.0-beta.1..beta.9 to main.
+                        Headline changes since v3.4.1: title renamed to
+                        "MTG Budget Deckbuilder"; new "Preset: $25 Budget
+                        Modern" button ($25 main / $10 side / Modern); the
+                        visual breakdown is now a squarified COST TREEMAP
+                        (WinDirStat-style — each card tile's area ∝ its line
+                        cost, the canvas is the budget, unspent budget shows
+                        as hatched free space) with Uniform-grid/Treemap and
+                        Crop/Whole-card/Art-only toggles, defaulting to the
+                        treemap and auto-opening once on load. See the
+                        v3.5.0-beta.* entries below for the full detail.
+  v3.5.0-beta.9 (2026-06-04T16:57:05Z) - Renamed the preset button to
+                        "Preset: $25 Budget Modern".
+  v3.5.0-beta.8 (2026-06-04T16:49:32Z) - Title renamed to "MTG Budget
+                        Deckbuilder". Added a "Preset: $25 Budget Modern"
+                        button ($25 main / $10 side / Modern format). Treemap
+                        price text: now single-line (no wrap), sized to fit
+                        the tile WIDTH with a lower minimum (5px) so small
+                        tiles shrink the number instead of wrapping one digit
+                        to a second line. Cost no longer over-reserves vertical
+                        space, so card NAMES show on more tiles (incl. the
+                        smaller sideboard box — same layout logic as main,
+                        just a smaller box because area ∝ its $10 budget).
+  v3.5.0-beta.7 (2026-06-04T11:24:22Z) - Treemap: fix illegibly tall/thin tiles
+                        (from beta.6's vertical cut + over-strong bias).
+                        - Cards now fill a SQUARE-ish region (area = spent/V of
+                          the box) anchored top-left, instead of a narrow
+                          full-height column — squarify has room in both axes
+                          so tiles stay legible (square/portrait), maintaining
+                          a sensible minimum width. The leftover is an L-shaped
+                          empty region that simply shows the box's hatched
+                          "unspent" background (the empty section no longer
+                          needs to be a rectangle); "$X unspent" is centred in
+                          the larger empty strip.
+                        - WIDE_BIAS 0.5 -> 0.8 (less aggressive; avoids both
+                          wide AND extreme-tall tiles).
+                        - Cost text now WRAPS (sized to fit ~2 lines) so a
+                          narrow tile still shows a readable price.
+  v3.5.0-beta.6 (2026-06-03T22:44:07Z) - Treemap: stop wide-short card tiles.
+                        (1) Free/unspent space is now pulled OUT of the
+                        squarify and given the leftover region directly (a
+                        vertical cut: cards fill the left at width = spent/
+                        budget, full height; unspent is the right strip). The
+                        free chunk was the largest value and was hogging a big
+                        square and forcing the cards into thin leftovers — now
+                        the CARDS get a clean, tall region and squarify makes
+                        square-ish tiles, while the odd leftover shape lands in
+                        the empty area where it doesn't matter. (2) Boxes are
+                        now square-ish (aspect 1.45 -> 1.1) so nothing is
+                        substantially wider than tall. Area still ∝ budget and
+                        $1 still equal-area across both boards. (3) Squarify now
+                        uses an ASYMMETRIC aspect penalty (WIDE_BIAS) so a wide
+                        tile costs far more than a tall one — the packer biases
+                        to portrait/square and avoids wide-short tiles (cards
+                        are portrait anyway).
+  v3.5.0-beta.5 (2026-06-03T22:02:45Z) - Treemap overhaul per feedback:
+                        - Thin WHITE 1px lines around each card box (black bg).
+                        - Squarer boxes: each board box now scales BOTH
+                          dimensions by sqrt(value) to a fixed ~1.45:1 aspect
+                          (area still ∝ budget, $1 still equal-area in both),
+                          so the sideboard is a smaller *similar* box instead
+                          of a wide-short strip — far fewer wide-short tiles.
+                        - Labels copied from the pauper poster: COST is sized
+                          by tile WIDTH and centred (a big number no longer
+                          forces the name out), and the NAME wraps below and
+                          is shrunk-to-fit by measuring scrollHeight
+                          (fitTreemapLabels) so it shows whenever there's room.
+                        - Visual breakdown now DEFAULTS to the treemap and
+                          AUTO-OPENS once on load (no click needed).
+  v3.5.0-beta.4 (2026-06-03T21:43:59Z) - Treemap tile polish: stronger solid
+                        borders (2px accent box border + dark tile borders
+                        with a light inner edge) so tiles read as distinct
+                        boxes. Tile label is now a bottom-anchored column —
+                        the COST sits at the very bottom and is ALWAYS shown,
+                        scaled to the tile (capped by width & height); the
+                        NAME wraps over multiple lines above it (line-clamped)
+                        and is clipped by the tile's overflow when space runs
+                        out, so the price is never lost while a long name
+                        gracefully truncates. Cost & name font sizes scale
+                        independently per tile.
+  v3.5.0-beta.3 (2026-06-03T18:59:45Z) - Visual breakdown: replaced the
+                        "scale cards by line cost" width toggle with a proper
+                        COST TREEMAP (squarified, WinDirStat-style). Layout
+                        dropdown: "Uniform grid" | "Cost treemap". In treemap
+                        mode each card tile's AREA is proportional to its line
+                        cost (qty x unit); the canvas is the budget, so unspent
+                        budget shows as a hatched "free space" tile (over
+                        budget => no free tile + red OVER label). $1 occupies
+                        the SAME pixel area in both the main & sideboard boxes
+                        (shared px-per-$ constant). New "Fill" dropdown: Crop
+                        to fill (cover, default) | Whole card (contain) | Art
+                        only (art_crop). Treemap algorithm ported from
+                        mtg/pauper/gen-poster.mjs and unit-tested (138/138) in
+                        _scratch/treemap-budget.*. Layout/fill toggles
+                        re-render from cached Scryfall data — no extra API
+                        calls.
+  v3.5.0-beta.2 (2026-06-03T13:05:44Z) - FIX: visual breakdown failed to fetch
+                        the image for split / DFC / adventure cards (e.g.
+                        "Wear // Tear") when the row name was the front-face
+                        alias ("Wear"). The previous code sent {name: ...}
+                        identifiers to /cards/collection, which does EXACT
+                        name matching — front-face aliases never resolved.
+                        Now sends {set, collector_number} identifiers (same
+                        layout-agnostic basis as the working table hover
+                        popup) and keys the response back under both the card
+                        name AND set+collector, so the lookup is reliable for
+                        every layout. Unpriced rows (no set/cn) still use
+                        {name} as a best-effort fallback.
+  v3.5.0-beta.1 (2026-06-02T16:53:10Z) - Visual breakdown: new "Scale cards
+                        by line cost" toggle. When on, each card image in the
+                        grid is sized by its line total ($qty x unit) using a
+                        sqrt scale (so expensive cards visibly dominate
+                        without crushing cheap ones to invisibility); off
+                        keeps the uniform auto-fill grid. Toggle re-renders
+                        from the cached Scryfall data — no extra API call.
   v3.3.0-beta.3 (2026-05-19T22:23:02Z) - Two things:
                         (a) FIX: in beta.2 the +/- steppers and the remove ✕
                         corrupted all OTHER card lines, replacing them with
@@ -296,6 +380,46 @@
     letter-spacing:.04em;margin:0 0 10px}
   .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
     gap:12px}
+  .vctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--dim);
+    font-size:12.5px;margin:-2px 0 12px;user-select:none}
+  .vctrl label{display:inline-flex;align-items:center;gap:6px;margin:0}
+  .vctrl select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
+    border-radius:7px;padding:4px 8px;font-size:12.5px}
+  /* ---- cost treemap (beta v3.5.0-beta.3) ---- */
+  /* Box bg IS the hatched "unspent" texture; card tiles (opaque) sit on top in
+     a square-ish region, so the leftover empty space (an L-shape) reads as the
+     unspent budget without needing its own rectangle. */
+  .tmbox{position:relative;border:1px solid rgba(255,255,255,.85);
+    border-radius:8px;overflow:hidden;margin:0 auto 16px;background:#05070e;
+    background-image:repeating-linear-gradient(45deg,
+      rgba(255,255,255,.05),rgba(255,255,255,.05) 9px,
+      rgba(255,255,255,.10) 9px,rgba(255,255,255,.10) 18px)}
+  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.7);
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    background-color:var(--panel2)}
+  .tmtile.contain{background-size:contain;background-color:#0a0d18}
+  /* pauper-poster label: cost centred & sized to the tile; WRAPS over lines so
+     a tall/thin tile still gets a readable number. Name wraps below and is
+     shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
+  .tmtile .tcost{position:absolute;left:0;width:100%;text-align:center;
+    transform:translateY(-50%);font-weight:800;line-height:1;color:#fff;
+    pointer-events:none;white-space:nowrap;
+    text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
+  .tmtile .tnmwrap{position:absolute;left:0;width:100%;display:flex;
+    align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none}
+  .tmtile .tnm{color:#fff;font-weight:700;line-height:1.13;text-align:center;
+    word-break:break-word;overflow-wrap:break-word;padding:0 3px 2px;max-width:100%;
+    text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
+  /* unspent label, centred in the largest empty strip (no border/bg — the box
+     hatch shows through as the "empty" region). */
+  .tmfree{position:absolute;display:flex;align-items:center;justify-content:center;
+    text-align:center;color:var(--ink);pointer-events:none;
+    text-shadow:0 0 4px #000,0 0 8px #000}
+  .tmhead{display:flex;align-items:baseline;justify-content:space-between;
+    margin:18px 0 8px}
+  .tmhead h2{margin:0}
+  .tmhead .tmeta{color:var(--dim);font-size:12.5px}
+  .tmhead .tmeta.over{color:var(--bad);font-weight:700}
   .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:8px;text-align:center}
   .vcard img{width:100%;height:auto;border-radius:7px;display:block;
@@ -339,7 +463,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>Budget Modern Deckbuilder <span>v3.4.1 &middot; 2026-06-03 13:23 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.5.0 &middot; 2026-06-04 17:24 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -400,6 +524,10 @@ Sideboard
     </div>
 
     <div class="panel">
+      <div class="field">
+        <button class="ghost" id="presetBtn" type="button" style="width:100%">Preset: $25 Budget Modern</button>
+        <p class="sub" style="margin:6px 0 0">Sets main $25, sideboard $10, format Modern.</p>
+      </div>
       <div class="field">
         <label for="deckname">Deck name (for export)</label>
         <input type="text" id="deckname" value="Budget Modern Deck">
@@ -941,6 +1069,11 @@ function render(main, side, priceMap, meta, cheapest){
   lastReport = buildReport(LAST);
   lastCsv = buildCsv(LAST);
   if (_vbKey && _vbKey !== vbSig()) resetVisual();   // deck changed -> stale
+  // Auto-open the visual breakdown once on first load (ease of checking).
+  if (!_vbAutoOpened && (m.rows.length || s.rows.length)){
+    _vbAutoOpened = true;
+    setTimeout(() => { if (_vbKey === null) showVisual(); }, 60);
+  }
 }
 
 /* ---- visual breakdown (beta item 3) --------------------------------
@@ -948,22 +1081,26 @@ function render(main, side, priceMap, meta, cheapest){
    (<=75 ids/call) for images + cmc + colours; charts are drawn from that
    (zero further calls). Re-click toggles; editing the deck invalidates.  */
 let _vbKey = null;                       // deck signature the visual reflects
+let _vbRows = null;                      // cached Scryfall-enriched rows
+let _vbLayout = "treemap";               // "grid" | "treemap"  (beta v3.5.0-beta.5 default)
+let _vbFill = "cover";                   // treemap fill: "cover" | "contain" | "art"
+let _vbAutoOpened = false;               // auto-open the visual once on first load
 function vbSig(){
   if (!LAST) return "";
   const f = s => s.rows.map(r => r.qty + "|" + norm(r.name)).join(",");
   return f(LAST.m) + "#" + f(LAST.s);
 }
 function resetVisual(){
-  _vbKey = null;
+  _vbKey = null; _vbRows = null;
   const b = $("visualBtn"); if (b){ b.disabled = false; b.textContent = "Show visual breakdown"; }
   const v = $("visual"); if (v){ v.classList.add("hidden"); v.innerHTML = ""; }
 }
-// v3.4.1: takes a list of identifier objects (mix of {set, collector_number}
+// beta.2: takes a list of identifier objects (mix of {set, collector_number}
 // and {name}). Keys the result map by card name (+ front-face alias) AND by
 // "set|cn" so callers can look up by whichever they have. set+collector is
 // preferred because /cards/collection's {name} identifier is EXACT-match and
 // fails for split/DFC/adventure front-face aliases (e.g. "Wear" alone won't
-// resolve to "Wear // Tear"). See mtg/MULTI_FACE_CARD_LOOKUPS.md.
+// resolve to "Wear // Tear").
 const _scKey = (s, n) => `sc:${String(s||"").toLowerCase()}|${String(n||"").toLowerCase()}`;
 async function scryfallCollection(identifiers){
   const out = new Map();
@@ -992,6 +1129,14 @@ function vImg(c){
     return c.card_faces[0].image_uris.normal || null;
   return null;
 }
+// art_crop (just the artwork) for the treemap "Art only" fill mode.
+function vArt(c){
+  if (!c) return null;
+  if (c.image_uris) return c.image_uris.art_crop || c.image_uris.normal || null;
+  if (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris)
+    return c.card_faces[0].image_uris.art_crop || c.card_faces[0].image_uris.normal || null;
+  return null;
+}
 const vIsLand = c => !!c && /\bLand\b/.test(c.type_line || "");
 const vCmc = c => (c && typeof c.cmc === "number") ? c.cmc : 0;
 function vColors(c){
@@ -1007,15 +1152,182 @@ function vbar(label, val, max){
 }
 const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
   R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
-function renderVisual(rows){
-  const grid = side => rows.filter(r => r.board === side).map(r => {
-    const img = vImg(r.c);
-    return `<div class="vcard${img ? "" : " miss"}">` +
-      (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
-           : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
-      `<div class="vq">${r.qty}&times;</div>` +
-      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}</div></div>`;
+/* ---- cost treemap (beta v3.5.0-beta.3) -----------------------------
+   Squarified treemap: each card tile's AREA is proportional to its line
+   cost (qty x unit); the canvas represents the budget, so unspent budget
+   shows as a hatched "free space" tile (WinDirStat-style). $1 occupies the
+   same pixel area in BOTH boards (shared px-per-$ constant k). Ported from
+   mtg/pauper/gen-poster.mjs and unit-tested (138/138) in _scratch/.       */
+function squarify(items, rect){
+  if (!items.length) return [];
+  if (items.length === 1)
+    return [{ item:items[0].item, x:rect.x, y:rect.y, w:rect.w, h:rect.h }];
+  const total = items.reduce((s, it) => s + it.value, 0);
+  if (total <= 0) return [];
+  const vertical = rect.w <= rect.h;
+  const side = vertical ? rect.h : rect.w, other = vertical ? rect.w : rect.h;
+  // ASYMMETRIC badness: a tile WIDER than tall is penalised far more than one
+  // taller than wide, so the packer biases toward portrait/square tiles and
+  // avoids wide-short ones (cards are portrait anyway). WIDE_BIAS<1 makes a
+  // tall tile "cheaper" than an equally-lopsided wide tile.
+  const WIDE_BIAS = 0.8;
+  const badness = (w, h) => { const ar = w / h; return ar >= 1 ? ar : (1 / ar) * WIDE_BIAS; };
+  let bestRow = [items[0]], bestWorst = Infinity, rowSum = 0;
+  for (let i = 0; i < items.length; i++){
+    rowSum += items[i].value;
+    const rowThickness = (rowSum / total) * other;
+    let worst = 0;
+    for (let j = 0; j <= i; j++){
+      const len = (items[j].value / rowSum) * side;
+      const ratio = vertical ? badness(rowThickness, len) : badness(len, rowThickness);
+      if (ratio > worst) worst = ratio;
+    }
+    if (worst <= bestWorst){ bestWorst = worst; bestRow = items.slice(0, i + 1); }
+    else break;
+  }
+  const rowTotal = bestRow.reduce((s, it) => s + it.value, 0);
+  const rowThickness = (rowTotal / total) * other;
+  const result = []; let offset = 0;
+  for (const it of bestRow){
+    const len = (it.value / rowTotal) * side;
+    result.push(vertical
+      ? { item:it.item, x:rect.x, y:rect.y + offset, w:rowThickness, h:len }
+      : { item:it.item, x:rect.x + offset, y:rect.y, w:len, h:rowThickness });
+    offset += len;
+  }
+  const rem = items.slice(bestRow.length);
+  const next = vertical
+    ? { x:rect.x + rowThickness, y:rect.y, w:rect.w - rowThickness, h:rect.h }
+    : { x:rect.x, y:rect.y + rowThickness, w:rect.w, h:rect.h - rowThickness };
+  return result.concat(squarify(rem, next));
+}
+// cards: [{...row, cost}] -> {items (desc, +free tile if under budget), spent, V, free, over}
+function budgetTiles(cards, budget){
+  const spent = cards.reduce((s, c) => s + Math.max(0, c.cost || 0), 0);
+  const b = Math.max(0, budget || 0), V = Math.max(spent, b), free = Math.max(0, b - spent);
+  const items = [];
+  for (const c of cards){ const v = Math.max(0, c.cost || 0); if (v > 0) items.push({ item:c, value:v }); }
+  if (free > 0) items.push({ item:{ __free:true, amount:free }, value:free });
+  items.sort((a, b2) => b2.value - a.value);
+  return { items, spent, V, free, over: spent > b };
+}
+// One board's box HTML (absolutely-positioned tiles inside a relative .tmbox).
+// Free space is pulled OUT of the squarify; the cards get a SQUARE-ish region
+// (area = spent/V of the box) anchored top-left, so squarify has room in both
+// axes and makes legible square/portrait tiles (no thin slivers). The leftover
+// is an L-shaped empty region — it just shows the box's hatched bg as the
+// unspent budget (no rectangle needed); the "$X unspent" label is centred in
+// the larger empty strip.
+function treemapBox(boardRows, budget, width, height){
+  const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
+  const g = 2;                                     // gutter between tiles
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const cardItems = bt.items.filter(i => !i.item.__free);
+  const boxArea = width * height;
+
+  let cardsRect = { x:0, y:0, w:width, h:height }, emptyRect = null;
+  if (bt.free > 0 && cardItems.length){
+    // square-ish cards region of area = spent/V * boxArea, clamped to the box.
+    const A = (bt.spent / bt.V) * boxArea;
+    let rw = Math.sqrt(A), rh = rw;
+    if (rw > width)  { rw = width;  rh = A / width;  }
+    if (rh > height) { rh = height; rw = A / height; }
+    cardsRect = { x:0, y:0, w:Math.min(rw, width), h:Math.min(rh, height) };
+    // unspent label goes in whichever leftover strip (right vs bottom) is bigger
+    const right  = { x:cardsRect.w, y:0, w:width - cardsRect.w, h:height };
+    const bottom = { x:0, y:cardsRect.h, w:cardsRect.w, h:height - cardsRect.h };
+    emptyRect = (right.w * right.h >= bottom.w * bottom.h) ? right : bottom;
+  } else if (bt.free > 0 && !cardItems.length){
+    cardsRect = { x:0, y:0, w:0, h:0 };
+    emptyRect = { x:0, y:0, w:width, h:height };
+  }
+  const tiles = cardItems.length ? squarify(cardItems, cardsRect) : [];
+
+  let html = tiles.map(t => {
+    const x = t.x + g, y = t.y + g, w = Math.max(1, t.w - 2*g), h = Math.max(1, t.h - 2*g);
+    const pos = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
+    const r = t.item, img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
+    const cls = "tmtile" + (_vbFill === "contain" ? " contain" : "");
+    const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
+
+    // COST: single line (no wrap), sized to fit the tile WIDTH so it shrinks
+    // on narrow tiles rather than wrapping one digit onto a second line. Low
+    // min (5px) lets it get small instead of breaking. Also capped by height.
+    const costStr = r.lineT != null ? money(r.lineT) : "";
+    const len = Math.max(2, costStr.length);
+    const costF = clamp(Math.floor(Math.min((w - 6) / (len * 0.62), h * 0.4)), 5, 46);
+    const costCY = h * 0.40;                          // cost centre Y
+    const nameTop = costCY + costF / 2 + 3;
+    const nameH = h - nameTop - 1;
+    const nameF = clamp(Math.round(Math.min(w * 0.17, h * 0.14)), 7, 18);
+    const title = escapeHtml(r.name) + (r.lineT != null ? " — " + money(r.lineT) : "");
+    const costHtml = costStr
+      ? `<div class="tcost" style="font-size:${costF}px;top:${costCY.toFixed(1)}px">${costStr}</div>` : "";
+    const nameHtml = nameH > 7
+      ? `<div class="tnmwrap" style="top:${nameTop.toFixed(1)}px;height:${nameH.toFixed(1)}px">` +
+        `<div class="tnm" style="font-size:${nameF}px">${r.qty}&times; ${escapeHtml(r.name)}</div></div>`
+      : "";
+    return `<div class="${cls}" style="${pos};${bg}" title="${title}">${costHtml}${nameHtml}</div>`;
   }).join("");
+
+  // Unspent label, centred in the larger empty strip. The empty L-shape itself
+  // is just the box's hatched background showing through (no rectangle drawn).
+  if (emptyRect && bt.free > 0 && emptyRect.w > 8 && emptyRect.h > 8){
+    const pos = `left:${emptyRect.x.toFixed(1)}px;top:${emptyRect.y.toFixed(1)}px;` +
+                `width:${emptyRect.w.toFixed(1)}px;height:${emptyRect.h.toFixed(1)}px`;
+    const ff = clamp(Math.floor(Math.min(emptyRect.w / 4.2, emptyRect.h * 0.4)), 9, 32);
+    const inner = (emptyRect.w > 40 && emptyRect.h > 22)
+      ? `<span style="font-size:${ff}px;font-weight:800;line-height:1.1">${money(bt.free)}` +
+        `<br><span style="font-size:${Math.max(8, Math.round(ff*0.42))}px;font-weight:600;opacity:.85">unspent</span></span>`
+      : "";
+    html += `<div class="tmfree" style="${pos}">${inner}</div>`;
+  }
+  return { html, bt, height };
+}
+function buildTreemapHTML(rows){
+  const cw = Math.max(320, ($("visual").clientWidth || 700));
+  const mainRows = rows.filter(r => r.board === "main").map(r => ({ ...r, cost: r.lineT || 0 }));
+  const sideRows = rows.filter(r => r.board === "side").map(r => ({ ...r, cost: r.lineT || 0 }));
+  const mainBT = budgetTiles(mainRows, LAST.bM), sideBT = budgetTiles(sideRows, LAST.bS);
+  // Each board box keeps a squarish ASPECT (w:h) and has AREA ∝ its budget-
+  // value V. Scaling BOTH dimensions by √V (not just height) avoids the
+  // wide-short sideboard strip: the smaller board is a smaller *similar* box.
+  // $1 still occupies the same area in both (shared k = area/V).
+  const ASPECT = 1.1;                              // box w:h — square-ish, never wide
+  const wBig = Math.min(cw, 760);
+  const hBig = Math.round(wBig / ASPECT);
+  const k = (wBig * hBig) / Math.max(mainBT.V, sideBT.V, 1);   // px² per $
+  const boxFor = V => {
+    if (V <= 0) return null;
+    const area = k * V;
+    const w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
+    return { w, h: Math.max(1, Math.round(area / w)) };
+  };
+  const section = (title, boardRows, budget, bt) => {
+    const box = boxFor(bt.V);
+    if (!box) return "";
+    const tm = treemapBox(boardRows, budget, box.w, box.h);
+    const meta = bt.over
+      ? `<span class="tmeta over">$${bt.spent.toFixed(2)} spent — OVER by ${money(bt.spent - budget)}</span>`
+      : `<span class="tmeta">$${bt.spent.toFixed(2)} of ${money(budget)} · ${money(bt.free)} unspent</span>`;
+    return `<div class="tmhead"><h2>${title}</h2>${meta}</div>` +
+           `<div class="tmbox" style="width:${box.w}px;height:${box.h}px">${tm.html}</div>`;
+  };
+  return section("Main deck", rows.filter(r => r.board === "main"), LAST.bM, mainBT)
+       + section("Sideboard", rows.filter(r => r.board === "side"), LAST.bS, sideBT);
+}
+// Pauper-poster shrink-to-fit: reduce each tile name's font until it fits its
+// wrap box (so the name always shows at the largest size that fits the space).
+function fitTreemapLabels(){
+  for (const wrap of $("visual").querySelectorAll(".tnmwrap")){
+    const lab = wrap.firstElementChild; if (!lab) continue;
+    let fs = parseFloat(lab.style.fontSize) || 12, guard = 0;
+    while (fs > 5 && lab.scrollHeight > wrap.clientHeight && guard++ < 40){
+      fs *= 0.85; lab.style.fontSize = fs + "px";
+    }
+  }
+}
+function renderVisual(rows){
   const known = rows.filter(r => r.c && !vIsLand(r.c));
   const curve = [0,0,0,0,0,0,0,0];
   for (const r of known) curve[Math.min(7, Math.round(vCmc(r.c)))] += r.qty;
@@ -1033,19 +1345,54 @@ function renderVisual(rows){
   const pie = Object.entries(colC).filter(([,v]) => v > 0).map(([k,v]) =>
     `<span class="pip"><span class="sw" style="background:${VCOL[k][0]}"></span>${VCOL[k][1]} ${v}</span>`).join("");
   const miss = rows.filter(r => !r.c).length;
-  $("visual").innerHTML =
-    `<h2>Visual breakdown</h2>` +
+
+  // Uniform-grid builder (the default layout).
+  const gridCards = side => rows.filter(r => r.board === side).map(r => {
+    const img = vImg(r.c);
+    return `<div class="vcard${img ? "" : " miss"}">` +
+      (img ? `<img loading="lazy" alt="${escapeHtml(r.name)}" src="${escapeHtml(img)}">`
+           : `<div>${escapeHtml(r.name)}<br><span class="vp">no image</span></div>`) +
+      `<div class="vq">${r.qty}&times;</div>` +
+      `<div class="vp">${r.unit != null ? money(r.unit) : "&mdash;"}` +
+        (r.lineT != null ? ` <span style="opacity:.6">/ ${money(r.lineT)}</span>` : "") +
+      `</div></div>`;
+  }).join("");
+
+  const controls =
+    `<div class="vctrl">` +
+      `<label>Layout <select id="vLayout">` +
+        `<option value="grid"${_vbLayout==="grid"?" selected":""}>Uniform grid</option>` +
+        `<option value="treemap"${_vbLayout==="treemap"?" selected":""}>Cost treemap</option>` +
+      `</select></label>` +
+      `<label id="vFillWrap"${_vbLayout==="treemap"?"":' style="display:none"'}>Fill <select id="vFill">` +
+        `<option value="cover"${_vbFill==="cover"?" selected":""}>Crop to fill</option>` +
+        `<option value="contain"${_vbFill==="contain"?" selected":""}>Whole card</option>` +
+        `<option value="art"${_vbFill==="art"?" selected":""}>Art only</option>` +
+      `</select></label>` +
+      (_vbLayout==="treemap"
+        ? `<span class="vbnote">Tile area &prop; line cost; hatched space = unspent budget. $1 is the same size in both decks.</span>`
+        : "") +
+    `</div>`;
+
+  const charts =
     `<div class="vcharts">` +
       `<div class="chart"><h3>Mana curve · non-land, by copies</h3>${curveH}</div>` +
       `<div class="chart"><h3>Price spread · by copies</h3>${bH}` +
         `<h3 style="margin-top:14px">Colours · by copies</h3>` +
         `<div class="pie">${pie || '<span class="vp">&mdash;</span>'}</div></div>` +
-    `</div>` +
-    `<h2>Main deck</h2><div class="vgrid">${grid("main") || '<span class="vp">&mdash;</span>'}</div>` +
-    (rows.some(r => r.board === "side")
-      ? `<h2>Sideboard</h2><div class="vgrid">${grid("side")}</div>` : "") +
-    (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts.</p>` : "");
-  $("visual").classList.remove("hidden");
+    `</div>`;
+
+  $("visual").classList.remove("hidden");   // un-hide BEFORE the treemap measures width
+  const body = _vbLayout === "treemap"
+    ? buildTreemapHTML(rows)
+    : `<h2>Main deck</h2><div class="vgrid">${gridCards("main") || '<span class="vp">&mdash;</span>'}</div>` +
+      (rows.some(r => r.board === "side")
+        ? `<h2>Sideboard</h2><div class="vgrid">${gridCards("side")}</div>` : "");
+
+  $("visual").innerHTML =
+    `<h2>Visual breakdown</h2>` + controls + charts + body +
+    (miss ? `<p class="sub" style="margin:12px 0 0">${miss} card${miss>1?"s":""} not found on Scryfall — shown without image and excluded from the charts/treemap.</p>` : "");
+  if (_vbLayout === "treemap") fitTreemapLabels();   // shrink names to fit
 }
 async function showVisual(){
   if (!LAST){ return; }
@@ -1057,7 +1404,7 @@ async function showVisual(){
   }
   const rows = [];
   for (const [board, sec] of [["main", LAST.m], ["side", LAST.s]])
-    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit,
+    for (const r of sec.rows) rows.push({ name:r.name, qty:r.qty, unit:r.unit, lineT:r.lineT,
       set:r.p && r.p.set, cn:r.p && r.p.cn, board, c:null });
   if (!rows.length) return;
   // Build deduped identifiers, preferring {set, collector_number} (works for
@@ -1078,6 +1425,7 @@ async function showVisual(){
       r.c = (r.set && r.cn && map.get(_scKey(r.set, r.cn)))
          || map.get(norm(r.name)) || null;
     }
+    _vbRows = rows;
     renderVisual(rows);
     _vbKey = sig;
     b.textContent = "Hide visual breakdown";
@@ -1087,6 +1435,12 @@ async function showVisual(){
     b.textContent = "Show visual breakdown";
   } finally { b.disabled = false; }
 }
+// Layout / fill selectors re-render from the cached Scryfall rows — no API call.
+document.addEventListener("change", e => {
+  if (!e.target) return;
+  if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+});
 
 /* ---- editable output (beta item 2) ---------------------------------
    Single source of truth = the decklist text. The +/- / remove / add
@@ -1409,6 +1763,14 @@ RECOMPUTE_INPUTS.forEach(id => {
 });
 $("resolveBtn").addEventListener("click", resolveMissing);
 $("visualBtn").addEventListener("click", showVisual);
+// Preset: restore the $25 Budget Modern defaults ($25 / $10 / Modern).
+$("presetBtn").addEventListener("click", () => {
+  $("budgetMain").value = "25";
+  $("budgetSide").value = "10";
+  $("format").value = "modern";
+  scheduleRecompute();
+  $("status").textContent = "Preset applied: $25 main · $10 side · Modern.";
+});
 
 // A *manual* edit to either list dismisses the correction notice (it'll
 // re-appear from the next recompute if a typo still stands). Our own
