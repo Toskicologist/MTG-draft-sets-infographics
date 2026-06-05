@@ -8,31 +8,59 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.6.1)
+  MTG Budget Deckbuilder (v3.7.0-beta.5)  [BETA — sandbox; main is v3.6.1]
 
   Changelog:
-  v3.6.1 (2026-06-05T11:07:42Z) - Deploy fix: the page now lives at the Pages
-                        ROOT (budgetdeckbuilder.html), so the header background
-                        image path was changed from "../assets/" to "mtg/assets/"
-                        (the old relative path pointed above the site root and
-                        404'd). No functional change; price auto-update is
-                        unaffected (absolute CDN/Scryfall URLs).
-  v3.6.0 (2026-06-04T22:54:22Z) - Promoted v3.6.0-beta.1..beta.6 to main.
-                        Headline changes since v3.5.0: the visual breakdown is
-                        now ALWAYS ON and live (charts + treemap update on every
-                        edit; Scryfall is only queried for printings not already
-                        cached and only after a short idle, so typing never
-                        fetches and qty/remove/add re-render from cache); mana
-                        curve / price spread / colours moved ABOVE the table as
-                        compact bars; treemap shows main & sideboard SIDE BY SIDE
-                        when wide (boxes top-align); a single consistent budget
-                        visual — the box is the BUDGET (constant), unspent is the
-                        empty remainder, and OVER budget spills into a red strip
-                        below a dashed budget line (height ∝ over-spend, capped);
-                        "Art only" default fill; tile/grid hover popup + click to
-                        Scryfall; single-slash DFC parse; inline per-row Resolve
-                        button; and a responsive table-overlap fix. See the
-                        v3.6.0-beta.* entries below for the full detail.
+  v3.7.0-beta.5 (2026-06-05T11:59:03Z) - Treemap tiles: removed the 2px inter-
+                        tile gutter — tiles are now separated only by their 1px
+                        white edge (border), and .tmtile is border-box so those
+                        edges sit flush without overlapping. Slightly more image
+                        per tile and a cleaner grid look. (Does NOT fix a genuine
+                        tiny-value sliver — that's the squarify math; see notes
+                        on the squarer-packing / min-size trade-offs.)
+  v3.7.0-beta.4 (2026-06-05T11:47:22Z) - The treemap now RE-LAYS OUT on window
+                        resize (debounced ~160ms, from cached card data — zero
+                        Scryfall), so resizing/rotating between narrow (stacked)
+                        and wide (side-by-side) adjusts immediately instead of
+                        only on the next deck edit / refresh. A width-unchanged
+                        guard skips height-only resizes (e.g. mobile address-bar
+                        show/hide) so it costs nothing in those cases.
+  v3.7.0-beta.3 (2026-06-05T11:35:28Z) - Visual view now uses the SAME total
+                        width as the rest of the page. Side-by-side: the two
+                        boxes + the gap fill the content width (widths ∝ budget),
+                        instead of being shrunk to a height cap and centred with
+                        a gap beside the page edge. Height is capped (≤620) WITHOUT
+                        shrinking the widths (a very wide window just makes the
+                        bigger box run a touch wide, which squarify handles).
+                        .tmbox is now border-box, so the boxes never overflow by
+                        their 1px border — fixes a tiny horizontal scroll on
+                        mobile (stacked, full-width box) and makes the fill exact.
+                        Approach: re-layout to fit (sharp art/text), not CSS-
+                        scaling the rendered image (which would blur the art).
+  v3.7.0-beta.2 (2026-06-05T11:07:42Z) - Deploy fix (same as main v3.6.1): page
+                        now at the Pages ROOT, so header image path "../assets/"
+                        -> "mtg/assets/" (old path 404'd above the site root).
+                        Auto-update unaffected (absolute CDN/Scryfall URLs).
+  v3.7.0-beta.1 (2026-06-05T10:51:16Z) - Five changes:
+                        - Unspent (under-budget) hatch recoloured to LIGHT BLUE
+                          stripes (was white-on-near-black).
+                        - "Save as PDF" button (browser print-to-PDF via a
+                          dedicated @media print stylesheet that renders the
+                          results as a clean black-on-white price report; zero
+                          dependencies).
+                        - Exports are now split into two labelled groups:
+                          "Snapshot — prices fixed at export" (.txt/.csv/Copy/
+                          PDF) vs "Live share link — prices update when opened".
+                        - The share link records the price-data date; opening a
+                          link whose prices are now older than the current daily
+                          data shows a "prices may have changed since shared"
+                          banner (historical prices aren't retained, so the link
+                          can't carry the old numbers — it recomputes live).
+                        - The preset is now a CHECKBOX that reflects whether $25
+                          main / $10 side / Modern is in effect and auto-unticks
+                          when you change any of them.
+                        - Default example deck is now "Boros budget modern
+                          kulvokea" (main + sideboard).
   v3.6.0-beta.6 (2026-06-04T22:45:46Z) - Two fixes:
                         - Treemap header meta: when the full "$X of $Y · $Z
                           OVER/unspent" would clip, it now drops the prefix and
@@ -370,6 +398,11 @@
   .ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
   .actions{display:flex;gap:10px;margin-top:10px}
   .actions button{flex:1}
+  .exportgrp{margin-top:14px}
+  .exportgrp+.exportgrp{padding-top:12px;border-top:1px solid var(--line)}
+  .exporthd{font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--dim);font-weight:600;margin:0 0 2px}
+  .printonly{display:none}
   /* Lower bound MUST be >= a board table's min-content width (~399px measured)
      or a squeezed table overflows its column and overlaps its neighbour. 430 =
      min-content + buffer; below 2×430+gap the grid wraps to one column. */
@@ -494,13 +527,15 @@
   /* Box bg IS the hatched "unspent" texture; card tiles (opaque) sit on top in
      a square-ish region, so the leftover empty space (an L-shape) reads as the
      unspent budget without needing its own rectangle. */
-  .tmbox{position:relative;border:1px solid rgba(255,255,255,.85);
-    border-radius:8px;overflow:hidden;margin:0 auto 16px;background:#05070e;
+  /* box bg = the "unspent" hatch (shows through where there are no card tiles):
+     light-blue stripes on a deep blue base (was white-on-near-black). */
+  .tmbox{position:relative;box-sizing:border-box;border:1px solid rgba(255,255,255,.85);
+    border-radius:8px;overflow:hidden;margin:0 auto 16px;background:#0a1622;
     background-image:repeating-linear-gradient(45deg,
-      rgba(255,255,255,.05),rgba(255,255,255,.05) 9px,
-      rgba(255,255,255,.10) 9px,rgba(255,255,255,.10) 18px)}
+      rgba(127,180,230,.14),rgba(127,180,230,.14) 9px,
+      rgba(127,180,230,.30) 9px,rgba(127,180,230,.30) 18px)}
   a.tmtile,a.vcard{text-decoration:none;color:inherit;cursor:pointer;display:block}
-  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.7);
+  .tmtile{position:absolute;box-sizing:border-box;overflow:hidden;border:1px solid rgba(255,255,255,.7);
     background-size:cover;background-position:center;background-repeat:no-repeat;
     background-color:var(--panel2)}
   .tmtile.contain{background-size:contain;background-color:#0a0d18}
@@ -607,13 +642,36 @@
   .addcard .addinput{flex:1;background:var(--bg);color:var(--ink);
     border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
   .addcard .addbtn{flex:0 0 auto;padding:8px 14px}
+  /* ---- print / Save-as-PDF: a clean black-on-white price report ---- */
+  @media print {
+    body{background:#fff;color:#000}
+    .wrap{max-width:none;padding:0}
+    /* keep only the results report */
+    .site-header,.grid,#charts,#visual,footer,.updated,details.explain,
+    #fixNote,#shareNote,#status,#barWrap{display:none !important}
+    #results{display:block !important}
+    .printonly{display:block;margin:0 0 4px;color:#000;font-size:18px}
+    .stamp{color:#444 !important}
+    h2,h3,.amt,.meta,.sechead span,.sechead h2,a.cardlink,td,th,.tcard{color:#000 !important}
+    a{text-decoration:none}
+    .tcard{background:#fff !important;border:1px solid #bbb !important;break-inside:avoid}
+    .board{break-inside:avoid}
+    table{font-size:11px}
+    table th,table td{border-bottom:1px solid #ccc !important}
+    /* strip interactive bits from the printed tables */
+    .qctl button,.xbtn,.rsv,.addcard{display:none !important}
+    table th:last-child,table td:last-child{display:none !important}
+    .badge.over{color:#b00020 !important}
+    .badge.pass{color:#0a7d28 !important}
+    .c0,.c1,.c2,.c3,.c4{color:#000 !important}     /* price tiers readable on white */
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.6.1 &middot; 2026-06-05 11:07 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.5 &middot; 2026-06-05 11:59 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -655,32 +713,46 @@
 
 Sideboard
 3 Smash to Smithereens
-2 Searing Blaze">4 Lightning Bolt
-4 Monastery Swiftspear
-4 Soul-Scar Mage
-4 Goblin Guide
-20 Mountain
-
-Sideboard
-3 Smash to Smithereens
-2 Roiling Vortex</textarea>
+2 Searing Blaze">1 Battlefield Forge
+4 Case of the Gateway Express
+1 Furycalm Snarl
+4 Gleeful Demolition
+3 Goblin Bushwhacker
+4 Inspiring Vantage
+4 Knight-Errant of Eos
+4 Kuldotha Rebirth
+5 Mountain
+4 Novice Inspector
+4 Ornithopter
+6 Plains
+4 Reckless Bushwhacker
+4 Temple of Triumph
+4 Thraben Inspector
+4 Voldaren Epicure</textarea>
       <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. The boards split on a line reading <em>Sideboard</em> or an <code>SB:</code> prefix &mdash; paste a full export as-is. <code>//</code> / <code>#</code> lines ignored.</p>
 
       <label for="sideboard" style="margin-top:16px">Sideboard <span style="text-transform:none;letter-spacing:0">(optional &mdash; only if your list has no <em>Sideboard</em> marker)</span></label>
       <textarea id="sideboard" spellcheck="false" style="height:120px" placeholder="3 Smash to Smithereens
 2 Roiling Vortex
-(everything here counts as sideboard)"></textarea>
+(everything here counts as sideboard)">2 Destroy Evil
+1 Lithomantic Barrage
+4 Rest in Peace
+3 Thalia, Guardian of Thraben
+1 Torch the Tower
+2 Urabrask's Forge
+1 Wear // Tear
+1 Path to Exile</textarea>
       <p class="sub" style="margin:8px 0 0">Anything here is added to the sideboard total. Leave empty if your decklist above already contains a <em>Sideboard</em> / <code>SB:</code> section.</p>
     </div>
 
     <div class="panel">
       <div class="field">
-        <button class="ghost" id="presetBtn" type="button" style="width:100%">Preset: $25 Budget Modern</button>
-        <p class="sub" style="margin:6px 0 0">Sets main $25, sideboard $10, format Modern.</p>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;font-size:14px"><input type="checkbox" id="presetChk" style="width:auto;margin:0"> Preset: $25 Budget Modern</label>
+        <p class="sub" style="margin:6px 0 0">Sets main $25, sideboard $10, format Modern. Auto-unticks if you change any of them.</p>
       </div>
       <div class="field">
         <label for="deckname">Deck name (for export)</label>
-        <input type="text" id="deckname" value="Budget Modern Deck">
+        <input type="text" id="deckname" value="Boros budget modern kulvokea">
       </div>
       <div class="row">
         <div class="field">
@@ -717,21 +789,32 @@ Sideboard
       </div>
       <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
       <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
-      <div class="actions">
-        <button class="ghost" id="exportBtn" disabled>Export .txt</button>
-        <button class="ghost" id="csvBtn" disabled>Export .csv</button>
-        <button class="ghost" id="copyBtn" disabled>Copy report</button>
+      <div class="exportgrp">
+        <div class="exporthd">Snapshot &mdash; prices fixed at export</div>
+        <div class="actions">
+          <button class="ghost" id="exportBtn" disabled>Export .txt</button>
+          <button class="ghost" id="csvBtn" disabled>Export .csv</button>
+        </div>
+        <div class="actions">
+          <button class="ghost" id="copyBtn" disabled>Copy report</button>
+          <button class="ghost" id="pdfBtn" disabled>Save as PDF</button>
+        </div>
       </div>
-      <button class="ghost" id="shareBtn" style="width:100%;margin-top:10px">Copy share link</button>
-      <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the whole list, budgets &amp; options are encoded in the URL itself (no account, no server).</p>
+      <div class="exportgrp">
+        <div class="exporthd">Live share link &mdash; prices update when opened</div>
+        <button class="ghost" id="shareBtn" style="width:100%">Copy share link</button>
+        <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when opened; the link records the price date so the recipient is warned if prices have changed since.</p>
+      </div>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     </div>
   </div>
 
   <div id="fixNote" class="fixnote hidden"></div>
+  <div id="shareNote" class="fixnote hidden"></div>
 
   <div id="results" class="hidden">
+    <h2 class="printonly" id="printTitle"></h2>
     <p class="stamp" id="stamp"></p>
     <div id="charts"></div>
     <div class="boards">
@@ -772,7 +855,7 @@ let lastCsv = null;    // { text, filename } — .csv export (always current)
 const RECOMPUTE_INPUTS = ["decklist","sideboard","budgetMain","budgetSide",
   "deckname","format","cheapest","ignoreBasics","colorCost"];
 function setExportsEnabled(on){
-  for (const id of ["exportBtn","csvBtn","copyBtn"]) $(id).disabled = !on;
+  for (const id of ["exportBtn","csvBtn","copyBtn","pdfBtn"]) $(id).disabled = !on;
 }
 
 /* ---- decklist parsing ---------------------------------------------- */
@@ -993,6 +1076,7 @@ async function recompute(){
       "your connection, then edit the list to retry.";
     return;
   }
+  maybeShowShareNote(cdn);              // warn if opened from a now-stale share link
   const { main, side, basicsDropped } = buildBoards();
   if (!main.size && !side.size){
     $("results").classList.add("hidden");
@@ -1404,7 +1488,7 @@ function budgetTiles(cards, budget){
 //    washes everything below it ("$X OVER"). Returns the drawn height.
 function treemapBox(boardRows, budget, width, budgetHeight){
   const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
-  const g = 2;                                     // gutter between tiles
+  const g = 0;                                     // no gutter — tiles separated only by their white edge (border)
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const cardItems = bt.items.filter(i => !i.item.__free);
   const b = Math.max(0, budget || 0);
@@ -1532,12 +1616,18 @@ function buildTreemapHTML(rows){
   let sideBySide = false, mBox, sBox;
   if (both && cw >= 700){
     sideBySide = true;
-    const availW = cw - GAP - 16, Ft = fM + fS;      // reserve flex gap + borders + slack
-    let wm = availW * fM / Ft, ws = availW - wm;
-    const TARGET = 0.92, MAXH = 600, MINH = 240;     // big-box aspect ≈ 1/0.92 ≈ 1.09
-    let H = Math.max(wm, ws) * TARGET;
-    if (H > MAXH){ const sc = MAXH / H; wm *= sc; ws *= sc; H = MAXH; }
-    H = Math.max(MINH, H);
+    // FILL the content width: the two boxes + the gap between them span the SAME
+    // width as the rest of the page (no centred leftover). Widths ∝ budget so $1
+    // stays equal-area across them. (.tmbox is border-box, so only the flex gap +
+    // rounding need reserving.)
+    const availW = cw - GAP - 2, Ft = fM + fS;
+    const wm = availW * fM / Ft, ws = availW - wm;
+    // One shared height for a tidy aspect on the LARGER box, capped so the visual
+    // doesn't get too tall on a very wide window (the bigger box then runs a touch
+    // wide, which squarify/WIDE_BIAS handles). Widths are NOT shrunk to meet the
+    // cap — doing that is what used to leave the gap beside the page edge.
+    const TARGET = 0.92, MAXH = 620, MINH = 240;
+    const H = Math.max(MINH, Math.min(MAXH, Math.max(wm, ws) * TARGET));
     mBox = { w:Math.round(wm), h:Math.round(H) }; sBox = { w:Math.round(ws), h:Math.round(H) };
   } else {
     mBox = boxFor(fM); sBox = boxFor(fS);
@@ -1659,6 +1749,21 @@ document.addEventListener("change", e => {
   if (!e.target) return;
   if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+});
+// The treemap reads the container width only when it renders, so re-lay it out
+// on window resize too (debounced; from the CACHED card data — zero Scryfall).
+// Skip if the width didn't actually change (ignores mobile scroll address-bar
+// height jiggles) and if there's nothing rendered.
+let _resizeTimer = null, _lastVisualW = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    const v = $("visual"); if (!v) return;
+    const w = v.clientWidth;
+    if (w === _lastVisualW) return;          // height-only change -> nothing to redo
+    _lastVisualW = w;
+    if (LAST && !$("results").classList.contains("hidden")) renderVisualAll();
+  }, 160);
 });
 
 /* ---- editable output (beta item 2) ---------------------------------
@@ -1976,6 +2081,14 @@ $("copyBtn").addEventListener("click", async () => {
         $("status").textContent = "Report copied to clipboard."; }
   catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
 });
+// Save as PDF = the browser's print dialog (user picks "Save as PDF"); a print
+// stylesheet renders #results as a clean black-on-white price report. Zero deps.
+$("pdfBtn").addEventListener("click", () => {
+  if (!LAST) return;
+  const name = (LAST.deckname || "Deck");
+  $("printTitle").textContent = name + " — budget report";
+  window.print();
+});
 // Any result-affecting edit -> debounced recompute (Mid, index-only).
 RECOMPUTE_INPUTS.forEach(id => {
   const el = $(id);
@@ -1983,14 +2096,30 @@ RECOMPUTE_INPUTS.forEach(id => {
   el.addEventListener(ev, scheduleRecompute);
 });
 $("resolveBtn").addEventListener("click", resolveMissing);
-// Preset: restore the $25 Budget Modern defaults ($25 / $10 / Modern).
-$("presetBtn").addEventListener("click", () => {
-  $("budgetMain").value = "25";
-  $("budgetSide").value = "10";
-  $("format").value = "modern";
-  scheduleRecompute();
-  $("status").textContent = "Preset applied: $25 main · $10 side · Modern.";
+// Preset checkbox: ticking it applies the $25 Budget Modern settings; it
+// reflects whether those settings are currently in effect and auto-unticks the
+// moment the user changes main/side budget or the format away from them.
+const PRESET = { budgetMain:"25", budgetSide:"10", format:"modern" };
+function presetInEffect(){
+  return $("budgetMain").value.trim() === PRESET.budgetMain
+      && $("budgetSide").value.trim() === PRESET.budgetSide
+      && $("format").value === PRESET.format;
+}
+function syncPresetChk(){ const c = $("presetChk"); if (c) c.checked = presetInEffect(); }
+$("presetChk").addEventListener("change", e => {
+  if (e.target.checked){
+    $("budgetMain").value = PRESET.budgetMain;
+    $("budgetSide").value = PRESET.budgetSide;
+    $("format").value = PRESET.format;
+    scheduleRecompute();
+    $("status").textContent = "Preset applied: $25 main · $10 side · Modern.";
+  }
+  syncPresetChk();   // re-derive (can't manually untick while it's in effect)
 });
+// keep the tick in sync when budgets / format are edited directly
+$("budgetMain").addEventListener("input", syncPresetChk);
+$("budgetSide").addEventListener("input", syncPresetChk);
+$("format").addEventListener("change", syncPresetChk);
 
 // A *manual* edit to either list dismisses the correction notice (it'll
 // re-appear from the next recompute if a typo still stands). Our own
@@ -2060,12 +2189,17 @@ function b64urlDecode(s){
   const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
+let _sharedPriceDate = null;               // price-data date stamped into a shared link
 function buildShareLink(){
   const st = {};
   for (const [k, id] of Object.entries(SHARE_KEYS)){
     const el = $(id);
     st[k] = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value;
   }
+  // Stamp the price-data date so the recipient can be warned if prices have
+  // since updated (historical prices aren't retained, so the link can't carry
+  // the actual numbers — it recomputes from the latest data on open).
+  if (_cdn && _cdn.meta && _cdn.meta.generatedAt) st.pd = _cdn.meta.generatedAt;
   return location.origin + location.pathname + "#d=" +
     b64urlEncode(JSON.stringify(st));
 }
@@ -2079,6 +2213,24 @@ function loadShared(){
     if (el.type === "checkbox") el.checked = !!st[k];
     else el.value = st[k];
   }
+  if (st.pd) _sharedPriceDate = st.pd;
+}
+// If this page was opened from a share link AND the price data is now newer than
+// when the link was made, warn that the totals may have moved.
+let _shareNoteShown = false;
+function maybeShowShareNote(cdn){
+  if (_shareNoteShown || !_sharedPriceDate || !cdn || !cdn.meta || !cdn.meta.generatedAt) return;
+  const shared = new Date(_sharedPriceDate), now = new Date(cdn.meta.generatedAt);
+  if (!(now > shared)) return;                // current data not newer -> nothing to warn
+  _shareNoteShown = true;
+  const fmt = d => d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  const box = $("shareNote");
+  box.innerHTML = `<span class="dot"></span><span>Heads up — this shared deck used TCG Mid prices ` +
+    `from <b>${fmt(shared)}</b>; prices have since updated to <b>${fmt(now)}</b>, so the totals you ` +
+    `see may differ from when it was shared.</span>` +
+    `<button class="fixx" title="dismiss" aria-label="dismiss">&times;</button>`;
+  box.classList.remove("hidden");
+  box.querySelector(".fixx").addEventListener("click", () => box.classList.add("hidden"));
 }
 $("shareBtn").addEventListener("click", async () => {
   const url = buildShareLink();
@@ -2093,6 +2245,7 @@ $("shareBtn").addEventListener("click", async () => {
 });
 
 loadShared();                                // shared state before first render
+syncPresetChk();                             // reflect preset state (incl. shared budgets)
 showLastUpdated();
 recompute();
 </script>
