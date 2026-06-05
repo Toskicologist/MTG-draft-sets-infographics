@@ -8,9 +8,16 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.7.0-beta.3)  [BETA — sandbox; main is v3.6.1]
+  MTG Budget Deckbuilder (v3.7.0-beta.4)  [BETA — sandbox; main is v3.6.1]
 
   Changelog:
+  v3.7.0-beta.4 (2026-06-05T11:47:22Z) - The treemap now RE-LAYS OUT on window
+                        resize (debounced ~160ms, from cached card data — zero
+                        Scryfall), so resizing/rotating between narrow (stacked)
+                        and wide (side-by-side) adjusts immediately instead of
+                        only on the next deck edit / refresh. A width-unchanged
+                        guard skips height-only resizes (e.g. mobile address-bar
+                        show/hide) so it costs nothing in those cases.
   v3.7.0-beta.3 (2026-06-05T11:35:28Z) - Visual view now uses the SAME total
                         width as the rest of the page. Side-by-side: the two
                         boxes + the gap fill the content width (widths ∝ budget),
@@ -657,7 +664,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.3 &middot; 2026-06-05 11:35 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.4 &middot; 2026-06-05 11:47 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1735,6 +1742,21 @@ document.addEventListener("change", e => {
   if (!e.target) return;
   if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+});
+// The treemap reads the container width only when it renders, so re-lay it out
+// on window resize too (debounced; from the CACHED card data — zero Scryfall).
+// Skip if the width didn't actually change (ignores mobile scroll address-bar
+// height jiggles) and if there's nothing rendered.
+let _resizeTimer = null, _lastVisualW = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    const v = $("visual"); if (!v) return;
+    const w = v.clientWidth;
+    if (w === _lastVisualW) return;          // height-only change -> nothing to redo
+    _lastVisualW = w;
+    if (LAST && !$("results").classList.contains("hidden")) renderVisualAll();
+  }, 160);
 });
 
 /* ---- editable output (beta item 2) ---------------------------------
