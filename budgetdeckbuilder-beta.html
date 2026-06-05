@@ -8,9 +8,20 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.8.0-beta.2)  [BETA — sandbox; main is v3.7.0]
+  MTG Budget Deckbuilder (v3.8.0-beta.3)  [BETA — sandbox; main is v3.7.0]
 
   Changelog:
+  v3.8.0-beta.3 (2026-06-05T23:10:51Z) - $1 grid + equal-width fixes:
+                        - $1 grid no longer drops cheap cards: cards under ~$1
+                          are now POOLED into "$X other" squares, and the gap to
+                          budget is filled with labelled "$X unspent" squares
+                          (over-budget squares stay red, now with an "over"
+                          label). So the whole budget grid is accounted for.
+                        - Equal-width arrangement now applies at ALL widths: when
+                          the window is narrow the two boards stack but BOTH use
+                          the FULL width (heights ∝ budget), instead of falling
+                          back to different widths. $-per-square scale stays
+                          consistent across the two boards.
   v3.8.0-beta.2 (2026-06-05T22:57:32Z) - Two tweaks:
                         - NEW "$1 grid overlay" checkbox (treemap): draws a grid
                           of $1 squares OVER the treemap art (each cell = sqrt of
@@ -577,11 +588,17 @@
     background-size:cover;background-position:center;background-repeat:no-repeat;
     background-color:var(--panel2)}
   .tmtile.contain{background-size:contain;background-color:#0a0d18}
-  /* $1 grid (waffle) cell — one square = $1; .over tints it red */
+  /* $1 grid (waffle) squares — one square = $1; .over tints it red */
   .dgcell{position:absolute;box-sizing:border-box;overflow:hidden;cursor:pointer;
     border:1px solid rgba(255,255,255,.7);background-size:cover;background-position:center;
     background-repeat:no-repeat;background-color:var(--panel2);text-decoration:none;color:inherit}
-  .dgcell.over{box-shadow:inset 0 0 0 9999px rgba(220,38,38,.42)}
+  .dgother{position:absolute;box-sizing:border-box;border:1px solid rgba(255,255,255,.7);
+    background:var(--panel2)}                       /* pooled cheaper cards */
+  .dgunspent{position:absolute;box-sizing:border-box;border:1px solid rgba(255,255,255,.4)}
+  .dgcell.over,.dgother.over{box-shadow:inset 0 0 0 9999px rgba(220,38,38,.42)}
+  .dglabel{position:absolute;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;line-height:1.12;color:var(--ink);
+    pointer-events:none;z-index:2;text-shadow:0 0 4px #000,0 0 8px #000,1px 1px 2px #000}
   /* pauper-poster label: cost centred & sized to the tile; WRAPS over lines so
      a tall/thin tile still gets a readable number. Name wraps below and is
      shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
@@ -718,7 +735,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.8.0-beta.2 &middot; 2026-06-05 22:57 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.8.0-beta.3 &middot; 2026-06-05 23:10 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1656,16 +1673,20 @@ function twoBoxes(fM, fS, cw){
     const area = k * F, w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
     return { w, h: Math.max(1, Math.round(area / w)) };
   };
-  if (both && cw >= 700){
-    if (_vbArrange === "eqwidth"){
-      const W = Math.round((cw - GAP) / 2);          // same width = half the row
-      const hUnit = W / Math.max(fM, fS);            // bigger box height = W (square)
-      const MINH = 70;
-      return { sideBySide:true,
-        mBox:{ w:W, h:Math.max(MINH, Math.round(hUnit * fM)) },
-        sBox:{ w:W, h:Math.max(MINH, Math.round(hUnit * fS)) } };
-    }
-    const availW = cw - GAP - 2, Ft = fM + fS;       // eqheight: width ∝ budget, fill row
+  if (both && _vbArrange === "eqwidth"){
+    // SAME WIDTH at every size: side-by-side (half the row) when wide, stacked at
+    // FULL width when narrow. HEIGHT ∝ budget; bigger box ≈ square. $1 = equal
+    // area in both, and the px-per-$ scale stays consistent across the two.
+    const wide = cw >= 700;
+    const W = wide ? Math.round((cw - GAP) / 2) : cw;
+    const hUnit = W / Math.max(fM, fS);              // bigger box height = W (square)
+    const MINH = 70;
+    return { sideBySide: wide,
+      mBox:{ w:W, h:Math.max(MINH, Math.round(hUnit * fM)) },
+      sBox:{ w:W, h:Math.max(MINH, Math.round(hUnit * fS)) } };
+  }
+  if (both && cw >= 700){                            // eqheight: width ∝ budget, fill the row
+    const availW = cw - GAP - 2, Ft = fM + fS;
     const wm = availW * fM / Ft, ws = availW - wm;
     const TARGET = 0.92, MAXH = 620, MINH = 240;
     const H = Math.max(MINH, Math.min(MAXH, Math.max(wm, ws) * TARGET));
@@ -1720,13 +1741,14 @@ function fitTreemapLabels(){
   }
 }
 /* ---- $1 grid (waffle) -----------------------------------------------
-   Each square = $1. A card fills round(line cost) squares (cards under $0.50
-   are dropped and counted in a note). The BUDGET is the grid; unspent squares
-   show the light-blue hatch (box bg), over-budget squares are tinted red. The
-   arrangement toggle picks whether the two boards share columns ("Equal width")
-   or rows ("Equal height"). $1 is the same square size in both boards.        */
+   Each square = $1. A card costing >= $1 fills round(line cost) squares; the
+   remaining cheap cards are pooled into "$X other" squares; the gap to budget
+   is "$X unspent" squares (light-blue hatch); over-budget squares are red. The
+   arrangement toggle picks whether the boards share columns ("Equal width") or
+   rows ("Equal height"). $1 is the same square size in both boards.           */
 function buildDollarGridHTML(rows){
   const cw = Math.max(300, ($("visual").clientWidth || 700)), GAP = 22;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const spentOf = rs => rs.reduce((s, r) => s + Math.max(0, r.lineT || 0), 0);
   const mainRows = rows.filter(r => r.board === "main");
   const sideRows = rows.filter(r => r.board === "side");
@@ -1734,18 +1756,19 @@ function buildDollarGridHTML(rows){
   const fS = LAST.bS > 0 ? LAST.bS : spentOf(sideRows);
   const both = fM > 0 && fS > 0, sideBySide = both && cw >= 700;
   const eqwidth = _vbArrange === "eqwidth" || !sideBySide;   // stacked: each board full width
-  let omitted = 0;
 
   const meta = boardRows => {
     const cards = [];
+    let otherCost = 0, otherCount = 0;
     for (const r of boardRows){
-      const n = Math.round(Math.max(0, r.lineT || 0));
-      if (n <= 0){ if ((r.lineT || 0) > 0) omitted += (r.qty || 1); continue; }
+      const c = Math.max(0, r.lineT || 0), n = Math.round(c);
+      if (n <= 0){ if (c > 0){ otherCost += c; otherCount += (r.qty || 1); } continue; }
       cards.push({ r, n });
     }
     cards.sort((a, b) => b.n - a.n);
-    const spentCells = cards.reduce((s, c) => s + c.n, 0);
-    return { cards, spentCells };
+    const bigCells = cards.reduce((s, c) => s + c.n, 0);
+    const otherCells = Math.round(otherCost);             // cheap cards pooled into squares
+    return { cards, bigCells, otherCells, otherCost, otherCount, spentCells: bigCells + otherCells };
   };
   const mM = meta(mainRows), mS = meta(sideRows);
   const bcM = Math.max(0, Math.round(fM)), bcS = Math.max(0, Math.round(fS));
@@ -1768,23 +1791,52 @@ function buildDollarGridHTML(rows){
 
   const board = (title, boardRows, budget, m, d, tc, bc) => {
     if (!tc) return "";
-    const cardCell = [];                                  // card for each filled cell (0..spentCells)
+    const cardCell = [];
     for (const c of m.cards) for (let j = 0; j < c.n; j++) cardCell.push(c.r);
     const W = d.cols * cell, H = d.rows * cell, spent = spentOf(boardRows);
-    let html = "";
-    for (let i = 0; i < m.spentCells; i++){
+    const posOf = i => {
       const col = eqwidth ? (i % d.cols) : Math.floor(i / d.rows);
       const row = eqwidth ? Math.floor(i / d.cols) : (i % d.rows);
-      const r = cardCell[i], over = i >= bc;
-      const img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
-      const pop = vImg(r.c), uri = r.c && r.c.scryfall_uri;
-      const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
-      const di = pop ? ` data-img="${escapeHtml(pop)}"` : "";
-      const hr = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
-      const ttl = escapeHtml(r.name) + (r.lineT != null ? ` — ${money(r.lineT)}` : "");
-      html += `<a class="dgcell${over ? " over" : ""}"${hr} title="${ttl}"${di} ` +
-        `style="left:${col*cell}px;top:${row*cell}px;width:${cell}px;height:${cell}px;${bg}"></a>`;
+      return { col, row, x: col * cell, y: row * cell };
+    };
+    let html = "";
+    for (let i = 0; i < tc; i++){
+      const { x, y } = posOf(i);
+      const pos = `left:${x}px;top:${y}px;width:${cell}px;height:${cell}px`;
+      const over = i >= bc && i < m.spentCells;
+      if (i < m.bigCells){
+        const r = cardCell[i];
+        const img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
+        const popi = vImg(r.c), uri = r.c && r.c.scryfall_uri;
+        const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
+        const di = popi ? ` data-img="${escapeHtml(popi)}"` : "";
+        const hr = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
+        const ttl = escapeHtml(r.name) + (r.lineT != null ? ` — ${money(r.lineT)}` : "");
+        html += `<a class="dgcell${over ? " over" : ""}"${hr} title="${ttl}"${di} style="${pos};${bg}"></a>`;
+      } else if (i < m.spentCells){
+        html += `<div class="dgother${over ? " over" : ""}" style="${pos}" title="${m.otherCount} cheaper card${m.otherCount>1?"s":""} combined — ${money(m.otherCost)}"></div>`;
+      } else {
+        html += `<div class="dgunspent" style="${pos}"></div>`;
+      }
     }
+    // centred labels over the "other" and "unspent" runs of squares
+    const runBox = (a, b) => {
+      if (b <= a) return null;
+      let mnC = 1e9, mxC = -1e9, mnR = 1e9, mxR = -1e9;
+      for (let i = a; i < b; i++){ const p = posOf(i);
+        if (p.col<mnC)mnC=p.col; if (p.col>mxC)mxC=p.col; if (p.row<mnR)mnR=p.row; if (p.row>mxR)mxR=p.row; }
+      return { x:mnC*cell, y:mnR*cell, w:(mxC-mnC+1)*cell, h:(mxR-mnR+1)*cell };
+    };
+    const lab = (bx, big, small) => {
+      if (!bx || bx.w < 24 || bx.h < 16) return "";
+      const ff = clamp(Math.floor(Math.min(bx.w / 4.5, bx.h * 0.42)), 9, 24);
+      return `<div class="dglabel" style="left:${bx.x}px;top:${bx.y}px;width:${bx.w}px;height:${bx.h}px">` +
+        `<span style="font-size:${ff}px;font-weight:800">${big}</span>` +
+        (small ? `<span style="font-size:${Math.max(9, Math.round(ff*0.55))}px;opacity:.9">${small}</span>` : "") + `</div>`;
+    };
+    if (m.otherCells) html += lab(runBox(m.bigCells, m.spentCells), money(m.otherCost), `other (${m.otherCount})`);
+    if (bc - m.spentCells > 0) html += lab(runBox(m.spentCells, bc), money(budget - spent), "unspent");
+    if (m.spentCells - bc > 0) html += lab(runBox(bc, m.spentCells), money(spent - budget), "over");
     const head = spent > budget
       ? `<span class="tmeta over" data-short="${money(spent-budget)} OVER">${money(spent)} of ${money(budget)} &middot; ${money(spent-budget)} OVER</span>`
       : `<span class="tmeta" data-short="${money(budget-spent)} unspent">${money(spent)} of ${money(budget)} &middot; ${money(budget-spent)} unspent</span>`;
@@ -1794,8 +1846,7 @@ function buildDollarGridHTML(rows){
   };
   const mainHTML = board("Main deck", mainRows, fM, mM, dM, tcM, bcM);
   const sideHTML = board("Sideboard", sideRows, fS, mS, dS, tcS, bcS);
-  const note = omitted ? `<p class="sub" style="margin:10px 0 0">${omitted} card${omitted>1?"s":""} under $0.50 not shown in the $1 grid (too cheap to fill a square).</p>` : "";
-  return (sideBySide ? `<div class="tmrow">${mainHTML}${sideHTML}</div>` : mainHTML + sideHTML) + note;
+  return sideBySide ? `<div class="tmrow">${mainHTML}${sideHTML}</div>` : mainHTML + sideHTML;
 }
 // One vertical bar column (value on top, bar, label below).
 function vcol(label, val, max){
