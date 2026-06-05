@@ -8,9 +8,17 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.7.0-beta.5)  [BETA — sandbox; main is v3.6.1]
+  MTG Budget Deckbuilder (v3.7.0-beta.6)  [BETA — sandbox; main is v3.6.1]
 
   Changelog:
+  v3.7.0-beta.6 (2026-06-05T16:30:20Z) - Treemap packing: removed the portrait
+                        BIAS (WIDE_BIAS 0.8 -> 1) so squarify now minimises how
+                        far each tile is from square with no tall/wide preference
+                        — fewer elongated tiles. (Watch for any wide-short tiles
+                        returning in very wide boxes; report if so.) Note: this
+                        does NOT, and mathematically can't, make a near-$0 card
+                        legible in a narrow box without overstating its area — see
+                        the discussion on box-aspect as the remaining lever.
   v3.7.0-beta.5 (2026-06-05T11:59:03Z) - Treemap tiles: removed the 2px inter-
                         tile gutter — tiles are now separated only by their 1px
                         white edge (border), and .tmtile is border-box so those
@@ -671,7 +679,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.5 &middot; 2026-06-05 11:59 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.6 &middot; 2026-06-05 16:30 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1431,11 +1439,11 @@ function squarify(items, rect){
   if (total <= 0) return [];
   const vertical = rect.w <= rect.h;
   const side = vertical ? rect.h : rect.w, other = vertical ? rect.w : rect.h;
-  // ASYMMETRIC badness: a tile WIDER than tall is penalised far more than one
-  // taller than wide, so the packer biases toward portrait/square tiles and
-  // avoids wide-short ones (cards are portrait anyway). WIDE_BIAS<1 makes a
-  // tall tile "cheaper" than an equally-lopsided wide tile.
-  const WIDE_BIAS = 0.8;
+  // NEUTRAL badness (WIDE_BIAS = 1): no portrait/landscape preference — purely
+  // minimise how far each tile is from square. The old <1 bias preferred TALL
+  // tiles (to match card shape), which is part of what let a small tile stretch
+  // into a near-invisible column; neutral packs the squarest tiles it can.
+  const WIDE_BIAS = 1;
   const badness = (w, h) => { const ar = w / h; return ar >= 1 ? ar : (1 / ar) * WIDE_BIAS; };
   let bestRow = [items[0]], bestWorst = Infinity, rowSum = 0;
   for (let i = 0; i < items.length; i++){
