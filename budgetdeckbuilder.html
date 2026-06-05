@@ -8,9 +8,15 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.6.0)
+  MTG Budget Deckbuilder (v3.6.1)
 
   Changelog:
+  v3.6.1 (2026-06-05T11:07:42Z) - Deploy fix: the page now lives at the Pages
+                        ROOT (budgetdeckbuilder.html), so the header background
+                        image path was changed from "../assets/" to "mtg/assets/"
+                        (the old relative path pointed above the site root and
+                        404'd). No functional change; price auto-update is
+                        unaffected (absolute CDN/Scryfall URLs).
   v3.6.0 (2026-06-04T22:54:22Z) - Promoted v3.6.0-beta.1..beta.6 to main.
                         Headline changes since v3.5.0: the visual breakdown is
                         now ALWAYS ON and live (charts + treemap update on every
@@ -448,7 +454,7 @@
   /* ---- site header (matches the other MTG project pages) ------- */
   .site-header{position:relative;border-radius:12px;overflow:hidden;
     margin:0 0 22px;box-shadow:0 4px 6px rgba(0,0,0,.18);
-    background-image:url('../assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+    background-image:url('mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
     background-size:cover;background-position:center;background-repeat:no-repeat}
   .site-header::before{content:'';position:absolute;inset:0;z-index:1;
     background:linear-gradient(135deg,rgba(102,126,234,.78) 0%,rgba(118,75,162,.78) 100%)}
@@ -607,7 +613,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.6.0 &middot; 2026-06-04 22:54 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.6.1 &middot; 2026-06-05 11:07 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
