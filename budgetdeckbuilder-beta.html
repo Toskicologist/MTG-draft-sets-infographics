@@ -8,9 +8,26 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.7.0-beta.6)  [BETA — sandbox; main is v3.6.1]
+  MTG Budget Deckbuilder (v3.8.0-beta.1)  [BETA — sandbox; main is v3.7.0]
 
   Changelog:
+  v3.8.0-beta.1 (2026-06-05T22:43:41Z) - Visual experiments + basics tweak:
+                        - NEW "Boxes" toggle: "Equal height" (width ∝ budget,
+                          the existing fill-the-row layout) vs "Equal width"
+                          (same width, HEIGHT ∝ budget — e.g. $25/$10 → a square
+                          + a half-height box; going over budget grows height).
+                          Applies to the treemap and the new $1 grid.
+                        - NEW "$1 grid" layout (Layout dropdown): a waffle where
+                          each square = $1; a card fills round(line-cost) squares
+                          (cards < $0.50 are dropped and noted), unspent squares
+                          show the light-blue hatch, over-budget squares are
+                          tinted red. Hover/click a square = that card.
+                        - "Ignore basic lands" is now "Basic lands cost $0": the
+                          basics STAY in the table (so you can see/adjust their
+                          counts) but are priced at $0 (tagged "basic · $0"),
+                          instead of being hidden. Stamp/report wording updated.
+                        - Option checkboxes are now normal sentence case (not the
+                          uppercase field style).
   v3.7.0-beta.6 (2026-06-05T16:30:20Z) - Treemap packing: removed the portrait
                         BIAS (WIDE_BIAS 0.8 -> 1) so squarify now minimises how
                         far each tile is from square with no tall/wide preference
@@ -393,6 +410,10 @@
   @media(max-width:840px){.grid{grid-template-columns:1fr}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
   label{display:block;font-size:12px;color:var(--dim);margin:0 0 6px;letter-spacing:.02em;text-transform:uppercase}
+  /* checkbox option labels: normal sentence text, not the uppercase field style */
+  label.cbx{display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;
+    text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)}
+  label.cbx input{width:auto;margin:0;flex:0 0 auto}
   textarea{width:100%;height:340px;resize:vertical;background:var(--bg);color:var(--ink);
     border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
   input[type=text],input[type=number]{width:100%;background:var(--bg);color:var(--ink);
@@ -437,6 +458,7 @@
   tr.illegal td{background:rgba(255,107,129,.13)}
   tr.illegal td:nth-child(2){color:var(--bad);font-weight:600}
   .tag{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:6px}
+  .tag.muted{background:var(--panel2);color:var(--dim);border:1px solid var(--line);font-weight:600}
   .tag.warn{background:rgba(255,207,92,.18);color:var(--warn)}
   .tag.bad{background:rgba(255,107,129,.18);color:var(--bad)}
   /* cost color-coding (toggle): green -> red by price */
@@ -547,6 +569,11 @@
     background-size:cover;background-position:center;background-repeat:no-repeat;
     background-color:var(--panel2)}
   .tmtile.contain{background-size:contain;background-color:#0a0d18}
+  /* $1 grid (waffle) cell — one square = $1; .over tints it red */
+  .dgcell{position:absolute;box-sizing:border-box;overflow:hidden;cursor:pointer;
+    border:1px solid rgba(255,255,255,.7);background-size:cover;background-position:center;
+    background-repeat:no-repeat;background-color:var(--panel2);text-decoration:none;color:inherit}
+  .dgcell.over{box-shadow:inset 0 0 0 9999px rgba(220,38,38,.42)}
   /* pauper-poster label: cost centred & sized to the tile; WRAPS over lines so
      a tall/thin tile still gets a readable number. Name wraps below and is
      shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
@@ -679,7 +706,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.6 &middot; 2026-06-05 16:30 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.8.0-beta.1 &middot; 2026-06-05 22:43 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -787,13 +814,13 @@ Sideboard
         </select>
       </div>
       <div class="field">
-        <label><input type="checkbox" id="cheapest" checked style="width:auto;vertical-align:-2px"> Use cheapest paper printing</label>
+        <label class="cbx"><input type="checkbox" id="cheapest" checked> Use cheapest paper printing</label>
       </div>
       <div class="field">
-        <label><input type="checkbox" id="ignoreBasics" checked style="width:auto;vertical-align:-2px"> Ignore basic lands (Plains/Island/&hellip;)</label>
+        <label class="cbx"><input type="checkbox" id="ignoreBasics" checked> Basic lands cost $0</label>
       </div>
       <div class="field">
-        <label><input type="checkbox" id="colorCost" checked style="width:auto;vertical-align:-2px"> Colour-code prices (green&rarr;red)</label>
+        <label class="cbx"><input type="checkbox" id="colorCost" checked> Colour-code prices (green&rarr;red)</label>
       </div>
       <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
       <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
@@ -1046,19 +1073,19 @@ async function priceNamed(name, snap){
            legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
 }
 
+const isBasicLand = n => /^(snow-covered\s+)?(plains|island|swamp|mountain|forest|wastes)$/i.test(String(n).trim());
 /* ---- decklist -> boards (shared by run() and live preview) --------- */
+// "Basic lands cost $0" no longer REMOVES basics — they stay in the boards (so
+// they show in the table and can be edited); their cost is zeroed in sectionRows.
 function buildBoards(){
   const { main, side } = parseDecklist($("decklist").value);
   for (const [name, qty] of parseSideboardBox($("sideboard").value))
     side.set(name, (side.get(name)||0) + qty);
-  let basicsDropped = 0;
-  if ($("ignoreBasics").checked){
-    const isBasic = n => /^(snow-covered\s+)?(plains|island|swamp|mountain|forest|wastes)$/i.test(n.trim());
+  let basicsZeroed = 0;
+  if ($("ignoreBasics").checked)
     for (const mp of [main, side])
-      for (const n of [...mp.keys()])
-        if (isBasic(n)){ basicsDropped += mp.get(n); mp.delete(n); }
-  }
-  return { main, side, basicsDropped };
+      for (const [n, q] of mp) if (isBasicLand(n)) basicsZeroed += q;
+  return { main, side, basicsZeroed };
 }
 
 /* ---- always-on recompute (Mid only, index-only, ZERO Scryfall) ----
@@ -1085,7 +1112,7 @@ async function recompute(){
     return;
   }
   maybeShowShareNote(cdn);              // warn if opened from a now-stale share link
-  const { main, side, basicsDropped } = buildBoards();
+  const { main, side, basicsZeroed } = buildBoards();
   if (!main.size && !side.size){
     $("results").classList.add("hidden");
     $("resolveBtn").style.display = "none";
@@ -1129,7 +1156,7 @@ async function recompute(){
   remap(main); remap(side);
 
   render(main, side, priceMap, { source:"mid", priceAt:new Date(cdn.meta.generatedAt),
-    runAt:new Date(), format:$("format").value, basicsDropped,
+    runAt:new Date(), format:$("format").value, basicsZeroed,
     colorCost:$("colorCost").checked }, $("cheapest").checked);
   setExportsEnabled(true);
   showFixNote(corrections);
@@ -1181,14 +1208,17 @@ async function resolveMissing(names){
 }
 
 function sectionRows(map, priceMap){
+  const basicsFree = $("ignoreBasics").checked;
   let total = 0, anyMissing = false;
   const rows = [];
   for (const [name, qty] of map){
     const p = priceMap.get(name) || {};
-    const unit = (p.found && p.price != null) ? p.price : null;
-    const lineT = unit != null ? unit * qty : null;
+    let unit = (p.found && p.price != null) ? p.price : null;
+    let lineT = unit != null ? unit * qty : null;
+    const basicFree = basicsFree && isBasicLand(name);    // shown in table, but $0
+    if (basicFree){ unit = 0; lineT = 0; }
     if (lineT != null) total += lineT; else anyMissing = true;
-    rows.push({ name, qty, p, unit, lineT });
+    rows.push({ name, qty, p, unit, lineT, basicFree });
   }
   return { rows, total, anyMissing };
 }
@@ -1260,8 +1290,9 @@ function renderTable(title, sec, board){
     const rsv = r.p.pending
       ? ` <button type="button" class="rsv" data-act="resolve" data-name="${dn}" title="look this card up on Scryfall">Resolve</button>`
       : "";
+    const basicTag = r.basicFree ? ' <span class="tag muted">basic &middot; $0</span>' : '';
     h += `<tr class="${cls}"><td class="num">${qctl}</td>`+
-         `<td>${cardLink(r.p, r.name)}${flags(r.p)}${rsv}</td>`+
+         `<td>${cardLink(r.p, r.name)}${flags(r.p)}${rsv}${basicTag}</td>`+
          `<td>${print}</td>`+
          `<td class="num${uc}">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
          `<td class="num${lc}">${r.lineT!=null?money(r.lineT):"&mdash;"}</td>`+
@@ -1289,8 +1320,8 @@ function render(main, side, priceMap, meta, cheapest){
     "  (" + meta.priceAt.toISOString() + ") — TCG Mid (daily snapshot)" +
     "  ·  checked " + meta.runAt.toLocaleString() +
     (meta.format !== "__none" ? "  ·  legality: " + fmtName(meta.format) : "") +
-    (meta.basicsDropped ? ("  ·  " + meta.basicsDropped + " basic land" +
-       (meta.basicsDropped>1?"s":"") + " ignored") : "");
+    (meta.basicsZeroed ? ("  ·  " + meta.basicsZeroed + " basic land" +
+       (meta.basicsZeroed>1?"s":"") + " counted as $0") : "");
 
   const setCard = (idEl, idAmt, idMeta, sec, budget) => {
     const over = sec.total > budget;
@@ -1331,8 +1362,9 @@ function render(main, side, priceMap, meta, cheapest){
    /cards/collection is <=75 ids/call; results are merged into _scCache and
    reused across qty edits. cmc + colours + images all come from there.    */
 let _vbRows = null;                      // current rows (qty/price + cached card obj)
-let _vbLayout = "treemap";               // "grid" | "treemap"
+let _vbLayout = "treemap";               // "grid" | "treemap" | "dollargrid"
 let _vbFill = "art";                     // treemap fill: "cover" | "contain" | "art" (Art only = default)
+let _vbArrange = "eqheight";             // side-by-side boxes: "eqheight" (width∝budget) | "eqwidth" (height∝budget)
 const _scCache = new Map();              // persistent Scryfall objs: _scKey / name / front-face alias -> card
 let _enrichTimer = null;
 // Rows for the visual/charts, rebuilt from LAST (qty/price) every render with
@@ -1589,6 +1621,39 @@ function treemapBox(boardRows, budget, width, budgetHeight){
   }
   return { html, bt, height: boxHeight };
 }
+// Two side-by-side board boxes (or stacked when narrow). Returns each board's
+// BUDGET-box dimensions; treemapBox/gridBox grow the height for over-budget.
+// Arrangement (_vbArrange):
+//   "eqheight" — same HEIGHT, WIDTH ∝ budget (fills the row).
+//   "eqwidth"  — same WIDTH (half the row), HEIGHT ∝ budget (bigger box ~square;
+//                e.g. $25 & $10 → a square + a half-height box). Over ⇒ taller.
+// Both keep AREA ∝ budget, so $1 is equal-area across the two boards.
+function twoBoxes(fM, fS, cw){
+  const GAP = 22, both = fM > 0 && fS > 0;
+  const ASPECT = 1.1, wBig = Math.min(cw, 760), hBig = Math.round(wBig / ASPECT);
+  const k = (wBig * hBig) / Math.max(fM, fS, 1);
+  const boxFor = F => {
+    if (F <= 0) return null;
+    const area = k * F, w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
+    return { w, h: Math.max(1, Math.round(area / w)) };
+  };
+  if (both && cw >= 700){
+    if (_vbArrange === "eqwidth"){
+      const W = Math.round((cw - GAP) / 2);          // same width = half the row
+      const hUnit = W / Math.max(fM, fS);            // bigger box height = W (square)
+      const MINH = 70;
+      return { sideBySide:true,
+        mBox:{ w:W, h:Math.max(MINH, Math.round(hUnit * fM)) },
+        sBox:{ w:W, h:Math.max(MINH, Math.round(hUnit * fS)) } };
+    }
+    const availW = cw - GAP - 2, Ft = fM + fS;       // eqheight: width ∝ budget, fill row
+    const wm = availW * fM / Ft, ws = availW - wm;
+    const TARGET = 0.92, MAXH = 620, MINH = 240;
+    const H = Math.max(MINH, Math.min(MAXH, Math.max(wm, ws) * TARGET));
+    return { sideBySide:true, mBox:{ w:Math.round(wm), h:Math.round(H) }, sBox:{ w:Math.round(ws), h:Math.round(H) } };
+  }
+  return { sideBySide:false, mBox:boxFor(fM), sBox:boxFor(fS) };
+}
 function buildTreemapHTML(rows){
   const cw = Math.max(300, ($("visual").clientWidth || 700));
   const mainRows = rows.filter(r => r.board === "main");
@@ -1600,46 +1665,7 @@ function buildTreemapHTML(rows){
   // spend when a board has no budget set so it still renders.
   const fM = LAST.bM > 0 ? LAST.bM : mainBT.spent;
   const fS = LAST.bS > 0 ? LAST.bS : sideBT.spent;
-  const both = fM > 0 && fS > 0;
-  const GAP = 22;
-
-  // Stacked sizing (also the narrow-window fallback): the budget box keeps a
-  // square-ish ASPECT and AREA ∝ its BUDGET; width capped to the container.
-  // $1 = equal area in both boards (shared k = px² per $).
-  const ASPECT = 1.1;
-  const wBig = Math.min(cw, 760), hBig = Math.round(wBig / ASPECT);
-  const k = (wBig * hBig) / Math.max(fM, fS, 1);   // px² per budget-$
-  const boxFor = F => {
-    if (F <= 0) return null;
-    const area = k * F;
-    const w = Math.min(cw, Math.round(Math.sqrt(area * ASPECT)));
-    return { w, h: Math.max(1, Math.round(area / w)) };
-  };
-
-  // Side-by-side when both boards have a budget AND the window is wide enough:
-  // the two BUDGET boxes share one HEIGHT and have WIDTH ∝ budget (so $1 is
-  // equal-area across them — same H, width∝budget => area∝budget). The shared
-  // height keeps the larger box square-ish (over-budget boards then spill below
-  // that shared budget line). Otherwise they stack, each its own square-ish box.
-  let sideBySide = false, mBox, sBox;
-  if (both && cw >= 700){
-    sideBySide = true;
-    // FILL the content width: the two boxes + the gap between them span the SAME
-    // width as the rest of the page (no centred leftover). Widths ∝ budget so $1
-    // stays equal-area across them. (.tmbox is border-box, so only the flex gap +
-    // rounding need reserving.)
-    const availW = cw - GAP - 2, Ft = fM + fS;
-    const wm = availW * fM / Ft, ws = availW - wm;
-    // One shared height for a tidy aspect on the LARGER box, capped so the visual
-    // doesn't get too tall on a very wide window (the bigger box then runs a touch
-    // wide, which squarify/WIDE_BIAS handles). Widths are NOT shrunk to meet the
-    // cap — doing that is what used to leave the gap beside the page edge.
-    const TARGET = 0.92, MAXH = 620, MINH = 240;
-    const H = Math.max(MINH, Math.min(MAXH, Math.max(wm, ws) * TARGET));
-    mBox = { w:Math.round(wm), h:Math.round(H) }; sBox = { w:Math.round(ws), h:Math.round(H) };
-  } else {
-    mBox = boxFor(fM); sBox = boxFor(fS);
-  }
+  const { sideBySide, mBox, sBox } = twoBoxes(fM, fS, cw);
 
   const unit = (title, boardRows, budget, bt, box) => {
     if (!box) return "";
@@ -1673,6 +1699,84 @@ function fitTreemapLabels(){
   for (const m of $("visual").querySelectorAll(".tmeta[data-short]")){
     if (m.scrollWidth > m.clientWidth + 1) m.textContent = m.dataset.short;
   }
+}
+/* ---- $1 grid (waffle) -----------------------------------------------
+   Each square = $1. A card fills round(line cost) squares (cards under $0.50
+   are dropped and counted in a note). The BUDGET is the grid; unspent squares
+   show the light-blue hatch (box bg), over-budget squares are tinted red. The
+   arrangement toggle picks whether the two boards share columns ("Equal width")
+   or rows ("Equal height"). $1 is the same square size in both boards.        */
+function buildDollarGridHTML(rows){
+  const cw = Math.max(300, ($("visual").clientWidth || 700)), GAP = 22;
+  const spentOf = rs => rs.reduce((s, r) => s + Math.max(0, r.lineT || 0), 0);
+  const mainRows = rows.filter(r => r.board === "main");
+  const sideRows = rows.filter(r => r.board === "side");
+  const fM = LAST.bM > 0 ? LAST.bM : spentOf(mainRows);
+  const fS = LAST.bS > 0 ? LAST.bS : spentOf(sideRows);
+  const both = fM > 0 && fS > 0, sideBySide = both && cw >= 700;
+  const eqwidth = _vbArrange === "eqwidth" || !sideBySide;   // stacked: each board full width
+  let omitted = 0;
+
+  const meta = boardRows => {
+    const cards = [];
+    for (const r of boardRows){
+      const n = Math.round(Math.max(0, r.lineT || 0));
+      if (n <= 0){ if ((r.lineT || 0) > 0) omitted += (r.qty || 1); continue; }
+      cards.push({ r, n });
+    }
+    cards.sort((a, b) => b.n - a.n);
+    const spentCells = cards.reduce((s, c) => s + c.n, 0);
+    return { cards, spentCells };
+  };
+  const mM = meta(mainRows), mS = meta(sideRows);
+  const bcM = Math.max(0, Math.round(fM)), bcS = Math.max(0, Math.round(fS));
+  const tcM = Math.max(mM.spentCells, bcM), tcS = Math.max(mS.spentCells, bcS);
+  const primary = Math.max(1, Math.round(Math.sqrt(Math.max(bcM, bcS, 1))));  // shared cols (eqwidth) or rows (eqheight)
+
+  const dimsFor = tc => eqwidth
+    ? { cols: primary, rows: Math.max(1, Math.ceil(tc / primary)) }
+    : { rows: primary, cols: Math.max(1, Math.ceil(tc / primary)) };
+  const dM = dimsFor(tcM), dS = dimsFor(tcS);
+
+  let cell;
+  if (eqwidth){
+    const boardW = sideBySide ? Math.floor((cw - GAP) / 2) : cw;
+    cell = Math.floor(boardW / primary);
+  } else {
+    cell = Math.floor((cw - GAP) / Math.max(1, dM.cols + dS.cols));
+  }
+  cell = Math.max(9, Math.min(140, cell));
+
+  const board = (title, boardRows, budget, m, d, tc, bc) => {
+    if (!tc) return "";
+    const cardCell = [];                                  // card for each filled cell (0..spentCells)
+    for (const c of m.cards) for (let j = 0; j < c.n; j++) cardCell.push(c.r);
+    const W = d.cols * cell, H = d.rows * cell, spent = spentOf(boardRows);
+    let html = "";
+    for (let i = 0; i < m.spentCells; i++){
+      const col = eqwidth ? (i % d.cols) : Math.floor(i / d.rows);
+      const row = eqwidth ? Math.floor(i / d.cols) : (i % d.rows);
+      const r = cardCell[i], over = i >= bc;
+      const img = _vbFill === "art" ? vArt(r.c) : vImg(r.c);
+      const pop = vImg(r.c), uri = r.c && r.c.scryfall_uri;
+      const bg = img ? `background-image:url('${escapeHtml(img)}');` : "";
+      const di = pop ? ` data-img="${escapeHtml(pop)}"` : "";
+      const hr = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
+      const ttl = escapeHtml(r.name) + (r.lineT != null ? ` — ${money(r.lineT)}` : "");
+      html += `<a class="dgcell${over ? " over" : ""}"${hr} title="${ttl}"${di} ` +
+        `style="left:${col*cell}px;top:${row*cell}px;width:${cell}px;height:${cell}px;${bg}"></a>`;
+    }
+    const head = spent > budget
+      ? `<span class="tmeta over" data-short="${money(spent-budget)} OVER">${money(spent)} of ${money(budget)} &middot; ${money(spent-budget)} OVER</span>`
+      : `<span class="tmeta" data-short="${money(budget-spent)} unspent">${money(spent)} of ${money(budget)} &middot; ${money(budget-spent)} unspent</span>`;
+    const uw = sideBySide ? ` style="width:${W}px"` : "";
+    return `<div class="tmunit"${uw}><div class="tmhead"><h2>${title}</h2>${head}</div>` +
+           `<div class="tmbox" style="width:${W}px;height:${H}px">${html}</div></div>`;
+  };
+  const mainHTML = board("Main deck", mainRows, fM, mM, dM, tcM, bcM);
+  const sideHTML = board("Sideboard", sideRows, fS, mS, dS, tcS, bcS);
+  const note = omitted ? `<p class="sub" style="margin:10px 0 0">${omitted} card${omitted>1?"s":""} under $0.50 not shown in the $1 grid (too cheap to fill a square).</p>` : "";
+  return (sideBySide ? `<div class="tmrow">${mainHTML}${sideHTML}</div>` : mainHTML + sideHTML) + note;
 }
 // One vertical bar column (value on top, bar, label below).
 function vcol(label, val, max){
@@ -1724,11 +1828,17 @@ function renderVisual(rows){
       `</div></a>`;
   }).join("");
 
+  const usesBoxes = _vbLayout === "treemap" || _vbLayout === "dollargrid";
   const controls =
     `<div class="vctrl">` +
       `<label>Layout <select id="vLayout">` +
         `<option value="grid"${_vbLayout==="grid"?" selected":""}>Uniform grid</option>` +
         `<option value="treemap"${_vbLayout==="treemap"?" selected":""}>Cost treemap</option>` +
+        `<option value="dollargrid"${_vbLayout==="dollargrid"?" selected":""}>$1 grid</option>` +
+      `</select></label>` +
+      `<label id="vArrWrap"${usesBoxes?"":' style="display:none"'}>Boxes <select id="vArrange">` +
+        `<option value="eqheight"${_vbArrange==="eqheight"?" selected":""}>Equal height</option>` +
+        `<option value="eqwidth"${_vbArrange==="eqwidth"?" selected":""}>Equal width</option>` +
       `</select></label>` +
       `<label id="vFillWrap"${_vbLayout==="treemap"?"":' style="display:none"'}>Fill <select id="vFill">` +
         `<option value="cover"${_vbFill==="cover"?" selected":""}>Crop to fill</option>` +
@@ -1737,12 +1847,14 @@ function renderVisual(rows){
       `</select></label>` +
       (_vbLayout==="treemap"
         ? `<span class="vbnote">Tile area &prop; line cost; hatched space = unspent budget. $1 is the same size in both decks.</span>`
+        : _vbLayout==="dollargrid"
+        ? `<span class="vbnote">Each square = $1. A card fills as many squares as it costs (rounded); light-blue = unspent, red = over budget.</span>`
         : "") +
     `</div>`;
 
   $("visual").classList.remove("hidden");   // ensure a measurable width before the treemap
-  const body = _vbLayout === "treemap"
-    ? buildTreemapHTML(rows)
+  const body = _vbLayout === "treemap" ? buildTreemapHTML(rows)
+    : _vbLayout === "dollargrid" ? buildDollarGridHTML(rows)
     : `<h2>Main deck</h2><div class="vgrid">${gridCards("main") || '<span class="vp">&mdash;</span>'}</div>` +
       (rows.some(r => r.board === "side")
         ? `<h2>Sideboard</h2><div class="vgrid">${gridCards("side")}</div>` : "");
@@ -1757,6 +1869,7 @@ document.addEventListener("change", e => {
   if (!e.target) return;
   if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vArrange"){ _vbArrange = e.target.value; if (_vbRows) renderVisual(_vbRows); }
 });
 // The treemap reads the container width only when it renders, so re-lay it out
 // on window resize too (debounced; from the CACHED card data — zero Scryfall).
@@ -1986,7 +2099,7 @@ function buildReport(L){
   lines.push("Report generated : " + L.runAt.toISOString() + " (UTC)");
   lines.push("Printing basis   : " + (L.cheapest ? "cheapest paper printing" : "Scryfall default/fuzzy printing"));
   lines.push("Legality format  : " + (L.format === "__none" ? "(not checked)" : fmtName(L.format)));
-  if (L.basicsDropped) lines.push("Basic lands      : " + L.basicsDropped + " ignored (excluded from totals)");
+  if (L.basicsZeroed) lines.push("Basic lands      : " + L.basicsZeroed + " counted as $0 (still listed; excluded from totals)");
   lines.push("");
   const sec = (title, s, budget) => {
     lines.push("-".repeat(60));
