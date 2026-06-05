@@ -8,9 +8,21 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.7.0-beta.2)  [BETA — sandbox; main is v3.6.1]
+  MTG Budget Deckbuilder (v3.7.0-beta.3)  [BETA — sandbox; main is v3.6.1]
 
   Changelog:
+  v3.7.0-beta.3 (2026-06-05T11:35:28Z) - Visual view now uses the SAME total
+                        width as the rest of the page. Side-by-side: the two
+                        boxes + the gap fill the content width (widths ∝ budget),
+                        instead of being shrunk to a height cap and centred with
+                        a gap beside the page edge. Height is capped (≤620) WITHOUT
+                        shrinking the widths (a very wide window just makes the
+                        bigger box run a touch wide, which squarify handles).
+                        .tmbox is now border-box, so the boxes never overflow by
+                        their 1px border — fixes a tiny horizontal scroll on
+                        mobile (stacked, full-width box) and makes the fill exact.
+                        Approach: re-layout to fit (sharp art/text), not CSS-
+                        scaling the rendered image (which would blur the art).
   v3.7.0-beta.2 (2026-06-05T11:07:42Z) - Deploy fix (same as main v3.6.1): page
                         now at the Pages ROOT, so header image path "../assets/"
                         -> "mtg/assets/" (old path 404'd above the site root).
@@ -503,7 +515,7 @@
      unspent budget without needing its own rectangle. */
   /* box bg = the "unspent" hatch (shows through where there are no card tiles):
      light-blue stripes on a deep blue base (was white-on-near-black). */
-  .tmbox{position:relative;border:1px solid rgba(255,255,255,.85);
+  .tmbox{position:relative;box-sizing:border-box;border:1px solid rgba(255,255,255,.85);
     border-radius:8px;overflow:hidden;margin:0 auto 16px;background:#0a1622;
     background-image:repeating-linear-gradient(45deg,
       rgba(127,180,230,.14),rgba(127,180,230,.14) 9px,
@@ -645,7 +657,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.2 &middot; 2026-06-05 11:07 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.3 &middot; 2026-06-05 11:35 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1590,12 +1602,18 @@ function buildTreemapHTML(rows){
   let sideBySide = false, mBox, sBox;
   if (both && cw >= 700){
     sideBySide = true;
-    const availW = cw - GAP - 16, Ft = fM + fS;      // reserve flex gap + borders + slack
-    let wm = availW * fM / Ft, ws = availW - wm;
-    const TARGET = 0.92, MAXH = 600, MINH = 240;     // big-box aspect ≈ 1/0.92 ≈ 1.09
-    let H = Math.max(wm, ws) * TARGET;
-    if (H > MAXH){ const sc = MAXH / H; wm *= sc; ws *= sc; H = MAXH; }
-    H = Math.max(MINH, H);
+    // FILL the content width: the two boxes + the gap between them span the SAME
+    // width as the rest of the page (no centred leftover). Widths ∝ budget so $1
+    // stays equal-area across them. (.tmbox is border-box, so only the flex gap +
+    // rounding need reserving.)
+    const availW = cw - GAP - 2, Ft = fM + fS;
+    const wm = availW * fM / Ft, ws = availW - wm;
+    // One shared height for a tidy aspect on the LARGER box, capped so the visual
+    // doesn't get too tall on a very wide window (the bigger box then runs a touch
+    // wide, which squarify/WIDE_BIAS handles). Widths are NOT shrunk to meet the
+    // cap — doing that is what used to leave the gap beside the page edge.
+    const TARGET = 0.92, MAXH = 620, MINH = 240;
+    const H = Math.max(MINH, Math.min(MAXH, Math.max(wm, ws) * TARGET));
     mBox = { w:Math.round(wm), h:Math.round(H) }; sBox = { w:Math.round(ws), h:Math.round(H) };
   } else {
     mBox = boxFor(fM); sBox = boxFor(fS);
