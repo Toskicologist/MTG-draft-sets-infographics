@@ -8,9 +8,16 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.7.0-beta.4)  [BETA — sandbox; main is v3.6.1]
+  MTG Budget Deckbuilder (v3.7.0-beta.5)  [BETA — sandbox; main is v3.6.1]
 
   Changelog:
+  v3.7.0-beta.5 (2026-06-05T11:59:03Z) - Treemap tiles: removed the 2px inter-
+                        tile gutter — tiles are now separated only by their 1px
+                        white edge (border), and .tmtile is border-box so those
+                        edges sit flush without overlapping. Slightly more image
+                        per tile and a cleaner grid look. (Does NOT fix a genuine
+                        tiny-value sliver — that's the squarify math; see notes
+                        on the squarer-packing / min-size trade-offs.)
   v3.7.0-beta.4 (2026-06-05T11:47:22Z) - The treemap now RE-LAYS OUT on window
                         resize (debounced ~160ms, from cached card data — zero
                         Scryfall), so resizing/rotating between narrow (stacked)
@@ -528,7 +535,7 @@
       rgba(127,180,230,.14),rgba(127,180,230,.14) 9px,
       rgba(127,180,230,.30) 9px,rgba(127,180,230,.30) 18px)}
   a.tmtile,a.vcard{text-decoration:none;color:inherit;cursor:pointer;display:block}
-  .tmtile{position:absolute;overflow:hidden;border:1px solid rgba(255,255,255,.7);
+  .tmtile{position:absolute;box-sizing:border-box;overflow:hidden;border:1px solid rgba(255,255,255,.7);
     background-size:cover;background-position:center;background-repeat:no-repeat;
     background-color:var(--panel2)}
   .tmtile.contain{background-size:contain;background-color:#0a0d18}
@@ -664,7 +671,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.4 &middot; 2026-06-05 11:47 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.7.0-beta.5 &middot; 2026-06-05 11:59 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1481,7 +1488,7 @@ function budgetTiles(cards, budget){
 //    washes everything below it ("$X OVER"). Returns the drawn height.
 function treemapBox(boardRows, budget, width, budgetHeight){
   const bt = budgetTiles(boardRows.map(r => ({ ...r, cost: r.lineT || 0 })), budget);
-  const g = 2;                                     // gutter between tiles
+  const g = 0;                                     // no gutter — tiles separated only by their white edge (border)
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const cardItems = bt.items.filter(i => !i.item.__free);
   const b = Math.max(0, budget || 0);
