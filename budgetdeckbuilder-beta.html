@@ -8,9 +8,17 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.8.0-beta.1)  [BETA — sandbox; main is v3.7.0]
+  MTG Budget Deckbuilder (v3.8.0-beta.2)  [BETA — sandbox; main is v3.7.0]
 
   Changelog:
+  v3.8.0-beta.2 (2026-06-05T22:57:32Z) - Two tweaks:
+                        - NEW "$1 grid overlay" checkbox (treemap): draws a grid
+                          of $1 squares OVER the treemap art (each cell = sqrt of
+                          a $-area, so one square = $1 of budget; tiles the whole
+                          box incl. any over-budget rows). A lighter alternative
+                          to the full $1-grid waffle layout.
+                        - "Equal width" is now the DEFAULT box arrangement (same
+                          width, height ∝ budget) — looks better than equal-height.
   v3.8.0-beta.1 (2026-06-05T22:43:41Z) - Visual experiments + basics tweak:
                         - NEW "Boxes" toggle: "Equal height" (width ∝ budget,
                           the existing fill-the-row layout) vs "Equal width"
@@ -600,6 +608,10 @@
     z-index:3;box-shadow:0 0 4px rgba(0,0,0,.7)}
   .tmline.v{width:2px}
   .tmline.h{height:2px}
+  /* $1-square grid drawn OVER the treemap image (background-size set inline) */
+  .tmgridov{position:absolute;inset:0;pointer-events:none;z-index:2;
+    background-image:linear-gradient(to right, rgba(255,255,255,.42) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.42) 1px, transparent 1px)}
   /* dashed "budget level" line; overspend (the red .tmover strip) sits below it */
   .tmbudgetline{position:absolute;left:0;height:0;z-index:4;pointer-events:none;
     border-top:2px dashed rgba(255,255,255,.95);
@@ -706,7 +718,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.8.0-beta.1 &middot; 2026-06-05 22:43 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.8.0-beta.2 &middot; 2026-06-05 22:57 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1364,7 +1376,8 @@ function render(main, side, priceMap, meta, cheapest){
 let _vbRows = null;                      // current rows (qty/price + cached card obj)
 let _vbLayout = "treemap";               // "grid" | "treemap" | "dollargrid"
 let _vbFill = "art";                     // treemap fill: "cover" | "contain" | "art" (Art only = default)
-let _vbArrange = "eqheight";             // side-by-side boxes: "eqheight" (width∝budget) | "eqwidth" (height∝budget)
+let _vbArrange = "eqwidth";              // side-by-side boxes: "eqwidth" (height∝budget, default) | "eqheight" (width∝budget)
+let _vbGridOverlay = false;              // treemap: draw a $1-square grid over the image
 const _scCache = new Map();              // persistent Scryfall objs: _scKey / name / front-face alias -> card
 let _enrichTimer = null;
 // Rows for the visual/charts, rebuilt from LAST (qty/price) every render with
@@ -1619,6 +1632,12 @@ function treemapBox(boardRows, budget, width, budgetHeight){
     html += `<div class="tmover" style="${pos}">${inner}</div>`;
     html += `<div class="tmbudgetline" style="top:${budgetHeight.toFixed(1)}px;width:${width.toFixed(1)}px"><span>budget</span></div>`;
   }
+  // Optional $1-square grid OVERLAY: a cell is sqrt($-area) on a side, so each
+  // square = $1 of the budget. Tiles the whole box (incl. any overflow rows).
+  if (_vbGridOverlay && budget > 0){
+    const cell = Math.sqrt(width * budgetHeight / budget);
+    if (cell >= 6) html += `<div class="tmgridov" style="background-size:${cell.toFixed(2)}px ${cell.toFixed(2)}px"></div>`;
+  }
   return { html, bt, height: boxHeight };
 }
 // Two side-by-side board boxes (or stacked when narrow). Returns each board's
@@ -1846,6 +1865,9 @@ function renderVisual(rows){
         `<option value="art"${_vbFill==="art"?" selected":""}>Art only</option>` +
       `</select></label>` +
       (_vbLayout==="treemap"
+        ? `<label class="cbx" style="font-size:12.5px"><input type="checkbox" id="vGridOverlay"${_vbGridOverlay?" checked":""}> $1 grid overlay</label>`
+        : "") +
+      (_vbLayout==="treemap"
         ? `<span class="vbnote">Tile area &prop; line cost; hatched space = unspent budget. $1 is the same size in both decks.</span>`
         : _vbLayout==="dollargrid"
         ? `<span class="vbnote">Each square = $1. A card fills as many squares as it costs (rounded); light-blue = unspent, red = over budget.</span>`
@@ -1870,6 +1892,7 @@ document.addEventListener("change", e => {
   if (e.target.id === "vLayout"){ _vbLayout = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vArrange"){ _vbArrange = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vGridOverlay"){ _vbGridOverlay = e.target.checked; if (_vbRows) renderVisual(_vbRows); }
 });
 // The treemap reads the container width only when it renders, so re-lay it out
 // on window resize too (debounced; from the CACHED card data — zero Scryfall).
