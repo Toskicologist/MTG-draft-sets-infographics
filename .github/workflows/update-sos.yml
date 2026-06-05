@@ -2,11 +2,12 @@ name: Daily SOS Data Refresh
 
 # Runs every day at 06:00 UTC. 17Lands' nightly stats job starts at 00:00 UTC
 # and "takes a few hours" per their FAQ (https://www.17lands.com/faq), so 6:00
-# UTC gives them a 6-hour buffer.
+# UTC gives them a 6-hour buffer. In practice GitHub delays scheduled actions
+# under load, so runs often land between 08:00-11:00 UTC — still well after
+# 17Lands has finished its nightly update.
 #
-# This workflow auto-disables itself after EXPIRY_DATE (set 30 days from creation
-# per the user's request). Re-enable later by editing the date below or removing
-# the expiry check.
+# To pause: disable from the Actions tab.
+# To stop completely: delete this file.
 on:
   schedule:
     - cron: '0 6 * * *'
@@ -15,42 +16,23 @@ on:
 permissions:
   contents: write       # needed to commit and push back
 
-env:
-  EXPIRY_DATE: '2026-06-09'   # auto-stop after this date (UTC)
-
 jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - name: Check expiry
-        id: expiry
-        run: |
-          today=$(date -u +%Y-%m-%d)
-          if [[ "$today" > "$EXPIRY_DATE" ]]; then
-            echo "Past expiry ($EXPIRY_DATE). Skipping refresh."
-            echo "expired=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Within window (today=$today, expires=$EXPIRY_DATE)."
-            echo "expired=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout repository
-        if: steps.expiry.outputs.expired != 'true'
         uses: actions/checkout@v4
 
       - name: Set up Python
-        if: steps.expiry.outputs.expired != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Run SOS refresh (fetch + apply + promote)
-        if: steps.expiry.outputs.expired != 'true'
         run: |
           python mtg/scripts/refresh_sos_17lands.py --fetch --apply --force --promote
 
       - name: Commit and push if anything changed
-        if: steps.expiry.outputs.expired != 'true'
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
