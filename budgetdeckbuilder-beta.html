@@ -8,9 +8,21 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.8.0-beta.3)  [BETA — sandbox; main is v3.7.0]
+  MTG Budget Deckbuilder (v3.9.0-beta.1)  [BETA — sandbox; main is v3.8.0]
 
   Changelog:
+  v3.9.0-beta.1 (2026-06-06T09:09:16Z) - Two visual options:
+                        - The "$1 grid overlay" is now a DASHED BLACK grid (inline
+                          SVG, with a faint light halo for legibility) instead of
+                          thin white lines.
+                        - NEW colour-coding for the card boxes (treemap tiles +
+                          $1-grid squares), OFF by default: "Colour" dropdown =
+                          Off / Card type / Colour / Rarity, shown as an Outline
+                          or a Tint. A legend appears for the active scheme.
+                          Conventions: Colour = WUBRG pips (multicolour = gold);
+                          Rarity = Magic's symbol colours (common grey, uncommon
+                          silver, rare gold, mythic orange); Type = a chosen
+                          distinct palette (no official standard).
   v3.8.0-beta.3 (2026-06-05T23:10:51Z) - $1 grid + equal-width fixes:
                         - $1 grid no longer drops cheap cards: cards under ~$1
                           are now POOLED into "$X other" squares, and the gap to
@@ -572,6 +584,7 @@
   .vctrl label{display:inline-flex;align-items:center;gap:6px;margin:0}
   .vctrl select{background:var(--bg);color:var(--ink);border:1px solid var(--line);
     border-radius:7px;padding:4px 8px;font-size:12.5px}
+  .codeleg{display:flex;flex-wrap:wrap;gap:5px 14px;margin:-4px 0 12px}
   /* ---- cost treemap (beta v3.5.0-beta.3) ---- */
   /* Box bg IS the hatched "unspent" texture; card tiles (opaque) sit on top in
      a square-ish region, so the leftover empty space (an L-shape) reads as the
@@ -625,10 +638,10 @@
     z-index:3;box-shadow:0 0 4px rgba(0,0,0,.7)}
   .tmline.v{width:2px}
   .tmline.h{height:2px}
-  /* $1-square grid drawn OVER the treemap image (background-size set inline) */
+  /* $1-square grid drawn OVER the treemap image — dashed black (SVG set inline);
+     a faint light halo keeps it legible over dark art. */
   .tmgridov{position:absolute;inset:0;pointer-events:none;z-index:2;
-    background-image:linear-gradient(to right, rgba(255,255,255,.42) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.42) 1px, transparent 1px)}
+    filter:drop-shadow(0 0 .6px rgba(255,255,255,.6))}
   /* dashed "budget level" line; overspend (the red .tmover strip) sits below it */
   .tmbudgetline{position:absolute;left:0;height:0;z-index:4;pointer-events:none;
     border-top:2px dashed rgba(255,255,255,.95);
@@ -735,7 +748,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.8.0-beta.3 &middot; 2026-06-05 23:10 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.9.0-beta.1 &middot; 2026-06-06 09:09 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1395,6 +1408,8 @@ let _vbLayout = "treemap";               // "grid" | "treemap" | "dollargrid"
 let _vbFill = "art";                     // treemap fill: "cover" | "contain" | "art" (Art only = default)
 let _vbArrange = "eqwidth";              // side-by-side boxes: "eqwidth" (height∝budget, default) | "eqheight" (width∝budget)
 let _vbGridOverlay = false;              // treemap: draw a $1-square grid over the image
+let _vbCode = "off";                     // colour-code card boxes: "off" | "type" | "color" | "rarity"
+let _vbCodeMode = "outline";             // "outline" (coloured border) | "tint" (coloured wash)
 const _scCache = new Map();              // persistent Scryfall objs: _scKey / name / front-face alias -> card
 let _enrichTimer = null;
 // Rows for the visual/charts, rebuilt from LAST (qty/price) every render with
@@ -1487,6 +1502,59 @@ function vColors(c){
 }
 const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
   R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
+/* ---- colour-coding card boxes (off by default) ----------------------
+   Conventions: COLOUR = the WUBRG pip palette (multicolour = gold); RARITY =
+   Magic's set-symbol colours (common black/grey, uncommon silver, rare gold,
+   mythic orange). TYPE has no official palette — a sensible distinct set.   */
+const TYPE_COL = { Land:["#c19a6b","Land"], Creature:["#79b558","Creature"],
+  Planeswalker:["#c46bd0","Planeswalker"], Battle:["#e8843c","Battle"],
+  Instant:["#5b9bd5","Instant"], Sorcery:["#d9544d","Sorcery"],
+  Enchantment:["#e0b341","Enchantment"], Artifact:["#a8b3bd","Artifact"] };
+const TYPE_ORDER = ["Land","Creature","Planeswalker","Battle","Instant","Sorcery","Enchantment","Artifact"];
+const RARITY_COL = { common:["#8a8a8a","Common"], uncommon:["#c2ccd6","Uncommon"],
+  rare:["#f0c93b","Rare"], mythic:["#e8602c","Mythic"] };
+const MULTI_COL = "#d4af37";             // multicolour
+function vTypeColor(c){
+  const t = (c && c.type_line) || "";
+  for (const k of TYPE_ORDER) if (t.includes(k)) return TYPE_COL[k][0];
+  return "#888";
+}
+function vColorCode(c){
+  const cs = vColors(c);
+  if (!cs.length) return VCOL.C[0];
+  if (cs.length > 1) return MULTI_COL;
+  return (VCOL[cs[0]] && VCOL[cs[0]][0]) || "#888";
+}
+function vRarityColor(c){ return (RARITY_COL[c && c.rarity] || ["#888"])[0]; }
+function codeColorOf(c){
+  if (!c || _vbCode === "off") return null;
+  return _vbCode === "type" ? vTypeColor(c)
+    : _vbCode === "color" ? vColorCode(c)
+    : _vbCode === "rarity" ? vRarityColor(c) : null;
+}
+function _hexA(hex, a){
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex); if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+// Inline style to colour a card box per the active scheme ("" when off / no data).
+function codeStyle(c){
+  const col = codeColorOf(c);
+  if (!col) return "";
+  return _vbCodeMode === "tint"
+    ? `box-shadow:inset 0 0 0 9999px ${_hexA(col, .34)};`
+    : `border-color:${col};border-width:3px;`;
+}
+// Legend HTML for the active scheme (or "" when off).
+function codeLegend(){
+  if (_vbCode === "off") return "";
+  let items;
+  if (_vbCode === "type") items = TYPE_ORDER.map(k => TYPE_COL[k]);
+  else if (_vbCode === "rarity") items = [RARITY_COL.common, RARITY_COL.uncommon, RARITY_COL.rare, RARITY_COL.mythic];
+  else items = [VCOL.W, VCOL.U, VCOL.B, VCOL.R, VCOL.G, [MULTI_COL,"Multicolour"], VCOL.C];
+  return `<div class="codeleg">` + items.map(([col, name]) =>
+    `<span class="pip"><span class="sw" style="background:${col}"></span>${escapeHtml(name)}</span>`).join("") + `</div>`;
+}
 /* ---- cost treemap (beta v3.5.0-beta.3) -----------------------------
    Squarified treemap: each card tile's AREA is proportional to its line
    cost (qty x unit); the canvas represents the budget, so unspent budget
@@ -1620,7 +1688,7 @@ function treemapBox(boardRows, budget, width, budgetHeight){
     const uri = r.c && r.c.scryfall_uri;            // click target
     const dataImg = popImg ? ` data-img="${escapeHtml(popImg)}"` : "";
     const href = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
-    return `<a class="${cls}"${href} style="${pos};${bg}" title="${title}"${dataImg}>${costHtml}${nameHtml}</a>`;
+    return `<a class="${cls}"${href} style="${pos};${bg}${codeStyle(r.c)}" title="${title}"${dataImg}>${costHtml}${nameHtml}</a>`;
   }).join("");
 
   // Unspent label, centred in the larger empty strip. The empty L-shape itself
@@ -1651,9 +1719,16 @@ function treemapBox(boardRows, budget, width, budgetHeight){
   }
   // Optional $1-square grid OVERLAY: a cell is sqrt($-area) on a side, so each
   // square = $1 of the budget. Tiles the whole box (incl. any overflow rows).
+  // Drawn as a DASHED BLACK grid via an inline SVG tile (right + bottom edges).
   if (_vbGridOverlay && budget > 0){
     const cell = Math.sqrt(width * budgetHeight / budget);
-    if (cell >= 6) html += `<div class="tmgridov" style="background-size:${cell.toFixed(2)}px ${cell.toFixed(2)}px"></div>`;
+    if (cell >= 6){
+      const c = cell.toFixed(2);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${c}" height="${c}">` +
+        `<path d="M${c} 0 V${c} M0 ${c} H${c}" stroke="black" stroke-width="1" stroke-dasharray="4,3" fill="none"/></svg>`;
+      const uri = "data:image/svg+xml," + encodeURIComponent(svg);
+      html += `<div class="tmgridov" style="background-image:url('${uri}');background-size:${c}px ${c}px"></div>`;
+    }
   }
   return { html, bt, height: boxHeight };
 }
@@ -1812,7 +1887,7 @@ function buildDollarGridHTML(rows){
         const di = popi ? ` data-img="${escapeHtml(popi)}"` : "";
         const hr = uri ? ` href="${escapeHtml(uri)}" target="_blank" rel="noopener"` : "";
         const ttl = escapeHtml(r.name) + (r.lineT != null ? ` — ${money(r.lineT)}` : "");
-        html += `<a class="dgcell${over ? " over" : ""}"${hr} title="${ttl}"${di} style="${pos};${bg}"></a>`;
+        html += `<a class="dgcell${over ? " over" : ""}"${hr} title="${ttl}"${di} style="${pos};${bg}${over ? "" : codeStyle(r.c)}"></a>`;
       } else if (i < m.spentCells){
         html += `<div class="dgother${over ? " over" : ""}" style="${pos}" title="${m.otherCount} cheaper card${m.otherCount>1?"s":""} combined — ${money(m.otherCost)}"></div>`;
       } else {
@@ -1915,6 +1990,16 @@ function renderVisual(rows){
         `<option value="contain"${_vbFill==="contain"?" selected":""}>Whole card</option>` +
         `<option value="art"${_vbFill==="art"?" selected":""}>Art only</option>` +
       `</select></label>` +
+      `<label id="vCodeWrap"${usesBoxes?"":' style="display:none"'}>Colour <select id="vCode">` +
+        `<option value="off"${_vbCode==="off"?" selected":""}>Off</option>` +
+        `<option value="type"${_vbCode==="type"?" selected":""}>Card type</option>` +
+        `<option value="color"${_vbCode==="color"?" selected":""}>Colour</option>` +
+        `<option value="rarity"${_vbCode==="rarity"?" selected":""}>Rarity</option>` +
+      `</select></label>` +
+      `<label id="vCodeModeWrap"${(usesBoxes && _vbCode!=="off")?"":' style="display:none"'}>as <select id="vCodeMode">` +
+        `<option value="outline"${_vbCodeMode==="outline"?" selected":""}>Outline</option>` +
+        `<option value="tint"${_vbCodeMode==="tint"?" selected":""}>Tint</option>` +
+      `</select></label>` +
       (_vbLayout==="treemap"
         ? `<label class="cbx" style="font-size:12.5px"><input type="checkbox" id="vGridOverlay"${_vbGridOverlay?" checked":""}> $1 grid overlay</label>`
         : "") +
@@ -1923,7 +2008,8 @@ function renderVisual(rows){
         : _vbLayout==="dollargrid"
         ? `<span class="vbnote">Each square = $1. A card fills as many squares as it costs (rounded); light-blue = unspent, red = over budget.</span>`
         : "") +
-    `</div>`;
+    `</div>` +
+    ((usesBoxes && _vbCode !== "off") ? codeLegend() : "");
 
   $("visual").classList.remove("hidden");   // ensure a measurable width before the treemap
   const body = _vbLayout === "treemap" ? buildTreemapHTML(rows)
@@ -1944,6 +2030,8 @@ document.addEventListener("change", e => {
   else if (e.target.id === "vFill"){ _vbFill = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vArrange"){ _vbArrange = e.target.value; if (_vbRows) renderVisual(_vbRows); }
   else if (e.target.id === "vGridOverlay"){ _vbGridOverlay = e.target.checked; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vCode"){ _vbCode = e.target.value; if (_vbRows) renderVisual(_vbRows); }
+  else if (e.target.id === "vCodeMode"){ _vbCodeMode = e.target.value; if (_vbRows) renderVisual(_vbRows); }
 });
 // The treemap reads the container width only when it renders, so re-lay it out
 // on window resize too (debounced; from the CACHED card data — zero Scryfall).
