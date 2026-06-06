@@ -8,9 +8,20 @@
 <meta property="og:description" content="Paste a Modern decklist, get live cheapest-printing USD totals for main deck and sideboard against a budget.">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.9.0-beta.1)  [BETA — sandbox; main is v3.8.0]
+  MTG Budget Deckbuilder (v3.9.0-beta.2)  [BETA — sandbox; main is v3.8.0]
 
   Changelog:
+  v3.9.0-beta.2 (2026-06-06T16:58:33Z) - Three small UI fixes:
+                        - FIX: two empty bars were showing between the input and
+                          the results (the #fixNote / #shareNote notice bars):
+                          `.hidden{display:none}` came BEFORE `.fixnote{display:
+                          flex}` in the stylesheet so .fixnote won — `.hidden` is
+                          now `!important` so hidden always hides.
+                        - Input panel is now a flex column: the decklist and
+                          sideboard textareas GROW to fill the panel height (3:1),
+                          removing the dead space under the sideboard.
+                        - Added a "Clear" button by the Decklist label that blanks
+                          both the decklist and sideboard boxes.
   v3.9.0-beta.1 (2026-06-06T09:09:16Z) - Two visual options:
                         - The "$1 grid overlay" is now a DASHED BLACK grid (inline
                           SVG, with a faint light halo for legibility) instead of
@@ -447,6 +458,12 @@
   label.cbx input{width:auto;margin:0;flex:0 0 auto}
   textarea{width:100%;height:340px;resize:vertical;background:var(--bg);color:var(--ink);
     border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  /* input panel fills its (grid-stretched) height; the two textareas grow 3:1 */
+  #inputPanel{display:flex;flex-direction:column}
+  #inputPanel #decklist{flex:3 1 0;height:auto;min-height:150px}
+  #inputPanel #sideboard{flex:1 1 0;height:auto;min-height:60px}
+  .dlhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px}
+  #clearBtn{width:auto;flex:0 0 auto;padding:4px 12px;font-size:12.5px}
   input[type=text],input[type=number]{width:100%;background:var(--bg);color:var(--ink);
     border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px}
   .field{margin-bottom:14px}
@@ -510,7 +527,7 @@
   #status{margin:14px 0;color:var(--dim);font-size:13px;min-height:20px}
   .bar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:6px}
   .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .15s}
-  .hidden{display:none}
+  .hidden{display:none !important}   /* must beat later display rules (e.g. .fixnote/.bar) */
   .stamp{font-size:13px;color:var(--dim);margin:6px 0 0}
   footer{margin-top:40px;color:var(--dim);font-size:12px;border-top:1px solid var(--line);padding-top:14px}
   footer a{word-break:break-word}
@@ -748,7 +765,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.9.0-beta.1 &middot; 2026-06-06 09:09 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.9.0-beta.2 &middot; 2026-06-06 16:58 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -779,8 +796,8 @@
   </details>
 
   <div class="grid">
-    <div class="panel">
-      <label for="decklist">Decklist</label>
+    <div class="panel" id="inputPanel">
+      <div class="dlhead"><label for="decklist" style="margin:0">Decklist</label><button type="button" id="clearBtn" class="ghost">Clear</button></div>
       <p class="sub" style="margin:-2px 0 8px">Totals update <strong>live as you type</strong>. Only lines that <strong>start with a quantity</strong> (e.g. <code>4 Lightning Bolt</code>) are counted; any line without a leading number is ignored.</p>
       <textarea id="decklist" spellcheck="false" placeholder="4 Lightning Bolt
 4 Monastery Swiftspear
@@ -809,7 +826,7 @@ Sideboard
       <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. The boards split on a line reading <em>Sideboard</em> or an <code>SB:</code> prefix &mdash; paste a full export as-is. <code>//</code> / <code>#</code> lines ignored.</p>
 
       <label for="sideboard" style="margin-top:16px">Sideboard <span style="text-transform:none;letter-spacing:0">(optional &mdash; only if your list has no <em>Sideboard</em> marker)</span></label>
-      <textarea id="sideboard" spellcheck="false" style="height:120px" placeholder="3 Smash to Smithereens
+      <textarea id="sideboard" spellcheck="false" placeholder="3 Smash to Smithereens
 2 Roiling Vortex
 (everything here counts as sideboard)">2 Destroy Evil
 1 Lithomantic Barrage
@@ -2379,6 +2396,12 @@ RECOMPUTE_INPUTS.forEach(id => {
   el.addEventListener(ev, scheduleRecompute);
 });
 $("resolveBtn").addEventListener("click", resolveMissing);
+// Clear: blank both decklist boxes and re-run (results hide, "paste a list" status).
+$("clearBtn").addEventListener("click", () => {
+  $("decklist").value = ""; $("sideboard").value = "";
+  $("decklist").focus();
+  scheduleRecompute();
+});
 // Preset checkbox: ticking it applies the $25 Budget Modern settings; it
 // reflects whether those settings are currently in effect and auto-unticks the
 // moment the user changes main/side budget or the format away from them.
