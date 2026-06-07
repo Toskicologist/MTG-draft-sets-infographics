@@ -9,9 +9,27 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.9.0-beta.2)  [BETA — sandbox; main is v3.8.0]
+  MTG Budget Deckbuilder (v3.9.0-beta.4)  [BETA — sandbox; main is v3.9.1]
 
   Changelog:
+  v3.9.0-beta.4 (2026-06-07T12:47:14Z) - Deck-name auto-fill + sort affordance:
+                        - Auto-extract deck name from a pasted list: a non-card
+                          line before the first card (as in MTGA/MTGO/Arena
+                          exports) auto-fills the (empty) Deck name field.
+                        - All sortable column headers now show a greyed-out arrow
+                          so the sort affordance is discoverable; the active sort
+                          column shows a highlighted arrow (▲ asc / ▼ desc).
+  v3.9.0-beta.3 (2026-06-07T12:33:00Z) - Table sorting + deck-name tidy-up:
+                        - Column headers (Qty, Card, Unit $, Line $) are now
+                          clickable to sort the table; click the same header again
+                          to toggle ascending/descending. Sort state resets on a
+                          fresh recompute (per-session, not persisted).
+                        - Deck name field now defaults BLANK (was "Boros budget
+                          modern kulvokea") and the Clear button now clears it too
+                          (alongside the decklist + sideboard boxes).
+                        - Social-media preview: og:image (the example screenshot)
+                          + reworded og:description (drops "live"/"Modern", says
+                          TCG Mid). Shared with main. [added on top of beta.2]
   v3.9.0-beta.2 (2026-06-06T16:58:33Z) - Three small UI fixes:
                         - FIX: two empty bars were showing between the input and
                           the results (the #fixNote / #shareNote notice bars):
@@ -518,9 +536,9 @@
   td.c4{color:#ff6b81;font-weight:700}
   th[data-sort]{cursor:pointer;user-select:none}
   th[data-sort]:hover{background:var(--line);color:var(--ink)}
-  th[data-sort]::after{content:" ▲";opacity:0;font-size:9px;margin-left:4px}
-  th[data-sort].asc::after{opacity:1;content:" ▲"}
-  th[data-sort].desc::after{opacity:1;content:" ▼"}
+  th[data-sort]::after{content:" ▲";opacity:0.3;color:var(--dim);font-size:9px;margin-left:4px}
+  th[data-sort].asc::after{opacity:1;content:" ▲";color:var(--accent)}
+  th[data-sort].desc::after{opacity:1;content:" ▼";color:var(--accent)}
   a.cardlink{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--dim)}
   a.cardlink:hover{color:var(--accent);border-bottom-color:var(--accent)}
   #cardTip{position:fixed;display:none;z-index:10000;padding:4px;background:#fff;
@@ -771,7 +789,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.9.0-beta.2 &middot; 2026-06-06 16:58 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.9.0-beta.4 &middot; 2026-06-07 12:47 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
