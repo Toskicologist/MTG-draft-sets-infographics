@@ -516,6 +516,11 @@
   td.c2{color:#ffcf5c}
   td.c3{color:#ff9d5c}
   td.c4{color:#ff6b81;font-weight:700}
+  th[data-sort]{cursor:pointer;user-select:none}
+  th[data-sort]:hover{background:var(--line);color:var(--ink)}
+  th[data-sort]::after{content:" ▲";opacity:0;font-size:9px;margin-left:4px}
+  th[data-sort].asc::after{opacity:1;content:" ▲"}
+  th[data-sort].desc::after{opacity:1;content:" ▼"}
   a.cardlink{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--dim)}
   a.cardlink:hover{color:var(--accent);border-bottom-color:var(--accent)}
   #cardTip{position:fixed;display:none;z-index:10000;padding:4px;background:#fff;
@@ -847,7 +852,7 @@ Sideboard
       </div>
       <div class="field">
         <label for="deckname">Deck name (for export)</label>
-        <input type="text" id="deckname" value="Boros budget modern kulvokea">
+        <input type="text" id="deckname" value="">
       </div>
       <div class="row">
         <div class="field">
@@ -999,6 +1004,28 @@ function parseSideboardBox(raw){
     if (c) addTo(side, c.name, c.qty);
   }
   return side;
+}
+
+// Extract deck name from pasted list (if present in standard export formats).
+// Looks for a title line before the first card: a non-empty, non-card line at the start.
+// Skips headers like "Deck:", "Sideboard:", and comment lines.
+function extractDeckName(raw){
+  const lines = (raw||"").split(/\r?\n/);
+  for (const rawLine of lines){
+    const line = rawLine.trim();
+    // Skip empty lines and comments
+    if (!line || /^(\/\/|#)/.test(line)) continue;
+    // Skip known headers
+    if (/^(deck|maindeck|main deck|sideboard|commander|companion|sb:)\s*:?\s*$/i.test(line)) continue;
+    // If this line isn't a card, it might be a deck name
+    if (!parseCardLine(line)) {
+      // Trim to reasonable length and return
+      return line.slice(0, 80).trim();
+    }
+    // First real line was a card, so no name found
+    return "";
+  }
+  return "";
 }
 
 /* ---- daily data from the jsDelivr CDN (orphan price-data branch) ----
@@ -1163,6 +1190,12 @@ let _liveTimer = null;
 function scheduleRecompute(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(recompute, 350); }
 
 async function recompute(){
+  // Try to extract deck name from pasted list if deckname field is empty
+  const deckNameEl = $("deckname");
+  if (!deckNameEl.value.trim()){
+    const extracted = extractDeckName($("decklist").value);
+    if (extracted) deckNameEl.value = extracted;
+  }
   let cdn;
   try { cdn = await ensureCdn(); }
   catch(e){
@@ -1329,9 +1362,48 @@ function cardLink(p, name){
   return `<a class="cardlink" href="${escapeHtml(href)}" target="_blank" ` +
          `rel="noopener"${img}>${escapeHtml(name)}</a>`;
 }
+
+/* ---- Table sorting ---- */
+let sortMain = { col: null, dir: "asc" };   // sort state for main deck table
+let sortSide = { col: null, dir: "asc" };   // sort state for sideboard table
+function getRowSortValue(r, col){
+  // Extract sortable value from row based on column
+  // col: "qty" | "card" | "unit" | "line"
+  switch(col){
+    case "qty": return r.qty;
+    case "card": return r.name.toLowerCase();
+    case "unit": return r.unit == null ? Infinity : r.unit;
+    case "line": return r.lineT == null ? Infinity : r.lineT;
+    default: return 0;
+  }
+}
+function sortRows(rows, col, direction){
+  const dir = direction === "desc" ? -1 : 1;
+  rows.sort((a, b) => {
+    const aVal = getRowSortValue(a, col);
+    const bVal = getRowSortValue(b, col);
+    if (typeof aVal === "string"){
+      return dir * aVal.localeCompare(bVal);
+    } else {
+      return dir * (aVal - bVal);
+    }
+  });
+}
+
 function renderTable(title, sec, board){
   let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
-  h += `<table><thead><tr><th class="num">Qty</th><th>Card</th><th>Cheapest printing</th><th class="num">Unit $</th><th class="num">Line $</th><th></th></tr></thead><tbody>`;
+  const sortState = board === "main" ? sortMain : sortSide;
+  const thQty = sortState.col === "qty" ? ` class="num ${sortState.dir}"` : ` class="num"`;
+  const thCard = sortState.col === "card" ? ` class="${sortState.dir}"` : ``;
+  const thUnit = sortState.col === "unit" ? ` class="num ${sortState.dir}"` : ` class="num"`;
+  const thLine = sortState.col === "line" ? ` class="num ${sortState.dir}"` : ` class="num"`;
+  h += `<table data-board="${board}"><thead><tr>` +
+       `<th${thQty} data-sort="qty">Qty</th>` +
+       `<th${thCard} data-sort="card">Card</th>` +
+       `<th>Cheapest printing</th>` +
+       `<th${thUnit} data-sort="unit">Unit $</th>` +
+       `<th${thLine} data-sort="line">Line $</th>` +
+       `<th></th></tr></thead><tbody>`;
   for (const r of sec.rows){
     // Resolved/indexed but TCGcsv has no Mid -> same prominent red flag as
     // a not-format-legal card (price is always TCGcsv Mid, or clearly absent).
@@ -1367,6 +1439,9 @@ function renderTable(title, sec, board){
 
 let LAST = null, CUR_SRC = "mid", CUR_FMT = "modern", CUR_COLOR = true;
 function render(main, side, priceMap, meta, cheapest){
+  // Reset sort state when new data is rendered
+  sortMain = { col: null, dir: "asc" };
+  sortSide = { col: null, dir: "asc" };
   CUR_SRC = "mid"; CUR_FMT = meta.format; CUR_COLOR = meta.colorCost;
   const m = sectionRows(main, priceMap);
   const s = sectionRows(side, priceMap);
@@ -2164,6 +2239,34 @@ function addCard(board, text){
   recompute();
 }
 document.addEventListener("click", e => {
+  // Handle table header clicks for sorting
+  const th = e.target.closest && e.target.closest("th[data-sort]");
+  if (th){
+    e.preventDefault();
+    const table = th.closest("table");
+    const board = table ? table.dataset.board : null;
+    const col = th.dataset.sort;
+    if (board && col){
+      const sortState = board === "main" ? sortMain : sortSide;
+      // Toggle direction if same column, otherwise sort ascending
+      if (sortState.col === col){
+        sortState.dir = sortState.dir === "asc" ? "desc" : "asc";
+      } else {
+        sortState.col = col;
+        sortState.dir = "asc";
+      }
+      // Re-render the table with sorted rows
+      if (LAST){
+        const sec = board === "main" ? LAST.m : LAST.s;
+        sortRows(sec.rows, col, sortState.dir);
+        const title = board === "main" ? "Main deck" : "Sideboard";
+        const html = renderTable(title, sec, board);
+        const container = board === "main" ? $("mainTable") : $("sideTable");
+        if (container) container.innerHTML = html;
+      }
+    }
+    return;
+  }
   const rsv = e.target.closest && e.target.closest(".rsv[data-act='resolve']");
   if (rsv){ e.preventDefault(); resolveMissing([rsv.dataset.name]); return; }
   const b = e.target.closest && e.target.closest(".qbtn[data-act],.xbtn[data-act]");
@@ -2399,7 +2502,7 @@ RECOMPUTE_INPUTS.forEach(id => {
 $("resolveBtn").addEventListener("click", resolveMissing);
 // Clear: blank both decklist boxes and re-run (results hide, "paste a list" status).
 $("clearBtn").addEventListener("click", () => {
-  $("decklist").value = ""; $("sideboard").value = "";
+  $("decklist").value = ""; $("sideboard").value = ""; $("deckname").value = "";
   $("decklist").focus();
   scheduleRecompute();
 });
