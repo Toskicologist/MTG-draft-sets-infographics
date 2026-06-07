@@ -9,9 +9,22 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.11.0-beta.2)  [BETA — sandbox; main is v3.11.0 (this beta is now promoted)]
+  MTG Budget Deckbuilder (v3.12.0-beta.1)  [BETA — sandbox; main is v3.11.0]
 
   Changelog:
+  v3.12.0-beta.1 (2026-06-07T23:04:22Z) - Share-link export snapshot:
+                        - The share link now also records the EXPORT MOMENT and
+                          the deck's totals + budgets at that time (nested as `x`
+                          in the encoded state, alongside the existing price-data
+                          date `pd`).
+                        - Opening a shared link shows a banner: "This deck was
+                          exported at <time>. It was UNDER/OVER budget at that
+                          time — TCG Mid cost: main $X, side $Y. Prices have been
+                          refreshed N times since then, so totals may have
+                          changed." N = whole UTC days between the link's price-
+                          data date and the current one (daily rebuilds). Shown
+                          even when N = 0; the older stale-price warning remains
+                          the fallback for links without the snapshot.
   v3.11.0-beta.2 (2026-06-07T20:56:55Z) - Foil / basics / header display tweaks:
                         - Foil indication moved OFF the card name and INTO the
                           "Cheapest printing" column: the printing now shows a
@@ -836,7 +849,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.11.0-beta.2 &middot; 2026-06-07 20:56 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.1 &middot; 2026-06-07 23:04 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -2701,6 +2714,7 @@ function b64urlDecode(s){
   return new TextDecoder().decode(bytes);
 }
 let _sharedPriceDate = null;               // price-data date stamped into a shared link
+let _sharedExport = null;                  // {t,mt,sd,bm,bs} snapshot from a shared link
 function buildShareLink(){
   const st = {};
   for (const [k, id] of Object.entries(SHARE_KEYS)){
@@ -2711,6 +2725,15 @@ function buildShareLink(){
   // since updated (historical prices aren't retained, so the link can't carry
   // the actual numbers — it recomputes from the latest data on open).
   if (_cdn && _cdn.meta && _cdn.meta.generatedAt) st.pd = _cdn.meta.generatedAt;
+  // Stamp the export MOMENT + the deck's totals/budgets at that time, so the
+  // recipient's banner can report what it cost when shared (prices recompute
+  // live on open; we can't carry the actual old numbers, but we can carry this
+  // snapshot). Nested in `x` to avoid clashing with SHARE_KEYS (bm/bs/s/etc.).
+  if (LAST){
+    st.x = { t:new Date().toISOString(),
+             mt:+(LAST.m.total||0).toFixed(2), sd:+(LAST.s.total||0).toFixed(2),
+             bm:+(LAST.bM||0), bs:+(LAST.bS||0) };
+  }
   return location.origin + location.pathname + "#d=" +
     b64urlEncode(JSON.stringify(st));
 }
@@ -2725,23 +2748,53 @@ function loadShared(){
     else el.value = st[k];
   }
   if (st.pd) _sharedPriceDate = st.pd;
+  if (st.x && typeof st.x === "object") _sharedExport = st.x;
 }
 // If this page was opened from a share link AND the price data is now newer than
 // when the link was made, warn that the totals may have moved.
 let _shareNoteShown = false;
-function maybeShowShareNote(cdn){
-  if (_shareNoteShown || !_sharedPriceDate || !cdn || !cdn.meta || !cdn.meta.generatedAt) return;
-  const shared = new Date(_sharedPriceDate), now = new Date(cdn.meta.generatedAt);
-  if (!(now > shared)) return;                // current data not newer -> nothing to warn
-  _shareNoteShown = true;
-  const fmt = d => d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+// Refresh count ~ whole UTC days between the link's price-data date and the
+// current one (price data rebuilds ~daily). Used in the share banner.
+function priceRefreshCount(cdn){
+  if (!_sharedPriceDate || !cdn || !cdn.meta || !cdn.meta.generatedAt) return null;
+  const a = new Date(_sharedPriceDate), b = new Date(cdn.meta.generatedAt);
+  const d0 = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
+  const d1 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
+  return Math.max(0, Math.round((d1 - d0) / 86400000));
+}
+function showShareBox(inner){
   const box = $("shareNote");
-  box.innerHTML = `<span class="dot"></span><span>Heads up — this shared deck used TCG Mid prices ` +
-    `from <b>${fmt(shared)}</b>; prices have since updated to <b>${fmt(now)}</b>, so the totals you ` +
-    `see may differ from when it was shared.</span>` +
+  box.innerHTML = `<span class="dot"></span><span>${inner}</span>` +
     `<button class="fixx" title="dismiss" aria-label="dismiss">&times;</button>`;
   box.classList.remove("hidden");
   box.querySelector(".fixx").addEventListener("click", () => box.classList.add("hidden"));
+}
+function maybeShowShareNote(cdn){
+  if (_shareNoteShown) return;
+  // Rich banner: opened from a link carrying the export snapshot (time + totals
+  // + budgets). Shown even if prices haven't changed since (N may be 0).
+  if (_sharedExport && _sharedExport.t){
+    _shareNoteShown = true;
+    const x = _sharedExport, exp = new Date(x.t);
+    const fmtDT = d => d.toLocaleString(undefined,
+      { year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
+    const ou = ((x.mt||0) + (x.sd||0)) > ((x.bm||0) + (x.bs||0)) ? "OVER" : "UNDER";
+    const N = priceRefreshCount(cdn);
+    const refresh = N == null ? ""
+      : N === 0 ? " Prices have not been refreshed since then."
+      : ` Prices have been refreshed ${N} time${N===1?"":"s"} since then, so totals may have changed.`;
+    showShareBox(`This deck was exported at <b>${fmtDT(exp)}</b>. It was <b>${ou} budget</b> ` +
+      `at that time — TCG Mid cost: main <b>${money(x.mt||0)}</b>, side <b>${money(x.sd||0)}</b>.${refresh}`);
+    return;
+  }
+  // Legacy links (price-data date only): warn just when prices are now newer.
+  if (!_sharedPriceDate || !cdn || !cdn.meta || !cdn.meta.generatedAt) return;
+  const shared = new Date(_sharedPriceDate), now = new Date(cdn.meta.generatedAt);
+  if (!(now > shared)) return;
+  _shareNoteShown = true;
+  const fmt = d => d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  showShareBox(`Heads up — this shared deck used TCG Mid prices from <b>${fmt(shared)}</b>; ` +
+    `prices have since updated to <b>${fmt(now)}</b>, so the totals you see may differ from when it was shared.`);
 }
 $("shareBtn").addEventListener("click", async () => {
   const url = buildShareLink();
