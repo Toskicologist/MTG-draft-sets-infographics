@@ -9,9 +9,22 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.9.0)
+  MTG Budget Deckbuilder (v3.9.1)
 
   Changelog:
+  v3.9.1 (2026-06-07T12:49:52Z) - Small main-line additions (post-3.9.0 fixes
+                        that had landed on main but weren't yet versioned):
+                        - Social-media preview: og:image (the example
+                          screenshot) + reworded og:description (drops "live"/
+                          "Modern", states TCG Mid prices).
+                        - Deck name field now defaults BLANK (was "Boros budget
+                          modern kulvokea") and the Clear button now clears the
+                          deck name too (alongside decklist + sideboard).
+                        (Table sorting + deck-name auto-extract are still BETA
+                        only — see beta v3.9.0-beta.4 — not promoted yet.)
+  v3.9.0 (2026-06-06T16:58:33Z) - Promoted from beta v3.9.0-beta.2: the three
+                        UI fixes below (empty notice bars, flex-fill textareas,
+                        Clear button).
   v3.9.0-beta.2 (2026-06-06T16:58:33Z) - Three small UI fixes:
                         - FIX: two empty bars were showing between the input and
                           the results (the #fixNote / #shareNote notice bars):
@@ -766,7 +779,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.9.0 &middot; 2026-06-06 16:58 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.9.1 &middot; 2026-06-07 12:49 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -2399,7 +2412,7 @@ RECOMPUTE_INPUTS.forEach(id => {
 $("resolveBtn").addEventListener("click", resolveMissing);
 // Clear: blank both decklist boxes and re-run (results hide, "paste a list" status).
 $("clearBtn").addEventListener("click", () => {
-  $("decklist").value = ""; $("sideboard").value = "";
+  $("decklist").value = ""; $("sideboard").value = ""; $("deckname").value = "";
   $("decklist").focus();
   scheduleRecompute();
 });
