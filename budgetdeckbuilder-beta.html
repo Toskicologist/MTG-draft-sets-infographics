@@ -9,9 +9,24 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.10.1-beta.1)  [BETA — sandbox; main is v3.10.1 (this beta is now promoted)]
+  MTG Budget Deckbuilder (v3.11.0-beta.1)  [BETA — sandbox; main is v3.10.1]
 
   Changelog:
+  v3.11.0-beta.1 (2026-06-07T20:17:17Z) - Foil-aware pricing:
+                        - Pricing now compares BOTH the non-foil and foil TCG Mid
+                          for every printing and uses the cheaper (foils are
+                          sometimes cheaper). Foil-only cards are now PRICED (and
+                          counted toward the budget) using their foil Mid, instead
+                          of being flagged as unpriced and excluded.
+                        - New tags: "foil cheaper" (a foil printing is the cheapest
+                          way to get the card) and "foil only" (no non-foil price
+                          exists). Carried into the .txt/.csv exports too.
+                        - Data pipeline (build-data.mjs v1.1.0): tcg-prices.json
+                          now carries a second map `foil` (productId -> Foil Mid)
+                          alongside `prices` (Normal/non-foil). ADDITIVE + back-
+                          compatible: until the next daily build publishes `foil`,
+                          the page just behaves as before (non-foil only). Main
+                          (v3.10.1) is unaffected — it ignores the new `foil` map.
   v3.10.1-beta.1 (2026-06-07T13:16:51Z) - Fix visual-view layout flicker:
                         - The treemap/grid "Main + Sideboard side-by-side vs
                           stacked" choice is now made ONLY in JS (twoBoxes /
@@ -807,7 +822,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.10.1-beta.1 &middot; 2026-06-07 13:16 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.11.0-beta.1 &middot; 2026-06-07 20:17 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -834,7 +849,7 @@
     <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
     <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure (distinct from TCGplayer's <em>Market</em> price, which is an average of recent <em>completed sales</em>).</p>
     <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run mirror of TCGplayer's public pricing &mdash; refreshed once a day (~20:00&nbsp;UTC). A scheduled job rebuilds the price table <em>and</em> a slim card index (printings, legalities, image) from Scryfall's bulk data, and publishes both to a CDN. The page loads those two files once, so <strong>Mid mode does zero per-card API calls and is near-instant</strong>. The banner above shows exactly when the data was built; every export carries that same timestamp.</p>
-    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used. <strong>Indicative prices, not checkout quotes.</strong> Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit. Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used &mdash; comparing both the <strong>non-foil and foil</strong> Mid for every printing, so a cheaper foil (tagged <em>foil cheaper</em>) or a foil-only card (tagged <em>foil only</em>) is still priced correctly rather than skipped. <strong>Indicative prices, not checkout quotes.</strong> Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit. Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
   </details>
 
   <div class="grid">
@@ -1065,7 +1080,9 @@ function extractDeckName(raw){
 }
 
 /* ---- daily data from the jsDelivr CDN (orphan price-data branch) ----
-   tcg-prices.json  { prices:{ productId: Mid } }
+   tcg-prices.json  { prices:{ productId: Mid }, foil:{ productId: Mid } }
+                    (prices = non-foil "Normal" Mid; foil = "Foil" Mid. `foil`
+                    is additive — may be absent on older snapshots, handled.)
    cards-index.json { fmt:[...], cards:{ name: {p:[[id,set,cn]], l, i} } }
    data-meta.json   { generatedAt, fmt, counts }
    Per-UTC-day query key => fresh each day, cached within the day.        */
@@ -1085,7 +1102,7 @@ async function loadCdn(){
     grab("tcg-prices.json"), grab("cards-index.json"), grab("data-meta.json"),
   ]);
   if (!prices || !prices.prices || !index || !index.cards) throw new Error("CDN data malformed");
-  _cdn = { prices: prices.prices, index, meta };
+  _cdn = { prices: prices.prices, foil: prices.foil || null, index, meta };
   return _cdn;
 }
 // Beta item 2: NO automatic in-memory typo correction. Correction happens
@@ -1099,12 +1116,25 @@ const norm = s => String(s || "").toLowerCase().trim();
 function priceFromIndex(name, cdn){
   const e = cdn.index.cards[name.toLowerCase().trim()];
   if (!e) return null;
-  let best = null, bestP = null;
+  // For each printing take the CHEAPER of its non-foil and foil Mid (foils are
+  // sometimes cheaper); a foil-only printing uses its foil price. Track whether
+  // the chosen cheapest is a foil, and whether ANY printing had a non-foil price
+  // (if none did, the card is foil-only). cdn.foil may be null on old snapshots.
+  let best = null, bestP = null, anyNonFoil = false;
   for (const ent of e.p){
-    const [id] = ent;
-    const m = cdn.prices[id];
-    if (typeof m === "number" && m > 0 && (best == null || m < best.price)){
-      best = { price:m, set:(ent[1]||"").toUpperCase(), cn:ent[2] };
+    const id = ent[0];
+    const n = cdn.prices[id];                          // non-foil Mid (or undef)
+    const f = cdn.foil ? cdn.foil[id] : undefined;     // foil Mid (or undef)
+    const nOk = typeof n === "number" && n > 0;
+    const fOk = typeof f === "number" && f > 0;
+    if (nOk) anyNonFoil = true;
+    let pp, isF = false;                               // this printing's cheapest
+    if (nOk && fOk){ if (f < n){ pp = f; isF = true; } else pp = n; }  // tie -> non-foil
+    else if (nOk) pp = n;
+    else if (fOk){ pp = f; isF = true; }
+    else continue;
+    if (best == null || pp < best.price){
+      best = { price:pp, set:(ent[1]||"").toUpperCase(), cn:ent[2], foil:isF };
       bestP = ent;
     }
   }
@@ -1121,7 +1151,8 @@ function priceFromIndex(name, cdn){
   const img = imgP
     ? `${SCRYFALL}/cards/${imgP[1]}/${encodeURIComponent(imgP[2])}?format=image&version=normal`
     : null;
-  return { name, found:true, price: best ? best.price : null, foilOnly:false,
+  return { name, found:true, price: best ? best.price : null,
+           foil: !!(best && best.foil), foilOnly: !!(best && !anyNonFoil),
            set: best ? best.set : null, cn: best ? best.cn : null, legal, uri, img };
 }
 
@@ -1138,9 +1169,20 @@ async function fetchJSON(url){
 // to resolve name -> tcgplayer_id; the PRICE is *always* TCGcsv Mid. No Mid
 // in TCGcsv -> null (card is flagged + excluded; never substituted with a
 // Scryfall / market price).
+// Cheapest Mid for one printing: the lower of its non-foil and foil price
+// (a foil-only printing uses its foil price). Returns { price, foil, nonFoil }
+// or null. snap.foil may be absent on old snapshots.
 function cardUnit(c, snap){
-  const v = c.tcgplayer_id != null ? snap.prices[c.tcgplayer_id] : undefined;
-  return (typeof v === "number" && v > 0) ? v : null;
+  const id = c.tcgplayer_id;
+  if (id == null) return null;
+  const n = snap.prices[id];
+  const f = snap.foil ? snap.foil[id] : undefined;
+  const nOk = typeof n === "number" && n > 0;
+  const fOk = typeof f === "number" && f > 0;
+  if (nOk && fOk) return f < n ? { price:f, foil:true, nonFoil:true } : { price:n, foil:false, nonFoil:true };
+  if (nOk) return { price:n, foil:false, nonFoil:true };
+  if (fOk) return { price:f, foil:true, nonFoil:false };
+  return null;
 }
 
 // front-face image (handles double-faced cards). Captured from the fetch we
@@ -1159,7 +1201,7 @@ async function priceCard(name, cheapest, snap){
   if (cheapest){
     let url = SCRYFALL + "/cards/search?unique=prints&q=" +
       encodeURIComponent(`!"${name}" game:paper`);
-    let best = null, legal = null, found = false, fb = null;
+    let best = null, legal = null, found = false, fb = null, anyNonFoil = false;
     while (url){
       const data = await fetchJSON(url);
       if (data.__notfound || data.object === "error" || !data.data) break;
@@ -1167,19 +1209,20 @@ async function priceCard(name, cheapest, snap){
       for (const c of data.data){
         if (legal == null && c.legalities) legal = c.legalities;
         if (fb == null) fb = { uri:c.scryfall_uri, img:imgOf(c) };
-        const price = cardUnit(c, snap);              // TCGcsv Mid or null
-        if (price == null) continue;
-        if (best == null || price < best.price)
-          best = { price, set:c.set.toUpperCase(), cn:c.collector_number,
+        const u = cardUnit(c, snap);                  // {price,foil,nonFoil} or null
+        if (u == null) continue;
+        if (u.nonFoil) anyNonFoil = true;
+        if (best == null || u.price < best.price)
+          best = { price:u.price, foil:u.foil, set:c.set.toUpperCase(), cn:c.collector_number,
                    uri:c.scryfall_uri, img:imgOf(c) };
       }
       url = data.has_more ? data.next_page : null;
       if (url) await SLEEP(90);
     }
     if (!found) return await priceNamed(name, snap);
-    if (best) return { name, found:true, price:best.price, foilOnly:false,
+    if (best) return { name, found:true, price:best.price, foil:best.foil, foilOnly: !anyNonFoil,
                        set:best.set, cn:best.cn, legal, uri:best.uri, img:best.img };
-    return { name, found:true, price:null, foilOnly:false, set:null, cn:null,
+    return { name, found:true, price:null, foil:false, foilOnly:false, set:null, cn:null,
              legal, uri:fb&&fb.uri, img:fb&&fb.img };
   }
   return await priceNamed(name, snap);
@@ -1188,10 +1231,11 @@ async function priceCard(name, cheapest, snap){
 async function priceNamed(name, snap){
   const c = await fetchJSON(SCRYFALL + "/cards/named?fuzzy=" + encodeURIComponent(name));
   if (c.__notfound || c.object === "error")
-    return { name, found:false, price:null, foilOnly:false, set:null, cn:null,
+    return { name, found:false, price:null, foil:false, foilOnly:false, set:null, cn:null,
              legal:null, uri:null, img:null };
-  const price = cardUnit(c, snap);                    // TCGcsv Mid or null
-  return { name:c.name, found:true, price, foilOnly:false,
+  const u = cardUnit(c, snap);                        // {price,foil,nonFoil} or null
+  return { name:c.name, found:true, price: u ? u.price : null,
+           foil: !!(u && u.foil), foilOnly: !!(u && !u.nonFoil),
            set:c.set?c.set.toUpperCase():null, cn:c.collector_number,
            legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
 }
@@ -1259,7 +1303,7 @@ async function recompute(){
     let prov = nm;
     if (!p){
       _pending.push(nm);
-      p = { name:nm, found:true, price:null, foilOnly:false, set:null, cn:null,
+      p = { name:nm, found:true, price:null, foil:false, foilOnly:false, set:null, cn:null,
             legal:null, pending:true, img:null,
             uri:"https://scryfall.com/search?q=" + encodeURIComponent('!"'+nm+'"') };
     } else if (p.found && !p.pending && p.name && norm(p.name) !== norm(nm)){
@@ -1320,13 +1364,13 @@ async function resolveMissing(names){
   for (const nm of todo){
     if (rb) rb.textContent = "Resolving " + (++done) + "/" + todo.length + ": " + nm;
     try {
-      const res = await priceCard(nm, $("cheapest").checked, { prices:_cdn.prices });
+      const res = await priceCard(nm, $("cheapest").checked, { prices:_cdn.prices, foil:_cdn.foil });
       _resolved.set(nm, res);
       // Also key by the canonical name so the post-rewrite recompute (the
       // decklist text becomes the canonical name) still finds it.
       if (res && res.found && res.name && norm(res.name) !== norm(nm))
         _resolved.set(res.name, res);
-    } catch(e){ _resolved.set(nm, { name:nm, found:false, price:null, foilOnly:false,
+    } catch(e){ _resolved.set(nm, { name:nm, found:false, price:null, foil:false, foilOnly:false,
       set:null, cn:null, legal:null, uri:null, img:null }); }
     $("bar").style.width = (done/todo.length*100) + "%";
     await SLEEP(95);                                   // Scryfall rate-limit
@@ -1380,6 +1424,7 @@ function flags(p){
   else if (!p.found) out.push('<span class="tag bad">not found</span>');
   else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
   if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
+  else if (p.foil) out.push('<span class="tag muted">foil cheaper</span>');
   if (CUR_FMT !== "__none" && p.found){
     const v = p.legal ? p.legal[CUR_FMT] : undefined;
     const F = fmtName(CUR_FMT);
@@ -1444,7 +1489,7 @@ function renderTable(title, sec, board){
     // Resolved/indexed but TCGcsv has no Mid -> same prominent red flag as
     // a not-format-legal card (price is always TCGcsv Mid, or clearly absent).
     const noMid = r.p.found && r.p.price == null && !r.p.pending;
-    const priceFlagged = (!r.p.found || r.p.price==null || r.p.foilOnly);
+    const priceFlagged = (!r.p.found || r.p.price==null);  // foil-only now carries a foil price -> counted, not excluded
     const illegal = legalStatus(r.p) === "bad";
     const cls = [priceFlagged?'flagged':'', (illegal||noMid)?'illegal':''].filter(Boolean).join(' ');
     const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
@@ -2416,7 +2461,7 @@ function buildReport(L){
   lines.push("=".repeat(60));
   lines.push("Prices calculated: " + L.priceAt.toISOString() + " (UTC)");
   lines.push("                   " + L.priceAt.toLocaleString() + " (local)");
-  lines.push("Price figure     : TCGplayer Mid USD (cheapest printing) — daily TCGcsv snapshot");
+  lines.push("Price figure     : TCGplayer Mid USD (cheapest printing, non-foil or foil) — daily TCGcsv snapshot");
   lines.push("Report generated : " + L.runAt.toISOString() + " (UTC)");
   lines.push("Printing basis   : " + (L.cheapest ? "cheapest paper printing" : "Scryfall default/fuzzy printing"));
   lines.push("Legality format  : " + (L.format === "__none" ? "(not checked)" : fmtName(L.format)));
@@ -2431,6 +2476,7 @@ function buildReport(L){
       if (!r.p.found) f.push("NOT FOUND");
       else if (r.p.price==null) f.push(L.source==="mid" ? "NO TCG MID" : "NO USD");
       if (r.p.foilOnly) f.push("foil-only");
+      else if (r.p.foil) f.push("foil (cheaper)");
       if (L.format !== "__none" && r.p.found){
         const v = r.p.legal ? r.p.legal[L.format] : undefined;
         const F = fmtName(L.format).toUpperCase();
@@ -2479,6 +2525,7 @@ function buildCsv(L){
     if (!p.found) notes.push("not found");
     else if (p.price == null) notes.push(L.source === "mid" ? "no TCG Mid" : "no USD price");
     if (p.foilOnly) notes.push("foil only");
+    else if (p.foil) notes.push("foil cheaper");
     let leg = "";
     if (fmt !== "__none" && p.found){
       const v = p.legal ? p.legal[fmt] : undefined;
