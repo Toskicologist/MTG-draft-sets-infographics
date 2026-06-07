@@ -9,9 +9,22 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.11.0-beta.1)  [BETA — sandbox; main is v3.10.1]
+  MTG Budget Deckbuilder (v3.11.0-beta.2)  [BETA — sandbox; main is v3.10.1]
 
   Changelog:
+  v3.11.0-beta.2 (2026-06-07T20:56:55Z) - Foil / basics / header display tweaks:
+                        - Foil indication moved OFF the card name and INTO the
+                          "Cheapest printing" column: the printing now shows a
+                          "Foil" tag when the cheapest price is a foil. Foil-only
+                          cards are treated the same (set/cn + Foil), no separate
+                          tag. Dropped the "foil cheaper"/"foil only" name tags.
+                        - "Basic lands cost $0": basics no longer show a "basic ·
+                          $0" tag; instead the printing, Unit $ and Line $ all show
+                          "—" so it's clear that isn't a normal card price.
+                        - Table headers now include the card count (sum of qty),
+                          e.g. "Main deck  60 cards" / "Sideboard  15 cards".
+                        - Exports follow suit: a single "foil" note (was foil
+                          cheaper/foil only) and "-" for basics in the .txt report.
   v3.11.0-beta.1 (2026-06-07T20:17:17Z) - Foil-aware pricing:
                         - Pricing now compares BOTH the non-foil and foil TCG Mid
                           for every printing and uses the cheaper (foils are
@@ -575,6 +588,7 @@
   #cardTip img{display:block;width:240px;height:auto;border-radius:7px}
   .sechead{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 2px}
   .sechead h2{font-size:17px;margin:0}
+  .sechead .cardcount{font-size:13px;font-weight:400;color:var(--dim)}
   .sechead span{color:var(--dim);font-size:13px}
   #status{margin:14px 0;color:var(--dim);font-size:13px;min-height:20px}
   .bar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:6px}
@@ -822,7 +836,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.11.0-beta.1 &middot; 2026-06-07 20:17 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.11.0-beta.2 &middot; 2026-06-07 20:56 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -849,7 +863,7 @@
     <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
     <p><strong>TCG Mid</strong> is TCGplayer's <em>Mid</em> price &mdash; the median of the current Near&nbsp;Mint / Lightly&nbsp;Played listings for a card. It's the "typical asking price" figure (distinct from TCGplayer's <em>Market</em> price, which is an average of recent <em>completed sales</em>).</p>
     <p>TCGplayer's own pricing API is closed to new apps, so the Mid figure here comes from <strong><a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a></strong> &mdash; a free, community-run mirror of TCGplayer's public pricing &mdash; refreshed once a day (~20:00&nbsp;UTC). A scheduled job rebuilds the price table <em>and</em> a slim card index (printings, legalities, image) from Scryfall's bulk data, and publishes both to a CDN. The page loads those two files once, so <strong>Mid mode does zero per-card API calls and is near-instant</strong>. The banner above shows exactly when the data was built; every export carries that same timestamp.</p>
-    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used &mdash; comparing both the <strong>non-foil and foil</strong> Mid for every printing, so a cheaper foil (tagged <em>foil cheaper</em>) or a foil-only card (tagged <em>foil only</em>) is still priced correctly rather than skipped. <strong>Indicative prices, not checkout quotes.</strong> Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit. Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
+    <p>Each card is matched to its TCGplayer product by Scryfall's <code>tcgplayer_id</code> (an exact ID match, not a name guess); the cheapest printing's Mid is used &mdash; comparing both the <strong>non-foil and foil</strong> Mid for every printing, so a cheaper foil &mdash; or a foil-only card &mdash; is still priced correctly rather than skipped (the chosen printing is marked <em>Foil</em>). <strong>Indicative prices, not checkout quotes.</strong> Cards with no Mid &mdash; or not legal in the selected <strong>Format</strong> &mdash; are flagged, never estimated. Totals recompute automatically as you edit. Anything missing from the daily index is flagged and can be resolved on demand with a one-click, throttled Scryfall lookup.</p>
   </details>
 
   <div class="grid">
@@ -1423,8 +1437,7 @@ function flags(p){
   if (p.pending) out.push('<span class="tag warn">not in daily index</span>');
   else if (!p.found) out.push('<span class="tag bad">not found</span>');
   else if (p.price == null) out.push('<span class="tag bad">no ' + (CUR_SRC==="mid"?"TCG Mid":"USD") + ' price</span>');
-  if (p.foilOnly) out.push('<span class="tag warn">foil only</span>');
-  else if (p.foil) out.push('<span class="tag muted">foil cheaper</span>');
+  // Foil is indicated in the "Cheapest printing" column (a "Foil" tag), not here.
   if (CUR_FMT !== "__none" && p.found){
     const v = p.legal ? p.legal[CUR_FMT] : undefined;
     const F = fmtName(CUR_FMT);
@@ -1472,7 +1485,8 @@ function sortRows(rows, col, direction){
 }
 
 function renderTable(title, sec, board){
-  let h = `<div class="sechead"><h2>${title}</h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
+  const cardCount = sec.rows.reduce((n, r) => n + (r.qty || 0), 0);  // total cards (sum of qty)
+  let h = `<div class="sechead"><h2>${title} <span class="cardcount">${cardCount} card${cardCount===1?"":"s"}</span></h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
   const sortState = board === "main" ? sortMain : sortSide;
   const thQty = sortState.col === "qty" ? ` class="num ${sortState.dir}"` : ` class="num"`;
   const thCard = sortState.col === "card" ? ` class="${sortState.dir}"` : ``;
@@ -1492,9 +1506,14 @@ function renderTable(title, sec, board){
     const priceFlagged = (!r.p.found || r.p.price==null);  // foil-only now carries a foil price -> counted, not excluded
     const illegal = legalStatus(r.p) === "bad";
     const cls = [priceFlagged?'flagged':'', (illegal||noMid)?'illegal':''].filter(Boolean).join(' ');
-    const print = r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() : "&mdash;";
-    const uc = CUR_COLOR ? " " + costClass(r.unit) : "";
-    const lc = CUR_COLOR ? " " + costClass(r.lineT) : "";
+    // Basic lands under "Basic lands cost $0": "—" for printing + prices (clearer
+    // than "$0"). Otherwise show the printing, with a "Foil" tag when the cheapest
+    // price is a foil (foil-only is treated the same — set/cn + Foil, no extra tag).
+    const foilMark = r.p.foil ? ' <span class="tag muted">Foil</span>' : '';
+    const print = r.basicFree ? "&mdash;"
+      : (r.p.set ? `${r.p.set} ${r.p.cn||""}`.trim() + foilMark : "&mdash;");
+    const uc = (CUR_COLOR && !r.basicFree) ? " " + costClass(r.unit) : "";
+    const lc = (CUR_COLOR && !r.basicFree) ? " " + costClass(r.lineT) : "";
     const dn = escapeHtml(r.name), db = escapeHtml(board);
     const qctl = `<span class="qctl">`+
       `<button type="button" class="qbtn" data-act="dec" data-board="${db}" data-name="${dn}" title="one fewer" aria-label="one fewer">&minus;</button>`+
@@ -1503,12 +1522,11 @@ function renderTable(title, sec, board){
     const rsv = r.p.pending
       ? ` <button type="button" class="rsv" data-act="resolve" data-name="${dn}" title="look this card up on Scryfall">Resolve</button>`
       : "";
-    const basicTag = r.basicFree ? ' <span class="tag muted">basic &middot; $0</span>' : '';
     h += `<tr class="${cls}"><td class="num">${qctl}</td>`+
-         `<td>${cardLink(r.p, r.name)}${flags(r.p)}${rsv}${basicTag}</td>`+
+         `<td>${cardLink(r.p, r.name)}${flags(r.p)}${rsv}</td>`+
          `<td>${print}</td>`+
-         `<td class="num${uc}">${r.unit!=null?money(r.unit):"&mdash;"}</td>`+
-         `<td class="num${lc}">${r.lineT!=null?money(r.lineT):"&mdash;"}</td>`+
+         `<td class="num${uc}">${r.basicFree ? "&mdash;" : (r.unit!=null?money(r.unit):"&mdash;")}</td>`+
+         `<td class="num${lc}">${r.basicFree ? "&mdash;" : (r.lineT!=null?money(r.lineT):"&mdash;")}</td>`+
          `<td class="num"><button type="button" class="xbtn" data-act="remove" data-board="${db}" data-name="${dn}" title="remove card" aria-label="remove ${dn}">&times;</button></td></tr>`;
   }
   h += `</tbody></table>`;
@@ -2475,8 +2493,7 @@ function buildReport(L){
       const f = [];
       if (!r.p.found) f.push("NOT FOUND");
       else if (r.p.price==null) f.push(L.source==="mid" ? "NO TCG MID" : "NO USD");
-      if (r.p.foilOnly) f.push("foil-only");
-      else if (r.p.foil) f.push("foil (cheaper)");
+      if (r.p.foil) f.push("foil");
       if (L.format !== "__none" && r.p.found){
         const v = r.p.legal ? r.p.legal[L.format] : undefined;
         const F = fmtName(L.format).toUpperCase();
@@ -2486,9 +2503,9 @@ function buildReport(L){
         else if (v == null) f.push(L.format+"-legality-unknown");
       }
       lines.push(pad(r.qty+"x",4) + pad(r.name,34) +
-        pad(r.p.set?(r.p.set+" "+(r.p.cn||"")):"-",12) +
-        pad(r.unit!=null?money(r.unit):"-",9) +
-        pad(r.lineT!=null?money(r.lineT):"-",9) +
+        pad(r.basicFree ? "-" : (r.p.set?(r.p.set+" "+(r.p.cn||"")):"-"),12) +
+        pad(r.basicFree ? "-" : (r.unit!=null?money(r.unit):"-"),9) +
+        pad(r.basicFree ? "-" : (r.lineT!=null?money(r.lineT):"-"),9) +
         (f.length?("  ["+f.join(", ")+"]"):""));
     }
     const over = s.total > budget;
@@ -2524,8 +2541,7 @@ function buildCsv(L){
     const p = r.p, notes = [];
     if (!p.found) notes.push("not found");
     else if (p.price == null) notes.push(L.source === "mid" ? "no TCG Mid" : "no USD price");
-    if (p.foilOnly) notes.push("foil only");
-    else if (p.foil) notes.push("foil cheaper");
+    if (p.foil) notes.push("foil");
     let leg = "";
     if (fmt !== "__none" && p.found){
       const v = p.legal ? p.legal[fmt] : undefined;
