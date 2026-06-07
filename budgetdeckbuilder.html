@@ -9,9 +9,23 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.10.0)
+  MTG Budget Deckbuilder (v3.10.1)
 
   Changelog:
+  v3.10.1 (2026-06-07T14:01:39Z) - Promoted from beta v3.10.1-beta.1. Fix the
+                        visual-view layout flicker:
+                        - The treemap/grid "Main + Sideboard side-by-side vs
+                          stacked" choice is now made ONLY in JS (twoBoxes /
+                          buildDollarGridHTML); .tmrow is flex-wrap:nowrap (was
+                          wrap). Previously a 1px rounding/scrollbar overflow
+                          could silently re-wrap the two side-by-side boxes into
+                          a VERTICAL, half-width pair — so at odd window widths
+                          the view flickered between horizontal and (narrow)
+                          vertical, and could show vertical at a width WIDER than
+                          one where it showed horizontal (non-monotonic).
+                        - twoBoxes now floors the half-width (was round), matching
+                          the $1-grid, so 2*boxW + gap always fits the container
+                          (boxes fill the width side-by-side; full width stacked).
   v3.10.0 (2026-06-07T13:16:51Z) - Promoted from beta v3.9.0-beta.4. Brings the
                         beta-only features to main:
                         - Table sorting: column headers (Qty, Card, Unit $,
@@ -707,7 +721,12 @@
   .tmhead .tmeta{color:var(--dim);font-size:12.5px;flex:0 1 auto;min-width:0;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tmhead .tmeta.over{color:var(--bad);font-weight:700}
-  .tmrow{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+  /* The JS (twoBoxes / buildDollarGridHTML) is the SINGLE source of truth for
+     stacking: it emits a .tmrow ONLY when side-by-side, and sizes each unit to
+     floor((cw-gap)/2) so the pair always fits. nowrap (was wrap) stops a 1px
+     rounding/scrollbar overflow from silently re-wrapping the two half-width
+     boxes into a vertical, half-width pair — the flicker bug at odd widths. */
+  .tmrow{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:nowrap}
   .tmunit{flex:0 0 auto;min-width:0;max-width:100%}
   .tmrow .tmbox{margin-bottom:0}
   .vcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;
@@ -798,7 +817,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.10.0 &middot; 2026-06-07 13:16 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.10.1 &middot; 2026-06-07 14:01 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1873,7 +1892,9 @@ function twoBoxes(fM, fS, cw){
     // FULL width when narrow. HEIGHT ∝ budget; bigger box ≈ square. $1 = equal
     // area in both, and the px-per-$ scale stays consistent across the two.
     const wide = cw >= 700;
-    const W = wide ? Math.round((cw - GAP) / 2) : cw;
+    // floor (not round) so 2*W + GAP <= cw at every width — round() could make
+    // the pair 1px too wide at odd widths and (pre-nowrap) wrap them vertically.
+    const W = wide ? Math.floor((cw - GAP) / 2) : cw;
     const hUnit = W / Math.max(fM, fS);              // bigger box height = W (square)
     const MINH = 70;
     return { sideBySide: wide,
