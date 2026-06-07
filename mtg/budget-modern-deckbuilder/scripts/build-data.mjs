@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 /**
- * build-data.mjs  (v1.0.0)
+ * build-data.mjs  (v1.1.0)
  *
  * Builds the two data files the deckbuilder fetches from the jsDelivr CDN
  * (orphan `price-data` branch), so Mid mode needs ZERO Scryfall calls:
  *
- *   tcg-prices.json   { productId -> Mid USD }            (TCGcsv, ~daily)
+ *   tcg-prices.json   { prices:{ productId -> Mid }, foil:{ productId -> Mid } }
+ *                       (TCGcsv, ~daily; Mid USD. prices = non-foil "Normal",
+ *                        foil = "Foil". The page picks the cheaper per printing
+ *                        and uses foil for foil-only products. ADDITIVE: old
+ *                        readers that only use `prices` keep working unchanged.)
  *   cards-index.json  { lowercased name -> {p,l,i} }      (Scryfall bulk)
  *       p = [[tcgplayer_id, setCode, collectorNo], ...]   paper EN printings
  *       l = legality string, 1 char/format in FMT order   l/n/b/r/-
@@ -60,26 +64,36 @@ async function getJSON(url, tries = 3) {
 async function buildPrices() {
   const groups = (await getJSON("https://tcgcsv.com/tcgplayer/1/groups")).results || [];
   console.error(`[prices] ${groups.length} Magic groups`);
-  const prices = Object.create(null);
-  let kept = 0, done = 0;
+  const prices = Object.create(null);   // productId -> non-foil ("Normal") Mid
+  const foil   = Object.create(null);   // productId -> foil ("Foil") Mid
+  let kept = 0, keptFoil = 0, done = 0;
   for (const g of groups) {
     let res;
     try { res = (await getJSON(`https://tcgcsv.com/tcgplayer/1/${g.groupId}/prices`)).results || []; }
     catch (e) { console.error(`[prices] group ${g.groupId} failed: ${e.message}`); done++; continue; }
     for (const p of res) {
-      if (p.subTypeName !== "Normal") continue;
       const mid = Number(p.midPrice);
       if (!mid || mid <= 0) continue;            // no Mid: omit, never guess
-      const r = round(mid), prev = prices[p.productId];
-      if (prev === undefined || r < prev) prices[p.productId] = r;
-      kept++;
+      const r = round(mid);
+      // Keep BOTH the non-foil and foil Mid: the page picks the cheaper per
+      // printing and uses the foil price for foil-only products. Other subtypes
+      // (e.g. "Foil Etched") are intentionally not captured.
+      if (p.subTypeName === "Normal") {
+        const prev = prices[p.productId];
+        if (prev === undefined || r < prev) prices[p.productId] = r;
+        kept++;
+      } else if (p.subTypeName === "Foil") {
+        const prev = foil[p.productId];
+        if (prev === undefined || r < prev) foil[p.productId] = r;
+        keptFoil++;
+      }
     }
     if (++done % 50 === 0 || done === groups.length)
-      console.error(`[prices] ${done}/${groups.length} · ${Object.keys(prices).length} products`);
+      console.error(`[prices] ${done}/${groups.length} · ${Object.keys(prices).length} normal · ${Object.keys(foil).length} foil`);
     await SLEEP(80);
   }
-  console.error(`[prices] kept ${kept}`);
-  return prices;
+  console.error(`[prices] kept ${kept} normal · ${keptFoil} foil`);
+  return { prices, foil };
 }
 
 /* ---- streaming splitter for the Scryfall bulk JSON array ----------- */
@@ -175,10 +189,13 @@ async function main() {
   const meta = { generatedAt: now, fmt: FMT };
 
   if (!has("--no-prices")) {
-    const prices = await buildPrices();
-    const out = { generatedAt: now, source: "tcgcsv.com TCGplayer cat 1, subType=Normal, Mid USD", prices };
+    const { prices, foil } = await buildPrices();
+    const out = { generatedAt: now,
+      source: "tcgcsv.com TCGplayer cat 1, Mid USD; prices=Normal (non-foil), foil=Foil",
+      prices, foil };
     await writeFile(join(DATA, "tcg-prices.json"), JSON.stringify(out));
     meta.priceCount = Object.keys(prices).length;
+    meta.foilCount = Object.keys(foil).length;
     meta.pricesBytes = Buffer.byteLength(JSON.stringify(out));
   }
 
