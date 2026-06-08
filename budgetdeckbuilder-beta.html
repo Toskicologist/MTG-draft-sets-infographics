@@ -9,9 +9,16 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.12.0-beta.3)  [BETA — sandbox; main is v3.11.0]
+  MTG Budget Deckbuilder (v3.12.0-beta.4)  [BETA — sandbox; main is v3.11.0]
 
   Changelog:
+  v3.12.0-beta.4 (2026-06-08T22:57:52Z) - Restore the standalone share button:
+                        - Brought back the separate "Live share link — prices
+                          update when opened" group with its "Copy share link"
+                          button (+ explainer), below "Export Snapshot". Exports
+                          still embed the link too; this is just the quick
+                          link-only copy. (Reverts the beta.3 removal of that
+                          button on request.)
   v3.12.0-beta.3 (2026-06-08T20:38:07Z) - Exports embed the share link + tidier UI:
                         - Every export now includes the live share link at the
                           TOP: the .txt/Copy report and the .csv both lead with it,
@@ -881,7 +888,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.3 &middot; 2026-06-08 20:38 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.4 &middot; 2026-06-08 22:57 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1010,6 +1017,11 @@ Sideboard
         </div>
         <button class="ghost" id="copyBtn" style="width:100%;margin-top:10px" disabled>Copy to clipboard</button>
         <p class="sub" style="margin:6px 0 0">Every export includes a <b>live share link</b> at the top &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when the link is opened.</p>
+      </div>
+      <div class="exportgrp">
+        <div class="exporthd">Live share link &mdash; prices update when opened</div>
+        <button class="ghost" id="shareBtn" style="width:100%">Copy share link</button>
+        <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when opened; the link records the price date so the recipient is warned if prices have changed since.</p>
       </div>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
@@ -2855,6 +2867,18 @@ function maybeShowShareNote(cdn){
   showShareBox(`Heads up — this shared deck used TCG Mid prices from <b>${fmt(shared)}</b>; ` +
     `prices have since updated to <b>${fmt(now)}</b>, so the totals you see may differ from when it was shared.`);
 }
+$("shareBtn").addEventListener("click", async () => {
+  const url = buildShareLink();
+  try {
+    await navigator.clipboard.writeText(url);
+    history.replaceState(null, "", url);     // reflect it in the address bar
+    $("status").textContent = "Share link copied to clipboard.";
+  } catch {
+    history.replaceState(null, "", url);
+    $("status").textContent = "Clipboard blocked — the link is now in the address bar; copy it from there.";
+  }
+});
+
 loadShared();                                // shared state before first render
 syncPresetChk();                             // reflect preset state (incl. shared budgets)
 showLastUpdated();
