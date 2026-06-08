@@ -9,9 +9,20 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.12.0-beta.2)  [BETA — sandbox; main is v3.11.0]
+  MTG Budget Deckbuilder (v3.12.0-beta.3)  [BETA — sandbox; main is v3.11.0]
 
   Changelog:
+  v3.12.0-beta.3 (2026-06-08T20:38:07Z) - Exports embed the share link + tidier UI:
+                        - Every export now includes the live share link at the
+                          TOP: the .txt/Copy report and the .csv both lead with it,
+                          and the .pdf prints a "Live share link:" line under the
+                          title. The link is generated once per recompute and
+                          carries the same snapshot (time/totals/budgets) as before.
+                        - Export panel consolidated into ONE group titled
+                          "Export Snapshot" with buttons ".txt", ".csv", ".pdf"
+                          (one row) and a full-width "Copy to clipboard". Removed
+                          the separate "Copy share link" button/group (the link is
+                          now embedded in every export).
   v3.12.0-beta.2 (2026-06-08T19:01:09Z) - Verified-share-link banner polish:
                         - The shared-link export-snapshot banner moved to the TOP
                           of the page (under the prices banner, above the
@@ -849,6 +860,7 @@
     #fixNote,#shareNote,#shareVerified,#status,#barWrap{display:none !important}
     #results{display:block !important}
     .printonly{display:block;margin:0 0 4px;color:#000;font-size:18px}
+    #printShare{font-size:8.5px !important;word-break:break-all;color:#555 !important;margin:0 0 8px}
     .stamp{color:#444 !important}
     h2,h3,.amt,.meta,.sechead span,.sechead h2,a.cardlink,td,th,.tcard{color:#000 !important}
     a{text-decoration:none}
@@ -869,7 +881,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.2 &middot; 2026-06-08 19:01 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.3 &middot; 2026-06-08 20:38 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -990,20 +1002,14 @@ Sideboard
       <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
       <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
       <div class="exportgrp">
-        <div class="exporthd">Snapshot &mdash; prices fixed at export</div>
+        <div class="exporthd">Export Snapshot</div>
         <div class="actions">
-          <button class="ghost" id="exportBtn" disabled>Export .txt</button>
-          <button class="ghost" id="csvBtn" disabled>Export .csv</button>
+          <button class="ghost" id="exportBtn" disabled>.txt</button>
+          <button class="ghost" id="csvBtn" disabled>.csv</button>
+          <button class="ghost" id="pdfBtn" disabled>.pdf</button>
         </div>
-        <div class="actions">
-          <button class="ghost" id="copyBtn" disabled>Copy report</button>
-          <button class="ghost" id="pdfBtn" disabled>Save as PDF</button>
-        </div>
-      </div>
-      <div class="exportgrp">
-        <div class="exporthd">Live share link &mdash; prices update when opened</div>
-        <button class="ghost" id="shareBtn" style="width:100%">Copy share link</button>
-        <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when opened; the link records the price date so the recipient is warned if prices have changed since.</p>
+        <button class="ghost" id="copyBtn" style="width:100%;margin-top:10px" disabled>Copy to clipboard</button>
+        <p class="sub" style="margin:6px 0 0">Every export includes a <b>live share link</b> at the top &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when the link is opened.</p>
       </div>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
@@ -1015,6 +1021,7 @@ Sideboard
 
   <div id="results" class="hidden">
     <h2 class="printonly" id="printTitle"></h2>
+    <p class="printonly" id="printShare"></p>
     <p class="stamp" id="stamp"></p>
     <div id="charts"></div>
     <div class="boards">
@@ -1624,8 +1631,9 @@ function render(main, side, priceMap, meta, cheapest){
       `<input type="text" class="addinput" placeholder="Add to sideboard: e.g. 2 Roiling Vortex" aria-label="add card to sideboard">`+
       `<button type="submit" class="ghost addbtn">Add</button></form>`;
 
-  lastReport = buildReport(LAST);
-  lastCsv = buildCsv(LAST);
+  const shareUrl = buildShareLink();           // embed a live share link atop each export
+  lastReport = buildReport(LAST, shareUrl);
+  lastCsv = buildCsv(LAST, shareUrl);
   renderVisualAll();   // always-on: charts + treemap/grid drawn from cached Scryfall data
   scheduleEnrich();    // debounced: fetch ONLY printings not yet cached (typing never fetches)
 }
@@ -2515,9 +2523,14 @@ function applyTextCorrections(corrections){
 }
 
 /* ---- export -------------------------------------------------------- */
-function buildReport(L){
+function buildReport(L, shareUrl){
   const pad = (s,n) => String(s).padEnd(n);
   const lines = [];
+  if (shareUrl){
+    lines.push("Live share link (prices update when opened):");
+    lines.push(shareUrl);
+    lines.push("");
+  }
   lines.push("=".repeat(60));
   lines.push(L.deckname);
   lines.push("Budget Modern Deckbuilder report");
@@ -2576,12 +2589,14 @@ function csvEsc(v){
   v = (v == null) ? "" : String(v);
   return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
 }
-function buildCsv(L){
+function buildCsv(L, shareUrl){
   const fmt = L.format;
-  const out = [[
+  const out = [];
+  if (shareUrl){ out.push(["Live share link (prices update when opened)", shareUrl]); out.push([]); }
+  out.push([
     "Board","Qty","Card","Set","Collector","Unit USD","Line USD",
     fmt === "__none" ? "Legality" : ("Legality (" + fmtName(fmt) + ")"), "Notes"
-  ]];
+  ]);
   const add = (board, s) => { for (const r of s.rows){
     const p = r.p, notes = [];
     if (!p.found) notes.push("not found");
@@ -2628,8 +2643,8 @@ $("csvBtn").addEventListener("click", () => downloadFile(lastCsv, "text/csv"));
 $("copyBtn").addEventListener("click", async () => {
   if (!lastReport) return;
   try { await navigator.clipboard.writeText(lastReport.text);
-        $("status").textContent = "Report copied to clipboard."; }
-  catch { $("status").textContent = "Clipboard blocked — use Export .txt instead."; }
+        $("status").textContent = "Copied to clipboard (report + share link)."; }
+  catch { $("status").textContent = "Clipboard blocked — use .txt instead."; }
 });
 // Save as PDF = the browser's print dialog (user picks "Save as PDF"); a print
 // stylesheet renders #results as a clean black-on-white price report. Zero deps.
@@ -2637,6 +2652,7 @@ $("pdfBtn").addEventListener("click", () => {
   if (!LAST) return;
   const name = (LAST.deckname || "Deck");
   $("printTitle").textContent = name + " — budget report";
+  $("printShare").textContent = "Live share link: " + buildShareLink();
   window.print();
 });
 // Any result-affecting edit -> debounced recompute (Mid, index-only).
@@ -2839,18 +2855,6 @@ function maybeShowShareNote(cdn){
   showShareBox(`Heads up — this shared deck used TCG Mid prices from <b>${fmt(shared)}</b>; ` +
     `prices have since updated to <b>${fmt(now)}</b>, so the totals you see may differ from when it was shared.`);
 }
-$("shareBtn").addEventListener("click", async () => {
-  const url = buildShareLink();
-  try {
-    await navigator.clipboard.writeText(url);
-    history.replaceState(null, "", url);     // reflect it in the address bar
-    $("status").textContent = "Share link copied to clipboard.";
-  } catch {
-    history.replaceState(null, "", url);
-    $("status").textContent = "Clipboard blocked — the link is now in the address bar; copy it from there.";
-  }
-});
-
 loadShared();                                // shared state before first render
 syncPresetChk();                             // reflect preset state (incl. shared budgets)
 showLastUpdated();
