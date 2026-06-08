@@ -9,9 +9,19 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.12.0-beta.1)  [BETA — sandbox; main is v3.11.0]
+  MTG Budget Deckbuilder (v3.12.0-beta.2)  [BETA — sandbox; main is v3.11.0]
 
   Changelog:
+  v3.12.0-beta.2 (2026-06-08T19:01:09Z) - Verified-share-link banner polish:
+                        - The shared-link export-snapshot banner moved to the TOP
+                          of the page (under the prices banner, above the
+                          decklist) and is now a prominent box headed
+                          "✓ Verified Deck Share Link" (was a thin notice bar).
+                        - It now disappears as soon as the decklist/sideboard is
+                          edited (the deck no longer matches what was shared);
+                          budget/format/option changes don't dismiss it. Tracked
+                          via `_sharedDeckSig` (decklist+sideboard text) checked in
+                          recompute. Legacy stale-price links still use the old bar.
   v3.12.0-beta.1 (2026-06-07T23:04:22Z) - Share-link export snapshot:
                         - The share link now also records the EXPORT MOMENT and
                           the deck's totals + budgets at that time (nested as `x`
@@ -631,6 +641,16 @@
   .fixnote .fixx{background:transparent;color:var(--dim);border:0;padding:0 4px;
     font-size:18px;line-height:1;cursor:pointer;font-weight:700;flex:0 0 auto}
   .fixnote .fixx:hover{color:var(--ink)}
+  /* Verified deck share-link box (top of page when opened from a share link) */
+  .sharebox{position:relative;background:var(--panel2);border:1px solid var(--line);
+    border-left:4px solid var(--ok);border-radius:10px;padding:14px 42px 14px 16px;
+    margin:0 0 18px}
+  .sharebox h2{margin:0 0 6px;font-size:21px;font-weight:700;color:var(--ok);
+    letter-spacing:.01em}
+  .sharebox p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink)}
+  .sharebox .fixx{position:absolute;top:8px;right:10px;background:transparent;
+    color:var(--dim);border:0;font-size:20px;line-height:1;cursor:pointer;font-weight:700}
+  .sharebox .fixx:hover{color:var(--ink)}
   details.explain{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:0 14px;margin:0 0 18px;font-size:13.5px}
   details.explain[open]{padding-bottom:6px}
@@ -826,7 +846,7 @@
     .wrap{max-width:none;padding:0}
     /* keep only the results report */
     .site-header,.grid,#charts,#visual,footer,.updated,details.explain,
-    #fixNote,#shareNote,#status,#barWrap{display:none !important}
+    #fixNote,#shareNote,#shareVerified,#status,#barWrap{display:none !important}
     #results{display:block !important}
     .printonly{display:block;margin:0 0 4px;color:#000;font-size:18px}
     .stamp{color:#444 !important}
@@ -849,7 +869,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.1 &middot; 2026-06-07 23:04 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.2 &middot; 2026-06-08 19:01 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -871,6 +891,8 @@
   </header>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
+
+  <div id="shareVerified" class="sharebox hidden"></div>
 
   <details class="explain">
     <summary>Where do the prices come from? (TCG Mid &amp; TCGcsv)</summary>
@@ -1296,7 +1318,17 @@ function ensureCdn(){
 let _liveTimer = null;
 function scheduleRecompute(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(recompute, 350); }
 
+// A "Verified Deck Share Link" banner reflects the deck exactly AS SHARED, so we
+// remember the decklist+sideboard text when it's shown and hide the banner once
+// that text changes (budget / format / option changes don't count).
+let _sharedDeckSig = null;
+const _deckSig = () => $("decklist").value + "\u0000" + $("sideboard").value;
+
 async function recompute(){
+  if (_sharedDeckSig != null && _deckSig() !== _sharedDeckSig){
+    const sv = $("shareVerified"); if (sv) sv.classList.add("hidden");
+    _sharedDeckSig = null;
+  }
   // Try to extract deck name from pasted list if deckname field is empty
   const deckNameEl = $("deckname");
   if (!deckNameEl.value.trim()){
@@ -2769,6 +2801,16 @@ function showShareBox(inner){
   box.classList.remove("hidden");
   box.querySelector(".fixx").addEventListener("click", () => box.classList.add("hidden"));
 }
+// Prominent "Verified Deck Share Link" box at the TOP of the page (under the
+// banner, above the decklist) — separate from the thin #shareNote bar. Dismiss
+// also clears _sharedDeckSig so an edit-triggered hide won't fight a manual one.
+function showVerifiedBox(inner){
+  const box = $("shareVerified");
+  box.innerHTML = `<button class="fixx" type="button" title="dismiss" aria-label="dismiss">&times;</button>` +
+    `<h2>&#10003; Verified Deck Share Link</h2><p>${inner}</p>`;
+  box.classList.remove("hidden");
+  box.querySelector(".fixx").addEventListener("click", () => { box.classList.add("hidden"); _sharedDeckSig = null; });
+}
 function maybeShowShareNote(cdn){
   if (_shareNoteShown) return;
   // Rich banner: opened from a link carrying the export snapshot (time + totals
@@ -2783,8 +2825,9 @@ function maybeShowShareNote(cdn){
     const refresh = N == null ? ""
       : N === 0 ? " Prices have not been refreshed since then."
       : ` Prices have been refreshed ${N} time${N===1?"":"s"} since then, so totals may have changed.`;
-    showShareBox(`This deck was exported at <b>${fmtDT(exp)}</b>. It was <b>${ou} budget</b> ` +
+    showVerifiedBox(`This deck was exported at <b>${fmtDT(exp)}</b>. It was <b>${ou} budget</b> ` +
       `at that time — TCG Mid cost: main <b>${money(x.mt||0)}</b>, side <b>${money(x.sd||0)}</b>.${refresh}`);
+    _sharedDeckSig = _deckSig();   // banner hides once the decklist/sideboard is edited
     return;
   }
   // Legacy links (price-data date only): warn just when prices are now newer.
