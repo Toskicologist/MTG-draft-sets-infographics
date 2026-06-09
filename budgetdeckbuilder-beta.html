@@ -9,9 +9,20 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.13.0-beta.1)  [BETA — sandbox; main is v3.12.0]
+  MTG Budget Deckbuilder (v3.13.0-beta.2)  [BETA — sandbox; main is v3.12.0]
 
   Changelog:
+  v3.13.0-beta.2 (2026-06-09T22:26:40Z) - Two small fixes:
+                        - Table sort now PERSISTS across edits: removing a card
+                          (✕), +/- qty, adding a card etc. no longer resets the
+                          active column sort. renderTable applies the current sort
+                          on every (re)render; the per-render reset was dropped.
+                        - The address-bar #d= link now reverts to the blank page
+                          URL as soon as you EDIT a deck that was opened from / last
+                          exported as a share link (so a stale link isn't left in
+                          the bar). Any export/share action (.txt/.csv/.pdf/Copy/
+                          Copy share link) re-establishes the URL for the current
+                          deck. Tracked via _urlDeckSig vs the decklist+sideboard.
   v3.13.0-beta.1 (2026-06-09T19:25:22Z) - Shorter share links (per-card encoding):
                         - Share links now encode EACH card as the shortest of its
                           name, "*SET CN", or "#tcgplayer_id" (the integer id is
@@ -914,7 +925,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.13.0-beta.1 &middot; 2026-06-09 19:25 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.13.0-beta.2 &middot; 2026-06-09 22:26 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1368,12 +1379,20 @@ function scheduleRecompute(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(
 // remember the decklist+sideboard text when it's shown and hide the banner once
 // that text changes (budget / format / option changes don't count).
 let _sharedDeckSig = null;
+let _urlDeckSig = null;   // deck the address-bar #d= link represents (null = none)
 const _deckSig = () => $("decklist").value + "\u0000" + $("sideboard").value;
 
 async function recompute(){
   if (_sharedDeckSig != null && _deckSig() !== _sharedDeckSig){
     const sv = $("shareVerified"); if (sv) sv.classList.add("hidden");
     _sharedDeckSig = null;
+  }
+  // Edited away from the deck the address-bar #d= link encodes -> revert the URL
+  // to the blank page link (a fresh export/share regenerates it), so a stale link
+  // isn't left in the bar pointing at the pre-edit deck.
+  if (_urlDeckSig != null && /[#&]d=/.test(location.hash) && _deckSig() !== _urlDeckSig){
+    history.replaceState(null, "", location.pathname + location.search);
+    _urlDeckSig = null;
   }
   // Try to extract deck name from pasted list if deckname field is empty
   const deckNameEl = $("deckname");
@@ -1396,6 +1415,7 @@ async function recompute(){
     $("decklist").value = detokenizeBoard(_pendingShareDeck.d, rev);
     $("sideboard").value = detokenizeBoard(_pendingShareDeck.s, rev);
     _pendingShareDeck = null;
+    _urlDeckSig = _deckSig();   // the address-bar #d= link now represents this deck
   }
   maybeShowShareNote(cdn);              // warn if opened from a now-stale share link
   const { main, side, basicsZeroed } = buildBoards();
@@ -1587,6 +1607,7 @@ function renderTable(title, sec, board){
   const cardCount = sec.rows.reduce((n, r) => n + (r.qty || 0), 0);  // total cards (sum of qty)
   let h = `<div class="sechead"><h2>${title} <span class="cardcount">${cardCount} card${cardCount===1?"":"s"}</span></h2><span>${money(sec.total)}${sec.anyMissing?" + unpriced":""}</span></div>`;
   const sortState = board === "main" ? sortMain : sortSide;
+  if (sortState.col) sortRows(sec.rows, sortState.col, sortState.dir);  // persist the active sort across edits
   const thQty = sortState.col === "qty" ? ` class="num ${sortState.dir}"` : ` class="num"`;
   const thCard = sortState.col === "card" ? ` class="${sortState.dir}"` : ``;
   const thUnit = sortState.col === "unit" ? ` class="num ${sortState.dir}"` : ` class="num"`;
@@ -1637,9 +1658,7 @@ function renderTable(title, sec, board){
 
 let LAST = null, CUR_SRC = "mid", CUR_FMT = "modern", CUR_COLOR = true;
 function render(main, side, priceMap, meta, cheapest){
-  // Reset sort state when new data is rendered
-  sortMain = { col: null, dir: "asc" };
-  sortSide = { col: null, dir: "asc" };
+  // Sort state (sortMain/sortSide) persists across edits; renderTable applies it.
   CUR_SRC = "mid"; CUR_FMT = meta.format; CUR_COLOR = meta.colorCost;
   const m = sectionRows(main, priceMap);
   const s = sectionRows(side, priceMap);
@@ -2456,10 +2475,9 @@ document.addEventListener("click", e => {
         sortState.col = col;
         sortState.dir = "asc";
       }
-      // Re-render the table with sorted rows
+      // Re-render the table (renderTable applies the active sort)
       if (LAST){
         const sec = board === "main" ? LAST.m : LAST.s;
-        sortRows(sec.rows, col, sortState.dir);
         const title = board === "main" ? "Main deck" : "Sideboard";
         const html = renderTable(title, sec, board);
         const container = board === "main" ? $("mainTable") : $("sideTable");
@@ -2685,10 +2703,11 @@ function downloadFile(file, mime){
   a.click();
   URL.revokeObjectURL(a.href);
 }
-$("exportBtn").addEventListener("click", () => downloadFile(lastReport, "text/plain"));
-$("csvBtn").addEventListener("click", () => downloadFile(lastCsv, "text/csv"));
+$("exportBtn").addEventListener("click", () => { if (lastReport){ downloadFile(lastReport, "text/plain"); reflectShareUrl(); } });
+$("csvBtn").addEventListener("click", () => { if (lastCsv){ downloadFile(lastCsv, "text/csv"); reflectShareUrl(); } });
 $("copyBtn").addEventListener("click", async () => {
   if (!lastReport) return;
+  reflectShareUrl();
   try { await navigator.clipboard.writeText(lastReport.text);
         $("status").textContent = "Copied to clipboard (report + share link)."; }
   catch { $("status").textContent = "Clipboard blocked — use .txt instead."; }
@@ -2700,6 +2719,7 @@ $("pdfBtn").addEventListener("click", () => {
   const name = (LAST.deckname || "Deck");
   $("printTitle").textContent = name + " — budget report";
   $("printShare").textContent = "Live share link: " + buildShareLink();
+  reflectShareUrl();
   window.print();
 });
 // Any result-affecting edit -> debounced recompute (Mid, index-only).
@@ -2871,6 +2891,12 @@ function buildShareLink(){
   return location.origin + location.pathname + "#d=" +
     b64urlEncode(JSON.stringify(st));
 }
+// Put the current deck's share link in the address bar and record which deck it
+// represents, so a later edit blanks it again. Called by every export/share.
+function reflectShareUrl(){
+  history.replaceState(null, "", buildShareLink());
+  _urlDeckSig = _deckSig();
+}
 function loadShared(){
   const m = /[#&]d=([^&]+)/.exec(location.hash || "");
   if (!m) return;
@@ -2887,6 +2913,7 @@ function loadShared(){
   if (st.x && typeof st.x === "object") _sharedExport = st.x;
   // v1 links (no `v`): d/s were plain decklist text, already restored above.
   if (v2) _pendingShareDeck = { d: st.d || "", s: st.s || "" };
+  else _urlDeckSig = _deckSig();   // v1 deck restored now; the #d= link matches it
 }
 // ---- v2 compact-link decode: tokens -> decklist text (needs the index) ------
 // The daily index is name-keyed; build (once, cached) reverse maps so a "#tid"
@@ -2993,12 +3020,12 @@ function maybeShowShareNote(cdn){
 }
 $("shareBtn").addEventListener("click", async () => {
   const url = buildShareLink();
+  history.replaceState(null, "", url);       // reflect it in the address bar
+  _urlDeckSig = _deckSig();                   // ...and remember which deck it is
   try {
     await navigator.clipboard.writeText(url);
-    history.replaceState(null, "", url);     // reflect it in the address bar
     $("status").textContent = "Share link copied to clipboard.";
   } catch {
-    history.replaceState(null, "", url);
     $("status").textContent = "Clipboard blocked — the link is now in the address bar; copy it from there.";
   }
 });
