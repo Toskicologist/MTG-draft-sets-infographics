@@ -9,9 +9,20 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.12.0-beta.4)  [BETA — sandbox; main is v3.11.0]
+  MTG Budget Deckbuilder (v3.12.0-beta.5)  [BETA — sandbox; main is v3.12.0 (this beta is now promoted)]
 
   Changelog:
+  v3.12.0-beta.5 (2026-06-08T23:06:22Z) - Export-panel wording + heading style:
+                        - "Export Snapshot" → "Export full pricing report"; its
+                          note now reads "Exports the full card list with the
+                          current TCG Mid prices and budget totals" (was the
+                          confusing share-link blurb).
+                        - "Live share link — prices update when opened" → just
+                          "Live share link".
+                        - Both group headings (.exporthd) and the "Decklist" label
+                          are now normal-case, bigger (15px) and bold (was small
+                          uppercase dim) — .dlhead label override leaves the other
+                          field labels unchanged.
   v3.12.0-beta.4 (2026-06-08T22:57:52Z) - Restore the standalone share button:
                         - Brought back the separate "Live share link — prices
                           update when opened" group with its "Copy share link"
@@ -564,6 +575,7 @@
   #inputPanel #decklist{flex:3 1 0;height:auto;min-height:150px}
   #inputPanel #sideboard{flex:1 1 0;height:auto;min-height:60px}
   .dlhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px}
+  .dlhead label{font-size:15px;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:700}
   #clearBtn{width:auto;flex:0 0 auto;padding:4px 12px;font-size:12.5px}
   input[type=text],input[type=number]{width:100%;background:var(--bg);color:var(--ink);
     border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:14px}
@@ -578,8 +590,7 @@
   .actions button{flex:1}
   .exportgrp{margin-top:14px}
   .exportgrp+.exportgrp{padding-top:12px;border-top:1px solid var(--line)}
-  .exporthd{font-size:11px;text-transform:uppercase;letter-spacing:.04em;
-    color:var(--dim);font-weight:600;margin:0 0 2px}
+  .exporthd{font-size:15px;color:var(--ink);font-weight:700;margin:0 0 6px}
   .printonly{display:none}
   /* Lower bound MUST be >= a board table's min-content width (~399px measured)
      or a squeezed table overflows its column and overlaps its neighbour. 430 =
@@ -888,7 +899,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.4 &middot; 2026-06-08 22:57 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.5 &middot; 2026-06-08 23:06 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1009,17 +1020,17 @@ Sideboard
       <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
       <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
       <div class="exportgrp">
-        <div class="exporthd">Export Snapshot</div>
+        <div class="exporthd">Export full pricing report</div>
         <div class="actions">
           <button class="ghost" id="exportBtn" disabled>.txt</button>
           <button class="ghost" id="csvBtn" disabled>.csv</button>
           <button class="ghost" id="pdfBtn" disabled>.pdf</button>
         </div>
         <button class="ghost" id="copyBtn" style="width:100%;margin-top:10px" disabled>Copy to clipboard</button>
-        <p class="sub" style="margin:6px 0 0">Every export includes a <b>live share link</b> at the top &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when the link is opened.</p>
+        <p class="sub" style="margin:6px 0 0">Exports the full card list with the current TCG Mid prices and budget totals.</p>
       </div>
       <div class="exportgrp">
-        <div class="exporthd">Live share link &mdash; prices update when opened</div>
+        <div class="exporthd">Live share link</div>
         <button class="ghost" id="shareBtn" style="width:100%">Copy share link</button>
         <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when opened; the link records the price date so the recipient is warned if prices have changed since.</p>
       </div>
