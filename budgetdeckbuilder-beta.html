@@ -9,9 +9,24 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.12.0-beta.5)  [BETA — sandbox; main is v3.12.0 (this beta is now promoted)]
+  MTG Budget Deckbuilder (v3.13.0-beta.1)  [BETA — sandbox; main is v3.12.0]
 
   Changelog:
+  v3.13.0-beta.1 (2026-06-09T19:25:22Z) - Shorter share links (per-card encoding):
+                        - Share links now encode EACH card as the shortest of its
+                          name, "*SET CN", or "#tcgplayer_id" (the integer id is
+                          usually shortest; short names like basics stay as names).
+                          On open, "#id"/"*set cn" tokens are mapped back to card
+                          names via the daily index (a cached reverse lookup) and
+                          re-priced at the cheapest printing as before. ~35-50%+
+                          shorter for typical decks; bigger lists save more.
+                        - Comments / "Sideboard" headers / blank lines / cards not
+                          in the index are kept verbatim. Reconstructed names are
+                          title-cased for display (index names are lowercase);
+                          pricing is case-insensitive so totals are unaffected.
+                        - BACKWARDS-COMPATIBLE: the format is tagged (st.v=2). Old
+                          links (no tag, plain decklist text) decode through the
+                          unchanged v1 path, kept as a fallback.
   v3.12.0-beta.5 (2026-06-08T23:06:22Z) - Export-panel wording + heading style:
                         - "Export Snapshot" → "Export full pricing report"; its
                           note now reads "Exports the full card list with the
@@ -899,7 +914,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.12.0-beta.5 &middot; 2026-06-08 23:06 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.13.0-beta.1 &middot; 2026-06-09 19:25 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1232,7 +1247,8 @@ function priceFromIndex(name, cdn){
     : null;
   return { name, found:true, price: best ? best.price : null,
            foil: !!(best && best.foil), foilOnly: !!(best && !anyNonFoil),
-           set: best ? best.set : null, cn: best ? best.cn : null, legal, uri, img };
+           set: best ? best.set : null, cn: best ? best.cn : null,
+           tid: bestP ? bestP[0] : null, legal, uri, img };
 }
 
 /* ---- Scryfall lookup ----------------------------------------------- */
@@ -1293,16 +1309,16 @@ async function priceCard(name, cheapest, snap){
         if (u.nonFoil) anyNonFoil = true;
         if (best == null || u.price < best.price)
           best = { price:u.price, foil:u.foil, set:c.set.toUpperCase(), cn:c.collector_number,
-                   uri:c.scryfall_uri, img:imgOf(c) };
+                   tid:c.tcgplayer_id, uri:c.scryfall_uri, img:imgOf(c) };
       }
       url = data.has_more ? data.next_page : null;
       if (url) await SLEEP(90);
     }
     if (!found) return await priceNamed(name, snap);
     if (best) return { name, found:true, price:best.price, foil:best.foil, foilOnly: !anyNonFoil,
-                       set:best.set, cn:best.cn, legal, uri:best.uri, img:best.img };
+                       set:best.set, cn:best.cn, tid:best.tid, legal, uri:best.uri, img:best.img };
     return { name, found:true, price:null, foil:false, foilOnly:false, set:null, cn:null,
-             legal, uri:fb&&fb.uri, img:fb&&fb.img };
+             tid:null, legal, uri:fb&&fb.uri, img:fb&&fb.img };
   }
   return await priceNamed(name, snap);
 }
@@ -1315,7 +1331,7 @@ async function priceNamed(name, snap){
   const u = cardUnit(c, snap);                        // {price,foil,nonFoil} or null
   return { name:c.name, found:true, price: u ? u.price : null,
            foil: !!(u && u.foil), foilOnly: !!(u && !u.nonFoil),
-           set:c.set?c.set.toUpperCase():null, cn:c.collector_number,
+           set:c.set?c.set.toUpperCase():null, cn:c.collector_number, tid:c.tcgplayer_id,
            legal:c.legalities||null, uri:c.scryfall_uri, img:imgOf(c) };
 }
 
@@ -1372,6 +1388,14 @@ async function recompute(){
       escapeHtml(String(e.message||e)) + "). It's served from a CDN — check " +
       "your connection, then edit the list to retry.";
     return;
+  }
+  // Reconstruct a compact (v2) shared deck now that the index is available
+  // (tokens -> card names); the textareas were left blank by loadShared.
+  if (_pendingShareDeck){
+    const rev = reverseIndex(cdn);
+    $("decklist").value = detokenizeBoard(_pendingShareDeck.d, rev);
+    $("sideboard").value = detokenizeBoard(_pendingShareDeck.s, rev);
+    _pendingShareDeck = null;
   }
   maybeShowShareNote(cdn);              // warn if opened from a now-stale share link
   const { main, side, basicsZeroed } = buildBoards();
@@ -2786,6 +2810,37 @@ function b64urlDecode(s){
 }
 let _sharedPriceDate = null;               // price-data date stamped into a shared link
 let _sharedExport = null;                  // {t,mt,sd,bm,bs} snapshot from a shared link
+let _pendingShareDeck = null;              // v2 tokenised {d,s} awaiting index-based reconstruction
+
+// norm(name) -> {set,cn,tid} for the cheapest printing of each resolved card in
+// the current results — used to compact the share link (v2).
+function shareCardInfo(){
+  const info = {};
+  if (!LAST) return info;
+  for (const sec of [LAST.m, LAST.s])
+    for (const r of (sec.rows || [])){
+      const p = r.p || {};
+      if (p.found && (p.set || p.tid != null))
+        info[norm(r.name)] = { set:p.set||null, cn:p.cn||null, tid:(p.tid!=null?p.tid:null) };
+    }
+  return info;
+}
+// Per CARD LINE, emit the SHORTEST of: "qty name" | "qty *SET CN" | "qty #tid".
+// Comments / headers / blanks / unknown cards pass through verbatim. (Real card
+// names never start with # or *, so the * / # sigils are unambiguous on decode.)
+function tokenizeBoard(text, info){
+  return String(text||"").split(/\r?\n/).map(rawLine => {
+    const c = parseCardLine(rawLine.trim());
+    if (!c) return rawLine;
+    let best = `${c.qty} ${c.name}`;
+    const inf = info[norm(c.name)];
+    if (inf){
+      if (inf.tid != null){ const t = `${c.qty} #${inf.tid}`; if (t.length < best.length) best = t; }
+      if (inf.set && inf.cn){ const t = `${c.qty} *${inf.set} ${inf.cn}`; if (t.length < best.length) best = t; }
+    }
+    return best;
+  }).join("\n");
+}
 function buildShareLink(){
   const st = {};
   for (const [k, id] of Object.entries(SHARE_KEYS)){
@@ -2804,6 +2859,14 @@ function buildShareLink(){
     st.x = { t:new Date().toISOString(),
              mt:+(LAST.m.total||0).toFixed(2), sd:+(LAST.s.total||0).toFixed(2),
              bm:+(LAST.bM||0), bs:+(LAST.bS||0) };
+    // v2: shorten the link — replace each resolved card's name with whichever of
+    // {name, *SET CN, #tcgplayer_id} is shortest. Decoded back via the daily
+    // index on open (see loadShared / detokenizeBoard). v1 links (no `v`) still
+    // carry the plain decklist text and decode unchanged.
+    const info = shareCardInfo();
+    st.v = 2;
+    st.d = tokenizeBoard(st.d, info);
+    st.s = tokenizeBoard(st.s, info);
   }
   return location.origin + location.pathname + "#d=" +
     b64urlEncode(JSON.stringify(st));
@@ -2812,14 +2875,64 @@ function loadShared(){
   const m = /[#&]d=([^&]+)/.exec(location.hash || "");
   if (!m) return;
   let st; try { st = JSON.parse(b64urlDecode(m[1])); } catch { return; }
+  const v2 = st.v === 2;
   for (const [k, id] of Object.entries(SHARE_KEYS)){
     if (!(k in st)) continue;
+    if (v2 && (k === "d" || k === "s")) continue;   // tokenised — reconstruct after the index loads
     const el = $(id);
     if (el.type === "checkbox") el.checked = !!st[k];
     else el.value = st[k];
   }
   if (st.pd) _sharedPriceDate = st.pd;
   if (st.x && typeof st.x === "object") _sharedExport = st.x;
+  // v1 links (no `v`): d/s were plain decklist text, already restored above.
+  if (v2) _pendingShareDeck = { d: st.d || "", s: st.s || "" };
+}
+// ---- v2 compact-link decode: tokens -> decklist text (needs the index) ------
+// The daily index is name-keyed; build (once, cached) reverse maps so a "#tid"
+// or "*SET CN" token can be turned back into a card name when a link is opened.
+let _revIdx = null;
+function reverseIndex(cdn){
+  if (_revIdx) return _revIdx;
+  const id = new Map(), setcn = new Map();
+  const cards = (cdn && cdn.index && cdn.index.cards) || {};
+  for (const name in cards){
+    const e = cards[name]; if (!e || !e.p) continue;
+    for (const pr of e.p){                              // [tid, set, cn]
+      if (!id.has(pr[0]) || name.length > id.get(pr[0]).length) id.set(pr[0], name);
+      const key = (pr[1]||"") + "/" + (pr[2]||"");      // index set/cn are lowercase
+      if (!setcn.has(key) || name.length > setcn.get(key).length) setcn.set(key, name);
+    }
+  }
+  _revIdx = { id, setcn };
+  return _revIdx;
+}
+// Index names are lowercase; title-case a reconstructed name for display only
+// (pricing is case-insensitive, so casing never affects totals).
+const _SHARE_SMALL = new Set(["a","an","and","as","at","but","by","for","from","in","into","nor","of","on","onto","or","over","the","to","vs","with"]);
+function titleCaseName(s){
+  let firstOfFace = true;
+  return String(s).split(/(\s+)/).map(tok => {
+    if (/^\s*$/.test(tok)) return tok;
+    if (tok === "//"){ firstOfFace = true; return tok; }   // capitalise the first word of each DFC face
+    const lower = tok.toLowerCase();
+    const out = (!firstOfFace && _SHARE_SMALL.has(lower)) ? lower
+              : tok.charAt(0).toUpperCase() + tok.slice(1);
+    firstOfFace = false;
+    return out;
+  }).join("");
+}
+function detokenizeBoard(text, rev){
+  return String(text||"").split("\n").map(line => {
+    const m = line.match(/^(\d+)\s+([#*])(.+)$/);
+    if (!m) return line;                                // verbatim: plain name / comment / header
+    const qty = m[1], sigil = m[2], val = m[3].trim();
+    let name = null;
+    if (sigil === "#") name = rev.id.get(Number(val));
+    else { const sp = val.lastIndexOf(" ");             // "SET CN"
+           if (sp > 0) name = rev.setcn.get(val.slice(0,sp).toLowerCase() + "/" + val.slice(sp+1)); }
+    return name ? `${qty} ${titleCaseName(name)}` : line;   // miss (rare) -> leave token, it'll flag
+  }).join("\n");
 }
 // If this page was opened from a share link AND the price data is now newer than
 // when the link was made, warn that the totals may have moved.
