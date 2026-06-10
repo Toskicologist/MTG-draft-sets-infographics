@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-data.mjs  (v1.1.0)
+ * build-data.mjs  (v1.2.0)
  *
  * Builds the two data files the deckbuilder fetches from the jsDelivr CDN
  * (orphan `price-data` branch), so Mid mode needs ZERO Scryfall calls:
@@ -28,6 +28,9 @@
  *
  * Never substitutes data: products with no Mid are omitted; the page flags
  * them rather than guessing.
+ *
+ * v1.2.0: Front-face aliases are now materialized after the scan, so a real card
+ * with the same name as a split-card front can never be merged into the split entry.
  */
 import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -126,6 +129,7 @@ function legString(legalities) {
 /* ---- build the slim card index ------------------------------------- */
 async function buildIndex() {
   const cards = Object.create(null);
+  const aliases = Object.create(null);
   let scanned = 0, printings = 0;
 
   const handle = txt => {
@@ -143,9 +147,11 @@ async function buildIndex() {
       // No image id needed: the page derives the image from the cheapest
       // printing's set+collector (a direct Scryfall endpoint).
       e = cards[key] = { p: [], l: legString(c.legalities) };
-      // alias the front-face name for DFC / split / adventure ("A // B")
+      // record the front-face name for DFC / split / adventure ("A // B") to be
+      // materialized after the scan, so a real card with the same name can never
+      // be merged into the split entry.
       const slash = key.indexOf(" // ");
-      if (slash > 0) { const front = key.slice(0, slash); if (!cards[front]) cards[front] = e; }
+      if (slash > 0) { const front = key.slice(0, slash); if (!aliases[front]) aliases[front] = key; }
     }
     if (!e.p.some(x => x[0] === c.tcgplayer_id)) {
       e.p.push([c.tcgplayer_id, (c.set || "").toLowerCase(), c.collector_number || ""]);
@@ -167,6 +173,11 @@ async function buildIndex() {
     if (!r.ok || !r.body) throw new Error("bulk download HTTP " + r.status);
     const dec = new TextDecoder();
     for await (const chunk of r.body) split(dec.decode(chunk, { stream: true }));
+  }
+  // Materialize aliases after the scan: for each front-face name, if no real
+  // card claimed it, point it at the split card's entry.
+  for (const front in aliases) {
+    if (!cards[front]) cards[front] = cards[aliases[front]];
   }
   console.error(`[index] done: ${Object.keys(cards).length} names · ${printings} printings · ${scanned} scanned`);
   return cards;
