@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Card Knowledge Quiz - Unified (alpha)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface-hover: #222233;
+      --border: #2a2a3a;
+      --text: #e0e0e8;
+      --text-muted: #8888aa;
+      --accent: #6c63ff;
+      --accent-hover: #7f78ff;
+      --correct: #22c55e;
+      --correct-bg: rgba(34, 197, 94, 0.12);
+      --wrong: #ef4444;
+      --wrong-bg: rgba(239, 68, 68, 0.12);
+      --gold: #f59e0b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ===== LOCAL VERSION BANNER (remove for deploy) ===== */
+    .local-banner {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: white; text-align: center; padding: 10px;
+      font-weight: 900; font-size: 1.05rem; letter-spacing: 0.12em;
+      text-transform: uppercase; z-index: 9999;
+      border-bottom: 3px solid #7f1d1d;
+    }
+    .local-banner-spacer { height: 46px; }
+
+    .app-container { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+    /* ===== Standard site banner (same as other projects) ===== */
+    .banner {
+      position: relative;
+      background-image: url('https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 40px 16px;
+      text-align: center;
+      margin: 0 -16px 20px;
+      overflow: hidden;
+    }
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(25, 45, 85, 0.85);
+      z-index: 1;
+    }
+    .banner-content { position: relative; z-index: 2; }
+    .banner h1 {
+      font-size: 2rem; font-weight: 700; letter-spacing: -0.02em;
+      color: #fff; margin: 0 0 12px;
+    }
+    .banner p {
+      font-size: 11px; color: #e0e0e0; margin: 0 auto; line-height: 1.5; max-width: 65ch;
+    }
+    .banner a { color: #fff; text-decoration: underline; cursor: pointer; }
+    .banner a:hover { opacity: 0.9; }
+    .banner-scryfall { font-size: 14px; font-weight: 600; margin-top: 16px !important; color: #fff; }
+
+    .alpha-tag {
+      display: inline-block; background: var(--gold); color: #000;
+      font-size: 0.7rem; font-weight: 700; border-radius: 4px;
+      padding: 1px 6px; margin-left: 6px; vertical-align: middle;
+    }
+
+    .panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; margin-bottom: 14px;
+    }
+    .panel h2 {
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin-bottom: 10px;
+    }
+
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row + .row { margin-top: 10px; }
+    .grow { flex: 1 1 auto; }
+
+    label.inline-label { font-size: 0.82rem; color: var(--text-muted); }
+
+    select, input[type="text"], textarea {
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px 10px; font-size: 0.9rem; font-family: inherit;
+    }
+    select:focus, input:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    textarea { width: 100%; min-height: 110px; resize: vertical; }
+
+    button {
+      background: var(--surface-hover); color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px 14px; font-size: 0.9rem; font-family: inherit;
+      cursor: pointer; transition: background 0.12s, border-color 0.12s;
+    }
+    button:hover:not(:disabled) { background: #2c2c40; border-color: var(--accent); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+    button.danger { border-color: var(--wrong); color: var(--wrong); background: transparent; }
+    button.linklike { background: none; border: none; color: var(--accent); padding: 2px 4px; font-size: 0.82rem; }
+
+    .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .seg button { border: none; border-radius: 0; padding: 7px 13px; font-size: 0.85rem; }
+    .seg button.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+    .field-checks { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+    .field-checks label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.86rem; cursor: pointer;
+    }
+    .field-checks input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); }
+
+    .list-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
+    .list-meta b { color: var(--text); font-weight: 600; }
+    .badge {
+      display: inline-block; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1px 8px; margin-right: 6px; font-size: 0.75rem;
+    }
+    .badge.due { border-color: var(--gold); color: var(--gold); }
+    .badge.mastered { border-color: var(--correct); color: var(--correct); }
+
+    /* New list panel */
+    .tabbar { display: flex; gap: 6px; margin-bottom: 10px; }
+    .tabbar button { font-size: 0.82rem; padding: 6px 12px; }
+    .tabbar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
+    .error-text { color: var(--wrong); font-size: 0.82rem; margin-top: 6px; white-space: pre-wrap; }
+    .ok-text { color: var(--correct); font-size: 0.82rem; margin-top: 6px; }
+
+    /* Play area */
+    .playbar {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
+    }
+    .score-chip { color: var(--text); font-weight: 600; }
+    .streak-chip { color: var(--gold); font-weight: 600; }
+
+    .question-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px; margin-bottom: 14px; text-align: center;
+    }
+    .question-prompt { font-size: 0.95rem; color: var(--text-muted); }
+    .question-cardname { font-size: 1.45rem; font-weight: 700; margin: 6px 0 16px; }
+
+    /* Card info hints (shown fields minus asked field) */
+    .card-info {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; margin: 0 auto 16px; max-width: 440px; text-align: left;
+    }
+    .ci-row { display: flex; gap: 10px; padding: 3px 0; font-size: 0.86rem; }
+    .ci-label { color: var(--text-muted); min-width: 110px; flex-shrink: 0; }
+    .ci-value { flex: 1; }
+    .ci-oracle .ci-value { white-space: pre-wrap; font-size: 0.8rem; color: var(--text); }
+
+    /* Collapsible quiz settings */
+    .settings-detail {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; margin-top: 8px;
+    }
+
+    .mc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 520px) { .mc-options { grid-template-columns: 1fr; } }
+    .mc-options button {
+      padding: 12px; font-size: 1rem; text-align: center; min-height: 48px;
+    }
+    .mc-options button.correct { background: var(--correct-bg); border-color: var(--correct); }
+    .mc-options button.wrong { background: var(--wrong-bg); border-color: var(--wrong); }
+    .key-hint { color: var(--text-muted); font-size: 0.72rem; margin-right: 6px; }
+
+    .color-picker { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .color-btn {
+      width: 52px; height: 52px; border-radius: 50%; font-size: 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--border); background: var(--bg);
+    }
+    .color-btn.sel { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.35); }
+
+    .feedback { margin-top: 16px; }
+    .feedback .verdict { font-size: 1.1rem; font-weight: 700; }
+    .feedback .verdict.good { color: var(--correct); }
+    .feedback .verdict.bad { color: var(--wrong); }
+    .feedback .answer-line { margin: 6px 0 12px; font-size: 1rem; }
+    .card-image { max-width: 250px; width: 100%; border-radius: 12px; margin: 10px auto; display: block; }
+
+    .rate-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+    .rate-row button { min-width: 86px; padding: 10px 8px; }
+    .rate-row .sub { display: block; font-size: 0.7rem; color: var(--text-muted); }
+    .rate-again { border-color: var(--wrong); }
+    .rate-hard { border-color: var(--gold); }
+    .rate-good { border-color: var(--accent); }
+    .rate-easy { border-color: var(--correct); }
+
+    .reveal-btn, .next-btn { width: 100%; padding: 13px; font-size: 1rem; margin-top: 14px; }
+
+    .progress-track {
+      height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-bottom: 12px;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width 0.2s; }
+
+    /* Summary */
+    .summary-stats { display: flex; gap: 12px; justify-content: center; margin: 12px 0 16px; flex-wrap: wrap; }
+    .stat-tile {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 18px; text-align: center; min-width: 90px;
+    }
+    .stat-tile .num { font-size: 1.4rem; font-weight: 700; }
+    .stat-tile .lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; }
+    .missed-list { text-align: left; margin-top: 10px; }
+    .missed-list li {
+      list-style: none; padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+    }
+    .missed-list .ml-field { color: var(--text-muted); font-size: 0.78rem; }
+
+    footer { text-align: center; color: var(--text-muted); font-size: 0.75rem; margin: 26px 0 14px; }
+    footer a { color: var(--accent); }
+
+    /* Mana font handling: show icons only once font confirmed loaded */
+    .mana-icon { display: none; }
+    html.mana-font-loaded .mana-icon { display: inline-block; }
+    html.mana-font-loaded .mana-fallback { display: none; }
+    .mana-fallback { font-family: monospace; font-size: 0.9em; }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="shared-data/preset-lists.js"></script>
+
+  <script type="text/babel">
+    /*
+     * MTG Card Knowledge Quiz - UNIFIED (alpha)
+     * Version: 0.3.0-unified-local
+     * Last Updated: 2026-06-11 UTC
+     *
+     * Unified successor prototype to index-custom-only.html (quiz) and
+     * index-anki.html (SM-2 flashcards). Design: docs/UNIFIED_APP_DESIGN.md
+     * Three orthogonal layers:
+     *   LIST      - one library: built-in presets (data/preset-lists.js) + user lists (localStorage)
+     *   QUESTION  - which fields are asked; answer format follows mode (MC / color picker / self-graded flip)
+     *   SCHEDULER - shuffle | list order | spaced repetition (SM-2)
+     * Both modes write the same per-(list,card,field) SM-2 progress record.
+     *
+     * CHANGELOG:
+     * v0.3.0-unified-local (2026-06-11) - Quiz settings dropdown, card hints, smart distractors
+     *   - NEW: "Quiz settings" collapsible (initially hidden): Ask-about + Show-on-card field checkboxes
+     *   - NEW: Card info hint panel on questions - shows all card information except the asked field
+     *     (correlated leaks blocked: casting cost hidden when mana value/colors asked, and vice versa)
+     *   - NEW: Oracle text as show-only field with card name redacted ([REDACTED])
+     *   - DEFAULT: Ask fields = Casting cost, Power/Toughness, Card type; Show = everything else
+     *   - PORT: similarity-scored MC distractors from index-custom-only.html (cardSimilarity walk,
+     *     generateManaCostVariations + synthetic fallbacks) - replaces naive random pool sampling
+     *   - Signed: Claude (Fable 5) @ 2026-06-11 UTC
+     * v0.2.0-unified-local (2026-06-11) - Terminology + standard header; first Pages mirror copy
+     *   - RENAME: "Deck" -> "List" everywhere (UI + identifiers + data file preset-decks.js -> preset-lists.js)
+     *     because "deck" is an MTG concept and would confuse players
+     *   - UI: Standard cross-project site banner (background image, cross-links, Scryfall credit)
+     *   - DEPLOY: First copy to Pages mirror as top-level "MTG Card Knowledge Quiz.html"
+     *   - Signed: Claude (Fable 5) @ 2026-06-11 UTC
+     * v0.1.0-unified-local (2026-06-11) - First alpha
+     *   - List dropdown: 5 built-in presets + saved user lists (create via Scryfall search or pasted list)
+     *   - Modes: Quiz (multiple choice / color picker) and Flashcards (reveal + Again/Hard/Good/Easy)
+     *   - Schedulers: Shuffle, List order (list order = popularity/search ranking), Spaced repetition
+     *   - Rounds of 10/20 or All due/Endless, with end-of-round summary + "Review missed"
+     *   - Unified SM-2 progress shared by both modes; list badges show mastered/due counts
+     *   - NOT YET: import list from URL, show-field hints, typed answers, name-from-art questions
+     *   - Signed: Claude (Fable 5) @ 2026-06-11 UTC
+     */
+
+    const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+    const APP_VERSION = '0.3.0-unified-local'.replace(/-local$/, '');
+    const APP_LAST_UPDATED = '2026-06-11';
+    const LS_LISTS = 'mtg_unified_lists_v1';
+    const LS_PROGRESS = 'mtg_unified_progress_v1';
+    const LS_SETTINGS = 'mtg_unified_settings_v1';
+    const MASTERED_IVL_DAYS = 7;
+
+    // ===== Mana font loading (Promise-based: see MEMORY.md gotcha #3) =====
+    document.fonts.load('16px "Mana"').then((loaded) => {
+      if (loaded.length > 0) document.documentElement.classList.add('mana-font-loaded');
+    }).catch(() => { /* fallback text stays visible */ });
+
+    // ===== Utilities =====
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function loadLS(key, dflt) {
+      try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : dflt; } catch { return dflt; }
+    }
+    function saveLS(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { console.error('localStorage save failed', e); }
+    }
+
+    // ===== Mana symbol rendering =====
+    const MANA_CLASS_MAP = { t: 'tap', q: 'untap', tk: 'ticket', a: 'acorn', chaos: 'chaos' };
+    function ManaText({ text }) {
+      if (text == null || text === '') return null;
+      const parts = [];
+      let last = 0, m;
+      const re = /\{([^}]+)\}/g;
+      const str = String(text);
+      while ((m = re.exec(str)) !== null) {
+        if (m.index > last) parts.push(<span key={parts.length}>{str.slice(last, m.index)}</span>);
+        const raw = m[1].toLowerCase().replace(/\//g, '');
+        const cls = MANA_CLASS_MAP[raw] || raw;
+        parts.push(
+          <span key={parts.length}>
+            <i className={`ms ms-${cls} ms-cost mana-icon`} aria-label={m[0]}></i>
+            <span className="mana-fallback">{m[0]}</span>
+          </span>
+        );
+        last = re.lastIndex;
+      }
+      if (last < str.length) parts.push(<span key={parts.length}>{str.slice(last)}</span>);
+      return <span>{parts}</span>;
+    }
+
+    // ===== Card field definitions (single applicability matrix) =====
+    const COLOR_ORDER = ['W', 'U', 'B', 'R', 'G'];
+    const COLOR_LABELS = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green', C: 'Colorless' };
+    function isLand(c) { return (c.typeLine || '').includes('Land'); }
+    function mainType(c) {
+      const first = (c.typeLine || '').split('//')[0];
+      return first.split('—')[0].trim() || 'Unknown';
+    }
+    function colorKey(c) {
+      const cols = (c.colors || []).filter(x => COLOR_ORDER.includes(x));
+      if (cols.length === 0) return 'C';
+      return COLOR_ORDER.filter(x => cols.includes(x)).join('');
+    }
+    function colorKeyLabel(key) {
+      if (key === 'C') return 'Colorless';
+      return key.split('').map(k => COLOR_LABELS[k]).join(' + ');
+    }
+
+    const FIELDS = {
+      castingCost: {
+        label: 'Casting cost',
+        prompt: 'What is the casting cost of',
+        applicable: c => !isLand(c) && !!c.manaCost,
+        value: c => c.manaCost,
+        renderValue: v => <ManaText text={v} />,
+      },
+      manaValue: {
+        label: 'Mana value',
+        prompt: 'What is the mana value of',
+        applicable: c => !isLand(c) && c.manaValue != null,
+        value: c => String(c.manaValue),
+        renderValue: v => v,
+      },
+      colors: {
+        label: 'Colors',
+        prompt: 'What are the colors of',
+        applicable: c => !isLand(c),         // lands are (almost) always colorless: not a fair question
+        value: c => colorKey(c),
+        renderValue: v => v === 'C'
+          ? <span>Colorless</span>
+          : <span>{v.split('').map((k, i) => <ManaText key={i} text={`{${k}}`} />)}</span>,
+        input: 'colorPicker',
+      },
+      typeLine: {
+        label: 'Card type',
+        prompt: 'What is the card type of',
+        applicable: () => true,
+        value: c => mainType(c),
+        renderValue: v => v,
+      },
+      powerToughness: {
+        label: 'Power/Toughness',
+        prompt: 'What is the power/toughness of',
+        applicable: c => c.isCreature === true && c.power != null && c.toughness != null,
+        value: c => `${c.power}/${c.toughness}`,
+        renderValue: v => v,
+      },
+      oracleText: {
+        label: 'Oracle text',
+        showOnly: true,                                  // hint display only, never asked
+        applicable: c => !!c.oracleText,
+        value: c => c.oracleText,
+        renderValue: v => <ManaText text={v} />,
+      },
+    };
+    const FIELD_IDS = Object.keys(FIELDS);
+    const ASKABLE_FIELD_IDS = FIELD_IDS.filter(f => !FIELDS[f].showOnly);
+    const DEFAULT_ASK_FIELDS = ['castingCost', 'powerToughness', 'typeLine'];
+
+    // Redact the card's own name from oracle text (ported from index-custom-only.html)
+    function redactCardName(text, cardName) {
+      if (!text || !cardName) return text;
+      const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      let result = text.replace(new RegExp(esc(cardName), 'gi'), '[REDACTED]');
+      if (cardName.includes(' // ')) {
+        cardName.split(' // ').forEach(face => {
+          result = result.replace(new RegExp(esc(face.trim()), 'gi'), '[REDACTED]');
+        });
+      }
+      return result;
+    }
+
+    // ===== Scryfall fetch + normalization =====
+    function normalizeCard(sc) {
+      const faces = sc.card_faces || [];
+      const face0 = faces[0] || sc;
+      const ptFace = [sc, ...faces].find(f => f.power != null && f.toughness != null);
+      const typeLine = sc.type_line || faces.map(f => f.type_line).filter(Boolean).join(' // ');
+      return {
+        name: sc.name,
+        manaValue: sc.cmc != null ? sc.cmc : (face0.cmc || 0),
+        manaCost: sc.mana_cost || faces.map(f => f.mana_cost).filter(Boolean).join(' // ') || '',
+        colors: sc.colors || (faces.length ? [...new Set(faces.flatMap(f => f.colors || []))] : []),
+        colorIdentity: sc.color_identity || [],
+        typeLine,
+        oracleText: sc.oracle_text || faces.map(f => f.oracle_text).filter(Boolean).join('\n//\n') || '',
+        isCreature: /Creature/.test(typeLine),
+        power: ptFace ? ptFace.power : null,
+        toughness: ptFace ? ptFace.toughness : null,
+        imageUris: sc.image_uris || face0.image_uris || null,
+      };
+    }
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function scryfallSearch(query, limit = 150) {
+      let url = 'https://api.scryfall.com/cards/search?q=' + encodeURIComponent(query) + '&unique=cards';
+      const cards = [];
+      while (url && cards.length < limit) {
+        const res = await fetch(url);
+        if (res.status === 404) throw new Error('No cards matched that search.');
+        if (!res.ok) throw new Error(`Scryfall error ${res.status}`);
+        const data = await res.json();
+        for (const c of data.data) {
+          cards.push(normalizeCard(c));
+          if (cards.length >= limit) break;
+        }
+        url = data.has_more ? data.next_page : null;
+        if (url) await sleep(120);
+      }
+      return cards;
+    }
+
+    function parseCardListText(text) {
+      return text.split('\n')
+        .map(l => l.trim())
+        .filter(l => l && !l.startsWith('#') && !l.startsWith('//'))
+        .map(l => l
+          .replace(/^\d+\s*[xX]?\s+/, '')          // leading quantity "4x " / "4 "
+          .replace(/\s*\([A-Za-z0-9]{2,6}\)\s*\d*\s*[*FfEe]*\s*$/, '')  // trailing "(SET) 123"
+          .trim())
+        .filter(Boolean);
+    }
+
+    async function scryfallCollection(names) {
+      const found = [], notFound = [];
+      for (let i = 0; i < names.length; i += 75) {
+        const batch = names.slice(i, i + 75);
+        const res = await fetch('https://api.scryfall.com/cards/collection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifiers: batch.map(n => ({ name: n })) }),
+        });
+        if (!res.ok) throw new Error(`Scryfall error ${res.status}`);
+        const data = await res.json();
+        for (const c of data.data || []) found.push(normalizeCard(c));
+        for (const nf of data.not_found || []) notFound.push(nf.name);
+        if (i + 75 < names.length) await sleep(120);
+      }
+      return { found, notFound };
+    }
+
+    // ===== SM-2 spaced repetition (ported from index-anki.html) =====
+    const RATE_AGAIN = 0, RATE_HARD = 1, RATE_GOOD = 2, RATE_EASY = 3;
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    function newRec() {
+      return { reps: 0, ease: 2.5, ivl: 0, due: 0, lapses: 0, correct: 0, wrong: 0 };
+    }
+    function sm2Update(rec, rating) {
+      const r = { ...rec };
+      if (rating === RATE_AGAIN) {
+        r.reps = 0; r.lapses += 1; r.ivl = 0;
+        r.ease = Math.max(1.3, r.ease - 0.2);
+        r.due = Date.now() + 10 * 60 * 1000;            // back in ~10 min
+        r.wrong += 1;
+        return r;
+      }
+      let next;
+      if (r.reps === 0) next = rating === RATE_EASY ? 4 : 1;
+      else if (r.reps === 1) next = rating === RATE_HARD ? 3 : rating === RATE_GOOD ? 6 : 7;
+      else next = Math.round(r.ivl * r.ease);
+      if (rating === RATE_HARD) { r.ease = Math.max(1.3, r.ease - 0.15); next = Math.max(1, Math.round(next * 0.8)); }
+      if (rating === RATE_EASY) { r.ease += 0.15; next = Math.round(next * 1.3); }
+      r.reps += 1; r.ivl = next; r.due = Date.now() + next * DAY_MS;
+      r.correct += 1;
+      return r;
+    }
+    function fmtIvl(rec) {
+      if (rec.ivl === 0) return '10m';
+      if (rec.ivl < 30) return rec.ivl + 'd';
+      if (rec.ivl < 365) return Math.round(rec.ivl / 30) + 'mo';
+      return (rec.ivl / 365).toFixed(1) + 'y';
+    }
+
+    function progressKey(listId, cardName, fieldId) { return `${listId}|${cardName}|${fieldId}`; }
+
+    // ===== Queue building (the SCHEDULER layer) =====
+    function buildItems(list, fieldIds) {
+      const items = [];
+      for (const card of list.cardData) {
+        for (const fid of fieldIds) {
+          if (FIELDS[fid].applicable(card)) items.push({ card, fieldId: fid });
+        }
+      }
+      return items;
+    }
+
+    function buildQueue(list, listId, fieldIds, scheduler, progress, roundLength) {
+      let items = buildItems(list, fieldIds);
+      if (scheduler === 'shuffle') {
+        items = shuffle(items);
+      } else if (scheduler === 'srs') {
+        const now = Date.now();
+        const seen = [], fresh = [];
+        for (const it of items) {
+          const rec = progress[progressKey(listId, it.card.name, it.fieldId)];
+          if (rec && (rec.correct + rec.wrong) > 0) seen.push({ it, rec }); else fresh.push(it);
+        }
+        const due = seen.filter(x => x.rec.due <= now).sort((a, b) => a.rec.due - b.rec.due).map(x => x.it);
+        items = [...due, ...fresh];                      // due first, then new cards in list order
+      }
+      // 'list' keeps list order: presets are popularity-ordered, searches keep their order: ranking
+      if (roundLength > 0) items = items.slice(0, roundLength);
+      return items;
+    }
+
+    // ===== Multiple-choice distractors =====
+    // Ported from index-custom-only.html v2.20.2: similarity-scored pool
+    // distractors (wrong answers come from the cards MOST SIMILAR to the
+    // correct card, so they are plausible), with synthetic variations as
+    // fallback when the pool can't supply 3 unique values.
+
+    function cardSimilarity(card1, card2, excludeFieldId) {
+      let score = 0;
+      // Type line similarity (highest weight) - unless that's the asked field
+      if (excludeFieldId !== 'typeLine') {
+        if (card1.typeLine === card2.typeLine) score += 10;
+        else if (card1.typeLine && card2.typeLine) {
+          const types1 = card1.typeLine.toLowerCase().split(/[\s—-]+/);
+          const types2 = card2.typeLine.toLowerCase().split(/[\s—-]+/);
+          score += types1.filter(t => types2.includes(t)).length * 3;
+        }
+      }
+      // Color identity match
+      if (excludeFieldId !== 'colors') {
+        const c1 = (card1.colors || []).slice().sort().join('');
+        const c2 = (card2.colors || []).slice().sort().join('');
+        if (c1 === c2) score += 5;
+      }
+      // Mana value proximity
+      if (excludeFieldId !== 'manaValue') {
+        const mvDiff = Math.abs((card1.manaValue || 0) - (card2.manaValue || 0));
+        if (mvDiff === 0) score += 3;
+        else if (mvDiff === 1) score += 2;
+        else if (mvDiff === 2) score += 1;
+      }
+      // Power/toughness similarity
+      if (excludeFieldId !== 'powerToughness') {
+        if (card1.isCreature && card2.isCreature) {
+          if (card1.power === card2.power) score += 2;
+          if (card1.toughness === card2.toughness) score += 2;
+        }
+      }
+      return score;
+    }
+
+    function generateManaCostVariations(baseCost) {
+      const variations = [];
+      const genericMatch = baseCost.match(/\{(\d+)\}/);
+      const generic = genericMatch ? parseInt(genericMatch[1]) : 0;
+      const colorMatches = baseCost.match(/\{([WUBRG])\}/g) || [];
+      const colors = colorMatches.map(m => m[1]);
+      if (generic > 0) {
+        const decreased = `{${generic - 1}}${colors.map(c => `{${c}}`).join('')}`;
+        if (decreased !== baseCost) variations.push(decreased);
+      }
+      const increased = `{${generic + 1}}${colors.map(c => `{${c}}`).join('')}`;
+      if (increased !== baseCost) variations.push(increased);
+      if (colors.length > 0) {
+        const swapColors = ['W', 'U', 'B', 'R', 'G'].filter(c => !colors.includes(c));
+        if (swapColors.length > 0) {
+          const newColors = [...colors];
+          newColors[0] = swapColors[0];
+          const swapped = `{${generic}}${newColors.map(c => `{${c}}`).join('')}`;
+          if (swapped !== baseCost) variations.push(swapped);
+        }
+      }
+      return variations;
+    }
+
+    function syntheticWrong(fieldId, card, correct) {
+      const out = [];
+      if (fieldId === 'castingCost') {
+        out.push(...generateManaCostVariations(card.manaCost || '{0}'), '{1}', '{2}', '{X}');
+      } else if (fieldId === 'powerToughness') {
+        const [p, t] = correct.split('/').map(n => parseInt(n) || 0);
+        [[p + 1, t], [p - 1, t], [p, t + 1], [p, t - 1], [p + 1, t + 1], [p - 1, t - 1], [p + 2, t]]
+          .forEach(([vp, vt]) => { if (vp >= 0 && vt >= 0) out.push(`${vp}/${vt}`); });
+      } else if (fieldId === 'manaValue') {
+        const mv = card.manaValue || 0;
+        [1, 2, -1, 3, -2, 4].forEach(d => { if (mv + d >= 0) out.push(String(mv + d)); });
+      } else if (fieldId === 'typeLine') {
+        out.push(...shuffle(['Creature', 'Instant', 'Sorcery', 'Enchantment', 'Artifact', 'Land',
+          'Planeswalker', 'Legendary Creature', 'Artifact Creature', 'Enchantment Creature']));
+      }
+      return out.filter(v => v !== correct);
+    }
+
+    function buildOptions(item, list) {
+      const field = FIELDS[item.fieldId];
+      const correct = field.value(item.card);
+      // Walk pool cards in descending similarity, collecting unique wrong values
+      const scored = list.cardData
+        .filter(c => c.name !== item.card.name && field.applicable(c))
+        .map(c => ({ c, s: cardSimilarity(c, item.card, item.fieldId) }))
+        .sort((a, b) => b.s - a.s);
+      const distractors = [];
+      for (const { c } of scored) {
+        if (distractors.length >= 3) break;
+        const v = field.value(c);
+        if (v !== correct && !distractors.includes(v)) distractors.push(v);
+      }
+      // Synthetic fallback for uniform pools
+      for (const v of syntheticWrong(item.fieldId, item.card, correct)) {
+        if (distractors.length >= 3) break;
+        if (!distractors.includes(v)) distractors.push(v);
+      }
+      return shuffle([correct, ...distractors.slice(0, 3)]);
+    }
+
+    // ===== List stats for badges =====
+    function listStats(list, listId, fieldIds, progress) {
+      const items = buildItems(list, fieldIds);
+      const now = Date.now();
+      let mastered = 0, due = 0, seen = 0;
+      for (const it of items) {
+        const rec = progress[progressKey(listId, it.card.name, it.fieldId)];
+        if (!rec || (rec.correct + rec.wrong) === 0) continue;
+        seen += 1;
+        if (rec.ivl >= MASTERED_IVL_DAYS) mastered += 1;
+        if (rec.due <= now) due += 1;
+      }
+      return { total: items.length, seen, mastered, due };
+    }
+
+    // ===== Built-in + user lists =====
+    function builtinLists() {
+      const src = (typeof window !== 'undefined' && window.PRESET_LISTS) || {};
+      return Object.entries(src).map(([key, v]) => ({
+        id: 'preset:' + key,
+        label: v.label + ' (' + v.cardData.length + ')',
+        builtin: true,
+        source: { type: 'preset' },
+        cardData: v.cardData,
+      }));
+    }
+
+    // ===================================================================
+    // COMPONENTS
+    // ===================================================================
+
+    function NewListPanel({ onSave, onCancel }) {
+      const [tab, setTab] = useState('search');
+      const [query, setQuery] = useState('');
+      const [pasteText, setPasteText] = useState('');
+      const [name, setName] = useState('');
+      const [cards, setCards] = useState(null);
+      const [notFound, setNotFound] = useState([]);
+      const [busy, setBusy] = useState(false);
+      const [err, setErr] = useState(null);
+
+      const fetchSearch = async () => {
+        setBusy(true); setErr(null); setCards(null); setNotFound([]);
+        try {
+          const result = await scryfallSearch(query.trim(), 150);
+          setCards(result);
+          if (!name) setName(query.trim());
+        } catch (e) { setErr(e.message); }
+        setBusy(false);
+      };
+
+      const fetchPaste = async () => {
+        const names = parseCardListText(pasteText);
+        if (names.length === 0) { setErr('No card names found in the pasted text.'); return; }
+        setBusy(true); setErr(null); setCards(null); setNotFound([]);
+        try {
+          const { found, notFound: nf } = await scryfallCollection(names);
+          setCards(found); setNotFound(nf);
+          if (!name) setName('My list');
+        } catch (e) { setErr(e.message); }
+        setBusy(false);
+      };
+
+      return (
+        <div className="panel">
+          <h2>New list</h2>
+          <div className="tabbar">
+            <button className={tab === 'search' ? 'active' : ''} onClick={() => setTab('search')}>Scryfall search</button>
+            <button className={tab === 'paste' ? 'active' : ''} onClick={() => setTab('paste')}>Paste a list</button>
+          </div>
+
+          {tab === 'search' && (
+            <div>
+              <div className="row">
+                <input className="grow" type="text" placeholder='e.g. format:pioneer order:edhrec  or  set:fdn r:rare'
+                  value={query} onChange={e => setQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && query.trim()) fetchSearch(); }} />
+                <button className="primary" disabled={busy || !query.trim()} onClick={fetchSearch}>
+                  {busy ? 'Fetching…' : 'Fetch'}
+                </button>
+              </div>
+              <div className="hint">
+                Uses Scryfall search syntax. Add <code>order:edhrec</code> to rank by popularity — "List order"
+                scheduling will then start with the most popular cards. Fetches up to 150 cards.
+              </div>
+            </div>
+          )}
+
+          {tab === 'paste' && (
+            <div>
+              <textarea placeholder={'1 Lightning Bolt\n4x Counterspell\nSwords to Plowshares (2X2) 24'}
+                value={pasteText} onChange={e => setPasteText(e.target.value)} />
+              <div className="row" style={{ marginTop: 8 }}>
+                <button className="primary" disabled={busy || !pasteText.trim()} onClick={fetchPaste}>
+                  {busy ? 'Looking up…' : 'Look up cards'}
+                </button>
+              </div>
+              <div className="hint">Quantities and set codes are stripped automatically. One card per line.</div>
+            </div>
+          )}
+
+          {err && <div className="error-text">{err}</div>}
+          {cards && (
+            <div>
+              <div className="ok-text">Found {cards.length} cards.{notFound.length > 0 ? ` Not found: ${notFound.join(', ')}` : ''}</div>
+              <div className="row" style={{ marginTop: 8 }}>
+                <input className="grow" type="text" placeholder="List name" value={name} onChange={e => setName(e.target.value)} />
+                <button className="primary" disabled={!name.trim() || cards.length === 0}
+                  onClick={() => onSave({
+                    id: 'user:' + Date.now(),
+                    label: name.trim(),
+                    builtin: false,
+                    source: tab === 'search' ? { type: 'scryfall', query: query.trim() } : { type: 'paste' },
+                    builtAt: new Date().toISOString().slice(0, 10),
+                    cardData: cards,
+                  })}>
+                  Save list
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="row" style={{ marginTop: 10 }}>
+            <button className="linklike" onClick={onCancel}>Cancel</button>
+          </div>
+        </div>
+      );
+    }
+
+    function ColorPicker({ onSubmit, disabled }) {
+      const [sel, setSel] = useState([]);
+      const toggle = (k) => {
+        if (disabled) return;
+        if (k === 'C') { setSel(['C']); return; }
+        setSel(prev => {
+          const without = prev.filter(x => x !== 'C');
+          return without.includes(k) ? without.filter(x => x !== k) : [...without, k];
+        });
+      };
+      return (
+        <div>
+          <div className="color-picker">
+            {[...COLOR_ORDER, 'C'].map(k => (
+              <button key={k} className={`color-btn ${sel.includes(k) ? 'sel' : ''}`}
+                title={COLOR_LABELS[k]} onClick={() => toggle(k)} disabled={disabled}>
+                <ManaText text={`{${k}}`} />
+              </button>
+            ))}
+          </div>
+          <button className="primary next-btn" disabled={disabled || sel.length === 0}
+            onClick={() => {
+              const key = sel.includes('C') ? 'C' : COLOR_ORDER.filter(x => sel.includes(x)).join('');
+              onSubmit(key);
+            }}>
+            Submit
+          </button>
+        </div>
+      );
+    }
+
+    // Hint panel: all selected show-fields except the one being asked
+    function CardInfoPanel({ card, askFieldId, showFieldIds }) {
+      const rows = showFieldIds
+        .filter(fid => fid !== askFieldId && FIELDS[fid].applicable(card))
+        // never leak the answer through a correlated field: hide casting cost
+        // when mana value is asked, and vice versa; colors leak from cost too
+        .filter(fid => !(askFieldId === 'manaValue' && fid === 'castingCost'))
+        .filter(fid => !(askFieldId === 'castingCost' && fid === 'manaValue'))
+        .filter(fid => !(askFieldId === 'colors' && fid === 'castingCost'))
+        .map(fid => {
+          const f = FIELDS[fid];
+          let v = f.value(card);
+          if (fid === 'oracleText') v = redactCardName(v, card.name);
+          return { fid, label: f.label, node: f.renderValue(v) };
+        });
+      if (rows.length === 0) return null;
+      return (
+        <div className="card-info">
+          {rows.map(r => (
+            <div key={r.fid} className={`ci-row ${r.fid === 'oracleText' ? 'ci-oracle' : ''}`}>
+              <span className="ci-label">{r.label}</span>
+              <span className="ci-value">{r.node}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function RoundSummary({ results, score, onNewRound, onReviewMissed, onBackToSetup }) {
+      const missed = results.filter(r => !r.correct);
+      const accuracy = results.length ? Math.round(100 * (results.length - missed.length) / results.length) : 0;
+      return (
+        <div className="question-card">
+          <div className="question-prompt">Round complete</div>
+          <div className="summary-stats">
+            <div className="stat-tile"><div className="num">{score}</div><div className="lbl">Points</div></div>
+            <div className="stat-tile"><div className="num">{accuracy}%</div><div className="lbl">Accuracy</div></div>
+            <div className="stat-tile"><div className="num">{results.length - missed.length}/{results.length}</div><div className="lbl">Correct</div></div>
+          </div>
+          {missed.length > 0 && (
+            <div className="missed-list">
+              <strong style={{ fontSize: '0.85rem' }}>Missed:</strong>
+              <ul>
+                {missed.map((r, i) => (
+                  <li key={i}>
+                    {r.item.card.name} <span className="ml-field">({FIELDS[r.item.fieldId].label})</span>
+                    {' — '}{FIELDS[r.item.fieldId].renderValue(FIELDS[r.item.fieldId].value(r.item.card))}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="rate-row">
+            {missed.length > 0 && <button className="primary" onClick={onReviewMissed}>Review missed ({missed.length})</button>}
+            <button onClick={onNewRound}>New round</button>
+            <button onClick={onBackToSetup}>Settings</button>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      // ----- persisted settings -----
+      const saved = useMemo(() => loadLS(LS_SETTINGS, {}), []);
+      const [listId, setListId] = useState(saved.listId || 'preset:iconic');
+      const [mode, setMode] = useState(saved.mode || 'quiz');                    // 'quiz' | 'flash'
+      const [scheduler, setScheduler] = useState(saved.scheduler || 'shuffle');  // 'shuffle' | 'list' | 'srs'
+      const [fieldIds, setFieldIds] = useState(saved.askFieldIds && saved.askFieldIds.length ? saved.askFieldIds : DEFAULT_ASK_FIELDS);
+      const [showFieldIds, setShowFieldIds] = useState(saved.showFieldIds && saved.showFieldIds.length ? saved.showFieldIds : FIELD_IDS);
+      const [settingsOpen, setSettingsOpen] = useState(false);
+      const [roundLength, setRoundLength] = useState(saved.roundLength != null ? saved.roundLength : 10);
+
+      // ----- lists & progress -----
+      const [userLists, setUserLists] = useState(() => loadLS(LS_LISTS, []));
+      const [progress, setProgress] = useState(() => loadLS(LS_PROGRESS, {}));
+      const [showNewList, setShowNewList] = useState(false);
+
+      const lists = useMemo(() => [...builtinLists(), ...userLists], [userLists]);
+      const list = lists.find(d => d.id === listId) || lists[0];
+
+      // ----- play state -----
+      const [phase, setPhase] = useState('setup');      // setup | playing | summary
+      const [queue, setQueue] = useState([]);
+      const [idx, setIdx] = useState(0);
+      const [options, setOptions] = useState([]);
+      const [revealed, setRevealed] = useState(false);
+      const [picked, setPicked] = useState(null);       // chosen MC value / color key
+      const [results, setResults] = useState([]);
+      const [score, setScore] = useState(0);
+      const [streak, setStreak] = useState(0);
+
+      useEffect(() => {
+        saveLS(LS_SETTINGS, { listId, mode, scheduler, askFieldIds: fieldIds, showFieldIds, roundLength });
+      }, [listId, mode, scheduler, fieldIds, showFieldIds, roundLength]);
+      useEffect(() => { saveLS(LS_LISTS, userLists); }, [userLists]);
+      useEffect(() => { saveLS(LS_PROGRESS, progress); }, [progress]);
+
+      const stats = useMemo(
+        () => list ? listStats(list, list.id, fieldIds, progress) : null,
+        [list, fieldIds, progress]
+      );
+
+      const item = queue[idx] || null;
+      const field = item ? FIELDS[item.fieldId] : null;
+      const correctValue = item ? field.value(item.card) : null;
+
+      const startRound = (customQueue) => {
+        const q = customQueue || buildQueue(list, list.id, fieldIds, scheduler, progress, roundLength);
+        if (q.length === 0) return;
+        setQueue(q); setIdx(0); setResults([]); setScore(0); setStreak(0);
+        setRevealed(false); setPicked(null);
+        setOptions(mode === 'quiz' && FIELDS[q[0].fieldId].input !== 'colorPicker' ? buildOptions(q[0], list) : []);
+        setPhase('playing');
+      };
+
+      const recordAnswer = (correct, rating) => {
+        const key = progressKey(list.id, item.card.name, item.fieldId);
+        const rec = progress[key] || newRec();
+        setProgress(prev => ({ ...prev, [key]: sm2Update(rec, rating) }));
+        setResults(prev => [...prev, { item, correct }]);
+        if (correct) {
+          const newStreak = streak + 1;
+          const mult = newStreak >= 10 ? 3 : newStreak >= 5 ? 2 : newStreak >= 3 ? 1.5 : 1;
+          setScore(s => s + Math.round(10 * mult));
+          setStreak(newStreak);
+        } else {
+          setStreak(0);
+        }
+      };
+
+      // quiz-mode answer (MC or color picker)
+      const answerQuiz = (value) => {
+        if (revealed) return;
+        const correct = value === correctValue;
+        setPicked(value); setRevealed(true);
+        recordAnswer(correct, correct ? RATE_GOOD : RATE_AGAIN);
+      };
+
+      // flashcard-mode self rating
+      const rateFlash = (rating) => {
+        if (!revealed) return;
+        recordAnswer(rating >= RATE_GOOD, rating);
+        advance();
+      };
+
+      const advance = () => {
+        const next = idx + 1;
+        if (next >= queue.length) {
+          if (roundLength === 0 && scheduler === 'shuffle') {
+            // endless shuffle: rebuild and keep going
+            const q = buildQueue(list, list.id, fieldIds, scheduler, progress, 0);
+            setQueue(q); setIdx(0);
+            setRevealed(false); setPicked(null);
+            setOptions(mode === 'quiz' && FIELDS[q[0].fieldId].input !== 'colorPicker' ? buildOptions(q[0], list) : []);
+          } else {
+            setPhase('summary');
+          }
+          return;
+        }
+        setIdx(next); setRevealed(false); setPicked(null);
+        setOptions(mode === 'quiz' && FIELDS[queue[next].fieldId].input !== 'colorPicker' ? buildOptions(queue[next], list) : []);
+      };
+
+      // keyboard shortcuts
+      useEffect(() => {
+        const onKey = (e) => {
+          if (phase !== 'playing' || !item) return;
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          if (mode === 'quiz') {
+            if (!revealed && options.length > 0 && ['1', '2', '3', '4'].includes(e.key)) {
+              answerQuiz(options[Number(e.key) - 1]);
+            } else if (revealed && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault(); advance();
+            }
+          } else {
+            if (!revealed && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); setRevealed(true); }
+            else if (revealed && ['1', '2', '3', '4'].includes(e.key)) rateFlash(Number(e.key) - 1);
+          }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      });
+
+      const reviewMissed = () => {
+        const missedItems = results.filter(r => !r.correct).map(r => r.item);
+        startRound(shuffle(missedItems));
+      };
+
+      const toggleField = (fid) => {
+        setFieldIds(prev => prev.includes(fid)
+          ? (prev.length > 1 ? prev.filter(x => x !== fid) : prev)
+          : [...prev, fid]);
+      };
+
+      const toggleShowField = (fid) => {
+        setShowFieldIds(prev => prev.includes(fid) ? prev.filter(x => x !== fid) : [...prev, fid]);
+      };
+
+      const deleteList = (id) => {
+        if (!confirm('Delete this list? Its study progress is kept.')) return;
+        setUserLists(prev => prev.filter(d => d.id !== id));
+        if (listId === id) setListId('preset:iconic');
+      };
+
+      const flashPreview = useMemo(() => {
+        if (!item) return null;
+        const key = progressKey(list.id, item.card.name, item.fieldId);
+        const rec = progress[key] || newRec();
+        return [RATE_AGAIN, RATE_HARD, RATE_GOOD, RATE_EASY].map(r => fmtIvl(sm2Update(rec, r)));
+      }, [item, list, progress]);
+
+      // ===================== RENDER =====================
+      return (
+        <div className="app-container">
+          <div className="banner">
+            <div className="banner-content">
+              <h1>MTG Card Knowledge Quiz<span className="alpha-tag">UNIFIED α</span></h1>
+              <p>
+                One list library · quiz or flashcards · your choice of ordering •{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer">Classic Card Knowledge Quiz</a> •{' '}
+                <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics/tree/main/card-knowledge-quiz" target="_blank" rel="noopener noreferrer">View source on GitHub</a> •{' '}
+                Version {APP_VERSION} • {APP_LAST_UPDATED}
+              </p>
+              <p>
+                Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>.{' '}
+                You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Interactive Color Wheel</a>,{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer">normalized review comparison</a>, or my{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">17Lands draft data quiz</a>.{' '}
+                For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or{' '}
+                <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+              </p>
+              <p className="banner-scryfall">
+                Card info and images use the <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
+              </p>
+            </div>
+          </div>
+
+          {phase === 'setup' && (
+            <div>
+              <div className="panel">
+                <h2>List</h2>
+                <div className="row">
+                  <select className="grow" value={list ? list.id : ''} onChange={e => setListId(e.target.value)}>
+                    <optgroup label="Built-in">
+                      {lists.filter(d => d.builtin).map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                    </optgroup>
+                    {lists.some(d => !d.builtin) && (
+                      <optgroup label="My lists">
+                        {lists.filter(d => !d.builtin).map(d => <option key={d.id} value={d.id}>{d.label} ({d.cardData.length})</option>)}
+                      </optgroup>
+                    )}
+                  </select>
+                  <button onClick={() => setShowNewList(s => !s)}>+ New list</button>
+                  {list && !list.builtin && <button className="danger" onClick={() => deleteList(list.id)}>Delete</button>}
+                </div>
+                {stats && (
+                  <div className="list-meta">
+                    <span className="badge">{stats.total} questions</span>
+                    <span className="badge mastered">{stats.mastered} mastered</span>
+                    <span className="badge due">{stats.due} due</span>
+                    <span className="badge">{stats.seen} seen</span>
+                    {list && !list.builtin && list.builtAt && <span className="badge">built {list.builtAt}</span>}
+                    {list && !list.builtin && list.source.type === 'scryfall' && <span className="badge" title={list.source.query}>from search</span>}
+                  </div>
+                )}
+              </div>
+
+              {showNewList && <NewListPanel
+                onSave={(d) => { setUserLists(prev => [...prev, d]); setListId(d.id); setShowNewList(false); }}
+                onCancel={() => setShowNewList(false)} />}
+
+              <div className="panel">
+                <h2>Study</h2>
+                <div className="row">
+                  <label className="inline-label">Mode</label>
+                  <div className="seg">
+                    <button className={mode === 'quiz' ? 'active' : ''} onClick={() => setMode('quiz')}>Quiz</button>
+                    <button className={mode === 'flash' ? 'active' : ''} onClick={() => setMode('flash')}>Flashcards</button>
+                  </div>
+                  <label className="inline-label">Order</label>
+                  <div className="seg">
+                    <button className={scheduler === 'shuffle' ? 'active' : ''} onClick={() => setScheduler('shuffle')}>Shuffle</button>
+                    <button className={scheduler === 'list' ? 'active' : ''} onClick={() => setScheduler('list')}>List order</button>
+                    <button className={scheduler === 'srs' ? 'active' : ''} onClick={() => setScheduler('srs')}>Spaced</button>
+                  </div>
+                </div>
+                <div className="row">
+                  <button className="linklike" onClick={() => setSettingsOpen(o => !o)}>
+                    {settingsOpen ? '▾' : '▸'} Quiz settings
+                  </button>
+                </div>
+                {settingsOpen && (
+                  <div className="settings-detail">
+                    <div className="row">
+                      <label className="inline-label">Ask about</label>
+                      <div className="field-checks">
+                        {ASKABLE_FIELD_IDS.map(fid => (
+                          <label key={fid}>
+                            <input type="checkbox" checked={fieldIds.includes(fid)} onChange={() => toggleField(fid)} />
+                            {FIELDS[fid].label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="row">
+                      <label className="inline-label">Show on card</label>
+                      <div className="field-checks">
+                        {FIELD_IDS.map(fid => (
+                          <label key={fid}>
+                            <input type="checkbox" checked={showFieldIds.includes(fid)} onChange={() => toggleShowField(fid)} />
+                            {FIELDS[fid].label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="hint">
+                      By default all card information is shown except the field being asked about
+                      (the asked field is always hidden, whatever is ticked here).
+                    </div>
+                  </div>
+                )}
+                <div className="row">
+                  <label className="inline-label">Round</label>
+                  <select value={roundLength} onChange={e => setRoundLength(Number(e.target.value))}>
+                    <option value={10}>10 questions</option>
+                    <option value={20}>20 questions</option>
+                    <option value={0}>{scheduler === 'srs' ? 'All due + new' : scheduler === 'shuffle' ? 'Endless' : 'Whole list'}</option>
+                  </select>
+                  <div className="hint" style={{ marginTop: 0 }}>
+                    {scheduler === 'list' && 'List order = the list’s own ranking (popularity for presets, search order for Scryfall lists).'}
+                    {scheduler === 'srs' && 'Spaced repetition: due reviews first, then new cards in list order. Both modes share the same memory.'}
+                    {scheduler === 'shuffle' && 'Random order without repeats within a pass.'}
+                  </div>
+                </div>
+                <button className="primary next-btn" onClick={() => startRound()} disabled={!list || stats.total === 0}>
+                  Start {mode === 'quiz' ? 'quiz' : 'studying'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {phase === 'playing' && item && (
+            <div>
+              <div className="playbar">
+                <span>{list.label} · {mode === 'quiz' ? 'Quiz' : 'Flashcards'}</span>
+                <span>
+                  <span className="score-chip">{score} pts</span>
+                  {streak >= 3 && <span className="streak-chip"> 🔥{streak}</span>}
+                  <span> · {Math.min(idx + 1, queue.length)}/{roundLength === 0 && scheduler === 'shuffle' ? '∞' : queue.length}</span>
+                  <button className="linklike" onClick={() => setPhase('summary')}>End round</button>
+                </span>
+              </div>
+              {queue.length > 0 && roundLength !== 0 && (
+                <div className="progress-track"><div className="progress-fill" style={{ width: `${(idx / queue.length) * 100}%` }}></div></div>
+              )}
+
+              <div className="question-card">
+                <div className="question-prompt">{field.prompt}…</div>
+                <div className="question-cardname">{item.card.name}</div>
+                <CardInfoPanel card={item.card} askFieldId={item.fieldId} showFieldIds={showFieldIds} />
+
+                {/* QUIZ MODE */}
+                {mode === 'quiz' && field.input === 'colorPicker' && !revealed && (
+                  <ColorPicker onSubmit={answerQuiz} disabled={revealed} />
+                )}
+                {mode === 'quiz' && field.input !== 'colorPicker' && (
+                  <div className="mc-options">
+                    {options.map((opt, i) => {
+                      let cls = '';
+                      if (revealed && opt === correctValue) cls = 'correct';
+                      else if (revealed && opt === picked && picked !== correctValue) cls = 'wrong';
+                      return (
+                        <button key={i} className={cls} disabled={revealed} onClick={() => answerQuiz(opt)}>
+                          <span className="key-hint">{i + 1}</span>{field.renderValue(opt)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* FLASHCARD MODE */}
+                {mode === 'flash' && !revealed && (
+                  <button className="primary reveal-btn" onClick={() => setRevealed(true)}>Show answer (Space)</button>
+                )}
+
+                {/* FEEDBACK / REVEAL */}
+                {revealed && (
+                  <div className="feedback">
+                    {mode === 'quiz' && (
+                      <div className={`verdict ${picked === correctValue ? 'good' : 'bad'}`}>
+                        {picked === correctValue ? 'Correct!' : 'Not quite'}
+                      </div>
+                    )}
+                    <div className="answer-line">
+                      {field.label}: <strong>{field.renderValue(correctValue)}</strong>
+                    </div>
+                    {item.card.imageUris && (item.card.imageUris.normal || item.card.imageUris.art_crop) && (
+                      <img className="card-image" alt={item.card.name}
+                        src={item.card.imageUris.normal || item.card.imageUris.art_crop} />
+                    )}
+                    {mode === 'quiz' && (
+                      <button className="primary next-btn" onClick={advance}>Next (Enter)</button>
+                    )}
+                    {mode === 'flash' && flashPreview && (
+                      <div className="rate-row">
+                        <button className="rate-again" onClick={() => rateFlash(RATE_AGAIN)}>Again<span className="sub">{flashPreview[0]} · 1</span></button>
+                        <button className="rate-hard" onClick={() => rateFlash(RATE_HARD)}>Hard<span className="sub">{flashPreview[1]} · 2</span></button>
+                        <button className="rate-good" onClick={() => rateFlash(RATE_GOOD)}>Good<span className="sub">{flashPreview[2]} · 3</span></button>
+                        <button className="rate-easy" onClick={() => rateFlash(RATE_EASY)}>Easy<span className="sub">{flashPreview[3]} · 4</span></button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {phase === 'summary' && (
+            <RoundSummary results={results} score={score}
+              onNewRound={() => startRound()}
+              onReviewMissed={reviewMissed}
+              onBackToSetup={() => setPhase('setup')} />
+          )}
+
+          <footer>
+            Unified alpha — not the live quiz. <a href="card-knowledge-quiz/">Classic quiz</a> · <a href="card-knowledge-quiz/anki.html">Anki study</a><br />
+            Version {APP_VERSION} · Last updated {APP_LAST_UPDATED}
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+
+</html>
