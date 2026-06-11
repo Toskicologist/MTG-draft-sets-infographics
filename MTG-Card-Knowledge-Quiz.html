@@ -253,7 +253,7 @@
   <script type="text/babel">
     /*
      * MTG Card Knowledge Quiz - UNIFIED (alpha)
-     * Version: 0.3.0-unified-local
+     * Version: 0.3.1-unified-local
      * Last Updated: 2026-06-11 UTC
      *
      * Unified successor prototype to index-custom-only.html (quiz) and
@@ -265,6 +265,14 @@
      * Both modes write the same per-(list,card,field) SM-2 progress record.
      *
      * CHANGELOG:
+     * v0.3.1-unified-local (2026-06-11) - Banner aligned to SHARED_HEADER_FOOTER.md canonical spec
+     *   - FIX: Contact line now mirrors canonical wording verbatim (protonmail + Bluesky/Reddit)
+     *   - FIX: "Also see" links from canonical list (SOS U/O, ECL U/O, 17 Lands Quiz, classic quiz,
+     *     Multi-Set Color Wheel, All projects) instead of ad-hoc links copied from anki banner
+     *   - FIX: Scryfall credit links scryfall.com/docs/api per spec
+     *   - NOTE: banner image stays absolute Pages URL (376KB - too big for preferred base64 embed)
+     *   - DEPLOY: Pages mirror filename de-spaced to MTG-Card-Knowledge-Quiz.html
+     *   - Signed: Claude (Fable 5) @ 2026-06-11 UTC
      * v0.3.0-unified-local (2026-06-11) - Quiz settings dropdown, card hints, smart distractors
      *   - NEW: "Quiz settings" collapsible (initially hidden): Ask-about + Show-on-card field checkboxes
      *   - NEW: Card info hint panel on questions - shows all card information except the asked field
@@ -292,7 +300,7 @@
 
     const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-    const APP_VERSION = '0.3.0-unified-local'.replace(/-local$/, '');
+    const APP_VERSION = '0.3.1-unified-local'.replace(/-local$/, '');
     const APP_LAST_UPDATED = '2026-06-11';
     const LS_LISTS = 'mtg_unified_lists_v1';
     const LS_PROGRESS = 'mtg_unified_progress_v1';
@@ -1050,14 +1058,20 @@
               </p>
               <p>
                 Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>.{' '}
-                You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">Interactive Color Wheel</a>,{' '}
-                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer">normalized review comparison</a>, or my{' '}
-                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer">17Lands draft data quiz</a>.{' '}
-                For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or{' '}
-                <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+                Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener">Bluesky</a>{' '}
+                or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener">Reddit</a>.
+              </p>
+              <p>
+                Also see:{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener">SOS Under/Overrated</a> ·{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener">ECL Under/Overrated</a> ·{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener">17 Lands Quiz</a> ·{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener">Card Knowledge Quiz (classic)</a> ·{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html" target="_blank" rel="noopener">Multi-Set Color Wheel</a> ·{' '}
+                <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener">All projects</a>
               </p>
               <p className="banner-scryfall">
-                Card info and images use the <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
+                Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener">Support them on Patreon</a>
               </p>
             </div>
           </div>
