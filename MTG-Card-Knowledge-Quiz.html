@@ -172,6 +172,12 @@
     .ci-value { flex: 1; }
     .ci-oracle .ci-value { white-space: pre-wrap; font-size: 0.8rem; color: var(--text); }
 
+    /* art image: in hints and as MC options */
+    .art-img { width: 100%; max-width: 300px; border-radius: 8px; display: block; }
+    .mc-options button .art-img { max-width: 100%; }
+    /* text-box answers: smaller, left-aligned, keep line breaks */
+    .oracle-opt { display: block; font-size: 0.78rem; text-align: left; white-space: pre-wrap; }
+
     /* Collapsible quiz settings */
     .settings-detail {
       background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
@@ -253,8 +259,8 @@
   <script type="text/babel">
     /*
      * MTG Card Knowledge Quiz - UNIFIED (alpha)
-     * Version: 0.3.1-unified-local
-     * Last Updated: 2026-06-11 UTC
+     * Version: 0.4.0-unified-local
+     * Last Updated: 2026-06-12 UTC
      *
      * Unified successor prototype to index-custom-only.html (quiz) and
      * index-anki.html (SM-2 flashcards). Design: docs/UNIFIED_APP_DESIGN.md
@@ -265,6 +271,16 @@
      * Both modes write the same per-(list,card,field) SM-2 progress record.
      *
      * CHANGELOG:
+     * v0.4.0-unified-local (2026-06-12) - One question per card per pass; text box + art questions
+     *   - FIX: queue now builds ONE question per card per pass (was card x field, so the same card
+     *     could appear twice in a round with different questions after hints had shown the answers).
+     *     A card counts as "seen" regardless of which field was asked. Field chosen per card:
+     *     never-asked fields first, then most overdue. SRS: card due when its earliest field is due.
+     *   - FIX: endless shuffle no longer repeats the just-answered card as first of the next pass
+     *   - NEW: "Text box" askable question (oracle text MC, card's own name redacted in all options)
+     *   - NEW: "Card art" askable question (pick the right art_crop from 4 images)
+     *   - NEW: card art shown in the hint panel when it is not what is being asked
+     *   - Signed: Claude (Fable 5) @ 2026-06-12 UTC
      * v0.3.1-unified-local (2026-06-11) - Banner aligned to SHARED_HEADER_FOOTER.md canonical spec
      *   - FIX: Contact line now mirrors canonical wording verbatim (protonmail + Bluesky/Reddit)
      *   - FIX: "Also see" links from canonical list (SOS U/O, ECL U/O, 17 Lands Quiz, classic quiz,
@@ -300,7 +316,7 @@
 
     const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-    const APP_VERSION = '0.3.1-unified-local'.replace(/-local$/, '');
+    const APP_VERSION = '0.4.0-unified-local'.replace(/-local$/, '');
     const APP_LAST_UPDATED = '2026-06-11';
     const LS_LISTS = 'mtg_unified_lists_v1';
     const LS_PROGRESS = 'mtg_unified_progress_v1';
@@ -411,11 +427,18 @@
         renderValue: v => v,
       },
       oracleText: {
-        label: 'Oracle text',
-        showOnly: true,                                  // hint display only, never asked
+        label: 'Text box',
+        prompt: 'What is the text box of',
         applicable: c => !!c.oracleText,
-        value: c => c.oracleText,
-        renderValue: v => <ManaText text={v} />,
+        value: c => redactCardName(c.oracleText, c.name),   // own name never leaks into question/options
+        renderValue: v => <span className="oracle-opt"><ManaText text={v} /></span>,
+      },
+      art: {
+        label: 'Card art',
+        prompt: 'Pick the art for',
+        applicable: c => !!(c.imageUris && c.imageUris.art_crop),
+        value: c => c.imageUris.art_crop,
+        renderValue: v => <img className="art-img" src={v} alt="card art" loading="lazy" />,
       },
     };
     const FIELD_IDS = Object.keys(FIELDS);
@@ -551,21 +574,49 @@
       return items;
     }
 
+    // ONE question per card per pass. The hint panel shows all the card's
+    // other info, so asking the same card again with a different field would
+    // be a giveaway — a card counts as "seen" regardless of the field asked.
+    function applicableAskFields(card, fieldIds) {
+      return fieldIds.filter(fid => FIELDS[fid].applicable(card));
+    }
+
+    function pickFieldForCard(card, fids, listId, progress) {
+      // prefer a never-asked field; otherwise the most overdue one
+      const withRecs = fids.map(fid => ({ fid, rec: progress[progressKey(listId, card.name, fid)] }));
+      const fresh = withRecs.filter(x => !x.rec || (x.rec.correct + x.rec.wrong) === 0);
+      if (fresh.length > 0) return pickRandom(fresh).fid;
+      withRecs.sort((a, b) => a.rec.due - b.rec.due);
+      return withRecs[0].fid;
+    }
+
     function buildQueue(list, listId, fieldIds, scheduler, progress, roundLength) {
-      let items = buildItems(list, fieldIds);
-      if (scheduler === 'shuffle') {
-        items = shuffle(items);
-      } else if (scheduler === 'srs') {
-        const now = Date.now();
-        const seen = [], fresh = [];
-        for (const it of items) {
-          const rec = progress[progressKey(listId, it.card.name, it.fieldId)];
-          if (rec && (rec.correct + rec.wrong) > 0) seen.push({ it, rec }); else fresh.push(it);
+      const now = Date.now();
+      const cards = list.cardData
+        .map(card => ({ card, fids: applicableAskFields(card, fieldIds) }))
+        .filter(x => x.fids.length > 0);
+      let entries;
+      if (scheduler === 'srs') {
+        const due = [], fresh = [];
+        for (const entry of cards) {
+          const recs = entry.fids.map(fid => progress[progressKey(listId, entry.card.name, fid)])
+            .filter(r => r && (r.correct + r.wrong) > 0);
+          if (recs.length === entry.fids.length) {
+            // every selected field already studied: card is due when its earliest field is due
+            const minDue = Math.min(...recs.map(r => r.due));
+            if (minDue <= now) due.push({ ...entry, due: minDue });
+          } else {
+            fresh.push(entry);                           // has unstudied fields -> new card
+          }
         }
-        const due = seen.filter(x => x.rec.due <= now).sort((a, b) => a.rec.due - b.rec.due).map(x => x.it);
-        items = [...due, ...fresh];                      // due first, then new cards in list order
+        due.sort((a, b) => a.due - b.due);
+        entries = [...due, ...fresh];                    // due reviews first, then new in list order
+      } else if (scheduler === 'shuffle') {
+        entries = shuffle(cards);
+      } else {
+        entries = cards;   // 'list' keeps order: presets popularity-ranked, searches keep order: ranking
       }
-      // 'list' keeps list order: presets are popularity-ordered, searches keep their order: ranking
+      let items = entries.map(({ card, fids }) => ({ card, fieldId: pickFieldForCard(card, fids, listId, progress) }));
       if (roundLength > 0) items = items.slice(0, roundLength);
       return items;
     }
@@ -844,9 +895,7 @@
         .filter(fid => !(askFieldId === 'colors' && fid === 'castingCost'))
         .map(fid => {
           const f = FIELDS[fid];
-          let v = f.value(card);
-          if (fid === 'oracleText') v = redactCardName(v, card.name);
-          return { fid, label: f.label, node: f.renderValue(v) };
+          return { fid, label: f.label, node: f.renderValue(f.value(card)) };
         });
       if (rows.length === 0) return null;
       return (
@@ -901,7 +950,11 @@
       const [mode, setMode] = useState(saved.mode || 'quiz');                    // 'quiz' | 'flash'
       const [scheduler, setScheduler] = useState(saved.scheduler || 'shuffle');  // 'shuffle' | 'list' | 'srs'
       const [fieldIds, setFieldIds] = useState(saved.askFieldIds && saved.askFieldIds.length ? saved.askFieldIds : DEFAULT_ASK_FIELDS);
-      const [showFieldIds, setShowFieldIds] = useState(saved.showFieldIds && saved.showFieldIds.length ? saved.showFieldIds : FIELD_IDS);
+      const [showFieldIds, setShowFieldIds] = useState(() => {
+        if (!(saved.showFieldIds && saved.showFieldIds.length)) return FIELD_IDS;
+        // settings saved before the art field existed: show art by default
+        return saved.showFieldIds.includes('art') ? saved.showFieldIds : [...saved.showFieldIds, 'art'];
+      });
       const [settingsOpen, setSettingsOpen] = useState(false);
       const [roundLength, setRoundLength] = useState(saved.roundLength != null ? saved.roundLength : 10);
 
@@ -983,7 +1036,9 @@
         if (next >= queue.length) {
           if (roundLength === 0 && scheduler === 'shuffle') {
             // endless shuffle: rebuild and keep going
-            const q = buildQueue(list, list.id, fieldIds, scheduler, progress, 0);
+            let q = buildQueue(list, list.id, fieldIds, scheduler, progress, 0);
+            // don't show the card we just answered as the first of the new pass
+            if (q.length > 1 && item && q[0].card.name === item.card.name) q = [...q.slice(1), q[0]];
             setQueue(q); setIdx(0);
             setRevealed(false); setPicked(null);
             setOptions(mode === 'quiz' && FIELDS[q[0].fieldId].input !== 'colorPicker' ? buildOptions(q[0], list) : []);
