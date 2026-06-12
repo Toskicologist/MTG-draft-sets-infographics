@@ -177,6 +177,8 @@
     .mc-options button .art-img { max-width: 100%; }
     /* text-box answers: smaller, left-aligned, keep line breaks */
     .oracle-opt { display: block; font-size: 0.78rem; text-align: left; white-space: pre-wrap; }
+    /* masked oracle text for "number in text" questions */
+    .ci-masked { white-space: pre-wrap; font-size: 0.86rem; }
 
     /* Collapsible quiz settings */
     .settings-detail {
@@ -259,7 +261,7 @@
   <script type="text/babel">
     /*
      * MTG Card Knowledge Quiz - UNIFIED (alpha)
-     * Version: 0.4.0-unified-local
+     * Version: 0.5.0-unified-local
      * Last Updated: 2026-06-12 UTC
      *
      * Unified successor prototype to index-custom-only.html (quiz) and
@@ -271,6 +273,17 @@
      * Both modes write the same per-(list,card,field) SM-2 progress record.
      *
      * CHANGELOG:
+     * v0.5.0-unified-local (2026-06-12) - Generated "Number in text" questions
+     *   - NEW: askable field "Number in text" - masks one number in the card's oracle text
+     *     ("deals ___ damage", "scry ___") and asks for it; MC options from similar cards' numbers
+     *     plus synthetic +-1..4 fallbacks
+     *   - Patterns: damage, scry, surveil, draw/mill/discard N cards (word numbers per MTG
+     *     templating: "draw three cards"), gain/lose N life, +1/+1 counters, top-N library, tokens
+     *   - Trivial matches skipped ("draw a card" - answer is always 1); numbers inside {mana} ignored
+     *   - Question shows the masked text; full Oracle text hint hidden for these questions (leak)
+     *   - askOnly flag: generated fields excluded from Show-on-card checkboxes and hint panel
+     *   - Tests: scripts/test-textnumber.js (8 cases + coverage: 123/500 preset cards quizzable)
+     *   - Signed: Claude (Fable 5) @ 2026-06-12 UTC
      * v0.4.0-unified-local (2026-06-12) - One question per card per pass; text box + art questions
      *   - FIX: queue now builds ONE question per card per pass (was card x field, so the same card
      *     could appear twice in a round with different questions after hints had shown the answers).
@@ -316,7 +329,7 @@
 
     const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-    const APP_VERSION = '0.4.0-unified-local'.replace(/-local$/, '');
+    const APP_VERSION = '0.5.0-unified-local'.replace(/-local$/, '');
     const APP_LAST_UPDATED = '2026-06-11';
     const LS_LISTS = 'mtg_unified_lists_v1';
     const LS_PROGRESS = 'mtg_unified_progress_v1';
@@ -370,6 +383,54 @@
     }
 
     // ===== Card field definitions (single applicability matrix) =====
+    // ===== "Number in text" question: find a quizzable number in oracle text =====
+    // MTG templating quirk: damage/scry/life use numerals ("deals 3 damage"),
+    // but card draw/mill/discard use words ("draw three cards") - match both.
+    const NUM_WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+    const NW = '(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\\d+)';
+    const TEXT_NUMBER_PATTERNS = [
+      /deals? (\d+) damage/i,
+      /scry (\d+)/i,
+      /surveil (\d+)/i,
+      new RegExp('draws? ' + NW + ' cards?', 'i'),
+      /gains? (\d+) life/i,
+      /loses? (\d+) life/i,
+      new RegExp('mills? ' + NW + ' cards?', 'i'),
+      new RegExp('discards? ' + NW + ' cards?', 'i'),
+      new RegExp(NW + ' \\+1/\\+1 counters?', 'i'),
+      new RegExp('exiles? the top ' + NW + ' cards?', 'i'),
+      new RegExp('looks? at the top ' + NW + ' cards?', 'i'),
+      new RegExp('creates? ' + NW + ' (?:tapped )?[\\d/]+ [^.]{0,60}? tokens', 'i'),
+    ];
+
+    function findNumberSpot(text) {
+      if (!text) return null;
+      for (const re of TEXT_NUMBER_PATTERNS) {
+        const m = re.exec(text);
+        if (!m) continue;
+        const raw = m[1];
+        // "draw a card" is a trivial question (always 1) - skip article matches
+        if (raw.toLowerCase() === 'a' || raw.toLowerCase() === 'an') continue;
+        const num = NUM_WORDS[raw.toLowerCase()] != null ? NUM_WORDS[raw.toLowerCase()] : parseInt(raw, 10);
+        if (isNaN(num)) continue;
+        // locate the captured token inside the match as a whole word (so the
+        // "a" of "draw a card" isn't found inside "draw")
+        const inMatch = m[0].search(new RegExp('\\b' + raw + '\\b'));
+        if (inMatch < 0) continue;
+        return { num, raw, pos: m.index + inMatch };
+      }
+      return null;
+    }
+
+    function maskNumberInText(card) {
+      const text = card.oracleText || '';
+      const spot = findNumberSpot(text);
+      const masked = spot
+        ? text.slice(0, spot.pos) + '___' + text.slice(spot.pos + spot.raw.length)
+        : text;
+      return redactCardName(masked, card.name);
+    }
+
     const COLOR_ORDER = ['W', 'U', 'B', 'R', 'G'];
     const COLOR_LABELS = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green', C: 'Colorless' };
     function isLand(c) { return (c.typeLine || '').includes('Land'); }
@@ -440,9 +501,18 @@
         value: c => c.imageUris.art_crop,
         renderValue: v => <img className="art-img" src={v} alt="card art" loading="lazy" />,
       },
+      textNumber: {
+        label: 'Number in text',
+        prompt: 'What number is missing from the text of',
+        askOnly: true,                                   // generated question, nothing to "show"
+        applicable: c => findNumberSpot(c.oracleText) != null,
+        value: c => String(findNumberSpot(c.oracleText).num),
+        renderValue: v => v,
+      },
     };
     const FIELD_IDS = Object.keys(FIELDS);
     const ASKABLE_FIELD_IDS = FIELD_IDS.filter(f => !FIELDS[f].showOnly);
+    const SHOWABLE_FIELD_IDS = FIELD_IDS.filter(f => !FIELDS[f].askOnly);
     const DEFAULT_ASK_FIELDS = ['castingCost', 'powerToughness', 'typeLine'];
 
     // Redact the card's own name from oracle text (ported from index-custom-only.html)
@@ -699,6 +769,11 @@
       } else if (fieldId === 'typeLine') {
         out.push(...shuffle(['Creature', 'Instant', 'Sorcery', 'Enchantment', 'Artifact', 'Land',
           'Planeswalker', 'Legendary Creature', 'Artifact Creature', 'Enchantment Creature']));
+      } else if (fieldId === 'textNumber') {
+        const n = parseInt(correct) || 0;
+        [n + 1, n - 1, n + 2, n - 2, n + 3, n + 4].forEach(v => {
+          if (v >= 0 && v <= 20) out.push(String(v));
+        });
       }
       return out.filter(v => v !== correct);
     }
@@ -893,6 +968,9 @@
         .filter(fid => !(askFieldId === 'manaValue' && fid === 'castingCost'))
         .filter(fid => !(askFieldId === 'castingCost' && fid === 'manaValue'))
         .filter(fid => !(askFieldId === 'colors' && fid === 'castingCost'))
+        // full text would reveal the masked number; the question shows the masked version itself
+        .filter(fid => !(askFieldId === 'textNumber' && fid === 'oracleText'))
+        .filter(fid => !FIELDS[fid].askOnly)
         .map(fid => {
           const f = FIELDS[fid];
           return { fid, label: f.label, node: f.renderValue(f.value(card)) };
@@ -951,9 +1029,11 @@
       const [scheduler, setScheduler] = useState(saved.scheduler || 'shuffle');  // 'shuffle' | 'list' | 'srs'
       const [fieldIds, setFieldIds] = useState(saved.askFieldIds && saved.askFieldIds.length ? saved.askFieldIds : DEFAULT_ASK_FIELDS);
       const [showFieldIds, setShowFieldIds] = useState(() => {
-        if (!(saved.showFieldIds && saved.showFieldIds.length)) return FIELD_IDS;
-        // settings saved before the art field existed: show art by default
-        return saved.showFieldIds.includes('art') ? saved.showFieldIds : [...saved.showFieldIds, 'art'];
+        if (!(saved.showFieldIds && saved.showFieldIds.length)) return SHOWABLE_FIELD_IDS;
+        // settings saved before the art field existed: show art by default;
+        // drop any ask-only ids that may have been saved by older versions
+        const cleaned = saved.showFieldIds.filter(f => SHOWABLE_FIELD_IDS.includes(f));
+        return cleaned.includes('art') ? cleaned : [...cleaned, 'art'];
       });
       const [settingsOpen, setSettingsOpen] = useState(false);
       const [roundLength, setRoundLength] = useState(saved.roundLength != null ? saved.roundLength : 10);
@@ -1201,7 +1281,7 @@
                     <div className="row">
                       <label className="inline-label">Show on card</label>
                       <div className="field-checks">
-                        {FIELD_IDS.map(fid => (
+                        {SHOWABLE_FIELD_IDS.map(fid => (
                           <label key={fid}>
                             <input type="checkbox" checked={showFieldIds.includes(fid)} onChange={() => toggleShowField(fid)} />
                             {FIELDS[fid].label}
@@ -1254,6 +1334,9 @@
                 <div className="question-prompt">{field.prompt}…</div>
                 <div className="question-cardname">{item.card.name}</div>
                 <CardInfoPanel card={item.card} askFieldId={item.fieldId} showFieldIds={showFieldIds} />
+                {item.fieldId === 'textNumber' && (
+                  <div className="card-info ci-masked"><ManaText text={maskNumberInText(item.card)} /></div>
+                )}
 
                 {/* QUIZ MODE */}
                 {mode === 'quiz' && field.input === 'colorPicker' && !revealed && (
