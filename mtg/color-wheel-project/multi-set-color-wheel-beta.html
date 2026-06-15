@@ -33,6 +33,31 @@
     @media (max-width: 1100px) { .archetype-grid-10 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 860px)  { .archetype-grid-10 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 620px)  { .archetype-grid-10 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* ---- shared site header (image + credits, matches other MTG project pages) ----
+       Image referenced by ABSOLUTE Pages URL so it survives this file's folder
+       location (it lives under mtg/, not the Pages root). See mtg/SHARED_HEADER_FOOTER.md. */
+    .site-header { position: relative; border-radius: 12px; overflow: hidden;
+      width: 100%; max-width: 900px; margin: 0 0 22px; box-shadow: 0 4px 6px rgba(0,0,0,.18);
+      background-image: url('https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018,%202026,%2010_33_59%20PM.png');
+      background-size: cover; background-position: center; background-repeat: no-repeat; }
+    .site-header::before { content: ''; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(135deg, rgba(102,126,234,.78) 0%, rgba(118,75,162,.78) 100%); }
+    .site-header .header-content { position: relative; z-index: 2; padding: 26px 28px; color: #fff; }
+    .site-header h1 { color: #fff; font-size: 28px; margin: 0 0 6px; text-align: center;
+      text-shadow: 1px 1px 3px rgba(0,0,0,.4); font-weight: 700; }
+    .site-header h1 span { color: rgba(255,255,255,.78); font-size: 12px; font-weight: 400; text-shadow: none; }
+    .site-header .subtitle { text-align: center; color: rgba(255,255,255,.95); font-size: 14px; margin: 0 0 14px; line-height: 1.5; }
+    .site-header .data-info { background: rgba(255,255,255,.13); padding: 11px 14px; border-radius: 8px;
+      text-align: center; font-size: 12.5px; line-height: 1.7; color: rgba(255,255,255,.95); }
+    .site-header .data-info a { color: #fff; text-decoration: underline; }
+    .site-header .data-info a:hover { opacity: .85; }
+    .site-header .data-info strong { color: #fff; font-weight: 600; }
+    .site-header .data-info .sep { opacity: .45; margin: 0 6px; }
+    .site-header .data-info .row { margin-top: 7px; }
+    @media (max-width: 560px) {
+      .site-header .header-content { padding: 20px 16px; }
+      .site-header h1 { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -41,7 +66,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.0-beta.3 (BETA)
+ * 1.2.0-beta.4 (BETA)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -51,6 +76,12 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.0-beta.4 (2026-06-15, 17:24 UTC) - [Claude Opus 4.8]
+ *   - Banner restyled to the shared MTG site-header (bell-curve image + gradient overlay, white text),
+ *     matching budgetdeckbuilder-beta: title+version span, subtitle, data-info credits/also-see/contact
+ *   - Header image uses the ABSOLUTE Pages URL (this page lives under mtg/, not the root) so it survives moves
+ *   - Consolidated Scryfall API + Patreon credit, cross-project "Also see", and contact line into the header
+ *
  * 1.2.0-beta.3 (2026-06-14, 23:10 UTC) - [Claude Opus 4.8]
  *   - Added shared data-source credit to the cross-project banner (Scryfall API + Patreon),
  *     per SHARED_HEADER_FOOTER.md — the page now loads Scryfall card images for the hover-links
@@ -841,37 +872,28 @@ function MultiSetColorWheel() {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative',
     }}>
-      {/* Cross-project nav */}
-      <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '12px', textAlign: 'center', lineHeight: '1.6' }}>
-        Also see:{' '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>17 Lands Draft Quiz</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>ECL Ratings Comparison</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>SOS Ratings Comparison</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Card Knowledge Quiz</a>
-        <br />
-        Have feedback? Email <a href="mailto:toskicologist@protonmail.com" style={{ color: '#2563EB', textDecoration: 'underline' }}>toskicologist@protonmail.com</a>.
-        {' '}Follow on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Bluesky</a>
-        {' | '}
-        <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Reddit</a>
-        <br />
-        Card names &amp; images use the{' '}
-        <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Scryfall API</a>
-        {' — '}
-        <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>support them on Patreon</a>.
-      </div>
-
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
-          MTG Draft Archetypes
-        </h1>
-        <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: '0 0 12px 0' }}>
-          Multi-Set Color Wheel · v1.2.0-beta.3 · Select a set or use #ecl, #fdn, #tmt, #sos, #msh
-        </p>
-      </div>
+      {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
+      <header className="site-header">
+        <div className="header-content">
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.4 &middot; 2026-06-15 17:24 UTC &middot; BETA</span></h1>
+          <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
+          <div className="data-info">
+            <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
+            <div className="row">
+              Also see:{' '}
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener noreferrer">SOS Under/Overrated</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener noreferrer">ECL Under/Overrated</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener noreferrer">17 Lands Quiz</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html" target="_blank" rel="noopener noreferrer">Budget Deckbuilder</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">All projects</a>
+            </div>
+            <div className="row">
+              Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Set Selector */}
       <div className="set-tab-bar" style={{
