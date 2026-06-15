@@ -41,7 +41,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.0-beta.2 (BETA)
+ * 1.2.0-beta.3 (BETA)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -51,6 +51,10 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.0-beta.3 (2026-06-14, 23:10 UTC) - [Claude Opus 4.8]
+ *   - Added shared data-source credit to the cross-project banner (Scryfall API + Patreon),
+ *     per SHARED_HEADER_FOOTER.md — the page now loads Scryfall card images for the hover-links
+ *
  * 1.2.0-beta.2 (2026-06-14, 22:00 UTC) - [Claude Opus 4.8]
  *   - MSH: archetype names updated to official WotC Prerelease Guide names (Villains Matter,
  *     Heroes Matter, Attack Alone, Draw Second Card, Creatures in Graveyard, Noncreature Spells, +1/+1 Counters)
@@ -852,6 +856,11 @@ function MultiSetColorWheel() {
         {' '}Follow on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Bluesky</a>
         {' | '}
         <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Reddit</a>
+        <br />
+        Card names &amp; images use the{' '}
+        <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Scryfall API</a>
+        {' — '}
+        <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>support them on Patreon</a>.
       </div>
 
       {/* Header */}
@@ -860,7 +869,7 @@ function MultiSetColorWheel() {
           MTG Draft Archetypes
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: '0 0 12px 0' }}>
-          Multi-Set Color Wheel · v1.2.0-beta.2 · Select a set or use #ecl, #fdn, #tmt, #sos, #msh
+          Multi-Set Color Wheel · v1.2.0-beta.3 · Select a set or use #ecl, #fdn, #tmt, #sos, #msh
         </p>
       </div>
 
