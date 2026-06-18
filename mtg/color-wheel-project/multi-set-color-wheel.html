@@ -361,7 +361,7 @@ const SET_DATA = {
       GW: { text: "Heroes Matter", sub: "Hero typal\nGo-wide", details: "Hero typal go-wide — payoffs trigger when Heroes enter play (91 Hero cards in the set). Swarm the board and overwhelm.\nCards: Black Panther, Vanguard; Agent Phil Coulson; Avengers Assemble!", cards: ["Black Panther, Vanguard", "Spider-Man, To the Rescue", "Agent Phil Coulson", "Avengers Assemble!"], themeSearches: [{ label: "Heroes", url: "https://scryfall.com/search?q=set%3Amsh+t%3Ahero&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       WB: { text: "Attack Alone", sub: "Attack alone\nTempo", details: "Rewards attacking with a single creature — buffs, evasion, and value triggers for solo strikes.\nCards: Black Widow, Double Agent; Agent 13, Sharon Carter; Luke Cage, Power Man.", cards: ["Black Widow, Double Agent", "U.S.Agent, John Walker", "Agent 13, Sharon Carter", "Luke Cage, Power Man"], themeSearches: [{ label: "Lone attackers", url: "https://scryfall.com/search?q=otag%3Asynergy-solo-attack+set%3AMSH&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       UR: { text: "Artifacts", sub: "Artifact synergy\nMidrange", details: "Artifact-matters: equipment, vehicles, and artifact creatures all count. Iron Man leads the lab.\nCards: Iron Man, Master of Machines; Shuri, Wakandan Inventor; Armor Wars.", cards: ["Iron Man, Master of Machines", "Speedball, New Warrior", "Shuri, Wakandan Inventor", "Armor Wars"], themeSearches: [{ label: "Artifacts", url: "https://scryfall.com/search?q=set%3Amsh+t%3Aartifact&unique=cards&as=grid&order=name" }, { label: "Artifact synergy", url: "https://scryfall.com/search?q=otag%3Asynergy-artifact+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      BG: { text: "Creatures in\nGraveyard", sub: "2+ in yard\nMidrange", details: "Threshold-style: cards get better once two or more creature cards sit in your graveyard. Self-mill and profitable trades fuel it.\nCards: Killmonger, Scourge of Wakanda; HYDRA Troopers; Punishing Punch.", cards: ["Killmonger, Scourge of Wakanda", "Titania, Rugged Rumbler", "HYDRA Troopers", "Punishing Punch"], themeSearches: [{ label: "Graveyard matters", url: "https://scryfall.com/search?q=set%3Amsh+otag%3Acards-in-graveyard-matter&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      BG: { text: "Creatures in GY", sub: "2+ in yard\nMidrange", details: "Threshold-style: cards get better once two or more creature cards sit in your graveyard. Self-mill and profitable trades fuel it.\nCards: Killmonger, Scourge of Wakanda; HYDRA Troopers; Punishing Punch.", cards: ["Killmonger, Scourge of Wakanda", "Titania, Rugged Rumbler", "HYDRA Troopers", "Punishing Punch"], themeSearches: [{ label: "Graveyard matters", url: "https://scryfall.com/search?q=set%3Amsh+otag%3Acards-in-graveyard-matter&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       RW: { text: "Noncreature Spells", sub: "Noncreature spells\nAggro", details: "The classic Izzet spells deck moved to Boros: prowess-style payoffs for casting noncreature spells, with an equipment subtheme.\nCards: Thor Odinson; Iron Fist, Living Weapon; Colleen Wing, Street Samurai.", cards: ["Thor Odinson", "War Machine, Legacy of Iron", "Iron Fist, Living Weapon", "Colleen Wing, Street Samurai"], themeSearches: [{ label: "Spell synergy", url: "https://scryfall.com/search?q=%28otag%3Asynergy-noncreature+OR+otag%3Asynergy-instant%29+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       GU: { text: "+1/+1 Counters", sub: "+1/+1 counters\nMidrange", details: "+1/+1 counter generation and payoffs, fed by power-up, teamwork, and connive counters from across the set.\nCards: Ant-Man, Colony Commander; Hellcat, Undying Vigilante; Go Nuts!", cards: ["Ant-Man, Colony Commander", "Beast, Erudite Aerialist", "Hellcat, Undying Vigilante", "Go Nuts!"], themeSearches: [{ label: "Counters matter", url: "https://scryfall.com/search?q=otag%3Acounters-matter+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
     },
@@ -605,7 +605,6 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const labelData = labels[code] || labels[group.v + group.u];
   if (!labelData) return null;
   const { bg, fg } = getLabelColors(group.u, group.v);
-  const textLines = labelData.text ? labelData.text.split('\n') : [];
   const subLines = labelData.sub ? labelData.sub.split('\n') : [];
   const boxBg = isSimple ? '#FFFFFF' : bg;
   const boxStroke = isSimple ? '#000000' : blend(group.u, group.v);
@@ -613,10 +612,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const isPrimary = primaryArchetypes.includes(code);
 
   const lh1 = config.fontSize * 1.1, lh2 = config.fontSize * 1.1, lh3 = config.fontSize * 1.1;
-  const textBlockHeight = lh2 * textLines.length + (textLines.length > 1 ? (textLines.length - 1) * 7 : 0);
-  const totalTextHeight = lh1 + textBlockHeight + (subLines.length > 0 ? lh3 + (subLines.length - 1) * 7 : 0);
+  const totalTextHeight = lh1 + lh2 + (subLines.length > 0 ? lh3 + (subLines.length - 1) * 7 : 0);
   const startY = group.cy - totalTextHeight / 2;
-  const y1 = startY + lh1 * 0.8, y2 = y1 + lh2, y3 = y2 + textBlockHeight + lh3 * 0.9;
+  const y1 = startY + lh1 * 0.8, y2 = y1 + lh2, y3 = y2 + lh3 * 0.9;
 
   useEffect(() => {
     if (groupRef.current) {
@@ -638,9 +636,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
         strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
         style={{ transition: 'all 0.2s ease' }} />
       <text x={group.cx} y={y1} textAnchor="middle" fontSize={config.fontSize} fontWeight="bold" fill={textColor}>{code}</text>
-      <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>
-        {textLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
-      </text>
+      <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>{labelData.text}</text>
       {subLines.length > 0 && (
         <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
           {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
