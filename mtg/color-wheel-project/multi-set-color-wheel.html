@@ -13,8 +13,8 @@
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
   <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
   <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" />
@@ -66,7 +66,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.0
+ * 1.2.1
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -76,6 +76,11 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.1 (2026-06-18, 15:12 UTC) - [Claude Haiku 4.5]
+ *   - MSH color boxes: "Top commons:", "Top uncommons:", "Top Rares and mythics:" now bold and on new lines
+ *   - Fixed linkifyCards to convert \n to <br /> elements for proper line break rendering
+ *   - Archetype "Cards:" labels bold and on new lines
+ *
  * 1.2.0 (2026-06-18, 14:36 UTC) - [Claude Opus 4.8] - PROMOTED FROM BETA
  *   - Marvel Super Heroes (MSH) tab now live: all 10 color-pair archetypes (official WotC names),
  *     card-name hover-image links to Scryfall, per-archetype theme searches, Modal/Transforming DFC mechanic.
@@ -673,6 +678,7 @@ const CardLink = ({ cardName, setCode, fg }) => {
 
 // Wrap any known card names found in `text` with hover-image CardLinks (matches longest names first)
 // Also handles bold formatting for "Cards:", "Top commons:", "Top uncommons:", and "Top Rares and mythics:" markers
+// Converts \n to <br /> for proper line break rendering
 const linkifyCards = (text, cards, setCode, fg) => {
   if (!text || !cards || cards.length === 0) return text;
 
@@ -693,7 +699,7 @@ const linkifyCards = (text, cards, setCode, fg) => {
   processedLines.forEach((lineItem, lineIdx) => {
     if (typeof lineItem === 'object' && lineItem.__bold) {
       segs.push(lineItem);
-      if (lineIdx < processedLines.length - 1) segs.push('\n');
+      if (lineIdx < processedLines.length - 1) segs.push({ __br: true });
       return;
     }
 
@@ -712,7 +718,7 @@ const linkifyCards = (text, cards, setCode, fg) => {
     });
 
     segs.push(...lineSeg);
-    if (lineIdx < processedLines.length - 1) segs.push('\n');
+    if (lineIdx < processedLines.length - 1) segs.push({ __br: true });
   });
 
   return segs.map((s, i) => {
@@ -720,6 +726,8 @@ const linkifyCards = (text, cards, setCode, fg) => {
       return <React.Fragment key={i}>{s}</React.Fragment>;
     } else if (s.__bold) {
       return <b key={i}>{s.__text}</b>;
+    } else if (s.__br) {
+      return <br key={i} />;
     } else {
       return <CardLink key={i} cardName={s.__card} setCode={setCode} fg={fg} />;
     }
@@ -767,7 +775,7 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>{d.cards ? linkifyCards(d.description, d.cards, sc, fg) : d.description}</div>
+              <div style={{ fontSize: '0.75rem', lineHeight: '1.5', marginBottom: '8px', opacity: 0.9, textAlign: 'left' }}>{d.cards ? linkifyCards(d.description, d.cards, sc, fg) : d.description}</div>
             )}
             <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>Scryfall:</div>
             <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
@@ -921,7 +929,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0 &middot; 2026-06-18 14:36 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.1 &middot; 2026-06-18 15:12 UTC</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
