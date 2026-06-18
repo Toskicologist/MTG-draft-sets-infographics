@@ -4,17 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel</title>
-  <meta property="og:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
-  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
+  <meta property="og:title" content="Marvel Super Heroes Draft Archetypes — MTG Multi-Set Color Wheel">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel featuring Marvel Super Heroes — plus Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven.">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
-  <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
-  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview.png">
+  <meta name="twitter:title" content="Marvel Super Heroes Draft Archetypes — MTG Multi-Set Color Wheel">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel featuring Marvel Super Heroes — plus Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven.">
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
   <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" />
@@ -59,9 +59,7 @@
       .site-header h1 { font-size: 22px; }
     }
   </style>
-  <script data-goatcounter="https://toskicologist.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-  </head>
+</head>
 <body>
   <div id="root"></div>
 
@@ -78,6 +76,12 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.3 (2026-06-18, 18:24 UTC) - [Claude Opus 4.8]
+ *   - Social preview (og/twitter): new MSH preview image (msh-color-wheel-preview.png)
+ *   - og/twitter title + description now lead with Marvel Super Heroes
+ *   - NOTE: og:image is static per-page; URL #hash (e.g. #msh) is not seen by crawlers,
+ *     so the same preview applies to all set tabs (cannot vary by fragment on static hosting)
+ *
  * 1.2.2 (2026-06-18, 15:15 UTC) - [Claude Haiku 4.5]
  *   - MSH color descriptions restructured: labels on own lines, cards on next line
  *   - linkifyCards now properly detects and bolds "Top commons:", "Top uncommons:", "Top Rares and mythics:"
@@ -931,7 +935,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.2 &middot; 2026-06-18 15:15 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.3 &middot; 2026-06-18 18:24 UTC</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
