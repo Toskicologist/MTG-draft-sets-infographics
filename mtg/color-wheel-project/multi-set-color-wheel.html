@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel</title>
   <meta property="og:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
   <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
-  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven">
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
   <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" />
@@ -28,6 +28,36 @@
       .color-grid { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; }
       .set-tab-bar { flex-wrap: wrap !important; }
     }
+    /* "All 10 Archetypes" grid: max 5 across when wide, never fewer than 2 when narrow */
+    .archetype-grid-10 { display: grid; gap: 12px; align-self: stretch; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    @media (max-width: 1100px) { .archetype-grid-10 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 860px)  { .archetype-grid-10 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 620px)  { .archetype-grid-10 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* ---- shared site header (image + credits, matches other MTG project pages) ----
+       Image referenced by ABSOLUTE Pages URL so it survives this file's folder
+       location (it lives under mtg/, not the Pages root). See mtg/SHARED_HEADER_FOOTER.md. */
+    .site-header { position: relative; border-radius: 12px; overflow: hidden;
+      width: 100%; max-width: 900px; margin: 0 0 22px; box-shadow: 0 4px 6px rgba(0,0,0,.18);
+      background-image: url('https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018,%202026,%2010_33_59%20PM.png');
+      background-size: cover; background-position: center; background-repeat: no-repeat; }
+    .site-header::before { content: ''; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(135deg, rgba(102,126,234,.78) 0%, rgba(118,75,162,.78) 100%); }
+    .site-header .header-content { position: relative; z-index: 2; padding: 26px 28px; color: #fff; }
+    .site-header h1 { color: #fff; font-size: 28px; margin: 0 0 6px; text-align: center;
+      text-shadow: 1px 1px 3px rgba(0,0,0,.4); font-weight: 700; }
+    .site-header h1 span { color: rgba(255,255,255,.78); font-size: 12px; font-weight: 400; text-shadow: none; }
+    .site-header .subtitle { text-align: center; color: rgba(255,255,255,.95); font-size: 14px; margin: 0 0 14px; line-height: 1.5; }
+    .site-header .data-info { background: rgba(255,255,255,.13); padding: 11px 14px; border-radius: 8px;
+      text-align: center; font-size: 12.5px; line-height: 1.7; color: rgba(255,255,255,.95); }
+    .site-header .data-info a { color: #fff; text-decoration: underline; }
+    .site-header .data-info a:hover { opacity: .85; }
+    .site-header .data-info strong { color: #fff; font-weight: 600; }
+    .site-header .data-info .sep { opacity: .45; margin: 0 6px; }
+    .site-header .data-info .row { margin-top: 7px; }
+    @media (max-width: 560px) {
+      .site-header .header-content { padding: 20px 16px; }
+      .site-header h1 { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -36,15 +66,59 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.1.1 React (STABLE)
+ * 1.2.0
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
  *   - Magic: The Gathering Foundations (FDN) - v1.0.0 - Nov 2024
  *   - Teenage Mutant Ninja Turtles (TMT) - v1.0.4 - Mar 2026
  *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
+ *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.0 (2026-06-18, 14:36 UTC) - [Claude Opus 4.8] - PROMOTED FROM BETA
+ *   - Marvel Super Heroes (MSH) tab now live: all 10 color-pair archetypes (official WotC names),
+ *     card-name hover-image links to Scryfall, per-archetype theme searches, Modal/Transforming DFC mechanic.
+ *   - Shared site-header banner (bell-curve image + gradient, white text) matching other MTG projects.
+ *   - Fixed card hover-image z-order issue (was trapped under adjacent boxes by opacity stacking context;
+ *     now uses ReactDOM portal to document.body).
+ *   - Responsive "All 10 Archetypes" grid (max 5 cols wide, min 2 narrow).
+ *
+ * 1.2.0-beta.5 (2026-06-15, 17:40 UTC) - [Claude Opus 4.8]
+ *   - Fix: card-name hover image now renders via a ReactDOM portal to document.body, so it sits above
+ *     all archetype/mechanic boxes. (Those boxes' opacity<1 text divs create a stacking context that
+ *     trapped the position:fixed image below later-painted sibling boxes — SOS was unaffected because
+ *     its CardLink container has no opacity.)
+ *
+ * 1.2.0-beta.4 (2026-06-15, 17:24 UTC) - [Claude Opus 4.8]
+ *   - Banner restyled to the shared MTG site-header (bell-curve image + gradient overlay, white text),
+ *     matching budgetdeckbuilder-beta: title+version span, subtitle, data-info credits/also-see/contact
+ *   - Header image uses the ABSOLUTE Pages URL (this page lives under mtg/, not the root) so it survives moves
+ *   - Consolidated Scryfall API + Patreon credit, cross-project "Also see", and contact line into the header
+ *
+ * 1.2.0-beta.3 (2026-06-14, 23:10 UTC) - [Claude Opus 4.8]
+ *   - Added shared data-source credit to the cross-project banner (Scryfall API + Patreon),
+ *     per SHARED_HEADER_FOOTER.md — the page now loads Scryfall card images for the hover-links
+ *
+ * 1.2.0-beta.2 (2026-06-14, 22:00 UTC) - [Claude Opus 4.8]
+ *   - MSH: archetype names updated to official WotC Prerelease Guide names (Villains Matter,
+ *     Heroes Matter, Attack Alone, Draw Second Card, Creatures in Graveyard, Noncreature Spells, +1/+1 Counters)
+ *   - MSH: signpost + example card names are now hover-image links to Scryfall (reuses CardLink)
+ *   - MSH: dropped unsourced per-color editorial text (prerelease guide has no per-color overview); kept archetype mapping only
+ *   - MSH: removed "/ Card Game Base" citations (text came from WotC + Draftsim, not CGB); added official Prerelease Guide link
+ *   - MSH: added per-archetype Scryfall theme searches (t:villain, t:hero, solo-attack, artifact, graveyard, spells, counters)
+ *   - MSH: Set-Wide Mechanics — removed Harness/Infinity Stones & Worthy (card-specific, not set mechanics);
+ *     added Modal/Transforming Double-Faced Cards (is:mdfc), sourced to release notes
+ *   - "All 10 Archetypes" grid now caps at 5 columns wide, min 2 narrow (.archetype-grid-10; also affects FDN)
+ *   - Generic Set-Wide Mechanics caption no longer says "colleges"
+ * 1.2.0-beta.1 (2026-06-12, 17:46 UTC) - [Claude Fable 5]
+ *   - Added Marvel Super Heroes (MSH) with all 10 color-pair archetypes
+ *   - Archetype data from Draftsim & Card Game Base MSH draft guides; mechanic
+ *     reminder text verified against Scryfall oracle text (2026-06-12 snapshot)
+ *   - Set-wide mechanics: Teamwork, Power-up, Connive, Plans, Harness/Infinity Stones, Worthy
+ *   - MSH tab uses Scryfall SVG set icon (no keyrune glyph yet); URL hash #msh supported
+ *   - NOTE: no 17lands top-cards data yet (set releases 2026-06-26); add post-release
+ *
  * 1.1.1 (2026-04-14, 18:07 UTC) - [Claude Sonnet 4.6]
  *   - ECL: Fixed UB Flash source attribution (was WotC Prerelease Guide, correct is Draftsim)
  *   - ECL: Restored "blight" mention in Black color description
@@ -260,10 +334,55 @@ const SET_DATA = {
       { name: "Converge", keyword: "converge", description: "Converge spells count the number of different colors of mana spent to cast them, scaling their effect from 0 to 5. Even in a two-color deck, fixing and treasure tokens can push your converge count higher for stronger payoffs.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
       { name: "Paradigm", keyword: "paradigm", description: "A keyword on a cycle of Lesson sorceries, one per college. The first time it resolves, exile it. From then on, at the beginning of each of your first main phases, you may cast a copy without paying its mana cost. Unlike the old Epic mechanic, you can still cast other spells normally.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/secrets-of-strixhaven-mechanics" },
     ]
+  },
+
+  MSH: {
+    key: 'MSH',
+    name: 'Marvel Super Heroes',
+    shortName: 'MSH',
+    releaseDate: 'June 26, 2026',
+    version: '1.1.0',
+    scryfallCodes: ['msh'],
+    primaryArchetypes: ['WU', 'UB', 'BR', 'RG', 'GW', 'WB', 'UR', 'BG', 'RW', 'GU'],
+    primaryLabel: 'All 10 archetypes supported',
+    accentColor: '#ED1D24',
+    colorDescriptions: {
+      W: { name: "White", description: "Feeds Teamwork (WU), Attack Alone (WB), Heroes Matter (GW), and Noncreature Spells (RW)." },
+      U: { name: "Blue", description: "Feeds Teamwork (WU), Draw Second Card (UB), Artifacts (UR), and +1/+1 Counters (GU)." },
+      B: { name: "Black", description: "Feeds Draw Second Card (UB), Villains Matter (BR), Attack Alone (WB), and Creatures in Graveyard (BG)." },
+      R: { name: "Red", description: "Feeds Villains Matter (BR), Power-Up (RG), Artifacts (UR), and Noncreature Spells (RW)." },
+      G: { name: "Green", description: "Feeds Power-Up (RG), Heroes Matter (GW), Creatures in Graveyard (BG), and +1/+1 Counters (GU)." }
+    },
+    labels: {
+      WU: { text: "Teamwork", sub: "Tap synergy\nMidrange", details: "Tap your team to pay teamwork costs on instants and sorceries for upgraded or additional effects, then profit from tap payoffs like Agent Maria Hill. Signposts: Captain America, Living Legend; Agent Maria Hill; Murdock's Crusade.", cards: ["Captain America, Living Legend", "Agent Maria Hill", "Murdock's Crusade"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "teamwork", mechanicDef: "Teamwork N — \"As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.\" Paying it upgrades the spell's effect or adds a bonus effect." },
+      UB: { text: "Draw Second Card", sub: "Connive\nControl", details: "Cares about drawing your second card each turn, mostly via connive. Kang is both enabler and payoff for the strategy. Signposts: Kang, Temporal Tyrant; Construct a Cosmic Cube; Leader, Super-Genius.", cards: ["Kang, Temporal Tyrant", "Construct a Cosmic Cube", "Leader, Super-Genius"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "connive", mechanicDef: "Connive — \"Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.\"" },
+      BR: { text: "Villains Matter", sub: "Villain typal\nAggro", details: "Draft as many Villains as possible — payoffs trigger when other Villains enter play (69 Villain cards in the set). Connive plays a small supporting role. An aggressive engine deck. Signposts: Madame Hydra; The Masters of Evil; Doom Reigns Supreme.", cards: ["Madame Hydra", "The Masters of Evil", "Doom Reigns Supreme"], themeSearches: [{ label: "Villains", url: "https://scryfall.com/search?q=set%3Amsh+t%3Avillain&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      RG: { text: "Power-Up", sub: "Big creatures\nAggro", details: "Large creatures plus power-up abilities as mana sinks — turn Hulk into an 11/10 and SMASH. Signposts: Hulk, Gamma Goliath; HULK SMASH!; Doc Samson, Super Psychiatrist.", cards: ["Hulk, Gamma Goliath", "HULK SMASH!", "Doc Samson, Super Psychiatrist"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "power-up", mechanicDef: "Power-up — One-shot activated abilities that put +1/+1 counters on the creature. \"Activate each power-up ability only once. Reduce the cost by its mana cost if it entered this turn.\"" },
+      GW: { text: "Heroes Matter", sub: "Hero typal\nGo-wide", details: "Hero typal go-wide — payoffs trigger when Heroes enter play (91 Hero cards in the set). Swarm the board and overwhelm. Signposts: Black Panther, Vanguard; Agent Phil Coulson; Avengers Assemble!", cards: ["Black Panther, Vanguard", "Agent Phil Coulson", "Avengers Assemble!"], themeSearches: [{ label: "Heroes", url: "https://scryfall.com/search?q=set%3Amsh+t%3Ahero&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      WB: { text: "Attack Alone", sub: "Attack alone\nTempo", details: "Rewards attacking with a single creature — buffs, evasion, and value triggers for solo strikes. Signposts: Black Widow, Double Agent; Agent 13, Sharon Carter; Luke Cage, Power Man.", cards: ["Black Widow, Double Agent", "Agent 13, Sharon Carter", "Luke Cage, Power Man"], themeSearches: [{ label: "Lone attackers", url: "https://scryfall.com/search?q=otag%3Asynergy-solo-attack+set%3AMSH&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      UR: { text: "Artifacts", sub: "Artifact synergy\nMidrange", details: "Artifact-matters: equipment, vehicles, and artifact creatures all count. Iron Man leads the lab. Signposts: Iron Man, Master of Machines; Shuri, Wakandan Inventor; Armor Wars.", cards: ["Iron Man, Master of Machines", "Shuri, Wakandan Inventor", "Armor Wars"], themeSearches: [{ label: "Artifacts", url: "https://scryfall.com/search?q=set%3Amsh+t%3Aartifact&unique=cards&as=grid&order=name" }, { label: "Artifact synergy", url: "https://scryfall.com/search?q=otag%3Asynergy-artifact+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      BG: { text: "Creatures in Graveyard", sub: "2+ in yard\nMidrange", details: "Threshold-style: cards get better once two or more creature cards sit in your graveyard. Self-mill and profitable trades fuel it. Signposts: Killmonger, Scourge of Wakanda; HYDRA Troopers; Punishing Punch.", cards: ["Killmonger, Scourge of Wakanda", "HYDRA Troopers", "Punishing Punch"], themeSearches: [{ label: "Graveyard matters", url: "https://scryfall.com/search?q=set%3Amsh+otag%3Acards-in-graveyard-matter&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      RW: { text: "Noncreature Spells", sub: "Noncreature spells\nAggro", details: "The classic Izzet spells deck moved to Boros: prowess-style payoffs for casting noncreature spells, with an equipment subtheme. Signposts: Thor Odinson; Iron Fist, Living Weapon; Colleen Wing, Street Samurai.", cards: ["Thor Odinson", "Iron Fist, Living Weapon", "Colleen Wing, Street Samurai"], themeSearches: [{ label: "Spell synergy", url: "https://scryfall.com/search?q=%28otag%3Asynergy-noncreature+OR+otag%3Asynergy-instant%29+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      GU: { text: "+1/+1 Counters", sub: "+1/+1 counters\nMidrange", details: "+1/+1 counter generation and payoffs, fed by power-up, teamwork, and connive counters from across the set. Signposts: Ant-Man, Colony Commander; Hellcat, Undying Vigilante; Go Nuts!", cards: ["Ant-Man, Colony Commander", "Hellcat, Undying Vigilante", "Go Nuts!"], themeSearches: [{ label: "Counters matter", url: "https://scryfall.com/search?q=otag%3Acounters-matter+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+    },
+    resourceLinks: [
+      { label: "Marvel Super Heroes Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", desc: "Official Wizards of the Coast archetype guide — all 10 two-color pairs with signpost cards", official: true },
+      { label: "Marvel Super Heroes Mechanics", url: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics", desc: "Official Wizards of the Coast mechanics breakdown (teamwork, power-up, connive, Plans)", official: false },
+      { label: "Marvel Super Heroes Release Notes", url: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-release-notes", desc: "Official Wizards of the Coast release notes (detailed rulings, double-faced cards)", official: false },
+      { label: "Exploring All 10 Marvel Super Heroes Limited Archetypes", url: "https://draftsim.com/mtg-msh-draft-archetypes-6-3-26/", desc: "Draftsim's archetype-by-archetype breakdown with signpost cards" },
+      { label: "MSH Draft Archetypes To Look Out For", url: "https://www.thegamer.com/magic-the-gathering-marvel-super-heroes-draft-archetypes/", desc: "TheGamer's archetype overview" },
+    ],
+    setMechanics: [
+      { name: "Teamwork", keyword: "teamwork", description: "An optional additional cost on instants and sorceries (12 cards): tap any number of untapped creatures you control with total power N or more. Paying it upgrades the spell's effect or unlocks a bonus effect. Centered in WU but appears across white and blue.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics" },
+      { name: "Power-up", keyword: "power-up", description: "One-shot activated abilities (24 cards) that put +1/+1 counters on the creature: \"Activate each power-up ability only once. Reduce the cost by its mana cost if it entered this turn.\" Centered in RG/GU but appears in all colors.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics" },
+      { name: "Connive", keyword: "connive", description: "Returning mechanic (11 cards): \"Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.\" Centered in UB with a smaller BR presence.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics" },
+      { name: "Plans", keyword: "plan", description: "Enchantments that build toward an ultimate reward: a triggered ability puts plan counters on the enchantment as you meet its condition; when the fourth plan counter is placed, sacrifice it and unlock the payoff (e.g. Political Triumph, Rewrite History).", cards: ["Political Triumph", "Rewrite History"], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics" },
+      { name: "Modal / Transforming Double-Faced Cards", description: "Five modal double-faced cards (e.g. Bruce Banner // The Incredible Hulk, Tony Stark // The Invincible Iron Man) have two faces, and you choose which to cast. Per the release notes, this set's modal DFCs can also transform during play — flipping the alter ego to the more powerful hero side.", cards: ["Bruce Banner // The Incredible Hulk", "Tony Stark // The Invincible Iron Man"], source: "WotC Release Notes", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-release-notes", scryfallQuery: "https://scryfall.com/search?q=set%3Amsh+is%3Amdfc&unique=cards&as=grid&order=rarity", scryfallLabel: "is:mdfc" },
+    ]
   }
 };
 
-const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS'];
+const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -542,12 +661,37 @@ const CardLink = ({ cardName, setCode, fg }) => {
          onMouseLeave={() => setHovered(false)}>
         {cardName}
       </a>
-      {hovered && (
-        <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 9999, pointerEvents: 'none' }}>
+      {hovered && ReactDOM.createPortal(
+        <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 99999, pointerEvents: 'none' }}>
           <img src={imgSrc} alt={cardName} style={{ width: '150px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', display: 'block' }} />
-        </span>
+        </span>,
+        document.body
       )}
     </span>
+  );
+};
+
+// Wrap any known card names found in `text` with hover-image CardLinks (matches longest names first)
+const linkifyCards = (text, cards, setCode, fg) => {
+  if (!text || !cards || cards.length === 0) return text;
+  const sorted = [...cards].sort((a, b) => b.length - a.length);
+  let segs = [text];
+  sorted.forEach(card => {
+    const out = [];
+    segs.forEach(seg => {
+      if (typeof seg !== 'string') { out.push(seg); return; }
+      const parts = seg.split(card);
+      parts.forEach((part, i) => {
+        if (part) out.push(part);
+        if (i < parts.length - 1) out.push({ __card: card });
+      });
+    });
+    segs = out;
+  });
+  return segs.map((s, i) =>
+    typeof s === 'string'
+      ? <React.Fragment key={i}>{s}</React.Fragment>
+      : <CardLink key={i} cardName={s.__card} setCode={setCode} fg={fg} />
   );
 };
 
@@ -638,7 +782,7 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
           {labelData.sub.replace('\n', ' / ')}
         </div>
       )}
-      <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>{labelData.details}</div>
+      <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>{linkifyCards(labelData.details, labelData.cards, sc, fg)}</div>
       {labelData.sourceText && (
         <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '12px', fontStyle: 'italic' }}>
           Source:{' '}
@@ -743,32 +887,28 @@ function MultiSetColorWheel() {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative',
     }}>
-      {/* Cross-project nav */}
-      <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '12px', textAlign: 'center', lineHeight: '1.6' }}>
-        Also see:{' '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>17 Lands Draft Quiz</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>ECL Ratings Comparison</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>SOS Ratings Comparison</a>
-        {' | '}
-        <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Card Knowledge Quiz</a>
-        <br />
-        Have feedback? Email <a href="mailto:toskicologist@protonmail.com" style={{ color: '#2563EB', textDecoration: 'underline' }}>toskicologist@protonmail.com</a>.
-        {' '}Follow on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Bluesky</a>
-        {' | '}
-        <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Reddit</a>
-      </div>
-
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
-          MTG Draft Archetypes
-        </h1>
-        <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: '0 0 12px 0' }}>
-          Multi-Set Color Wheel · v1.1.0 · Select a set or use #ecl, #fdn, #tmt, #sos
-        </p>
-      </div>
+      {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
+      <header className="site-header">
+        <div className="header-content">
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0 &middot; 2026-06-18 14:36 UTC</span></h1>
+          <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
+          <div className="data-info">
+            <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
+            <div className="row">
+              Also see:{' '}
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener noreferrer">SOS Under/Overrated</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener noreferrer">ECL Under/Overrated</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener noreferrer">17 Lands Quiz</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html" target="_blank" rel="noopener noreferrer">Budget Deckbuilder</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">All projects</a>
+            </div>
+            <div className="row">
+              Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Set Selector */}
       <div className="set-tab-bar" style={{
@@ -786,6 +926,7 @@ function MultiSetColorWheel() {
           }[key];
           const scryfallIcon = {
             SOS: 'https://svgs.scryfall.io/sets/sos.svg',
+            MSH: 'https://svgs.scryfall.io/sets/msh.svg',
           }[key];
           return (
             <button
@@ -913,8 +1054,7 @@ function MultiSetColorWheel() {
             <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
               {currentSet.name} supports all 10 color pairs with dedicated archetypes.
             </p>
-            <div className="archetype-grid" style={{ display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
+            <div className="archetype-grid-10">
               {Object.entries(currentSet.labels).map(([pair, data]) => {
                 const { bg, fg } = getLabelColors(pair[0], pair[1]);
                 const sc = currentSet.scryfallCodes[0];
@@ -926,7 +1066,7 @@ function MultiSetColorWheel() {
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
                     <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
-                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
+                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
                         Source:{' '}
@@ -954,6 +1094,13 @@ function MultiSetColorWheel() {
                           o:{data.mechanic}
                         </a>
                       )}
+                      {data.themeSearches && data.themeSearches.map((ts, ti) => (
+                        <a key={ti} href={ts.url} target="_blank" rel="noopener noreferrer"
+                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
+                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                          {ts.label}
+                        </a>
+                      ))}
                     </div>
                   </div>
                 );
@@ -985,7 +1132,7 @@ function MultiSetColorWheel() {
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
                     <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
-                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
+                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
                         Source:{' '}
@@ -1058,7 +1205,7 @@ function MultiSetColorWheel() {
                         <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>
                           {pair}: {data.text}{data.sub ? ` — ${data.sub.replace('\n', ' / ')}` : ''}
                         </div>
-                        <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
+                        <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
                         {data.sourceText && (
                           <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
                             Source:{' '}
@@ -1106,18 +1253,18 @@ function MultiSetColorWheel() {
               Set-Wide Mechanics
             </h2>
             <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-              These mechanics appear across all colleges, not tied to a specific color pair.
+              These mechanics appear across the set, not tied to a specific color pair.
             </p>
             <div className="archetype-grid" style={{ display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
               {currentSet.setMechanics.map((mech, i) => {
                 const sc = currentSet.scryfallCodes[0];
-                const mechUrl = `https://scryfall.com/search?q=set%3A${sc}+o%3A${mech.keyword}`;
+                const mechUrl = mech.scryfallQuery || `https://scryfall.com/search?q=set%3A${sc}+o%3A${mech.keyword}`;
                 return (
                   <div key={i} style={{ backgroundColor: '#78350F', color: '#FEF3C7', padding: '16px', borderRadius: '8px',
                     border: `2px solid #F59E0B` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>{mech.name}</div>
-                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{mech.description}</div>
+                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(mech.description, mech.cards, sc, '#FDE68A')}</div>
                     {mech.source && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
                         Source: <a href={mech.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#FDE68A', textDecoration: 'underline' }}>{mech.source}</a>
@@ -1127,7 +1274,7 @@ function MultiSetColorWheel() {
                     <a href={mechUrl} target="_blank" rel="noopener noreferrer"
                        style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: '#FEF3C7', color: '#78350F',
                          textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                      o:{mech.keyword}
+                      {mech.scryfallLabel || ('o:' + mech.keyword)}
                     </a>
                   </div>
                 );
