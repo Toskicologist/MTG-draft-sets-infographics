@@ -66,7 +66,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.0-beta.4 (BETA)
+ * 1.2.0-beta.5 (BETA)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -76,6 +76,12 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.0-beta.5 (2026-06-15, 17:40 UTC) - [Claude Opus 4.8]
+ *   - Fix: card-name hover image now renders via a ReactDOM portal to document.body, so it sits above
+ *     all archetype/mechanic boxes. (Those boxes' opacity<1 text divs create a stacking context that
+ *     trapped the position:fixed image below later-painted sibling boxes — SOS was unaffected because
+ *     its CardLink container has no opacity.)
+ *
  * 1.2.0-beta.4 (2026-06-15, 17:24 UTC) - [Claude Opus 4.8]
  *   - Banner restyled to the shared MTG site-header (bell-curve image + gradient overlay, white text),
  *     matching budgetdeckbuilder-beta: title+version span, subtitle, data-info credits/also-see/contact
@@ -647,10 +653,11 @@ const CardLink = ({ cardName, setCode, fg }) => {
          onMouseLeave={() => setHovered(false)}>
         {cardName}
       </a>
-      {hovered && (
-        <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 9999, pointerEvents: 'none' }}>
+      {hovered && ReactDOM.createPortal(
+        <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 99999, pointerEvents: 'none' }}>
           <img src={imgSrc} alt={cardName} style={{ width: '150px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', display: 'block' }} />
-        </span>
+        </span>,
+        document.body
       )}
     </span>
   );
@@ -875,7 +882,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.4 &middot; 2026-06-15 17:24 UTC &middot; BETA</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.5 &middot; 2026-06-15 17:40 UTC &middot; BETA</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
