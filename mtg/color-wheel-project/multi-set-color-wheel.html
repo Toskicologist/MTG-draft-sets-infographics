@@ -13,8 +13,8 @@
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
   <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
   <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" />
@@ -76,10 +76,10 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
- * 1.2.1 (2026-06-18, 15:12 UTC) - [Claude Haiku 4.5]
- *   - MSH color boxes: "Top commons:", "Top uncommons:", "Top Rares and mythics:" now bold and on new lines
- *   - Fixed linkifyCards to convert \n to <br /> elements for proper line break rendering
- *   - Archetype "Cards:" labels bold and on new lines
+ * 1.2.2 (2026-06-18, 15:15 UTC) - [Claude Haiku 4.5]
+ *   - MSH color descriptions restructured: labels on own lines, cards on next line
+ *   - linkifyCards now properly detects and bolds "Top commons:", "Top uncommons:", "Top Rares and mythics:"
+ *   - All labels render bold on new lines with proper spacing
  *
  * 1.2.0 (2026-06-18, 14:36 UTC) - [Claude Opus 4.8] - PROMOTED FROM BETA
  *   - Marvel Super Heroes (MSH) tab now live: all 10 color-pair archetypes (official WotC names),
@@ -352,11 +352,11 @@ const SET_DATA = {
     primaryLabel: 'All 10 archetypes supported',
     accentColor: '#ED1D24',
     colorDescriptions: {
-      W: { name: "White", description: "\nTop commons: Web Up; Hero in Training; Take Up the Shield.\nTop uncommons: Night Nurse, Healer of Heroes; Okoye, Dora Milaje Leader; Agent Maria Hill.\nTop Rares and mythics: Agent Phil Coulson; Captain America, Wings of Freedom; Origin of the Avengers; Captain Marvel, Earth's Protector; Avengers Assemble!; Captain America, Super-Soldier.", cards: ["Web Up", "Hero in Training", "Take Up the Shield", "Night Nurse, Healer of Heroes", "Okoye, Dora Milaje Leader", "Agent Maria Hill", "Agent Phil Coulson", "Captain America, Wings of Freedom", "Origin of the Avengers", "Captain Marvel, Earth's Protector", "Avengers Assemble!", "Captain America, Super-Soldier"] },
-      U: { name: "Blue", description: "\nTop commons: S.H.I.E.L.D. Deployment Drone; We Say Thee Nay!; Trickster's Stratagem.\nTop uncommons: Justice, Vance Astrovik; Falcon, Winged Wonder; Iron Lad, Diverging Destiny.\nTop Rares and mythics: Leader, Super-Genius; Secret Invasion; S.H.I.E.L.D. Flying Car; Kang the Conqueror; Namor the Sub-Mariner; Multiversal Incursion.", cards: ["S.H.I.E.L.D. Deployment Drone", "We Say Thee Nay!", "Trickster's Stratagem", "Justice, Vance Astrovik", "Falcon, Winged Wonder", "Iron Lad, Diverging Destiny", "Leader, Super-Genius", "Secret Invasion", "S.H.I.E.L.D. Flying Car", "Kang the Conqueror", "Namor the Sub-Mariner", "Multiversal Incursion"] },
-      B: { name: "Black", description: "\nTop commons: Hour of Defeat; Cruel Alliance; Agents of HYDRA.\nTop uncommons: Dark Deed; Madame Masque; Klaw, Sonic Subjugator.\nTop Rares and mythics: Elektra, Daughter of the Hand; Super-Skrull; Construct a Cosmic Cube; Doctor Doom; Black Widow, Super Spy; M.O.D.O.K..", cards: ["Hour of Defeat", "Cruel Alliance", "Agents of HYDRA", "Dark Deed", "Madame Masque", "Klaw, Sonic Subjugator", "Elektra, Daughter of the Hand", "Super-Skrull", "Construct a Cosmic Cube", "Doctor Doom", "Black Widow, Super Spy", "M.O.D.O.K."] },
-      R: { name: "Red", description: "\nTop commons: Lightning Strike; HULK SMASH!; Repulsor Blast.\nTop uncommons: Photon Blast Barrage; Iron Fist, Living Weapon; Truck Toss.\nTop Rares and mythics: Hawkeye, Master Marksman; Avengers Disassembled; Fin Fang Foom; Thor, God of Thunder; Mjölnir, Hammer of Thor.", cards: ["Lightning Strike", "HULK SMASH!", "Repulsor Blast", "Photon Blast Barrage", "Iron Fist, Living Weapon", "Truck Toss", "Hawkeye, Master Marksman", "Avengers Disassembled", "Fin Fang Foom", "Thor, God of Thunder", "Mjölnir, Hammer of Thor"] },
-      G: { name: "Green", description: "\nTop commons: Undercover Skrull; Go Nuts!; Pet Avengers.\nTop uncommons: Ka-Zar of the Savage Land; White Tiger, Ava Ayala; Punishing Punch.\nTop Rares and mythics: The Unbeatable Squirrel Girl; Epic Fight; Mole Man, Moloid Master; Shang-Chi, Master of Kung Fu; Earth's Mightiest Heroes.", cards: ["Undercover Skrull", "Go Nuts!", "Pet Avengers", "Ka-Zar of the Savage Land", "White Tiger, Ava Ayala", "Punishing Punch", "The Unbeatable Squirrel Girl", "Epic Fight", "Mole Man, Moloid Master", "Shang-Chi, Master of Kung Fu", "Earth's Mightiest Heroes"] }
+      W: { name: "White", description: "\nTop commons:\nWeb Up; Hero in Training; Take Up the Shield.\nTop uncommons:\nNight Nurse, Healer of Heroes; Okoye, Dora Milaje Leader; Agent Maria Hill.\nTop Rares and mythics:\nAgent Phil Coulson; Captain America, Wings of Freedom; Origin of the Avengers; Captain Marvel, Earth's Protector; Avengers Assemble!; Captain America, Super-Soldier.", cards: ["Web Up", "Hero in Training", "Take Up the Shield", "Night Nurse, Healer of Heroes", "Okoye, Dora Milaje Leader", "Agent Maria Hill", "Agent Phil Coulson", "Captain America, Wings of Freedom", "Origin of the Avengers", "Captain Marvel, Earth's Protector", "Avengers Assemble!", "Captain America, Super-Soldier"] },
+      U: { name: "Blue", description: "\nTop commons:\nS.H.I.E.L.D. Deployment Drone; We Say Thee Nay!; Trickster's Stratagem.\nTop uncommons:\nJustice, Vance Astrovik; Falcon, Winged Wonder; Iron Lad, Diverging Destiny.\nTop Rares and mythics:\nLeader, Super-Genius; Secret Invasion; S.H.I.E.L.D. Flying Car; Kang the Conqueror; Namor the Sub-Mariner; Multiversal Incursion.", cards: ["S.H.I.E.L.D. Deployment Drone", "We Say Thee Nay!", "Trickster's Stratagem", "Justice, Vance Astrovik", "Falcon, Winged Wonder", "Iron Lad, Diverging Destiny", "Leader, Super-Genius", "Secret Invasion", "S.H.I.E.L.D. Flying Car", "Kang the Conqueror", "Namor the Sub-Mariner", "Multiversal Incursion"] },
+      B: { name: "Black", description: "\nTop commons:\nHour of Defeat; Cruel Alliance; Agents of HYDRA.\nTop uncommons:\nDark Deed; Madame Masque; Klaw, Sonic Subjugator.\nTop Rares and mythics:\nElektra, Daughter of the Hand; Super-Skrull; Construct a Cosmic Cube; Doctor Doom; Black Widow, Super Spy; M.O.D.O.K..", cards: ["Hour of Defeat", "Cruel Alliance", "Agents of HYDRA", "Dark Deed", "Madame Masque", "Klaw, Sonic Subjugator", "Elektra, Daughter of the Hand", "Super-Skrull", "Construct a Cosmic Cube", "Doctor Doom", "Black Widow, Super Spy", "M.O.D.O.K."] },
+      R: { name: "Red", description: "\nTop commons:\nLightning Strike; HULK SMASH!; Repulsor Blast.\nTop uncommons:\nPhoton Blast Barrage; Iron Fist, Living Weapon; Truck Toss.\nTop Rares and mythics:\nHawkeye, Master Marksman; Avengers Disassembled; Fin Fang Foom; Thor, God of Thunder; Mjölnir, Hammer of Thor.", cards: ["Lightning Strike", "HULK SMASH!", "Repulsor Blast", "Photon Blast Barrage", "Iron Fist, Living Weapon", "Truck Toss", "Hawkeye, Master Marksman", "Avengers Disassembled", "Fin Fang Foom", "Thor, God of Thunder", "Mjölnir, Hammer of Thor"] },
+      G: { name: "Green", description: "\nTop commons:\nUndercover Skrull; Go Nuts!; Pet Avengers.\nTop uncommons:\nKa-Zar of the Savage Land; White Tiger, Ava Ayala; Punishing Punch.\nTop Rares and mythics:\nThe Unbeatable Squirrel Girl; Epic Fight; Mole Man, Moloid Master; Shang-Chi, Master of Kung Fu; Earth's Mightiest Heroes.", cards: ["Undercover Skrull", "Go Nuts!", "Pet Avengers", "Ka-Zar of the Savage Land", "White Tiger, Ava Ayala", "Punishing Punch", "The Unbeatable Squirrel Girl", "Epic Fight", "Mole Man, Moloid Master", "Shang-Chi, Master of Kung Fu", "Earth's Mightiest Heroes"] }
     },
     labels: {
       WU: { text: "Teamwork", sub: "Tap synergy\nMidrange", details: "Tap your team to pay teamwork costs on instants and sorceries for upgraded or additional effects, then profit from tap payoffs like Agent Maria Hill.\nCards: Captain America, Living Legend; Spider-Woman, Secret Agent; Agent Maria Hill; Murdock's Crusade.", cards: ["Captain America, Living Legend", "Spider-Woman, Secret Agent", "Agent Maria Hill", "Murdock's Crusade"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "teamwork", mechanicDef: "Teamwork N — \"As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.\" Paying it upgrades the spell's effect or adds a bonus effect." },
@@ -929,7 +929,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.1 &middot; 2026-06-18 15:12 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.2 &middot; 2026-06-18 15:15 UTC</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
