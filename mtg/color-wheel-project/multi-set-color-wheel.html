@@ -13,8 +13,8 @@
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
   <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
   <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" />
@@ -347,23 +347,23 @@ const SET_DATA = {
     primaryLabel: 'All 10 archetypes supported',
     accentColor: '#ED1D24',
     colorDescriptions: {
-      W: { name: "White", description: "Feeds Teamwork (WU), Attack Alone (WB), Heroes Matter (GW), and Noncreature Spells (RW)." },
-      U: { name: "Blue", description: "Feeds Teamwork (WU), Draw Second Card (UB), Artifacts (UR), and +1/+1 Counters (GU)." },
-      B: { name: "Black", description: "Feeds Draw Second Card (UB), Villains Matter (BR), Attack Alone (WB), and Creatures in Graveyard (BG)." },
-      R: { name: "Red", description: "Feeds Villains Matter (BR), Power-Up (RG), Artifacts (UR), and Noncreature Spells (RW)." },
-      G: { name: "Green", description: "Feeds Power-Up (RG), Heroes Matter (GW), Creatures in Graveyard (BG), and +1/+1 Counters (GU)." }
+      W: { name: "White", description: "\nTop commons: Web Up; Hero in Training; Take Up the Shield.\nTop uncommons: Night Nurse, Healer of Heroes; Okoye, Dora Milaje Leader; Agent Maria Hill.\nTop Rares and mythics: Agent Phil Coulson; Captain America, Wings of Freedom; Origin of the Avengers; Captain Marvel, Earth's Protector; Avengers Assemble!; Captain America, Super-Soldier.", cards: ["Web Up", "Hero in Training", "Take Up the Shield", "Night Nurse, Healer of Heroes", "Okoye, Dora Milaje Leader", "Agent Maria Hill", "Agent Phil Coulson", "Captain America, Wings of Freedom", "Origin of the Avengers", "Captain Marvel, Earth's Protector", "Avengers Assemble!", "Captain America, Super-Soldier"] },
+      U: { name: "Blue", description: "\nTop commons: S.H.I.E.L.D. Deployment Drone; We Say Thee Nay!; Trickster's Stratagem.\nTop uncommons: Justice, Vance Astrovik; Falcon, Winged Wonder; Iron Lad, Diverging Destiny.\nTop Rares and mythics: Leader, Super-Genius; Secret Invasion; S.H.I.E.L.D. Flying Car; Kang the Conqueror; Namor the Sub-Mariner; Multiversal Incursion.", cards: ["S.H.I.E.L.D. Deployment Drone", "We Say Thee Nay!", "Trickster's Stratagem", "Justice, Vance Astrovik", "Falcon, Winged Wonder", "Iron Lad, Diverging Destiny", "Leader, Super-Genius", "Secret Invasion", "S.H.I.E.L.D. Flying Car", "Kang the Conqueror", "Namor the Sub-Mariner", "Multiversal Incursion"] },
+      B: { name: "Black", description: "\nTop commons: Hour of Defeat; Cruel Alliance; Agents of HYDRA.\nTop uncommons: Dark Deed; Madame Masque; Klaw, Sonic Subjugator.\nTop Rares and mythics: Elektra, Daughter of the Hand; Super-Skrull; Construct a Cosmic Cube; Doctor Doom; Black Widow, Super Spy; M.O.D.O.K..", cards: ["Hour of Defeat", "Cruel Alliance", "Agents of HYDRA", "Dark Deed", "Madame Masque", "Klaw, Sonic Subjugator", "Elektra, Daughter of the Hand", "Super-Skrull", "Construct a Cosmic Cube", "Doctor Doom", "Black Widow, Super Spy", "M.O.D.O.K."] },
+      R: { name: "Red", description: "\nTop commons: Lightning Strike; HULK SMASH!; Repulsor Blast.\nTop uncommons: Photon Blast Barrage; Iron Fist, Living Weapon; Truck Toss.\nTop Rares and mythics: Hawkeye, Master Marksman; Avengers Disassembled; Fin Fang Foom; Thor, God of Thunder; Mjölnir, Hammer of Thor.", cards: ["Lightning Strike", "HULK SMASH!", "Repulsor Blast", "Photon Blast Barrage", "Iron Fist, Living Weapon", "Truck Toss", "Hawkeye, Master Marksman", "Avengers Disassembled", "Fin Fang Foom", "Thor, God of Thunder", "Mjölnir, Hammer of Thor"] },
+      G: { name: "Green", description: "\nTop commons: Undercover Skrull; Go Nuts!; Pet Avengers.\nTop uncommons: Ka-Zar of the Savage Land; White Tiger, Ava Ayala; Punishing Punch.\nTop Rares and mythics: The Unbeatable Squirrel Girl; Epic Fight; Mole Man, Moloid Master; Shang-Chi, Master of Kung Fu; Earth's Mightiest Heroes.", cards: ["Undercover Skrull", "Go Nuts!", "Pet Avengers", "Ka-Zar of the Savage Land", "White Tiger, Ava Ayala", "Punishing Punch", "The Unbeatable Squirrel Girl", "Epic Fight", "Mole Man, Moloid Master", "Shang-Chi, Master of Kung Fu", "Earth's Mightiest Heroes"] }
     },
     labels: {
-      WU: { text: "Teamwork", sub: "Tap synergy\nMidrange", details: "Tap your team to pay teamwork costs on instants and sorceries for upgraded or additional effects, then profit from tap payoffs like Agent Maria Hill.\nCards: Captain America, Living Legend; Agent Maria Hill; Murdock's Crusade.", cards: ["Captain America, Living Legend", "Spider-Woman, Secret Agent", "Agent Maria Hill", "Murdock's Crusade"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "teamwork", mechanicDef: "Teamwork N — \"As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.\" Paying it upgrades the spell's effect or adds a bonus effect." },
-      UB: { text: "Draw 2nd Card", sub: "Connive\nControl", details: "Cares about drawing your second card each turn, mostly via connive. Kang is both enabler and payoff for the strategy.\nCards: Kang, Temporal Tyrant; Construct a Cosmic Cube; Leader, Super-Genius.", cards: ["Kang, Temporal Tyrant", "Ghost, Spectral Saboteur", "Construct a Cosmic Cube", "Leader, Super-Genius"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "connive", mechanicDef: "Connive — \"Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.\"" },
-      BR: { text: "Villains Matter", sub: "Villain typal\nAggro", details: "Draft as many Villains as possible — payoffs trigger when other Villains enter play (69 Villain cards in the set). Connive plays a small supporting role. An aggressive engine deck.\nCards: Madame Hydra; The Masters of Evil; Doom Reigns Supreme.", cards: ["Madame Hydra", "Bullseye, Death Dealer", "The Masters of Evil", "Doom Reigns Supreme"], themeSearches: [{ label: "Villains", url: "https://scryfall.com/search?q=set%3Amsh+t%3Avillain&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      RG: { text: "Power-Up", sub: "Big creatures\nAggro", details: "Large creatures plus power-up abilities as mana sinks — turn Hulk into an 11/10 and SMASH.\nCards: Hulk, Gamma Goliath; HULK SMASH!; Doc Samson, Super Psychiatrist.", cards: ["Hulk, Gamma Goliath", "Abomination, Terrifying Titan", "HULK SMASH!", "Doc Samson, Super Psychiatrist"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "power-up", mechanicDef: "Power-up — One-shot activated abilities that put +1/+1 counters on the creature. \"Activate each power-up ability only once. Reduce the cost by its mana cost if it entered this turn.\"" },
-      GW: { text: "Heroes Matter", sub: "Hero typal\nGo-wide", details: "Hero typal go-wide — payoffs trigger when Heroes enter play (91 Hero cards in the set). Swarm the board and overwhelm.\nCards: Black Panther, Vanguard; Agent Phil Coulson; Avengers Assemble!", cards: ["Black Panther, Vanguard", "Spider-Man, To the Rescue", "Agent Phil Coulson", "Avengers Assemble!"], themeSearches: [{ label: "Heroes", url: "https://scryfall.com/search?q=set%3Amsh+t%3Ahero&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      WB: { text: "Attack Alone", sub: "Attack alone\nTempo", details: "Rewards attacking with a single creature — buffs, evasion, and value triggers for solo strikes.\nCards: Black Widow, Double Agent; Agent 13, Sharon Carter; Luke Cage, Power Man.", cards: ["Black Widow, Double Agent", "U.S.Agent, John Walker", "Agent 13, Sharon Carter", "Luke Cage, Power Man"], themeSearches: [{ label: "Lone attackers", url: "https://scryfall.com/search?q=otag%3Asynergy-solo-attack+set%3AMSH&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      UR: { text: "Artifacts", sub: "Artifact synergy\nMidrange", details: "Artifact-matters: equipment, vehicles, and artifact creatures all count. Iron Man leads the lab.\nCards: Iron Man, Master of Machines; Shuri, Wakandan Inventor; Armor Wars.", cards: ["Iron Man, Master of Machines", "Speedball, New Warrior", "Shuri, Wakandan Inventor", "Armor Wars"], themeSearches: [{ label: "Artifacts", url: "https://scryfall.com/search?q=set%3Amsh+t%3Aartifact&unique=cards&as=grid&order=name" }, { label: "Artifact synergy", url: "https://scryfall.com/search?q=otag%3Asynergy-artifact+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      BG: { text: "Creatures in GY", sub: "2+ in yard\nMidrange", details: "Threshold-style: cards get better once two or more creature cards sit in your graveyard. Self-mill and profitable trades fuel it.\nCards: Killmonger, Scourge of Wakanda; HYDRA Troopers; Punishing Punch.", cards: ["Killmonger, Scourge of Wakanda", "Titania, Rugged Rumbler", "HYDRA Troopers", "Punishing Punch"], themeSearches: [{ label: "Graveyard matters", url: "https://scryfall.com/search?q=set%3Amsh+otag%3Acards-in-graveyard-matter&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      RW: { text: "Noncreature Spells", sub: "Noncreature spells\nAggro", details: "The classic Izzet spells deck moved to Boros: prowess-style payoffs for casting noncreature spells, with an equipment subtheme.\nCards: Thor Odinson; Iron Fist, Living Weapon; Colleen Wing, Street Samurai.", cards: ["Thor Odinson", "War Machine, Legacy of Iron", "Iron Fist, Living Weapon", "Colleen Wing, Street Samurai"], themeSearches: [{ label: "Spell synergy", url: "https://scryfall.com/search?q=%28otag%3Asynergy-noncreature+OR+otag%3Asynergy-instant%29+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      GU: { text: "+1/+1 Counters", sub: "+1/+1 counters\nMidrange", details: "+1/+1 counter generation and payoffs, fed by power-up, teamwork, and connive counters from across the set.\nCards: Ant-Man, Colony Commander; Hellcat, Undying Vigilante; Go Nuts!", cards: ["Ant-Man, Colony Commander", "Beast, Erudite Aerialist", "Hellcat, Undying Vigilante", "Go Nuts!"], themeSearches: [{ label: "Counters matter", url: "https://scryfall.com/search?q=otag%3Acounters-matter+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      WU: { text: "Teamwork", sub: "Tap synergy\nMidrange", details: "Tap your team to pay teamwork costs on instants and sorceries for upgraded or additional effects, then profit from tap payoffs like Agent Maria Hill.\nCards: Captain America, Living Legend; Spider-Woman, Secret Agent; Agent Maria Hill; Murdock's Crusade.", cards: ["Captain America, Living Legend", "Spider-Woman, Secret Agent", "Agent Maria Hill", "Murdock's Crusade"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "teamwork", mechanicDef: "Teamwork N — \"As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.\" Paying it upgrades the spell's effect or adds a bonus effect." },
+      UB: { text: "Draw 2nd Card", sub: "Connive\nControl", details: "Cares about drawing your second card each turn, mostly via connive. Kang is both enabler and payoff for the strategy.\nCards: Kang, Temporal Tyrant; Ghost, Spectral Saboteur; Construct a Cosmic Cube; Leader, Super-Genius.", cards: ["Kang, Temporal Tyrant", "Ghost, Spectral Saboteur", "Construct a Cosmic Cube", "Leader, Super-Genius"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "connive", mechanicDef: "Connive — \"Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.\"" },
+      BR: { text: "Villains Matter", sub: "Villain typal\nAggro", details: "Draft as many Villains as possible — payoffs trigger when other Villains enter play (69 Villain cards in the set). Connive plays a small supporting role. An aggressive engine deck.\nCards: Madame Hydra; Bullseye, Death Dealer; The Masters of Evil; Doom Reigns Supreme.", cards: ["Madame Hydra", "Bullseye, Death Dealer", "The Masters of Evil", "Doom Reigns Supreme"], themeSearches: [{ label: "Villains", url: "https://scryfall.com/search?q=set%3Amsh+t%3Avillain&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      RG: { text: "Power-Up", sub: "Big creatures\nAggro", details: "Large creatures plus power-up abilities as mana sinks — turn Hulk into an 11/10 and SMASH.\nCards: Hulk, Gamma Goliath; Abomination, Terrifying Titan; HULK SMASH!; Doc Samson, Super Psychiatrist.", cards: ["Hulk, Gamma Goliath", "Abomination, Terrifying Titan", "HULK SMASH!", "Doc Samson, Super Psychiatrist"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "power-up", mechanicDef: "Power-up — One-shot activated abilities that put +1/+1 counters on the creature. \"Activate each power-up ability only once. Reduce the cost by its mana cost if it entered this turn.\"" },
+      GW: { text: "Heroes Matter", sub: "Hero typal\nGo-wide", details: "Hero typal go-wide — payoffs trigger when Heroes enter play (91 Hero cards in the set). Swarm the board and overwhelm.\nCards: Black Panther, Vanguard; Spider-Man, To the Rescue; Agent Phil Coulson; Avengers Assemble!", cards: ["Black Panther, Vanguard", "Spider-Man, To the Rescue", "Agent Phil Coulson", "Avengers Assemble!"], themeSearches: [{ label: "Heroes", url: "https://scryfall.com/search?q=set%3Amsh+t%3Ahero&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      WB: { text: "Attack Alone", sub: "Attack alone\nTempo", details: "Rewards attacking with a single creature — buffs, evasion, and value triggers for solo strikes.\nCards: Black Widow, Double Agent; U.S.Agent, John Walker; Agent 13, Sharon Carter; Luke Cage, Power Man.", cards: ["Black Widow, Double Agent", "U.S.Agent, John Walker", "Agent 13, Sharon Carter", "Luke Cage, Power Man"], themeSearches: [{ label: "Lone attackers", url: "https://scryfall.com/search?q=otag%3Asynergy-solo-attack+set%3AMSH&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      UR: { text: "Artifacts", sub: "Artifact synergy\nMidrange", details: "Artifact-matters: equipment, vehicles, and artifact creatures all count. Iron Man leads the lab.\nCards: Iron Man, Master of Machines; Speedball, New Warrior; Shuri, Wakandan Inventor; Armor Wars.", cards: ["Iron Man, Master of Machines", "Speedball, New Warrior", "Shuri, Wakandan Inventor", "Armor Wars"], themeSearches: [{ label: "Artifacts", url: "https://scryfall.com/search?q=set%3Amsh+t%3Aartifact&unique=cards&as=grid&order=name" }, { label: "Artifact synergy", url: "https://scryfall.com/search?q=otag%3Asynergy-artifact+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      BG: { text: "Creatures in GY", sub: "2+ in yard\nMidrange", details: "Threshold-style: cards get better once two or more creature cards sit in your graveyard. Self-mill and profitable trades fuel it.\nCards: Killmonger, Scourge of Wakanda; Titania, Rugged Rumbler; HYDRA Troopers; Punishing Punch.", cards: ["Killmonger, Scourge of Wakanda", "Titania, Rugged Rumbler", "HYDRA Troopers", "Punishing Punch"], themeSearches: [{ label: "Graveyard matters", url: "https://scryfall.com/search?q=set%3Amsh+otag%3Acards-in-graveyard-matter&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      RW: { text: "Noncreature Spells", sub: "Noncreature spells\nAggro", details: "The classic Izzet spells deck moved to Boros: prowess-style payoffs for casting noncreature spells, with an equipment subtheme.\nCards: Thor Odinson; War Machine, Legacy of Iron; Iron Fist, Living Weapon; Colleen Wing, Street Samurai.", cards: ["Thor Odinson", "War Machine, Legacy of Iron", "Iron Fist, Living Weapon", "Colleen Wing, Street Samurai"], themeSearches: [{ label: "Spell synergy", url: "https://scryfall.com/search?q=%28otag%3Asynergy-noncreature+OR+otag%3Asynergy-instant%29+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      GU: { text: "+1/+1 Counters", sub: "+1/+1 counters\nMidrange", details: "+1/+1 counter generation and payoffs, fed by power-up, teamwork, and connive counters from across the set.\nCards: Ant-Man, Colony Commander; Beast, Erudite Aerialist; Hellcat, Undying Vigilante; Go Nuts!", cards: ["Ant-Man, Colony Commander", "Beast, Erudite Aerialist", "Hellcat, Undying Vigilante", "Go Nuts!"], themeSearches: [{ label: "Counters matter", url: "https://scryfall.com/search?q=otag%3Acounters-matter+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
     },
     resourceLinks: [
       { label: "Marvel Super Heroes Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", desc: "Official Wizards of the Coast archetype guide — all 10 two-color pairs with signpost cards", official: true },
@@ -672,27 +672,58 @@ const CardLink = ({ cardName, setCode, fg }) => {
 };
 
 // Wrap any known card names found in `text` with hover-image CardLinks (matches longest names first)
+// Also handles bold formatting for "Cards:", "Top commons:", "Top uncommons:", and "Top Rares and mythics:" markers
 const linkifyCards = (text, cards, setCode, fg) => {
   if (!text || !cards || cards.length === 0) return text;
-  const sorted = [...cards].sort((a, b) => b.length - a.length);
-  let segs = [text];
-  sorted.forEach(card => {
-    const out = [];
-    segs.forEach(seg => {
-      if (typeof seg !== 'string') { out.push(seg); return; }
-      const parts = seg.split(card);
-      parts.forEach((part, i) => {
-        if (part) out.push(part);
-        if (i < parts.length - 1) out.push({ __card: card });
-      });
-    });
-    segs = out;
+
+  // Split by newlines to handle bold labels on their own line
+  const lines = text.split('\n');
+  const boldLabels = ['Cards:', 'Top commons:', 'Top uncommons:', 'Top Rares and mythics:'];
+  const processedLines = lines.map(line => {
+    const trimmed = line.trim();
+    if (boldLabels.includes(trimmed)) {
+      return { __bold: true, __text: trimmed };
+    }
+    return line;
   });
-  return segs.map((s, i) =>
-    typeof s === 'string'
-      ? <React.Fragment key={i}>{s}</React.Fragment>
-      : <CardLink key={i} cardName={s.__card} setCode={setCode} fg={fg} />
-  );
+
+  const sorted = [...cards].sort((a, b) => b.length - a.length);
+  let segs = [];
+
+  processedLines.forEach((lineItem, lineIdx) => {
+    if (typeof lineItem === 'object' && lineItem.__bold) {
+      segs.push(lineItem);
+      if (lineIdx < processedLines.length - 1) segs.push('\n');
+      return;
+    }
+
+    let lineSeg = [lineItem];
+    sorted.forEach(card => {
+      const out = [];
+      lineSeg.forEach(seg => {
+        if (typeof seg !== 'string') { out.push(seg); return; }
+        const parts = seg.split(card);
+        parts.forEach((part, i) => {
+          if (part) out.push(part);
+          if (i < parts.length - 1) out.push({ __card: card });
+        });
+      });
+      lineSeg = out;
+    });
+
+    segs.push(...lineSeg);
+    if (lineIdx < processedLines.length - 1) segs.push('\n');
+  });
+
+  return segs.map((s, i) => {
+    if (typeof s === 'string') {
+      return <React.Fragment key={i}>{s}</React.Fragment>;
+    } else if (s.__bold) {
+      return <b key={i}>{s.__text}</b>;
+    } else {
+      return <CardLink key={i} cardName={s.__card} setCode={setCode} fg={fg} />;
+    }
+  });
 };
 
 const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHover, onColorLeave, currentSet }) => {
@@ -736,7 +767,7 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>{d.description}</div>
+              <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>{d.cards ? linkifyCards(d.description, d.cards, sc, fg) : d.description}</div>
             )}
             <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>Scryfall:</div>
             <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
