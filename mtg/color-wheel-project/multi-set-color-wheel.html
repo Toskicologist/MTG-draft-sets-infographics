@@ -76,6 +76,13 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.3.0 (2026-06-19, 14:02 UTC) - [Claude Opus 4.8]
+ *   - MSH: "Villains Matter"->"Villains", "Heroes Matter"->"Heroes" (dropped "Matter")
+ *   - SVG wheel LabelBox now supports multi-line bold titles via tspans; box-height math
+ *     counts title lines (titleExtra) so the box grows correctly instead of overlapping/
+ *     over-spacing (this was the earlier "large spacing" bug when splitting a title)
+ *   - MSH RW title now wraps "Noncreature" / "Spells" on two lines in the wheel
+ *
  * 1.2.5 (2026-06-19, 13:57 UTC) - [Claude Opus 4.8]
  *   - MSH UR "Artifacts": removed "Artifact synergy" subtitle line (repeated title) -> "Midrange"
  *
@@ -375,13 +382,13 @@ const SET_DATA = {
     labels: {
       WU: { text: "Teamwork", sub: "Tap synergy\nMidrange", details: "Tap your team to pay teamwork costs on instants and sorceries for upgraded or additional effects, then profit from tap payoffs like Agent Maria Hill.\nCards: Captain America, Living Legend; Spider-Woman, Secret Agent; Agent Maria Hill; Murdock's Crusade.", cards: ["Captain America, Living Legend", "Spider-Woman, Secret Agent", "Agent Maria Hill", "Murdock's Crusade"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "teamwork", mechanicDef: "Teamwork N — \"As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.\" Paying it upgrades the spell's effect or adds a bonus effect." },
       UB: { text: "Draw 2nd Card", sub: "Connive\nControl", details: "Cares about drawing your second card each turn, mostly via connive. Kang is both enabler and payoff for the strategy.\nCards: Kang, Temporal Tyrant; Ghost, Spectral Saboteur; Construct a Cosmic Cube; Leader, Super-Genius.", cards: ["Kang, Temporal Tyrant", "Ghost, Spectral Saboteur", "Construct a Cosmic Cube", "Leader, Super-Genius"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "connive", mechanicDef: "Connive — \"Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.\"" },
-      BR: { text: "Villains Matter", sub: "Aggro", details: "Draft as many Villains as possible — payoffs trigger when other Villains enter play (69 Villain cards in the set). Connive plays a small supporting role. An aggressive engine deck.\nCards: Madame Hydra; Bullseye, Death Dealer; The Masters of Evil; Doom Reigns Supreme.", cards: ["Madame Hydra", "Bullseye, Death Dealer", "The Masters of Evil", "Doom Reigns Supreme"], themeSearches: [{ label: "Villains", url: "https://scryfall.com/search?q=set%3Amsh+t%3Avillain&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      BR: { text: "Villains", sub: "Aggro", details: "Draft as many Villains as possible — payoffs trigger when other Villains enter play (69 Villain cards in the set). Connive plays a small supporting role. An aggressive engine deck.\nCards: Madame Hydra; Bullseye, Death Dealer; The Masters of Evil; Doom Reigns Supreme.", cards: ["Madame Hydra", "Bullseye, Death Dealer", "The Masters of Evil", "Doom Reigns Supreme"], themeSearches: [{ label: "Villains", url: "https://scryfall.com/search?q=set%3Amsh+t%3Avillain&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       RG: { text: "Power-Up", sub: "Big creatures\nAggro", details: "Large creatures plus power-up abilities as mana sinks — turn Hulk into an 11/10 and SMASH.\nCards: Hulk, Gamma Goliath; Abomination, Terrifying Titan; HULK SMASH!; Doc Samson, Super Psychiatrist.", cards: ["Hulk, Gamma Goliath", "Abomination, Terrifying Titan", "HULK SMASH!", "Doc Samson, Super Psychiatrist"], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide", mechanic: "power-up", mechanicDef: "Power-up — One-shot activated abilities that put +1/+1 counters on the creature. \"Activate each power-up ability only once. Reduce the cost by its mana cost if it entered this turn.\"" },
-      GW: { text: "Heroes Matter", sub: "Go-wide", details: "Hero typal go-wide — payoffs trigger when Heroes enter play (91 Hero cards in the set). Swarm the board and overwhelm.\nCards: Black Panther, Vanguard; Spider-Man, To the Rescue; Agent Phil Coulson; Avengers Assemble!", cards: ["Black Panther, Vanguard", "Spider-Man, To the Rescue", "Agent Phil Coulson", "Avengers Assemble!"], themeSearches: [{ label: "Heroes", url: "https://scryfall.com/search?q=set%3Amsh+t%3Ahero&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      GW: { text: "Heroes", sub: "Go-wide", details: "Hero typal go-wide — payoffs trigger when Heroes enter play (91 Hero cards in the set). Swarm the board and overwhelm.\nCards: Black Panther, Vanguard; Spider-Man, To the Rescue; Agent Phil Coulson; Avengers Assemble!", cards: ["Black Panther, Vanguard", "Spider-Man, To the Rescue", "Agent Phil Coulson", "Avengers Assemble!"], themeSearches: [{ label: "Heroes", url: "https://scryfall.com/search?q=set%3Amsh+t%3Ahero&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       WB: { text: "Attack Alone", sub: "Tempo", details: "Rewards attacking with a single creature — buffs, evasion, and value triggers for solo strikes.\nCards: Black Widow, Double Agent; U.S.Agent, John Walker; Agent 13, Sharon Carter; Luke Cage, Power Man.", cards: ["Black Widow, Double Agent", "U.S.Agent, John Walker", "Agent 13, Sharon Carter", "Luke Cage, Power Man"], themeSearches: [{ label: "Lone attackers", url: "https://scryfall.com/search?q=otag%3Asynergy-solo-attack+set%3AMSH&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       UR: { text: "Artifacts", sub: "Midrange", details: "Artifact-matters: equipment, vehicles, and artifact creatures all count. Iron Man leads the lab.\nCards: Iron Man, Master of Machines; Speedball, New Warrior; Shuri, Wakandan Inventor; Armor Wars.", cards: ["Iron Man, Master of Machines", "Speedball, New Warrior", "Shuri, Wakandan Inventor", "Armor Wars"], themeSearches: [{ label: "Artifacts", url: "https://scryfall.com/search?q=set%3Amsh+t%3Aartifact&unique=cards&as=grid&order=name" }, { label: "Artifact synergy", url: "https://scryfall.com/search?q=otag%3Asynergy-artifact+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       BG: { text: "Creatures in GY", sub: "2+ in yard\nMidrange", details: "Threshold-style: cards get better once two or more creature cards sit in your graveyard. Self-mill and profitable trades fuel it.\nCards: Killmonger, Scourge of Wakanda; Titania, Rugged Rumbler; HYDRA Troopers; Punishing Punch.", cards: ["Killmonger, Scourge of Wakanda", "Titania, Rugged Rumbler", "HYDRA Troopers", "Punishing Punch"], themeSearches: [{ label: "Graveyard matters", url: "https://scryfall.com/search?q=set%3Amsh+otag%3Acards-in-graveyard-matter&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
-      RW: { text: "Noncreature Spells", sub: "Aggro", details: "The classic Izzet spells deck moved to Boros: prowess-style payoffs for casting noncreature spells, with an equipment subtheme.\nCards: Thor Odinson; War Machine, Legacy of Iron; Iron Fist, Living Weapon; Colleen Wing, Street Samurai.", cards: ["Thor Odinson", "War Machine, Legacy of Iron", "Iron Fist, Living Weapon", "Colleen Wing, Street Samurai"], themeSearches: [{ label: "Spell synergy", url: "https://scryfall.com/search?q=%28otag%3Asynergy-noncreature+OR+otag%3Asynergy-instant%29+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
+      RW: { text: "Noncreature\nSpells", sub: "Aggro", details: "The classic Izzet spells deck moved to Boros: prowess-style payoffs for casting noncreature spells, with an equipment subtheme.\nCards: Thor Odinson; War Machine, Legacy of Iron; Iron Fist, Living Weapon; Colleen Wing, Street Samurai.", cards: ["Thor Odinson", "War Machine, Legacy of Iron", "Iron Fist, Living Weapon", "Colleen Wing, Street Samurai"], themeSearches: [{ label: "Spell synergy", url: "https://scryfall.com/search?q=%28otag%3Asynergy-noncreature+OR+otag%3Asynergy-instant%29+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
       GU: { text: "+1/+1 Counters", sub: "Midrange", details: "+1/+1 counter generation and payoffs, fed by power-up, teamwork, and connive counters from across the set.\nCards: Ant-Man, Colony Commander; Beast, Erudite Aerialist; Hellcat, Undying Vigilante; Go Nuts!", cards: ["Ant-Man, Colony Commander", "Beast, Erudite Aerialist", "Hellcat, Undying Vigilante", "Go Nuts!"], themeSearches: [{ label: "Counters matter", url: "https://scryfall.com/search?q=otag%3Acounters-matter+set%3Amsh&unique=cards&as=grid&order=name" }], sourceText: "WotC Prerelease Guide / Draftsim", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-prerelease-guide" },
     },
     resourceLinks: [
@@ -630,10 +637,12 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const textColor = isSimple ? '#000000' : fg;
   const isPrimary = primaryArchetypes.includes(code);
 
-  const lh1 = config.fontSize * 1.1, lh2 = config.fontSize * 1.1, lh3 = config.fontSize * 1.1;
-  const totalTextHeight = lh1 + lh2 + (subLines.length > 0 ? lh3 + (subLines.length - 1) * 7 : 0);
+  const titleLines = (labelData.text || '').split('\n');
+  const lh = config.fontSize * 1.1;
+  const titleExtra = (titleLines.length - 1) * lh; // extra height per wrapped title line
+  const totalTextHeight = lh /*code*/ + lh /*title line 1*/ + titleExtra + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
   const startY = group.cy - totalTextHeight / 2;
-  const y1 = startY + lh1 * 0.8, y2 = y1 + lh2, y3 = y2 + lh3 * 0.9;
+  const y1 = startY + lh * 0.8, y2 = y1 + lh, y3 = y2 + titleExtra + lh * 0.9;
 
   useEffect(() => {
     if (groupRef.current) {
@@ -655,7 +664,9 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
         strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
         style={{ transition: 'all 0.2s ease' }} />
       <text x={group.cx} y={y1} textAnchor="middle" fontSize={config.fontSize} fontWeight="bold" fill={textColor}>{code}</text>
-      <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>{labelData.text}</text>
+      <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>
+        {titleLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : lh}>{line}</tspan>)}
+      </text>
       {subLines.length > 0 && (
         <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
           {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
@@ -943,7 +954,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.5 &middot; 2026-06-19 13:57 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.3.0 &middot; 2026-06-19 14:02 UTC</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
