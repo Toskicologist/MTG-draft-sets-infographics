@@ -13,6 +13,18 @@
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
   <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
+  <!-- GoatCounter PATTERN A: count the #hash so each set view (#msh, #ecl, …) is its own dashboard path.
+       count.js is auto-injected before </head> at push time; this config must (and does) run first.
+       See mtg/SHARED_HEADER_FOOTER.md "Analytics — GoatCounter". -->
+  <script>
+    window.goatcounter = {
+      path: function () { return location.pathname + location.search + location.hash; }
+    };
+    addEventListener('hashchange', function () {
+      if (window.goatcounter && window.goatcounter.count)
+        window.goatcounter.count({ path: location.pathname + location.search + location.hash });
+    });
+  </script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
@@ -59,16 +71,14 @@
       .site-header h1 { font-size: 22px; }
     }
   </style>
-  <script data-goatcounter="https://toskicologist.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-  </head>
+</head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.0-beta.5 (BETA)
+ * 1.2.0-beta.6 (BETA)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -78,6 +88,12 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.0-beta.6 (2026-06-19, 22:57 UTC) - [Claude Opus 4.8]
+ *   - Analytics: added GoatCounter PATTERN A hash-pageview config to <head> — the page is already
+ *     hash-routed (a useEffect sets location.hash on set change), so each set view (#msh, #ecl, #fdn,
+ *     #tmt, #sos) now records as its own path in the dashboard instead of all collapsing to one URL.
+ *     The public count.js snippet itself is still auto-injected at push time (not added here).
+ *
  * 1.2.0-beta.5 (2026-06-15, 17:40 UTC) - [Claude Opus 4.8]
  *   - Fix: card-name hover image now renders via a ReactDOM portal to document.body, so it sits above
  *     all archetype/mechanic boxes. (Those boxes' opacity<1 text divs create a stacking context that
@@ -884,7 +900,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.5 &middot; 2026-06-15 17:40 UTC &middot; BETA</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.6 &middot; 2026-06-19 22:57 UTC &middot; BETA</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
