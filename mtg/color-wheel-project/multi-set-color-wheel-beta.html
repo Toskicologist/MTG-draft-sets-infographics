@@ -14,9 +14,9 @@
   <meta name="twitter:title" content="MTG Draft Archetypes - Multi-Set Color Wheel">
   <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — toggle between Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, and Marvel Super Heroes">
   <!-- GoatCounter PATTERN A: count the #hash so each set view (#msh, #ecl, …) is its own dashboard path.
-       count.js is auto-injected before   <script data-goatcounter="https://toskicologist.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-  </head> at push time; this config must (and does) run first.
+       The public count.js snippet is auto-injected at push time, just before the closing head tag; this
+       inline config must run first, and does. NOTE: do NOT write the closing-head string literally in this
+       comment — the injector inserts before the FIRST such string and would bury count.js inside the comment.
        See mtg/SHARED_HEADER_FOOTER.md "Analytics — GoatCounter". -->
   <script>
     window.goatcounter = {
@@ -80,7 +80,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.0-beta.6 (BETA)
+ * 1.2.0-beta.7 (BETA)
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -90,6 +90,13 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.2.0-beta.7 (2026-06-20, 11:16 UTC) - [Claude Opus 4.8]
+ *   - FIX (beta.6 regression): the beta.6 GoatCounter comment contained the literal closing-head string,
+ *     so the push-time injector (ensure-goatcounter.ps1, inserts before the FIRST closing-head tag) buried
+ *     the real count.js snippet INSIDE that HTML comment — the browser never ran it, so nothing tracked at
+ *     all (let alone per-set). Reworded the comment to remove the literal tag; count.js now injects before
+ *     the real closing head tag and runs. Re-push required for the live page to pick this up.
+ *
  * 1.2.0-beta.6 (2026-06-19, 22:57 UTC) - [Claude Opus 4.8]
  *   - Analytics: added GoatCounter PATTERN A hash-pageview config to <head> — the page is already
  *     hash-routed (a useEffect sets location.hash on set change), so each set view (#msh, #ecl, #fdn,
@@ -902,7 +909,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.6 &middot; 2026-06-19 22:57 UTC &middot; BETA</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.2.0-beta.7 &middot; 2026-06-20 11:16 UTC &middot; BETA</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
