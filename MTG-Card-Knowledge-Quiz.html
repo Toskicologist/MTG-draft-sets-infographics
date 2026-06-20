@@ -152,13 +152,45 @@
       display: flex; align-items: center; justify-content: space-between;
       font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
     }
-    .score-chip { color: var(--text); font-weight: 600; }
-    .streak-chip { color: var(--gold); font-weight: 600; }
+    .loading-chip { color: var(--text-muted); font-weight: 600; margin-right: 6px; }
 
     .question-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; padding: 20px; margin-bottom: 14px; text-align: center;
     }
+    .question-card:focus { outline: none; }
+    /* keep the answer view compact so nothing needs scrolling, even on mobile */
+    .card-image { max-height: 46vh; width: auto; max-width: 100%; }
+    .answer-line.your-pick { color: var(--text-muted); }
+
+    /* ===== Persistent history ===== */
+    .history-section { margin: 18px 0 8px; }
+    .history-score-row {
+      display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .history-score-row .score-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 14px; text-align: center; min-width: 72px;
+    }
+    .score-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+    .score-value { font-size: 1.15rem; font-weight: 700; }
+    .history-clear-btn {
+      margin-left: auto; align-self: center; background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.8rem;
+    }
+    .history-clear-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .history-table-wrapper { max-height: 360px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .history-table th, .history-table td {
+      padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .history-table th { position: sticky; top: 0; background: var(--surface); color: var(--text-muted); font-weight: 600; }
+    .history-table tr.hist-ok { background: rgba(34,197,94,0.06); }
+    .history-table tr.hist-bad { background: rgba(239,68,68,0.06); }
+    .history-correct { color: #22c55e; font-weight: 700; }
+    .history-wrong { color: #ef4444; font-weight: 700; }
+    .history-table .hist-cell { max-width: 220px; }
+    .hist-art { height: 34px; width: auto; border-radius: 3px; vertical-align: middle; }
     .question-prompt { font-size: 0.95rem; color: var(--text-muted); }
     .question-cardname { font-size: 1.45rem; font-weight: 700; margin: 6px 0 16px; }
 
@@ -248,9 +280,7 @@
     html.mana-font-loaded .mana-fallback { display: none; }
     .mana-fallback { font-family: monospace; font-size: 0.9em; }
   </style>
-  <script data-goatcounter="https://toskicologist.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-  </head>
+</head>
 
 <body>
   <div id="root"></div>
@@ -263,8 +293,8 @@
   <script type="text/babel">
     /*
      * MTG Card Knowledge Quiz - UNIFIED (alpha)
-     * Version: 0.5.0-unified-local
-     * Last Updated: 2026-06-12 UTC
+     * Version: 0.6.0-unified-local
+     * Last Updated: 2026-06-20 UTC
      *
      * Unified successor prototype to index-custom-only.html (quiz) and
      * index-anki.html (SM-2 flashcards). Design: docs/UNIFIED_APP_DESIGN.md
@@ -275,6 +305,34 @@
      * Both modes write the same per-(list,card,field) SM-2 progress record.
      *
      * CHANGELOG:
+     * v0.7.0-unified-local (2026-06-20) - Format lists (top-1000, progressive load) + UX overhaul
+     *   - NEW: 6 constructed-format lists - Standard, Pioneer, Modern, Pauper, Legacy, Vintage -
+     *     each top-1000 by recent play rate. Instant start: top-10 full TEXT metadata embedded
+     *     (no images) in data/preset-lists.js; the app live-fetches the rest (and images) from
+     *     Scryfall in the background as you advance (LOAD_BUFFER ahead, 75/batch). Rebuild with
+     *     scripts/build-format-lists.js (source: deck-correlations top1000_recent_12months.json).
+     *   - CHANGE: default scheduler is now List order (top-10 in ranking order), round = 10.
+     *   - REMOVE: "Mana value" and "Colors" questions (redundant with casting cost) - also hidden
+     *     from the card-info hint panel. Raw values still feed the distractor similarity scorer.
+     *   - REMOVE: points + streak scoring entirely (per user) - results are Correct + Accuracy only.
+     *   - NEW: persistent cross-session answer History table (localStorage mtg_unified_history_v1):
+     *     #/correct/Card(->Scryfall)/Asked/Your answer/Correct answer + Answered/Correct/Accuracy + Clear.
+     *   - FIX: answering now REPLACES the question with the feedback in place, scrolls it into view and
+     *     moves focus to it (no scrolling needed, even on mobile); card image capped at 46vh.
+     *   - FIX: P/T (and Number-in-text) distractors are now numerically CLOSE to the answer
+     *     (was: a similar card's 5/5 offered for a 1/1). Answers are sorted logically (numbers
+     *     ascending, P/T by power then toughness, else alphabetical) instead of shuffled.
+     *   - UI: "Next (Enter / Space)" and "Show answer (Space / Enter)" now state both keys.
+     *   - REMOVE: Marvel Super Heroes preset (data/msh-list.js) dropped from this app.
+     *   - Signed: Claude (Opus 4.8) @ 2026-06-19 UTC
+     * v0.6.0-unified-local (2026-06-12) - Marvel Super Heroes (MSH) preset list
+     *   - NEW: built-in list "Marvel Super Heroes" (276 cards - full main set ex-basics; 281 cards
+     *     spoiled as of 2026-06-12; set releases 2026-06-26, regenerate post-release for stragglers)
+     *   - Data: data/msh-list.js generated by scripts/generate-msh-preset.js from the shared
+     *     Scryfall snapshot (shared-data/data/msh/msh-scryfall-full.json); loaded after
+     *     data/preset-lists.js (deploy BOTH data files together)
+     *   - DFC/transform cards (5) use front-face cost/type/text/P-T with full "A // B" name
+     *   - Signed: Claude (Fable 5) @ 2026-06-12 UTC
      * v0.5.0-unified-local (2026-06-12) - Generated "Number in text" questions
      *   - NEW: askable field "Number in text" - masks one number in the card's oracle text
      *     ("deals ___ damage", "scry ___") and asks for it; MC options from similar cards' numbers
@@ -331,11 +389,13 @@
 
     const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-    const APP_VERSION = '0.5.0-unified-local'.replace(/-local$/, '');
-    const APP_LAST_UPDATED = '2026-06-11';
+    const APP_VERSION = '0.7.0-unified-local'.replace(/-local$/, '');
+    const APP_LAST_UPDATED = '2026-06-20';
     const LS_LISTS = 'mtg_unified_lists_v1';
     const LS_PROGRESS = 'mtg_unified_progress_v1';
     const LS_SETTINGS = 'mtg_unified_settings_v1';
+    const LS_HISTORY = 'mtg_unified_history_v1';
+    const HISTORY_MAX = 500;   // cap persisted history rows
     const MASTERED_IVL_DAYS = 7;
 
     // ===== Mana font loading (Promise-based: see MEMORY.md gotcha #3) =====
@@ -457,23 +517,6 @@
         applicable: c => !isLand(c) && !!c.manaCost,
         value: c => c.manaCost,
         renderValue: v => <ManaText text={v} />,
-      },
-      manaValue: {
-        label: 'Mana value',
-        prompt: 'What is the mana value of',
-        applicable: c => !isLand(c) && c.manaValue != null,
-        value: c => String(c.manaValue),
-        renderValue: v => v,
-      },
-      colors: {
-        label: 'Colors',
-        prompt: 'What are the colors of',
-        applicable: c => !isLand(c),         // lands are (almost) always colorless: not a fair question
-        value: c => colorKey(c),
-        renderValue: v => v === 'C'
-          ? <span>Colorless</span>
-          : <span>{v.split('').map((k, i) => <ManaText key={i} text={`{${k}}`} />)}</span>,
-        input: 'colorPicker',
       },
       typeLine: {
         label: 'Card type',
@@ -598,6 +641,69 @@
         if (i + 75 < names.length) await sleep(120);
       }
       return { found, notFound };
+    }
+
+    // ===== Format lists: instant seed + progressive background load =====
+    // Base file embeds the top-10 cards (full TEXT, no images) of each format plus
+    // the ordered top-1000 name list. We start a round on the seed immediately and
+    // live-fetch the rest (and images) from Scryfall in the background as the user
+    // advances. Cards already on screen are upgraded IN PLACE so their image appears
+    // once it loads (the queue holds the same object reference).
+    const FORMAT_CACHE = {};   // fmt -> { names, cards:{name:obj}, loaded, loading, done }
+    const LOAD_CHUNK = 75;     // Scryfall /collection batch size
+    const LOAD_BUFFER = 25;    // keep this many cards loaded ahead of the user
+
+    function getFormatCache(fmt) {
+      if (!FORMAT_CACHE[fmt]) {
+        const f = (window.PRESET_FORMATS || {})[fmt] || { names: [], seed: [] };
+        const cards = {};
+        (f.seed || []).forEach(c => { cards[c.name] = { ...c }; });
+        FORMAT_CACHE[fmt] = {
+          names: f.names || [],
+          cards,
+          loaded: (f.seed || []).length,
+          loading: false,
+          done: (f.seed || []).length >= (f.names || []).length,
+        };
+      }
+      return FORMAT_CACHE[fmt];
+    }
+
+    function formatCardData(fmt) {
+      const c = getFormatCache(fmt);
+      const out = [];
+      for (let i = 0; i < c.loaded; i++) {
+        const card = c.cards[c.names[i]];
+        if (card) out.push(card);
+      }
+      return out;
+    }
+
+    async function loadNextChunk(fmt) {
+      const c = getFormatCache(fmt);
+      if (c.loading || c.done) return false;
+      c.loading = true;
+      const slice = c.names.slice(c.loaded, c.loaded + LOAD_CHUNK);
+      try {
+        const { found } = await scryfallCollection(slice);
+        const byName = {};
+        found.forEach(f => { byName[f.name.toLowerCase()] = f; });
+        for (const name of slice) {
+          const full = byName[name.toLowerCase()] || byName[name.split(' // ')[0].toLowerCase()];
+          if (!full) continue;
+          if (c.cards[name]) Object.assign(c.cards[name], full);   // upgrade seed in place (keeps queue refs)
+          else c.cards[name] = full;
+        }
+        c.loaded = Math.min(c.loaded + LOAD_CHUNK, c.names.length);
+        if (c.loaded >= c.names.length) c.done = true;
+      } catch (e) {
+        console.warn('format chunk load failed', fmt, e);
+        c.loaded = Math.min(c.loaded + LOAD_CHUNK, c.names.length);  // skip a bad batch rather than spin
+        if (c.loaded >= c.names.length) c.done = true;
+      } finally {
+        c.loading = false;
+      }
+      return true;
     }
 
     // ===== SM-2 spaced repetition (ported from index-anki.html) =====
@@ -765,9 +871,6 @@
         const [p, t] = correct.split('/').map(n => parseInt(n) || 0);
         [[p + 1, t], [p - 1, t], [p, t + 1], [p, t - 1], [p + 1, t + 1], [p - 1, t - 1], [p + 2, t]]
           .forEach(([vp, vt]) => { if (vp >= 0 && vt >= 0) out.push(`${vp}/${vt}`); });
-      } else if (fieldId === 'manaValue') {
-        const mv = card.manaValue || 0;
-        [1, 2, -1, 3, -2, 4].forEach(d => { if (mv + d >= 0) out.push(String(mv + d)); });
       } else if (fieldId === 'typeLine') {
         out.push(...shuffle(['Creature', 'Instant', 'Sorcery', 'Enchantment', 'Artifact', 'Land',
           'Planeswalker', 'Legendary Creature', 'Artifact Creature', 'Enchantment Creature']));
@@ -780,26 +883,58 @@
       return out.filter(v => v !== correct);
     }
 
+    // P/T numeric distance, e.g. "1/1" vs "5/5" -> 8
+    function ptDist(a, b) {
+      const [ap, at] = String(a).split('/').map(n => parseInt(n) || 0);
+      const [bp, bt] = String(b).split('/').map(n => parseInt(n) || 0);
+      return Math.abs(ap - bp) + Math.abs(at - bt);
+    }
+    // Logical answer ordering: numbers ascending, P/T by power then toughness,
+    // everything else alphabetical (groups similar values together). Art keeps
+    // pool order (image order is meaningless).
+    function sortOptions(fieldId, opts) {
+      if (fieldId === 'textNumber') return [...opts].sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
+      if (fieldId === 'powerToughness') return [...opts].sort((a, b) => {
+        const [ap, at] = String(a).split('/').map(n => parseInt(n) || 0);
+        const [bp, bt] = String(b).split('/').map(n => parseInt(n) || 0);
+        return ap - bp || at - bt;
+      });
+      if (fieldId === 'art') return opts;
+      return [...opts].sort((a, b) => String(a).localeCompare(String(b)));
+    }
+
     function buildOptions(item, list) {
       const field = FIELDS[item.fieldId];
       const correct = field.value(item.card);
-      // Walk pool cards in descending similarity, collecting unique wrong values
-      const scored = list.cardData
-        .filter(c => c.name !== item.card.name && field.applicable(c))
-        .map(c => ({ c, s: cardSimilarity(c, item.card, item.fieldId) }))
-        .sort((a, b) => b.s - a.s);
       const distractors = [];
-      for (const { c } of scored) {
-        if (distractors.length >= 3) break;
-        const v = field.value(c);
-        if (v !== correct && !distractors.includes(v)) distractors.push(v);
+      const add = v => {
+        if (v != null && v !== correct && !distractors.includes(v) && distractors.length < 3) distractors.push(v);
+      };
+
+      if (item.fieldId === 'powerToughness' || item.fieldId === 'textNumber') {
+        // Numeric fields: distractors must be CLOSE to the answer, not merely from
+        // a similar card (that produced 5/5 as a wrong answer for a 1/1). Prefer the
+        // synthetic ±1/±2 variations, then fill from the pool nearest-value first.
+        for (const v of syntheticWrong(item.fieldId, item.card, correct)) add(v);
+        const distOf = item.fieldId === 'powerToughness'
+          ? (v => ptDist(v, correct))
+          : (v => Math.abs((parseInt(v) || 0) - (parseInt(correct) || 0)));
+        const pool = list.cardData
+          .filter(c => c.name !== item.card.name && field.applicable(c))
+          .map(c => field.value(c))
+          .filter((v, i, a) => v !== correct && a.indexOf(v) === i)
+          .sort((a, b) => distOf(a) - distOf(b));
+        for (const v of pool) add(v);
+      } else {
+        // Other fields: walk the pool in descending card similarity
+        const scored = list.cardData
+          .filter(c => c.name !== item.card.name && field.applicable(c))
+          .map(c => ({ c, s: cardSimilarity(c, item.card, item.fieldId) }))
+          .sort((a, b) => b.s - a.s);
+        for (const { c } of scored) add(field.value(c));
+        for (const v of syntheticWrong(item.fieldId, item.card, correct)) add(v);
       }
-      // Synthetic fallback for uniform pools
-      for (const v of syntheticWrong(item.fieldId, item.card, correct)) {
-        if (distractors.length >= 3) break;
-        if (!distractors.includes(v)) distractors.push(v);
-      }
-      return shuffle([correct, ...distractors.slice(0, 3)]);
+      return sortOptions(item.fieldId, [correct, ...distractors.slice(0, 3)]);
     }
 
     // ===== List stats for badges =====
@@ -820,13 +955,29 @@
     // ===== Built-in + user lists =====
     function builtinLists() {
       const src = (typeof window !== 'undefined' && window.PRESET_LISTS) || {};
-      return Object.entries(src).map(([key, v]) => ({
+      const inline = Object.entries(src).map(([key, v]) => ({
         id: 'preset:' + key,
         label: v.label + ' (' + v.cardData.length + ')',
         builtin: true,
         source: { type: 'preset' },
         cardData: v.cardData,
       }));
+      // progressively-loaded constructed-format lists (top 1000 by recent play rate)
+      const fmts = (typeof window !== 'undefined' && window.PRESET_FORMATS) || {};
+      const formats = Object.entries(fmts).map(([key, v]) => {
+        const cache = getFormatCache(key);
+        return {
+          id: 'preset:' + key,
+          label: v.label + ' (' + v.names.length + ')',
+          builtin: true,
+          format: key,                       // marks a progressively-loaded list
+          source: { type: 'preset' },
+          cardData: formatCardData(key),
+          totalCount: v.names.length,
+          loadedCount: cache.loaded,
+        };
+      });
+      return [...formats, ...inline];
     }
 
     // ===================================================================
@@ -965,11 +1116,6 @@
     function CardInfoPanel({ card, askFieldId, showFieldIds }) {
       const rows = showFieldIds
         .filter(fid => fid !== askFieldId && FIELDS[fid].applicable(card))
-        // never leak the answer through a correlated field: hide casting cost
-        // when mana value is asked, and vice versa; colors leak from cost too
-        .filter(fid => !(askFieldId === 'manaValue' && fid === 'castingCost'))
-        .filter(fid => !(askFieldId === 'castingCost' && fid === 'manaValue'))
-        .filter(fid => !(askFieldId === 'colors' && fid === 'castingCost'))
         // full text would reveal the masked number; the question shows the masked version itself
         .filter(fid => !(askFieldId === 'textNumber' && fid === 'oracleText'))
         .filter(fid => !FIELDS[fid].askOnly)
@@ -990,16 +1136,59 @@
       );
     }
 
-    function RoundSummary({ results, score, onNewRound, onReviewMissed, onBackToSetup }) {
+    // Render a stored history value compactly (mana symbols for cost/text, thumb for art)
+    function histValue(fieldId, raw) {
+      if (raw == null || raw === '') return '—';
+      if (fieldId === 'art') return <img className="hist-art" src={raw} alt="art" loading="lazy" />;
+      if (fieldId === 'castingCost' || fieldId === 'oracleText') return <ManaText text={String(raw)} />;
+      return String(raw);
+    }
+
+    function HistoryTable({ history, onClear }) {
+      if (!history || history.length === 0) return null;
+      const total = history.length;
+      const correct = history.filter(h => h.correct).length;
+      const accuracy = total ? Math.round(100 * correct / total) : 0;
+      return (
+        <div className="history-section">
+          <div className="history-score-row">
+            <div className="score-item"><div className="score-label">Answered</div><div className="score-value">{total}</div></div>
+            <div className="score-item"><div className="score-label">Correct</div><div className="score-value">{correct}/{total}</div></div>
+            <div className="score-item"><div className="score-label">Accuracy</div><div className="score-value">{accuracy}%</div></div>
+            <button className="history-clear-btn" onClick={onClear}>Clear history</button>
+          </div>
+          <div className="history-table-wrapper">
+            <table className="history-table">
+              <thead>
+                <tr><th>#</th><th></th><th>Card</th><th>Asked</th><th>Your answer</th><th>Correct answer</th></tr>
+              </thead>
+              <tbody>
+                {history.slice().reverse().map((e, i) => (
+                  <tr key={i} className={e.correct ? 'hist-ok' : 'hist-bad'}>
+                    <td>{total - i}</td>
+                    <td className={e.correct ? 'history-correct' : 'history-wrong'}>{e.correct ? '✓' : '✗'}</td>
+                    <td><a href={`https://scryfall.com/search?q=${encodeURIComponent('!"' + e.cardName + '"')}`} target="_blank" rel="noopener noreferrer">{e.cardName}</a></td>
+                    <td>{FIELDS[e.fieldId] ? FIELDS[e.fieldId].label : (e.askField || e.fieldId)}</td>
+                    <td className="hist-cell">{histValue(e.fieldId, e.userAnswer)}</td>
+                    <td className="hist-cell">{e.correct ? '—' : histValue(e.fieldId, e.correctAnswer)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    function RoundSummary({ results, onNewRound, onReviewMissed, onBackToSetup }) {
       const missed = results.filter(r => !r.correct);
       const accuracy = results.length ? Math.round(100 * (results.length - missed.length) / results.length) : 0;
       return (
         <div className="question-card">
           <div className="question-prompt">Round complete</div>
           <div className="summary-stats">
-            <div className="stat-tile"><div className="num">{score}</div><div className="lbl">Points</div></div>
-            <div className="stat-tile"><div className="num">{accuracy}%</div><div className="lbl">Accuracy</div></div>
             <div className="stat-tile"><div className="num">{results.length - missed.length}/{results.length}</div><div className="lbl">Correct</div></div>
+            <div className="stat-tile"><div className="num">{accuracy}%</div><div className="lbl">Accuracy</div></div>
           </div>
           {missed.length > 0 && (
             <div className="missed-list">
@@ -1028,8 +1217,12 @@
       const saved = useMemo(() => loadLS(LS_SETTINGS, {}), []);
       const [listId, setListId] = useState(saved.listId || 'preset:iconic');
       const [mode, setMode] = useState(saved.mode || 'quiz');                    // 'quiz' | 'flash'
-      const [scheduler, setScheduler] = useState(saved.scheduler || 'shuffle');  // 'shuffle' | 'list' | 'srs'
-      const [fieldIds, setFieldIds] = useState(saved.askFieldIds && saved.askFieldIds.length ? saved.askFieldIds : DEFAULT_ASK_FIELDS);
+      const [scheduler, setScheduler] = useState(saved.scheduler || 'list');  // 'shuffle' | 'list' | 'srs'
+      const [fieldIds, setFieldIds] = useState(() => {
+        // drop fields removed in later versions (mana value, colors) from saved settings
+        const cleaned = (saved.askFieldIds || []).filter(f => ASKABLE_FIELD_IDS.includes(f));
+        return cleaned.length ? cleaned : DEFAULT_ASK_FIELDS;
+      });
       const [showFieldIds, setShowFieldIds] = useState(() => {
         if (!(saved.showFieldIds && saved.showFieldIds.length)) return SHOWABLE_FIELD_IDS;
         // settings saved before the art field existed: show art by default;
@@ -1043,9 +1236,11 @@
       // ----- lists & progress -----
       const [userLists, setUserLists] = useState(() => loadLS(LS_LISTS, []));
       const [progress, setProgress] = useState(() => loadLS(LS_PROGRESS, {}));
+      const [history, setHistory] = useState(() => loadLS(LS_HISTORY, []));
       const [showNewList, setShowNewList] = useState(false);
+      const [tick, setTick] = useState(0);   // bumps when background-loaded cards arrive
 
-      const lists = useMemo(() => [...builtinLists(), ...userLists], [userLists]);
+      const lists = useMemo(() => [...builtinLists(), ...userLists], [userLists, tick]);
       const list = lists.find(d => d.id === listId) || lists[0];
 
       // ----- play state -----
@@ -1056,14 +1251,25 @@
       const [revealed, setRevealed] = useState(false);
       const [picked, setPicked] = useState(null);       // chosen MC value / color key
       const [results, setResults] = useState([]);
-      const [score, setScore] = useState(0);
-      const [streak, setStreak] = useState(0);
+      const cardRef = useRef(null);      // scroll + focus target for each question/answer
 
       useEffect(() => {
         saveLS(LS_SETTINGS, { listId, mode, scheduler, askFieldIds: fieldIds, showFieldIds, roundLength });
       }, [listId, mode, scheduler, fieldIds, showFieldIds, roundLength]);
       useEffect(() => { saveLS(LS_LISTS, userLists); }, [userLists]);
       useEffect(() => { saveLS(LS_PROGRESS, progress); }, [progress]);
+      useEffect(() => { saveLS(LS_HISTORY, history); }, [history]);
+
+      // Background loader: keep the active format list loaded ahead of the user.
+      useEffect(() => {
+        if (!list || !list.format) return;
+        const cache = getFormatCache(list.format);
+        if (cache.loading || cache.done) return;
+        const pos = phase === 'playing' ? idx : 0;
+        if (cache.loaded - pos < LOAD_BUFFER) {
+          loadNextChunk(list.format).then(did => { if (did) setTick(t => t + 1); });
+        }
+      }, [list, phase, idx, tick]);
 
       const stats = useMemo(
         () => list ? listStats(list, list.id, fieldIds, progress) : null,
@@ -1077,24 +1283,27 @@
       const startRound = (customQueue) => {
         const q = customQueue || buildQueue(list, list.id, fieldIds, scheduler, progress, roundLength);
         if (q.length === 0) return;
-        setQueue(q); setIdx(0); setResults([]); setScore(0); setStreak(0);
+        setQueue(q); setIdx(0); setResults([]);
         setRevealed(false); setPicked(null);
         setOptions(mode === 'quiz' && FIELDS[q[0].fieldId].input !== 'colorPicker' ? buildOptions(q[0], list) : []);
         setPhase('playing');
       };
 
-      const recordAnswer = (correct, rating) => {
+      const recordAnswer = (correct, rating, userAnswer) => {
         const key = progressKey(list.id, item.card.name, item.fieldId);
         const rec = progress[key] || newRec();
         setProgress(prev => ({ ...prev, [key]: sm2Update(rec, rating) }));
         setResults(prev => [...prev, { item, correct }]);
-        if (correct) {
-          const newStreak = streak + 1;
-          const mult = newStreak >= 10 ? 3 : newStreak >= 5 ? 2 : newStreak >= 3 ? 1.5 : 1;
-          setScore(s => s + Math.round(10 * mult));
-          setStreak(newStreak);
-        } else {
-          setStreak(0);
+        // persistent cross-session history (quiz answers carry the picked value)
+        if (userAnswer !== undefined) {
+          setHistory(prev => [...prev.slice(-(HISTORY_MAX - 1)), {
+            ts: Date.now(),
+            correct,
+            cardName: item.card.name,
+            fieldId: item.fieldId,
+            userAnswer,
+            correctAnswer: correctValue,
+          }]);
         }
       };
 
@@ -1103,7 +1312,7 @@
         if (revealed) return;
         const correct = value === correctValue;
         setPicked(value); setRevealed(true);
-        recordAnswer(correct, correct ? RATE_GOOD : RATE_AGAIN);
+        recordAnswer(correct, correct ? RATE_GOOD : RATE_AGAIN, value);
       };
 
       // flashcard-mode self rating
@@ -1152,6 +1361,14 @@
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
       });
+
+      // After answering (or moving to a new question) bring the card into view and
+      // move keyboard focus to it, so Enter/Space act here and nothing needs scrolling.
+      useEffect(() => {
+        if (phase !== 'playing' || !cardRef.current) return;
+        cardRef.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        if (revealed) cardRef.current.focus({ preventScroll: true });
+      }, [idx, revealed, phase]);
 
       const reviewMissed = () => {
         const missedItems = results.filter(r => !r.correct).map(r => r.item);
@@ -1322,9 +1539,10 @@
               <div className="playbar">
                 <span>{list.label} · {mode === 'quiz' ? 'Quiz' : 'Flashcards'}</span>
                 <span>
-                  <span className="score-chip">{score} pts</span>
-                  {streak >= 3 && <span className="streak-chip"> 🔥{streak}</span>}
-                  <span> · {Math.min(idx + 1, queue.length)}/{roundLength === 0 && scheduler === 'shuffle' ? '∞' : queue.length}</span>
+                  {list.format && list.loadedCount < list.totalCount && (
+                    <span className="loading-chip" title="Fetching more cards in the background">⏳ {list.loadedCount}/{list.totalCount}</span>
+                  )}
+                  <span> {Math.min(idx + 1, queue.length)}/{roundLength === 0 && scheduler === 'shuffle' ? '∞' : queue.length}</span>
                   <button className="linklike" onClick={() => setPhase('summary')}>End round</button>
                 </span>
               </div>
@@ -1332,45 +1550,51 @@
                 <div className="progress-track"><div className="progress-fill" style={{ width: `${(idx / queue.length) * 100}%` }}></div></div>
               )}
 
-              <div className="question-card">
-                <div className="question-prompt">{field.prompt}…</div>
-                <div className="question-cardname">{item.card.name}</div>
-                <CardInfoPanel card={item.card} askFieldId={item.fieldId} showFieldIds={showFieldIds} />
-                {item.fieldId === 'textNumber' && (
-                  <div className="card-info ci-masked"><ManaText text={maskNumberInText(item.card)} /></div>
+              <div className="question-card" ref={cardRef} tabIndex={-1}>
+                {/* QUESTION (hidden once a quiz answer is revealed — feedback replaces it) */}
+                {!(mode === 'quiz' && revealed) && (
+                  <>
+                    <div className="question-prompt">{field.prompt}…</div>
+                    <div className="question-cardname">{item.card.name}</div>
+                    <CardInfoPanel card={item.card} askFieldId={item.fieldId} showFieldIds={showFieldIds} />
+                    {item.fieldId === 'textNumber' && (
+                      <div className="card-info ci-masked"><ManaText text={maskNumberInText(item.card)} /></div>
+                    )}
+                  </>
                 )}
 
-                {/* QUIZ MODE */}
-                {mode === 'quiz' && field.input === 'colorPicker' && !revealed && (
+                {/* QUIZ MODE — options */}
+                {mode === 'quiz' && !revealed && field.input === 'colorPicker' && (
                   <ColorPicker onSubmit={answerQuiz} disabled={revealed} />
                 )}
-                {mode === 'quiz' && field.input !== 'colorPicker' && (
+                {mode === 'quiz' && !revealed && field.input !== 'colorPicker' && (
                   <div className="mc-options">
-                    {options.map((opt, i) => {
-                      let cls = '';
-                      if (revealed && opt === correctValue) cls = 'correct';
-                      else if (revealed && opt === picked && picked !== correctValue) cls = 'wrong';
-                      return (
-                        <button key={i} className={cls} disabled={revealed} onClick={() => answerQuiz(opt)}>
-                          <span className="key-hint">{i + 1}</span>{field.renderValue(opt)}
-                        </button>
-                      );
-                    })}
+                    {options.map((opt, i) => (
+                      <button key={i} onClick={() => answerQuiz(opt)}>
+                        <span className="key-hint">{i + 1}</span>{field.renderValue(opt)}
+                      </button>
+                    ))}
                   </div>
                 )}
 
-                {/* FLASHCARD MODE */}
+                {/* FLASHCARD MODE — reveal */}
                 {mode === 'flash' && !revealed && (
-                  <button className="primary reveal-btn" onClick={() => setRevealed(true)}>Show answer (Space)</button>
+                  <button className="primary reveal-btn" onClick={() => setRevealed(true)}>Show answer (Space / Enter)</button>
                 )}
 
                 {/* FEEDBACK / REVEAL */}
                 {revealed && (
                   <div className="feedback">
                     {mode === 'quiz' && (
-                      <div className={`verdict ${picked === correctValue ? 'good' : 'bad'}`}>
-                        {picked === correctValue ? 'Correct!' : 'Not quite'}
-                      </div>
+                      <>
+                        <div className={`verdict ${picked === correctValue ? 'good' : 'bad'}`}>
+                          {picked === correctValue ? 'Correct!' : 'Not quite'}
+                        </div>
+                        <div className="question-cardname">{item.card.name}</div>
+                        {picked !== correctValue && (
+                          <div className="answer-line your-pick">You picked: <strong>{field.renderValue(picked)}</strong></div>
+                        )}
+                      </>
                     )}
                     <div className="answer-line">
                       {field.label}: <strong>{field.renderValue(correctValue)}</strong>
@@ -1380,7 +1604,7 @@
                         src={item.card.imageUris.normal || item.card.imageUris.art_crop} />
                     )}
                     {mode === 'quiz' && (
-                      <button className="primary next-btn" onClick={advance}>Next (Enter)</button>
+                      <button className="primary next-btn" onClick={advance}>Next (Enter / Space)</button>
                     )}
                     {mode === 'flash' && flashPreview && (
                       <div className="rate-row">
@@ -1397,10 +1621,14 @@
           )}
 
           {phase === 'summary' && (
-            <RoundSummary results={results} score={score}
+            <RoundSummary results={results}
               onNewRound={() => startRound()}
               onReviewMissed={reviewMissed}
               onBackToSetup={() => setPhase('setup')} />
+          )}
+
+          {phase !== 'playing' && (
+            <HistoryTable history={history} onClear={() => { if (confirm('Clear your answer history? This cannot be undone.')) setHistory([]); }} />
           )}
 
           <footer>
