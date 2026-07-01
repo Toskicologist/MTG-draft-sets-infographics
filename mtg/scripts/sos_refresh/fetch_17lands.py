@@ -113,12 +113,13 @@ def _build_csv_text(cards: list[dict]) -> str:
     return buf.getvalue()
 
 
-def _make_filename(now: datetime | None = None) -> str:
+def _make_filename(prefix: str = "SOS", now: datetime | None = None) -> str:
     """Filename pattern matches the user's preferred convention:
-        SOS card-ratings-YYYY-MM-DD THHMM.csv
+        <PREFIX> card-ratings-YYYY-MM-DD THHMM.csv
+    e.g. "SOS card-ratings-2026-05-02 T1553.csv" or "MSH card-ratings-...".
     """
     now = now or datetime.now()
-    return f"SOS card-ratings-{now:%Y-%m-%d} T{now:%H%M}.csv"
+    return f"{prefix} card-ratings-{now:%Y-%m-%d} T{now:%H%M}.csv"
 
 
 def fetch_and_save(
@@ -127,7 +128,11 @@ def fetch_and_save(
     expansion: str | None = None,
     fmt: str | None = None,
 ) -> Path:
-    """Download 17Lands SOS data and save as CSV. Returns the saved Path."""
+    """Download 17Lands data for one expansion and save as CSV. Returns the saved Path.
+
+    The CSV filename is prefixed with the expansion code (e.g. "MSH card-ratings-..."),
+    matching the set-prefixed convention used across mtg/shared-data/17lands exports/.
+    """
     output_dir = output_dir or config.LANDS_EXPORTS_DIR
     start_date = start_date or config.SOS_START_DATE
     expansion = expansion or config.SOS_EXPANSION
@@ -144,7 +149,7 @@ def fetch_and_save(
     csv_text = _build_csv_text(cards)
     # Match the user's manually-exported format exactly: no trailing newline.
     csv_text = csv_text.rstrip("\n")
-    out_path = output_dir / _make_filename()
+    out_path = output_dir / _make_filename(prefix=expansion)
 
     # UTF-8 BOM + LF line endings to match the user's manually-exported files exactly.
     with open(out_path, "wb") as f:

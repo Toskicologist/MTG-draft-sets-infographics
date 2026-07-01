@@ -116,11 +116,10 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
     return cards
 
 
-def find_newest_sos_csv(exports_dir: Path) -> Path:
-    """Return the most recent file matching 'SOS card-ratings-*.csv' in exports_dir, by mtime.
+def find_newest_csv(exports_dir: Path, pattern: str) -> Path:
+    """Return the most recent file matching `pattern` in exports_dir, by mtime.
     Raises FileNotFoundError if none exist."""
     exports_dir = Path(exports_dir)
-    pattern = 'SOS card-ratings-*.csv'
 
     files = list(exports_dir.glob(pattern))
     if not files:
@@ -131,6 +130,11 @@ def find_newest_sos_csv(exports_dir: Path) -> Path:
     # Sort by mtime descending, return most recent
     files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     return files[0]
+
+
+def find_newest_sos_csv(exports_dir: Path) -> Path:
+    """Return the most recent 'SOS card-ratings-*.csv' in exports_dir, by mtime."""
+    return find_newest_csv(exports_dir, 'SOS card-ratings-*.csv')
 
 
 def find_active_sos_csv(sos_beta_html: Path, exports_dir: Path) -> Path:

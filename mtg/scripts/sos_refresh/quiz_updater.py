@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-quiz_updater.py — Regenerate SOS_CARDS array and update metadata in quiz-beta.html.
+quiz_updater.py — Regenerate a set's <SET>_CARDS array and metadata in the quiz.
 
-Single responsibility: given a new 17Lands CSV and a data date string, replace the
-SOS_CARDS JS array in quiz-beta.html and patch SET_CONFIG.SOS.dataDate,
-dataTimestamp, QUIZ_VERSION, LAST_UPDATE, and the changelog.
+Single responsibility: given a set code, a new 17Lands CSV and a data date string,
+replace the <SET>_CARDS JS array in quiz-beta.html and patch
+SET_CONFIG.<SET>.dataDate / dataTimestamp, QUIZ_VERSION, LAST_UPDATE, and the changelog.
+
+The module is set-agnostic: pass set_code='SOS' (default) or set_code='MSH'. Per-set
+paths (Scryfall snapshot, types mapping) come from config.SET_REFRESH[set_code].
 
 Public API:
-    update_quiz(quiz_html_path, new_csv_path, new_data_date, dry_run=False) -> dict
+    update_quiz(quiz_html_path, new_csv_path, new_data_date, dry_run=False,
+                set_code='SOS') -> dict
 """
 
 import json
 import re
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -25,35 +28,58 @@ from sos_refresh.underover_updater import increment_version
 # Type resolution helpers
 # ---------------------------------------------------------------------------
 
-def _load_sos_types() -> dict:
-    """Load sos-types-mapping.json -> {card_name: type_line}."""
-    p = config.SOS_TYPES_MAPPING_JSON
-    if p.exists():
-        return json.loads(p.read_text(encoding='utf-8'))
+def _load_types(set_code: str) -> dict:
+    """Load the set's types-mapping.json -> {card_name: type_line}, if configured.
+    Returns {} when no mapping file is configured or present (e.g. MSH)."""
+    p = config.SET_REFRESH.get(set_code, {}).get('types_mapping')
+    if p and Path(p).exists():
+        return json.loads(Path(p).read_text(encoding='utf-8'))
     return {}
 
 
-def _load_scryfall_reference() -> dict:
-    """Load scryfall_reference.json -> {card_name: card_obj}."""
-    p = config.SCRYFALL_REFERENCE_JSON
-    if not p.exists():
-        return {}
-    raw = json.loads(p.read_text(encoding='utf-8'))
-    if isinstance(raw, list):
-        return {card['name']: card for card in raw}
-    return raw
+def _load_scryfall_reference(set_code: str) -> dict:
+    """Load the set's Scryfall snapshot -> {card_name: card_obj}.
 
-
-def _extract_existing_types(html: str) -> dict:
+    Handles the three shapes we store snapshots in:
+      - a bare list of card objects,
+      - {"cards": [...]} (the fetch-*-cards.js snapshot shape, used by MSH),
+      - {name: card_obj} already keyed by name.
+    For double-faced cards ("Front // Back") the front-face name is also registered
+    as a key, because 17Lands reports DFCs under the front-face name only.
+    Returns {} if the snapshot file is absent (CI falls back to embedded types).
     """
-    Parse SOS_CARDS from the HTML to build {name: type} fallback dict.
+    p = config.SET_REFRESH.get(set_code, {}).get('scryfall_reference')
+    if not p or not Path(p).exists():
+        return {}
+    raw = json.loads(Path(p).read_text(encoding='utf-8'))
+
+    if isinstance(raw, dict) and 'cards' in raw:
+        cards = raw['cards']
+    elif isinstance(raw, list):
+        cards = raw
+    else:
+        # Already a {name: card_obj} dict
+        cards = list(raw.values())
+
+    ref: dict = {}
+    for card in cards:
+        name = card.get('name')
+        if not name:
+            continue
+        ref[name] = card
+        # 17Lands uses the front-face name for DFCs; register it too.
+        if ' // ' in name:
+            ref.setdefault(name.split(' // ')[0], card)
+    return ref
+
+
+def _extract_existing_types(html: str, set_code: str) -> dict:
+    """
+    Parse <SET>_CARDS from the HTML to build {name: type} fallback dict.
     Matches both double-quoted and single-quoted object literals.
     """
-    # Pattern covers: {name: "Foo", ..., type: "Bar", ...} with any field ordering.
-    # We look for the type field specifically.
     types = {}
-    # Scan within the SOS_CARDS block for efficiency
-    m = re.search(r'const SOS_CARDS\s*=\s*\[', html)
+    m = re.search(rf'const {set_code}_CARDS\s*=\s*\[', html)
     if not m:
         return types
     start = m.end()
@@ -69,12 +95,9 @@ def _extract_existing_types(html: str) -> dict:
         pos += 1
     block = html[start:pos]
 
-    # Extract name and type pairs
-    # Each card line looks like: {name: "...", color: "...", type: "...", ...}
     name_re = re.compile(r'name:\s*"((?:[^"\\]|\\.)*)"')
     type_re = re.compile(r'type:\s*"((?:[^"\\]|\\.)*)"')
 
-    # Split block by card objects
     for obj_match in re.finditer(r'\{[^{}]*\}', block):
         obj = obj_match.group()
         nm = name_re.search(obj)
@@ -85,16 +108,16 @@ def _extract_existing_types(html: str) -> dict:
     return types
 
 
-def _resolve_type(name: str, sos_types: dict, scryfall: dict, existing: dict) -> str:
+def _resolve_type(name: str, types_map: dict, scryfall: dict, existing: dict) -> str:
     """
     Type fallback chain matching generate-card-data.js:
-      1. sos-types-mapping.json
-      2. scryfall_reference.json (type_line or type)
+      1. <set>-types-mapping.json
+      2. scryfall snapshot (type_line or type)
       3. existing quiz HTML types
       4. empty string (+ warning)
     """
-    if name in sos_types:
-        return sos_types[name]
+    if name in types_map:
+        return types_map[name]
     if name in scryfall:
         card = scryfall[name]
         t = card.get('type_line') or card.get('type') or ''
@@ -113,13 +136,10 @@ def _resolve_type(name: str, sos_types: dict, scryfall: dict, existing: dict) ->
 # JS array formatting
 # ---------------------------------------------------------------------------
 
-def _format_card_js(card: dict) -> str:
+def _format_card_js(card: dict, set_code: str) -> str:
     """
-    Format one card dict as a JS object literal matching the existing SOS_CARDS style:
-      {name: "...", color: "...", type: "...", rarity: "...", gihWr: X.X, alsa: X.XX, set: "SOS"}
-
-    Field ordering observed in the HTML:
-      name, color, type, rarity, gihWr, alsa, set
+    Format one card dict as a JS object literal matching the existing <SET>_CARDS style:
+      {name: "...", color: "...", type: "...", rarity: "...", gihWr: X.X, alsa: X.XX, set: "<SET>"}
     """
     def js_str(s: str) -> str:
         # Escape backslash and double-quotes; leave apostrophes as-is (JS double-quoted string)
@@ -130,13 +150,11 @@ def _format_card_js(card: dict) -> str:
     type_ = js_str(card['type'])
     rarity = js_str(card['rarity'])
 
-    # gihWr: 1 decimal; alsa: 2 decimals — but strip trailing zeros after decimal per observed style
     gih_wr = card['gihWr']
     alsa = card['alsa']
 
-    # Format matching existing: e.g. 51.4, 5.71 — no trailing zeros stripped beyond precision
+    # Format matching existing: e.g. 51.4, 5.71; strip a trailing ".0" like the file does.
     gih_str = f"{gih_wr:.1f}"
-    # Remove trailing zero only when result is like "59.0" -> keep as "59" to match observed "59"
     if gih_str.endswith('.0'):
         gih_str = gih_str[:-2]
 
@@ -144,16 +162,16 @@ def _format_card_js(card: dict) -> str:
 
     return (
         f'  {{name: "{name}", color: "{color}", type: "{type_}", '
-        f'rarity: "{rarity}", gihWr: {gih_str}, alsa: {alsa_str}, set: "SOS"}}'
+        f'rarity: "{rarity}", gihWr: {gih_str}, alsa: {alsa_str}, set: "{set_code}"}}'
     )
 
 
-def _build_sos_cards_block(cards: list[dict]) -> str:
-    """Build the full const SOS_CARDS = [...]; block."""
-    lines = ['const SOS_CARDS = [']
+def _build_cards_block(cards: list[dict], set_code: str) -> str:
+    """Build the full const <SET>_CARDS = [...]; block."""
+    lines = [f'const {set_code}_CARDS = [']
     for i, card in enumerate(cards):
         suffix = ',' if i < len(cards) - 1 else ''
-        lines.append(_format_card_js(card) + suffix)
+        lines.append(_format_card_js(card, set_code) + suffix)
     lines.append('];')
     return '\n'.join(lines)
 
@@ -162,19 +180,17 @@ def _build_sos_cards_block(cards: list[dict]) -> str:
 # HTML splicing helpers
 # ---------------------------------------------------------------------------
 
-def _find_sos_cards_span(html: str) -> tuple[int, int]:
+def _find_cards_span(html: str, set_code: str) -> tuple[int, int]:
     """
-    Return (start, end) character offsets for the entire SOS_CARDS declaration,
-    from 'const SOS_CARDS = [' through the matching '];'.
-    Uses bracket-counting from the opening '['.
+    Return (start, end) character offsets for the entire <SET>_CARDS declaration,
+    from 'const <SET>_CARDS = [' through the matching '];'.
     Raises ValueError if not found.
     """
-    open_m = re.search(r'const SOS_CARDS\s*=\s*\[', html)
+    open_m = re.search(rf'const {set_code}_CARDS\s*=\s*\[', html)
     if not open_m:
-        raise ValueError("Cannot find 'const SOS_CARDS = [' in quiz HTML")
+        raise ValueError(f"Cannot find 'const {set_code}_CARDS = [' in quiz HTML")
 
     decl_start = open_m.start()
-    # The '[' that opens the array
     array_open = open_m.end() - 1  # index of '['
 
     depth = 0
@@ -186,21 +202,17 @@ def _find_sos_cards_span(html: str) -> tuple[int, int]:
         elif ch == ']':
             depth -= 1
             if depth == 0:
-                # closing ']' found; must be followed by ';' optionally with whitespace
-                # find the ';'
                 semi = html.index(';', pos)
                 return decl_start, semi + 1
         pos += 1
 
-    raise ValueError("Could not find closing '];' for SOS_CARDS array")
+    raise ValueError(f"Could not find closing '];' for {set_code}_CARDS array")
 
 
-def _find_sos_config_block_span(html: str) -> tuple[int, int]:
-    """Return (start, end) for the SOS: { ... } block within SET_CONFIG.
-    Finds the SOS block that contains 'dataDate' (not the SVG icon block)."""
-    # There may be multiple 'SOS: {' occurrences (e.g. SVG path data).
-    # Find all and pick the one whose block contains 'dataDate'.
-    for m in re.finditer(r'\bSOS:\s*\{', html):
+def _find_config_block_span(html: str, set_code: str) -> tuple[int, int]:
+    """Return (start, end) for the <SET>: { ... } block within SET_CONFIG.
+    Finds the block that contains 'dataDate' (not e.g. an SVG icon block)."""
+    for m in re.finditer(rf'\b{set_code}:\s*\{{', html):
         brace_open = html.index('{', m.start())
         depth = 0
         pos = brace_open
@@ -215,15 +227,12 @@ def _find_sos_config_block_span(html: str) -> tuple[int, int]:
                         return m.start(), pos + 1
                     break  # wrong block, try next match
             pos += 1
-    raise ValueError("Could not find SET_CONFIG SOS block containing 'dataDate'")
+    raise ValueError(f"Could not find SET_CONFIG {set_code} block containing 'dataDate'")
 
 
-def _patch_set_config_sos(html: str, new_data_date: str, new_timestamp: str) -> str:
-    """
-    Replace dataDate and dataTimestamp inside the SET_CONFIG.SOS block.
-    Matches single-quoted format used in the file.
-    """
-    start, end = _find_sos_config_block_span(html)
+def _patch_set_config(html: str, set_code: str, new_data_date: str, new_timestamp: str) -> str:
+    """Replace dataDate and dataTimestamp inside the SET_CONFIG.<SET> block."""
+    start, end = _find_config_block_span(html, set_code)
     block = html[start:end]
 
     block = re.sub(r"dataDate:\s*'[^']*'", f"dataDate: '{new_data_date}'", block, count=1)
@@ -233,9 +242,7 @@ def _patch_set_config_sos(html: str, new_data_date: str, new_timestamp: str) -> 
 
 
 def _patch_quiz_version(html: str) -> tuple[str, str, str]:
-    """
-    Find and patch-bump QUIZ_VERSION. Returns (new_html, old_version, new_version).
-    """
+    """Find and patch-bump QUIZ_VERSION. Returns (new_html, old_version, new_version)."""
     m = re.search(r"const QUIZ_VERSION\s*=\s*'([^']+)';", html)
     if not m:
         raise ValueError("Cannot find 'const QUIZ_VERSION' in quiz HTML")
@@ -246,32 +253,28 @@ def _patch_quiz_version(html: str) -> tuple[str, str, str]:
 
 
 def _patch_last_update(html: str, new_timestamp: str) -> tuple[str, str, str]:
-    """
-    Find and update LAST_UPDATE. Returns (new_html, old_value, new_value).
-    LAST_UPDATE format in file: 'YYYY-MM-DD UTC' (date only).
-    """
+    """Find and update LAST_UPDATE. Returns (new_html, old_value, new_value)."""
     m = re.search(r"const LAST_UPDATE\s*=\s*'([^']+)';", html)
     if not m:
-        # Not present — skip gracefully
         return html, '', new_timestamp
     old_val = m.group(1)
     new_html = html[:m.start()] + f"const LAST_UPDATE = '{new_timestamp}';" + html[m.end():]
     return new_html, old_val, new_timestamp
 
 
-def _add_changelog_entry(html: str, new_version: str, csv_path: Path,
-                          card_count: int, today: str) -> tuple[str, str]:
+def _add_changelog_entry(html: str, set_code: str, new_version: str, csv_path: Path,
+                         card_count: int, today: str) -> tuple[str, str]:
     """
     Prepend a one-line entry after 'CHANGELOG:'.
-    Entry format matching existing style:
-      vX.Y.Z (YYYY-MM-DD UTC): DATA: Refresh SOS to <CSV filename> (<N> cards).
+      vX.Y.Z (YYYY-MM-DD UTC): DATA: Refresh <SET> to <CSV filename> (<N> cards).
     Returns (new_html, entry_text).
     """
     m = re.search(r'(CHANGELOG:\s*\n)', html)
     if not m:
         raise ValueError("Cannot find 'CHANGELOG:' block in quiz HTML")
 
-    entry = f"  v{new_version} ({today} UTC): DATA: Refresh SOS to {csv_path.name} ({card_count} cards)."
+    entry = (f"  v{new_version} ({today} UTC): DATA: Refresh {set_code} to "
+             f"{csv_path.name} ({card_count} cards).")
     insert_pos = m.end()
     new_html = html[:insert_pos] + entry + '\n' + html[insert_pos:]
     return new_html, entry
@@ -286,25 +289,14 @@ def update_quiz(
     new_csv_path: Path,
     new_data_date: str,
     dry_run: bool = False,
+    set_code: str = 'SOS',
 ) -> dict:
     """
-    Regenerate SOS_CARDS and update SOS metadata in quiz-beta.html.
+    Regenerate <SET>_CARDS and update <SET> metadata in the quiz HTML.
 
-    Returns {
-      'cards_old_count': int,
-      'cards_new_count': int,
-      'cards_added': list[str],
-      'cards_removed': list[str],
-      'old_data_date': str,
-      'new_data_date': str,
-      'old_data_timestamp': str,
-      'new_data_timestamp': str,
-      'old_quiz_version': str,
-      'new_quiz_version': str,
-      'changelog_entry': str,
-      'changes_applied': bool,
-    }
-    Raises ValueError if SOS_CARDS or SET_CONFIG.SOS or QUIZ_VERSION can't be located.
+    Returns a dict with card counts, added/removed, old/new dates, versions, the
+    changelog entry, and 'changes_applied'.
+    Raises ValueError if <SET>_CARDS or SET_CONFIG.<SET> or QUIZ_VERSION can't be located.
     """
     quiz_html_path = Path(quiz_html_path)
     new_csv_path = Path(new_csv_path)
@@ -313,23 +305,23 @@ def update_quiz(
     html = quiz_html_path.read_text(encoding='utf-8')
 
     # --- Load type resolution sources ---
-    sos_types = _load_sos_types()
-    scryfall = _load_scryfall_reference()
-    existing_types = _extract_existing_types(html)
+    types_map = _load_types(set_code)
+    scryfall = _load_scryfall_reference(set_code)
+    existing_types = _extract_existing_types(html, set_code)
 
-    # --- Parse existing SOS_CARDS for old_count and added/removed diff ---
+    # --- Parse existing <SET>_CARDS for old_count and added/removed diff ---
     old_names: set[str] = set(existing_types.keys())
     cards_old_count = len(old_names)
 
     # --- Extract old metadata for result dict ---
     try:
-        sos_config_start, sos_block_end = _find_sos_config_block_span(html)
+        config_start, block_end = _find_config_block_span(html, set_code)
     except ValueError as e:
-        raise ValueError(f"Cannot find SET_CONFIG.SOS block: {e}") from e
-    sos_block = html[sos_config_start:sos_block_end]
+        raise ValueError(f"Cannot find SET_CONFIG.{set_code} block: {e}") from e
+    set_block = html[config_start:block_end]
 
-    date_m = re.search(r"dataDate:\s*'([^']*)'", sos_block)
-    ts_m = re.search(r"dataTimestamp:\s*'([^']*)'", sos_block)
+    date_m = re.search(r"dataDate:\s*'([^']*)'", set_block)
+    ts_m = re.search(r"dataTimestamp:\s*'([^']*)'", set_block)
     old_data_date = date_m.group(1) if date_m else ''
     old_data_timestamp = ts_m.group(1) if ts_m else ''
 
@@ -346,7 +338,7 @@ def update_quiz(
     for row in csv_cards:
         name = row['name']
         color = row['color']
-        type_ = _resolve_type(name, sos_types, scryfall, existing_types)
+        type_ = _resolve_type(name, types_map, scryfall, existing_types)
         rarity = row['rarity']
         gih_wr = round(row['gih_wr'], 1)
         alsa = round(row['alsa'], 2)
@@ -359,7 +351,6 @@ def update_quiz(
             'alsa': alsa,
         })
 
-    # Already sorted by csv_loader, but ensure alphabetical
     new_cards.sort(key=lambda c: c['name'])
 
     new_names: set[str] = {c['name'] for c in new_cards}
@@ -373,13 +364,13 @@ def update_quiz(
     new_data_timestamp = new_data_date  # use caller-supplied date as timestamp too
     new_version = increment_version(old_quiz_version)
 
-    # Build changelog entry text (needs new_version)
     changelog_entry = (
-        f"v{new_version} ({today} UTC): DATA: Refresh SOS to "
+        f"v{new_version} ({today} UTC): DATA: Refresh {set_code} to "
         f"{new_csv_path.name} ({cards_new_count} cards)."
     )
 
     result = {
+        'set_code': set_code,
         'cards_old_count': cards_old_count,
         'cards_new_count': cards_new_count,
         'cards_added': cards_added,
@@ -397,15 +388,15 @@ def update_quiz(
     if dry_run:
         return result
 
-    # --- Build new SOS_CARDS JS block ---
-    new_block = _build_sos_cards_block(new_cards)
+    # --- Build new <SET>_CARDS JS block ---
+    new_block = _build_cards_block(new_cards, set_code)
 
-    # --- Splice SOS_CARDS into HTML ---
-    span_start, span_end = _find_sos_cards_span(html)
+    # --- Splice <SET>_CARDS into HTML ---
+    span_start, span_end = _find_cards_span(html, set_code)
     html = html[:span_start] + new_block + html[span_end:]
 
-    # --- Patch SET_CONFIG.SOS ---
-    html = _patch_set_config_sos(html, new_data_date, new_data_timestamp)
+    # --- Patch SET_CONFIG.<SET> ---
+    html = _patch_set_config(html, set_code, new_data_date, new_data_timestamp)
 
     # --- Bump QUIZ_VERSION ---
     html, _old_ver, _new_ver = _patch_quiz_version(html)
@@ -416,7 +407,8 @@ def update_quiz(
     html, _old_lu, _new_lu = _patch_last_update(html, new_data_date)
 
     # --- Add changelog entry ---
-    html, _entry = _add_changelog_entry(html, new_version, new_csv_path, cards_new_count, today)
+    html, _entry = _add_changelog_entry(html, set_code, new_version, new_csv_path,
+                                        cards_new_count, today)
     assert _entry.strip() == changelog_entry.strip()
 
     # --- Write to disk ---
@@ -425,12 +417,11 @@ def update_quiz(
 
     # --- Validate splice integrity (Python-side; node --check rejects .html in Node 24+) ---
     written = quiz_html_path.read_text(encoding='utf-8')
-    sos_match = re.search(r'const SOS_CARDS\s*=\s*\[', written)
-    if not sos_match:
-        raise ValueError("Validation failed: const SOS_CARDS not found after write.")
-    # Count card entries inside SOS_CARDS using bracket matching
-    start = sos_match.end()
-    depth = 1  # we're inside the array's outer [
+    cards_match = re.search(rf'const {set_code}_CARDS\s*=\s*\[', written)
+    if not cards_match:
+        raise ValueError(f"Validation failed: const {set_code}_CARDS not found after write.")
+    start = cards_match.end()
+    depth = 1
     i = start
     n = len(written)
     while i < n and depth > 0:
@@ -442,17 +433,16 @@ def update_quiz(
         i += 1
     if depth != 0:
         raise ValueError(
-            "Validation failed: SOS_CARDS array brackets unbalanced after splice."
+            f"Validation failed: {set_code}_CARDS array brackets unbalanced after splice."
         )
-    sos_block = written[start:i - 1]
-    actual_card_count = len(re.findall(r'\{name:', sos_block))
+    cards_block = written[start:i - 1]
+    actual_card_count = len(re.findall(r'\{name:', cards_block))
     if actual_card_count != len(new_cards):
         raise ValueError(
-            f"Validation failed: expected {len(new_cards)} cards in SOS_CARDS, "
+            f"Validation failed: expected {len(new_cards)} cards in {set_code}_CARDS, "
             f"found {actual_card_count}."
         )
-    # Sanity-check a few constants are still intact
-    for needed in ('const QUIZ_VERSION', 'const SET_CONFIG', 'SOS:'):
+    for needed in ('const QUIZ_VERSION', 'const SET_CONFIG', f'{set_code}:'):
         if needed not in written:
             raise ValueError(f"Validation failed: '{needed}' missing after write.")
 
@@ -470,14 +460,20 @@ if __name__ == '__main__':
     args = sys.argv[1:]
     if len(args) < 3:
         print(
-            "Usage: python -m sos_refresh.quiz_updater <quiz_html> <csv_path> <data_date> [--dry-run]"
+            "Usage: python -m sos_refresh.quiz_updater <quiz_html> <csv_path> "
+            "<data_date> [--dry-run] [--set CODE]"
         )
         sys.exit(1)
+
+    set_code = 'SOS'
+    if '--set' in args:
+        set_code = args[args.index('--set') + 1]
 
     result = update_quiz(
         quiz_html_path=Path(args[0]),
         new_csv_path=Path(args[1]),
         new_data_date=args[2],
         dry_run='--dry-run' in args,
+        set_code=set_code,
     )
     print(_json.dumps(result, indent=2))
