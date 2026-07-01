@@ -5887,7 +5887,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
   }
 };
 
-const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL', onImageLoaded, preferSPM = false }) => {
+const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorrect, isWinner, metric = 'gihWr', setCode = 'ECL', preferSPM = false }) => {
   const [imageUrl, setImageUrl] = React.useState(null);
   const [cardInfo, setCardInfo] = React.useState(null);
   const [imageLoading, setImageLoading] = React.useState(true);
@@ -5916,7 +5916,6 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
                 const spmUrl = spmData.card_faces?.[0]?.image_uris?.normal || spmData.image_uris?.normal || null;
                 if (spmUrl) {
                   setImageUrl(spmUrl);
-                  if (onImageLoaded) onImageLoaded(cardNumber);
                   setImageLoading(false);
                   return;
                 }
@@ -5926,17 +5925,13 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         }
 
         setImageUrl(cardData.imageUrl);
-        // Notify parent that image has been loaded/cached
-        if (onImageLoaded) {
-          onImageLoaded(cardNumber);
-        }
       } else {
         setImageError(true);
       }
       setImageLoading(false);
     };
     loadCardData();
-  }, [card.name, setCode, cardNumber, onImageLoaded, preferSPM]);
+  }, [card.name, setCode, preferSPM]);
 
   const containerClass = [
     'card-image-container',
@@ -6138,24 +6133,32 @@ const GIHQuiz = () => {
     migrateStorageToV2();
   }, []);
 
-  // Set selection state
+  // Set selection state: URL hash wins, then saved preference (validated — a stale
+  // stored code from a renamed/removed set must not crash the app), then default.
   const [currentSetCode, setCurrentSetCode] = React.useState(() => {
-    const hash = window.location.hash.replace('#', '').toUpperCase();
-    if (hash && SET_CONFIG[hash]) return hash;
-    return safeStorage.getItem(STORAGE_KEYS.SET) || 'MSH';
+    if (INITIAL_HASH.set) return INITIAL_HASH.set;
+    const saved = safeStorage.getItem(STORAGE_KEYS.SET);
+    return (saved && SET_CONFIG[saved]) ? saved : 'MSH';
   });
   const currentSetConfig = SET_CONFIG[currentSetCode];
   const activeCardData = currentSetConfig.data;
 
-  // Update grade stats when set changes
+  // Keep the grade-stat globals in sync during render (not in an effect) so
+  // getGrade/getGradeRange are never stale on the first paint after a set change.
+  updateGradeStats(currentSetCode);
+
+  // Persist set choice; filters are per-set (type lists differ), so clear them on set change
   React.useEffect(() => {
-    updateGradeStats(currentSetCode);
     safeStorage.setItem(STORAGE_KEYS.SET, currentSetCode);
+    const clearIfSet = setter => setter(prev => prev.length ? [] : prev);
+    clearIfSet(setColorFilters);
+    clearIfSet(setRarityFilters);
+    clearIfSet(setTypeFilters);
   }, [currentSetCode]);
 
-  // Load saved mode preference
-  const savedMode = safeStorage.getItem(STORAGE_KEYS.MODE) || 'comparison';
-  const [quizMode, setQuizMode] = React.useState(savedMode);
+  // Quiz mode: URL hash wins over saved preference
+  const [quizMode, setQuizMode] = React.useState(() =>
+    INITIAL_HASH.mode || safeStorage.getItem(STORAGE_KEYS.MODE) || 'comparison');
 
   const [colorFilters, setColorFilters] = React.useState([]);
   const [rarityFilters, setRarityFilters] = React.useState([]);
@@ -6164,7 +6167,8 @@ const GIHQuiz = () => {
   const [queryText, setQueryText] = React.useState('');
   const lastSource = React.useRef(null);
   const [smartSelectionEnabled, setSmartSelectionEnabled] = React.useState(true);
-  const [metric, setMetric] = React.useState(() => safeStorage.getItem(STORAGE_KEYS.METRIC) || 'gihWr');
+  const [metric, setMetric] = React.useState(() =>
+    INITIAL_HASH.metric || safeStorage.getItem(STORAGE_KEYS.METRIC) || 'gihWr');
   const [expandMetricHelp, setExpandMetricHelp] = React.useState(false);
   const [expandSmartSelectionHelp, setExpandSmartSelectionHelp] = React.useState(false);
 
@@ -6180,7 +6184,6 @@ const GIHQuiz = () => {
   const [selectedCardNum, setSelectedCardNum] = React.useState(null);
   const [isAnswering, setIsAnswering] = React.useState(false);
   const [shareMenuOpen, setShareMenuOpen] = React.useState(false);
-  const [loadedCards, setLoadedCards] = React.useState(new Set()); // Track which cards in current pair are loaded
 
   // Load score from localStorage (mode+set-specific)
   const savedScore = loadScore(quizMode, currentSetCode);
@@ -6203,6 +6206,8 @@ const GIHQuiz = () => {
     safeStorage.setItem(STORAGE_KEYS.MODE, quizMode);
     setShowResult(false);
     setSelectedGrade(null);
+    setSelectedCardNum(null);
+    setIsAnswering(false);
     setCurrentPair(null);
     setCurrentCard(null);
     setPreferSPM(false);
@@ -6229,8 +6234,32 @@ const GIHQuiz = () => {
     safeStorage.setItem(STORAGE_KEYS.METRIC, metric);
   }, [metric]);
 
-  // Disabled: startup preloading was causing rate limit issues
-  // Only fetch card data when user explicitly needs it (when viewing a card)
+  // Keep the URL hash canonical (#SET[/grading][/alsa]) and report each change
+  // to GoatCounter as a virtual pageview. replaceState avoids polluting browser
+  // history and does not fire hashchange (no feedback loop with the listener below).
+  // The initial render is skipped: count.js already counts the landing view.
+  const hashSyncedOnce = React.useRef(false);
+  React.useEffect(() => {
+    const canonical = '#' + buildLocationHash(currentSetCode, quizMode, metric);
+    if (window.location.hash !== canonical) {
+      try { history.replaceState(null, '', canonical); }
+      catch (e) { window.location.hash = canonical; }
+    }
+    if (!hashSyncedOnce.current) { hashSyncedOnce.current = true; return; }
+    trackVirtualPageview();
+  }, [currentSetCode, quizMode, metric]);
+
+  // Apply user-driven hash changes (manual URL edits, back/forward navigation)
+  React.useEffect(() => {
+    const onHashChange = () => {
+      const parsed = parseLocationHash();
+      if (parsed.set) setCurrentSetCode(prev => parsed.set !== prev ? parsed.set : prev);
+      if (parsed.mode) setQuizMode(prev => parsed.mode !== prev ? parsed.mode : prev);
+      if (parsed.metric) setMetric(prev => parsed.metric !== prev ? parsed.metric : prev);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   // Close share menu when clicking outside
   React.useEffect(() => {
@@ -6262,11 +6291,6 @@ const GIHQuiz = () => {
     lastSource.current = 'combobox';
     setQueryText(buildQuery(colorFilters, rarityFilters, typeFilters));
   }, [colorFilters, rarityFilters, typeFilters]);
-
-  // Generate new question when filters, mode, or set change
-  React.useEffect(() => {
-    generateQuestion();
-  }, [quizMode, colorFilters, rarityFilters, typeFilters, smartSelectionEnabled, metric, currentSetCode, generateQuestion]);
 
   // Generate new question
   const generateQuestion = React.useCallback(() => {
@@ -6306,11 +6330,7 @@ const GIHQuiz = () => {
       return;
     }
 
-    const filterKey = [
-      [...colorFilters].sort().join(','),
-      [...rarityFilters].sort().join(','),
-      [...typeFilters].sort().join(',')
-    ].join('|');
+    const filterKey = makeFilterKey(colorFilters, rarityFilters, typeFilters);
     const shownCards = loadShownCards(quizMode, filterKey, currentSetCode);
 
     if (quizMode === 'grading') {
@@ -6418,17 +6438,10 @@ const GIHQuiz = () => {
     }
   }, [colorFilters, rarityFilters, typeFilters, quizMode, smartSelectionEnabled, metric, currentSetCode, activeCardData]);
 
-  // Preload images for a pair of cards in the background
-  const preloadCardImages = React.useCallback(async (card1, card2) => {
-    if (!card1 || !card2) return;
-    // Preload both card images without waiting
-    Promise.all([
-      fetchCardData(card1.name, currentSetCode, card1.set),
-      fetchCardData(card2.name, currentSetCode, card2.set)
-    ]).catch(() => {
-      // Silent fail - preloading is optional
-    });
-  }, [currentSetCode]);
+  // Generate new question when filters, mode, or set change
+  React.useEffect(() => {
+    generateQuestion();
+  }, [generateQuestion]);
 
   const handleSelectCard = React.useCallback((cardNum) => {
     if (!currentPair || isAnswering) return;
@@ -6453,12 +6466,14 @@ const GIHQuiz = () => {
     setPoints(newPoints);
     saveScore(quizMode, newPoints, newQuestions, currentSetCode);
 
+    // Analytics: per-set answer volume + engagement-depth milestones
+    trackEvent('quiz-answer-' + currentSetCode.toLowerCase(), `Quiz answer (${currentSetCode})`);
+    if (QUIZ_MILESTONES.includes(newQuestions)) {
+      trackEvent('quiz-milestone-' + newQuestions, `Reached ${newQuestions} answers (${quizMode})`);
+    }
+
     // Mark this pair as shown
-    const filterKey = [
-      [...colorFilters].sort().join(','),
-      [...rarityFilters].sort().join(','),
-      [...typeFilters].sort().join(',')
-    ].join('|');
+    const filterKey = makeFilterKey(colorFilters, rarityFilters, typeFilters);
     addShownCards(quizMode, filterKey, currentSetCode, currentPair[0].name, currentPair[1].name);
 
     // Add to history
@@ -6492,56 +6507,7 @@ const GIHQuiz = () => {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilters, rarityFilters, typeFilters, smartSelectionEnabled, currentSetCode, generateQuestion]);
-
-  // Handle image loaded notification for background preloading
-  const handleImageLoaded = React.useCallback((cardNumber) => {
-    setLoadedCards(prev => {
-      const newSet = new Set(prev);
-      newSet.add(cardNumber);
-      return newSet;
-    });
-  }, []);
-
-  // Trigger background preloading when both cards in current pair are loaded
-  React.useEffect(() => {
-    if (!currentPair || loadedCards.size < 2) return;
-
-    // Delay preloading by 2 seconds to avoid interfering with active card loading
-    const preloadTimer = setTimeout(() => {
-      // Generate list of cards to preload from other sets
-      const cardsToPreload = [];
-
-      // Get list of all sets except current one
-      const otherSets = Object.keys(SET_CONFIG).filter(code => code !== currentSetCode);
-
-      // For each other set, add the first 2 cards from that set to the preload queue (reduced from 3)
-      otherSets.forEach(setCode => {
-        const setData = SET_CONFIG[setCode].data;
-        if (setData && setData.length > 0) {
-          // Take first 2 cards from the set (reduced to minimize API load)
-          for (let i = 0; i < Math.min(2, setData.length); i++) {
-            cardsToPreload.push({
-              cardName: setData[i].name,
-              setCode: setCode
-            });
-          }
-        }
-      });
-
-      // Start background preloading (temporarily disabled for debugging)
-      // if (cardsToPreload.length > 0) {
-      //   startBackgroundPreloading(cardsToPreload);
-      // }
-    }, 2000);
-
-    return () => clearTimeout(preloadTimer);
-  }, [currentPair, loadedCards, currentSetCode]);
-
-  // Reset loaded cards when pair changes
-  React.useEffect(() => {
-    setLoadedCards(new Set());
-  }, [currentPair]);
+  }, [currentPair, isAnswering, metric, questions, points, quizMode, colorFilters, rarityFilters, typeFilters, smartSelectionEnabled, currentSetCode]);
 
   const handleGradeSelect = React.useCallback((grade) => {
     if (!currentCard || isAnswering) return;
@@ -6561,12 +6527,14 @@ const GIHQuiz = () => {
     setPoints(newPoints);
     saveScore(quizMode, newPoints, newQuestions, currentSetCode);
 
+    // Analytics: per-set answer volume + engagement-depth milestones
+    trackEvent('quiz-answer-' + currentSetCode.toLowerCase(), `Quiz answer (${currentSetCode})`);
+    if (QUIZ_MILESTONES.includes(newQuestions)) {
+      trackEvent('quiz-milestone-' + newQuestions, `Reached ${newQuestions} answers (${quizMode})`);
+    }
+
     // Mark card as shown
-    const filterKey = [
-      [...colorFilters].sort().join(','),
-      [...rarityFilters].sort().join(','),
-      [...typeFilters].sort().join(',')
-    ].join('|');
+    const filterKey = makeFilterKey(colorFilters, rarityFilters, typeFilters);
     const shownCards = loadShownCards(quizMode, filterKey, currentSetCode);
     shownCards.push(currentCard.name);
     saveShownCards(quizMode, filterKey, shownCards, currentSetCode);
@@ -6595,25 +6563,28 @@ const GIHQuiz = () => {
         resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
-  }, [currentCard, isAnswering, questions, points, quizMode, colorFilters, rarityFilters, typeFilters, currentSetCode, generateQuestion]);
+  }, [currentCard, isAnswering, questions, points, quizMode, colorFilters, rarityFilters, typeFilters, currentSetCode]);
 
   const handleNextQuestion = React.useCallback(() => {
     setIsAnswering(false);
     generateQuestion();
   }, [generateQuestion]);
 
-  const toggleFilter = (setter, current, value) => {
-    setter(current.includes(value) ? current.filter(v => v !== value) : [...current, value]);
+  // Shared reset when the user changes anything that invalidates the shown answer
+  const resetAnswerState = () => {
     setShowResult(false);
     setSelectedCardNum(null);
     setIsAnswering(false);
   };
 
+  const toggleFilter = (setter, current, value) => {
+    setter(current.includes(value) ? current.filter(v => v !== value) : [...current, value]);
+    resetAnswerState();
+  };
+
   const clearFilter = (setter) => {
     setter([]);
-    setShowResult(false);
-    setSelectedCardNum(null);
-    setIsAnswering(false);
+    resetAnswerState();
   };
 
   const handleQueryChange = (e) => {
@@ -6625,7 +6596,7 @@ const GIHQuiz = () => {
     setColorFilters(parsed.colors);
     setRarityFilters(parsed.rarities);
     setTypeFilters(parsed.types);
-    setShowResult(false); setSelectedCardNum(null); setIsAnswering(false);
+    resetAnswerState();
   };
 
   const showToastMessage = (message) => {
@@ -6671,7 +6642,7 @@ ${points.toFixed(1)}/${questions} points (${accuracy}%)
 
 Recent 10: ${resultsGrid}
 
-Play at: ${baseUrl}`,
+Play at: ${baseUrl}#${currentSetCode}`,
       baseUrl,
       accuracy,
       points,
@@ -6687,6 +6658,7 @@ Play at: ${baseUrl}`,
       return;
     }
 
+    trackEvent('quiz-share-copy');
     // Copy to clipboard
     navigator.clipboard.writeText(scoreData.text).then(() => {
       showToastMessage('Score copied to clipboard!');
@@ -6705,6 +6677,7 @@ Play at: ${baseUrl}`,
       return;
     }
 
+    trackEvent('quiz-share-twitter');
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(scoreData.text)}`;
     window.open(twitterUrl, '_blank', 'width=550,height=420');
     setShareMenuOpen(false);
@@ -6717,6 +6690,7 @@ Play at: ${baseUrl}`,
       return;
     }
 
+    trackEvent('quiz-share-bluesky');
     const blueskyUrl = `https://bsky.app/intent/compose?text=${encodeURIComponent(scoreData.text)}`;
     window.open(blueskyUrl, '_blank', 'width=550,height=420');
     setShareMenuOpen(false);
@@ -6729,6 +6703,7 @@ Play at: ${baseUrl}`,
       return;
     }
 
+    trackEvent('quiz-share-discord');
     // Copy full text to clipboard
     navigator.clipboard.writeText(scoreData.text).then(() => {
       showToastMessage('Score copied! Paste in Discord.');
@@ -6744,11 +6719,9 @@ Play at: ${baseUrl}`,
     }, 300);
   };
 
+  // The [quizMode, currentSetCode] effect performs all the answer-state resets
   const handleModeChange = React.useCallback((newMode) => {
     setQuizMode(newMode);
-    setShowResult(false);
-    setSelectedGrade(null);
-    setIsAnswering(false);
   }, []);
 
   const accuracy = questions > 0 ? Math.round((points / questions) * 100) : 0;
@@ -6776,23 +6749,13 @@ Play at: ${baseUrl}`,
       {(currentPair || currentCard || filterError) && (
         <div className="quiz-section">
           <div className="set-selector">
-            {['MSH', 'SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'MSH' && code !== 'SOS')].map(code => (
+            {/* Hash update, answer-state resets, and filter clears all happen in the
+                currentSetCode effects — the click handler only changes the set */}
+            {SET_SELECTOR_ORDER.map(code => (
               <button
                 key={code}
                 className={`mode-option ${currentSetCode === code ? 'active' : ''}`}
-                onClick={() => {
-                  setCurrentSetCode(code);
-                  window.location.hash = code;
-                  setShowResult(false);
-                  setSelectedCardNum(null);
-                  setSelectedGrade(null);
-                  setIsAnswering(false);
-                  setCurrentPair(null);
-                  setCurrentCard(null);
-                  setColorFilters([]);
-                  setRarityFilters([]);
-                  setTypeFilters([]);
-                }}
+                onClick={() => setCurrentSetCode(code)}
                 style={{fontSize: '13px', padding: '3px 6px', display: 'flex', alignItems: 'center', gap: '2px', flex: '0 1 auto'}}
               >
                 <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
@@ -6801,7 +6764,7 @@ Play at: ${baseUrl}`,
                 <span style={{fontSize: code === 'CUBE' ? '11px' : '13px', lineHeight: '1'}}>
                   {SET_CONFIG[code].shortName}
                 </span>
-                {code === 'MSH' && (
+                {SET_CONFIG[code].isNew && (
                   <span style={{fontSize: '9px', fontWeight: '700', color: '#ff3333', marginLeft: '2px', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
                     NEW
                   </span>
@@ -6953,9 +6916,7 @@ Play at: ${baseUrl}`,
                     className={`mode-option ${smartSelectionEnabled ? 'active' : ''}`}
                     onClick={() => {
                       setSmartSelectionEnabled(true);
-                      setShowResult(false);
-                      setSelectedCardNum(null);
-                      setIsAnswering(false);
+                      resetAnswerState();
                     }}
                   >
                     ✨ Smart Selection
@@ -6964,9 +6925,7 @@ Play at: ${baseUrl}`,
                     className={`mode-option ${!smartSelectionEnabled ? 'active' : ''}`}
                     onClick={() => {
                       setSmartSelectionEnabled(false);
-                      setShowResult(false);
-                      setSelectedCardNum(null);
-                      setIsAnswering(false);
+                      resetAnswerState();
                     }}
                   >
                     🎲 Random Pairing
@@ -7008,9 +6967,7 @@ Play at: ${baseUrl}`,
                     className={`mode-option ${metric === 'gihWr' ? 'active' : ''}`}
                     onClick={() => {
                       setMetric('gihWr');
-                      setShowResult(false);
-                      setSelectedCardNum(null);
-                      setIsAnswering(false);
+                      resetAnswerState();
                     }}
                   >
                     🏆 GIH WR
@@ -7019,9 +6976,7 @@ Play at: ${baseUrl}`,
                     className={`mode-option ${metric === 'alsa' ? 'active' : ''}`}
                     onClick={() => {
                       setMetric('alsa');
-                      setShowResult(false);
-                      setSelectedCardNum(null);
-                      setIsAnswering(false);
+                      resetAnswerState();
                     }}
                   >
                     👀 ALSA
@@ -7117,7 +7072,6 @@ Play at: ${baseUrl}`,
                 isWinner={showResult && (metric === 'gihWr' ? currentPair[0].gihWr > currentPair[1].gihWr : currentPair[0].alsa < currentPair[1].alsa)}
                 metric={metric}
                 setCode={currentSetCode}
-                onImageLoaded={handleImageLoaded}
                 preferSPM={preferSPM}
               />
               <CardDisplay
@@ -7130,7 +7084,6 @@ Play at: ${baseUrl}`,
                 isWinner={showResult && (metric === 'gihWr' ? currentPair[1].gihWr > currentPair[0].gihWr : currentPair[1].alsa < currentPair[0].alsa)}
                 metric={metric}
                 setCode={currentSetCode}
-                onImageLoaded={handleImageLoaded}
                 preferSPM={preferSPM}
               />
             </div>
@@ -7150,7 +7103,6 @@ Play at: ${baseUrl}`,
                   isWinner={true}
                   metric={metric}
                   setCode={currentSetCode}
-                  onImageLoaded={handleImageLoaded}
                   preferSPM={preferSPM}
                 />
               </div>
