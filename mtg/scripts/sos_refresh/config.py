@@ -2,12 +2,9 @@
 
 Operates in two modes, auto-detected from where the script lives:
 
-  LOCAL mode  - script is inside a ClaudeProjects checkout on the dev machine.
+  LOCAL mode  - script is inside C:\\Users\\Johnw\\ClaudeProjects\\.
                 ClaudeProjects is the source-of-truth; sync-to-github-pages.ps1
                 copies the result into a separate MTG-GitHub-Pages folder.
-                Paths default to ~/ClaudeProjects and ~/MTG-GitHub-Pages, but can
-                be overridden via the CLAUDE_PROJECTS_ROOT and GITHUB_PAGES_ROOT
-                env vars.
 
   CI mode     - script is inside the public MTG-GitHub-Pages repo (e.g. when
                 a GitHub Action runs `python mtg/scripts/refresh_sos_17lands.py`).
@@ -60,12 +57,15 @@ if _IS_CI:
     # CI-only: locations of the "main" promoted pages (auto-promoted by the orchestrator)
     SOS_INDEX_HTML = _THIS_REPO_ROOT / "mtg" / "underover-rated" / "sos" / "sos-index.html"
     QUIZ_INDEX_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "index.html"
+
+    # MSH quiz refresh (quiz-only; no MSH ratings/archetype consumers in this pipeline).
+    # If this file is absent in CI, quiz_updater falls back to the types already
+    # embedded in the quiz HTML, so ongoing GIH-WR refreshes still work.
+    MSH_SCRYFALL_REFERENCE_JSON = _THIS_REPO_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"
 else:
     # ----- LOCAL mode: ClaudeProjects + MTG-GitHub-Pages as separate folders -----
-    # Override via env vars if your checkouts live somewhere other than ~/ClaudeProjects
-    # and ~/MTG-GitHub-Pages.
-    CLAUDE_PROJECTS_ROOT = Path(os.environ.get("CLAUDE_PROJECTS_ROOT", str(Path.home() / "ClaudeProjects")))
-    GITHUB_PAGES_ROOT = Path(os.environ.get("GITHUB_PAGES_ROOT", str(Path.home() / "MTG-GitHub-Pages")))
+    CLAUDE_PROJECTS_ROOT = Path(r"c:\Users\Johnw\ClaudeProjects")
+    GITHUB_PAGES_ROOT = Path(r"c:\Users\Johnw\MTG-GitHub-Pages")
 
     # Shared 17Lands data folder (CSVs live here)
     LANDS_EXPORTS_DIR = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "17lands exports"
@@ -95,6 +95,9 @@ else:
     SOS_INDEX_HTML = CLAUDE_PROJECTS_ROOT / "mtg" / "ratings-project" / "underover-rated" / "sos" / "sos-index.html"
     QUIZ_INDEX_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "index.html"
 
+    # MSH quiz refresh: local Scryfall snapshot supplies card types for the quiz.
+    MSH_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"
+
 # Module mode flag — useful for log output and conditional behavior in updaters.
 IS_CI = _IS_CI
 
@@ -109,6 +112,35 @@ LANDS_API_URL = "https://www.17lands.com/card_ratings/data"
 SOS_EXPANSION = "SOS"
 SOS_FORMAT = "PremierDraft"
 SOS_START_DATE = "2026-04-21"  # SOS Premier Draft release date
+
+# MSH (Marvel Super Heroes) — quiz auto-refresh
+MSH_EXPANSION = "MSH"
+MSH_FORMAT = "PremierDraft"
+MSH_START_DATE = "2026-06-24"  # MSH Premier Draft opened at digital release
+MSH_CSV_GLOB = "MSH card-ratings-*.csv"
+
+# Per-set refresh descriptors. The quiz_updater and the fetch/orchestrator layers
+# read these so the same code path serves any set: pick the descriptor by set code.
+# Note: SOS keeps its dedicated multi-consumer orchestrator (refresh_sos_17lands.py);
+# MSH is quiz-only (refresh_msh_quiz.py).
+SET_REFRESH = {
+    "SOS": {
+        "expansion": SOS_EXPANSION,
+        "format": SOS_FORMAT,
+        "start_date": SOS_START_DATE,
+        "csv_glob": SOS_CSV_GLOB,
+        "scryfall_reference": SCRYFALL_REFERENCE_JSON,
+        "types_mapping": SOS_TYPES_MAPPING_JSON,
+    },
+    "MSH": {
+        "expansion": MSH_EXPANSION,
+        "format": MSH_FORMAT,
+        "start_date": MSH_START_DATE,
+        "csv_glob": MSH_CSV_GLOB,
+        "scryfall_reference": MSH_SCRYFALL_REFERENCE_JSON,
+        "types_mapping": None,  # no MSH types-mapping.json; Scryfall snapshot + embedded types cover it
+    },
+}
 
 # Diff report flag thresholds
 DIFF_FLAGS = {
