@@ -24,9 +24,10 @@
   <!-- Bluesky / Alternative Social -->
   <meta name="description" content="Interactive quiz comparing Magic: The Gathering cards by Games in Hand Win Rate (GIH WR). Data from 17 Lands. Supports SOS, ECL, and more sets.">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
+  <!-- Pinned versions + Subresource Integrity: a compromised/renamed CDN file fails closed instead of running -->
+  <script crossorigin="anonymous" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin="anonymous" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script crossorigin="anonymous" integrity="sha384-ezQ6HS3FLspd9te19o2McUV6FAK091+GG7KO54f/R8DKgCDi7fULhapNrd5LY+vG" src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1123,6 +1124,12 @@
       }
     }
   </style>
+  <!-- GoatCounter config: must run before count.js loads. Appends the SPA hash route
+       (#SET/mode/metric) to the counted path so each set/setting shows as its own page. -->
+  <script>
+    window.goatcounter = window.goatcounter || {};
+    window.goatcounter.path = function(p) { return p + location.hash; };
+  </script>
   <script data-goatcounter="https://toskicologist.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
   </head>
@@ -1138,6 +1145,19 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.4.0-beta.1 (2026-07-01T22:59:33Z UTC - Claude Fable 5):
+  - FEAT (analytics): GoatCounter integration — counted path now includes the #hash route; SPA "virtual pageviews" fire on set/mode/metric changes; events for shares, answers per set, and milestone counts (1/10/25/50/100/250 answers)
+  - FEAT (routing): URL hash extended to #SET[/grading][/alsa] deep links (e.g. #MSH/grading/alsa); hash, saved prefs, and UI stay in sync; hashchange listener makes back/forward and manual hash edits actually switch the quiz
+  - FEAT (share): "Play at" link in exported score now includes the current set hash for per-set attribution
+  - FIX: history ordering was inverted — question numbers counted backwards and "Recent 10" in the share text showed the OLDEST 10 answers; loadAllHistory now sorts oldest-first
+  - FIX: grade stats (mean/SD/thresholds) could be stale for the first render after a set switch or hash deep-link (GradeSelector ranges showed previous set's numbers); stats now sync during render
+  - FIX: stored set code is validated against SET_CONFIG on load — previously a stale localStorage value (e.g. from a renamed set) crashed the app on startup
+  - FIX: switching sets via URL/back-button no longer leaves the quiz stuck unanswerable (isAnswering is reset by the set/mode effect, not just the buttons)
+  - SEC: React/ReactDOM pinned to exact 18.3.1 with Subresource Integrity hashes (Babel 7.29.7 SRI added too); floating @18 tag removed
+  - PERF: real 8s fetch timeouts via AbortSignal (the previous {timeout: 3000} fetch option does not exist and was silently ignored; hung requests stalled card loads forever)
+  - REFACTOR: removed ~130 lines of dead preloading machinery (queue, idle callbacks, loadedCards tracking, a per-question no-op timer)
+  - REFACTOR: generateQuestion declared before the effect that depends on it (was relying on Babel var-hoisting to dodge a TDZ crash)
+  - REFACTOR: extracted makeFilterKey/resetAnswerState/SET_SELECTOR_ORDER; "NEW" badge now driven by SET_CONFIG.isNew instead of hardcoded set check
   v4.3.66 (2026-07-01 UTC): UI: Set selector ordered newest-first — SOS now 2nd (after MSH, before ECL); Powered Cube wraps to row 2.
   v4.3.65 (2026-07-01 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-01 T2247.csv (273 cards).
   v4.3.64 (2026-07-01 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-01 T0923.csv (327 cards).
@@ -5096,6 +5116,7 @@ const SET_CONFIG = {
   MSH: {
     name: 'MSH (Marvel Super Heroes)',
     shortName: 'MSH',
+    isNew: true,
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
     dataDate: '2026-07-01 UTC',
@@ -5193,7 +5214,7 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.3.66';
+const QUIZ_VERSION = '4.4.0-beta.1';
 const LAST_UPDATE = '2026-07-01 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
@@ -5202,76 +5223,58 @@ const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographic
 const IS_LOCAL = window.location.protocol === 'file:';
 const IS_BETA = window.location.pathname.includes('quiz-beta');
 
+// Set selector display order: newest sets first, then the rest in SET_CONFIG order
+const SET_SELECTOR_ORDER = ['MSH', 'SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'MSH' && code !== 'SOS')];
+
+// ============================================
+// SPA HASH ROUTING: #SET[/grading][/alsa]
+// Default segments (comparison mode, GIH WR metric) are omitted from the hash.
+// ============================================
+const parseLocationHash = () => {
+  const segments = window.location.hash.replace('#', '').split('/').filter(Boolean);
+  const result = { set: null, mode: null, metric: null };
+  segments.forEach((seg, i) => {
+    const upper = seg.toUpperCase();
+    const lower = seg.toLowerCase();
+    if (i === 0 && SET_CONFIG[upper]) result.set = upper;
+    else if (lower === 'grading' || lower === 'comparison') result.mode = lower;
+    else if (lower === 'alsa') result.metric = 'alsa';
+    else if (lower === 'gih' || lower === 'gihwr') result.metric = 'gihWr';
+  });
+  return result;
+};
+
+const buildLocationHash = (setCode, mode, metric) => {
+  const segments = [setCode];
+  if (mode === 'grading') segments.push('grading');
+  if (metric === 'alsa') segments.push('alsa');
+  return segments.join('/');
+};
+
+// Parsed once at load; used to seed initial state (hash wins over saved preferences)
+const INITIAL_HASH = parseLocationHash();
+
+// ============================================
+// GOATCOUNTER ANALYTICS
+// No-ops when count.js is blocked (adblock) or absent (file://), so the quiz
+// never depends on analytics being loaded.
+// ============================================
+const trackVirtualPageview = () => {
+  if (window.goatcounter && window.goatcounter.count) {
+    window.goatcounter.count({ path: location.pathname + location.search + location.hash });
+  }
+};
+
+const trackEvent = (name, title) => {
+  if (window.goatcounter && window.goatcounter.count) {
+    window.goatcounter.count({ path: name, title: title || name, event: true });
+  }
+};
+
+// Engagement-depth milestones (per mode+set question count) reported as events
+const QUIZ_MILESTONES = [1, 10, 25, 50, 100, 250];
+
 const scryfallImageCache = {};
-
-// Background preloading system for card images
-const preloadingState = {
-  queue: [], // Array of {cardName, setCode}
-  isProcessing: false,
-  processedCards: new Set(), // Track to avoid duplicate preloads
-  idleCallbackId: null
-};
-
-const startBackgroundPreloading = (cardsToPreload) => {
-  if (!cardsToPreload || cardsToPreload.length === 0) return;
-
-  // Add new cards to the queue, avoiding duplicates
-  cardsToPreload.forEach(({cardName, setCode}) => {
-    const key = `${setCode}:${cardName}`;
-    if (!preloadingState.processedCards.has(key)) {
-      preloadingState.queue.push({cardName, setCode});
-      preloadingState.processedCards.add(key);
-    }
-  });
-
-  // Start processing if not already running
-  if (!preloadingState.isProcessing && preloadingState.queue.length > 0) {
-    preloadingState.isProcessing = true;
-    processPreloadingQueue();
-  }
-};
-
-const processPreloadingQueue = () => {
-  if (preloadingState.queue.length === 0) {
-    preloadingState.isProcessing = false;
-    return;
-  }
-
-  // Use requestIdleCallback if available, otherwise use setTimeout
-  if (typeof requestIdleCallback !== 'undefined') {
-    preloadingState.idleCallbackId = requestIdleCallback(() => {
-      preloadNextCard();
-    });
-  } else {
-    setTimeout(preloadNextCard, 0);
-  }
-};
-
-const preloadNextCard = () => {
-  if (preloadingState.queue.length === 0) {
-    preloadingState.isProcessing = false;
-    return;
-  }
-
-  const {cardName, setCode} = preloadingState.queue.shift();
-
-  // Preload the card image silently
-  fetchCardData(cardName, setCode).then(() => {
-    // Continue processing the queue
-    if (preloadingState.queue.length > 0) {
-      processPreloadingQueue();
-    } else {
-      preloadingState.isProcessing = false;
-    }
-  }).catch(() => {
-    // Even on error, continue processing
-    if (preloadingState.queue.length > 0) {
-      processPreloadingQueue();
-    } else {
-      preloadingState.isProcessing = false;
-    }
-  });
-};
 
 // In-memory storage fallback for when localStorage is unavailable (e.g., file:// protocol)
 const memoryStorage = {};
@@ -5429,8 +5432,9 @@ const loadAllHistory = (mode = 'comparison') => {
       });
     }
 
-    // Sort by timestamp descending (newest first)
-    return allHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // Sort oldest-first (append order): question numbering counts up from #1,
+    // slice(-10) takes the most recent answers, and the table reverses for display.
+    return allHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   } catch (e) {
     console.error('Error loading all history:', e);
     return [];
@@ -5549,6 +5553,10 @@ const addShownCards = (mode = 'comparison', filterKey, setCode = 'ECL', ...cardN
     saveShownCards(mode, filterKey, shownCards, setCode);
   }
 };
+
+// Canonical storage key for the active filter combination
+const makeFilterKey = (colors, rarities, types) =>
+  [colors, rarities, types].map(f => [...f].sort().join(',')).join('|');
 
 // ============================================
 // EXACT 17LANDS GRADE ALGORITHM
@@ -5671,6 +5679,15 @@ const MIN_REQUEST_DELAY = 20; // Minimum 20ms between Scryfall requests (reduced
 const hitRateLimit = () => { scryfallRateLimitReset = Date.now() + 5000; return null; };
 const ORACLE_CACHE_KEY = 'gih_quiz_oracle_cache_v1';
 
+// fetch() has no "timeout" option — abort hung requests explicitly so a stalled
+// Scryfall call can't block card loading forever. Falls back to a plain fetch
+// in browsers without AbortSignal.timeout.
+const FETCH_TIMEOUT_MS = 8000;
+const fetchWithTimeout = (url) => fetch(url,
+  (typeof AbortSignal !== 'undefined' && AbortSignal.timeout)
+    ? { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }
+    : {});
+
 // Load oracle text cache from localStorage
 const getOracleCache = () => {
   try {
@@ -5743,7 +5760,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
     if (scryfallSets) {
       for (const scryfallSet of scryfallSets) {
         try {
-          let response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:${scryfallSet}`, {timeout: 3000});
+          let response = await fetchWithTimeout(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)} set:${scryfallSet}`);
 
           // Handle rate limiting
           if (response.status === 429) {
@@ -5771,7 +5788,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
     // CUBE: exact name first (no set filter), then oldest print fallback
     if (setCode === 'CUBE') {
       try {
-        let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`, {timeout: 3000});
+        let exactResponse = await fetchWithTimeout(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`);
         if (exactResponse.status === 429) return hitRateLimit();
         if (exactResponse.ok) {
           const data = await exactResponse.json();
@@ -5779,7 +5796,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
           if (cardData) { scryfallImageCache[cacheKey] = cardData; return cardData; }
         }
         const exactQuery = `!"${cardName}"`;
-        let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
+        let oldestResponse = await fetchWithTimeout(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`);
         if (oldestResponse.status === 429) return hitRateLimit();
         if (oldestResponse.ok) {
           const data = await oldestResponse.json();
@@ -5797,7 +5814,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
       const scryfallSetsForExact = SCRYFALL_SET_CODES[setCode];
       try {
         for (const scryfallSet of scryfallSetsForExact) {
-          let exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${scryfallSet}`, {timeout: 3000});
+          let exactResponse = await fetchWithTimeout(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${scryfallSet}`);
           if (exactResponse.status === 429) return hitRateLimit();
           if (exactResponse.ok) {
             const data = await exactResponse.json();
@@ -5806,7 +5823,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
           }
         }
         const exactQuery = `!"${cardName}" (${scryfallSetsForExact.map(s => `set:${s}`).join(' OR ')})`;
-        let oldestResponse = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`, {timeout: 3000});
+        let oldestResponse = await fetchWithTimeout(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(exactQuery)}&order=released&dir=asc`);
         if (oldestResponse.status === 429) return hitRateLimit();
         if (oldestResponse.ok) {
           const data = await oldestResponse.json();
@@ -5820,7 +5837,7 @@ const fetchCardData = async (cardName, setCode, cardSet) => {
     }
 
     // Fallback: fuzzy search (any version) - works for all sets
-    let response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`, {timeout: 3000});
+    let response = await fetchWithTimeout(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
 
     if (response.status === 429) {
       return hitRateLimit();
@@ -5891,7 +5908,7 @@ const CardDisplay = ({ card, cardNumber, onSelect, disabled, showResult, isCorre
         // For OM1 with SPM art preference: try fetching SPM version by oracle ID
         if (preferSPM && cardData.oracleId) {
           try {
-            const spmRes = await fetch(`https://api.scryfall.com/cards/search?q=set:spm oracleid:${cardData.oracleId}`, {timeout: 3000});
+            const spmRes = await fetchWithTimeout(`https://api.scryfall.com/cards/search?q=set:spm oracleid:${cardData.oracleId}`);
             if (spmRes.ok) {
               const spmSearchData = await spmRes.json();
               if (spmSearchData.data && spmSearchData.data.length > 0) {
