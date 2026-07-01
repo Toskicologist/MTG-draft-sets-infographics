@@ -1138,6 +1138,7 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.3.66 (2026-07-01 UTC): UI: Set selector ordered newest-first — SOS now 2nd (after MSH, before ECL); Powered Cube wraps to row 2.
   v4.3.65 (2026-07-01 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-01 T2247.csv (273 cards).
   v4.3.64 (2026-07-01 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-01 T0923.csv (327 cards).
   v4.3.63 (2026-06-30 UTC): DATA: Refresh SOS to SOS card-ratings-2026-06-30 T0850.csv (327 cards).
@@ -5192,7 +5193,7 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.3.65';
+const QUIZ_VERSION = '4.3.66';
 const LAST_UPDATE = '2026-07-01 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
@@ -6758,7 +6759,7 @@ Play at: ${baseUrl}`,
       {(currentPair || currentCard || filterError) && (
         <div className="quiz-section">
           <div className="set-selector">
-            {['MSH', ...Object.keys(SET_CONFIG).filter(code => code !== 'MSH')].map(code => (
+            {['MSH', 'SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'MSH' && code !== 'SOS')].map(code => (
               <button
                 key={code}
                 className={`mode-option ${currentSetCode === code ? 'active' : ''}`}
