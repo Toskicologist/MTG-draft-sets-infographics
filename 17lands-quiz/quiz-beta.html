@@ -1145,6 +1145,8 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.5.1-beta.1 (2026-07-02T15:55:08Z UTC - Claude Fable 5):
+  - FIX (UX): clicking through the result panel (Next Question, or Enter/Space) now scrolls the freshly generated question into view, mirroring the scroll-to-result on answering — previously the viewport was left above the new cards
   v4.5.0-beta.1 (2026-07-02T15:41:59Z UTC - Claude Fable 5):
   - FEAT (keyboard): shortcuts matching the card-knowledge quiz — 1/2 or ArrowLeft/ArrowRight pick a card in Comparison Mode, Enter/Space advances to the next question in both modes; ignored while typing in inputs or when a button has focus; hint added to the Comparison Mode instructions
   - UI (share): score share text now uses ✅/❌ instead of green/red boxes (🟨 kept for partial credit in Grading Mode)
@@ -5219,7 +5221,7 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.5.0-beta.1';
+const QUIZ_VERSION = '4.5.1-beta.1';
 const LAST_UPDATE = '2026-07-02 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
@@ -6573,6 +6575,17 @@ const GIHQuiz = () => {
   const handleNextQuestion = React.useCallback(() => {
     setIsAnswering(false);
     generateQuestion();
+
+    // Mirror the scroll-to-result behavior on answering: once the result panel
+    // (which sat above the cards) unmounts, the viewport is left above the new
+    // question, so bring it into view. '.card-area' matches comparison mode;
+    // grading mode has no card-area, so the first '.card-panel' is its card.
+    setTimeout(() => {
+      const questionArea = document.querySelector('.card-area, .card-panel');
+      if (questionArea) {
+        questionArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
   }, [generateQuestion]);
 
   // Keyboard shortcuts: 1/2 or ArrowLeft/ArrowRight pick a card in comparison
