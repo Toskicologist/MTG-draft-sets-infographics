@@ -1145,6 +1145,9 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.5.0 (2026-07-02T15:41:59Z UTC - Claude Fable 5): PROMOTE: quiz-beta 4.5.0-beta.1 shipped to production (also finalizes the 4.4.0-beta line below):
+  - FEAT (keyboard): shortcuts matching the card-knowledge quiz — 1/2 or ArrowLeft/ArrowRight pick a card in Comparison Mode, Enter/Space advances to the next question in both modes; ignored while typing in inputs or when a button has focus; hint added to the Comparison Mode instructions
+  - UI (share): score share text now uses ✅/❌ instead of green/red boxes (🟨 kept for partial credit in Grading Mode)
   v4.4.0-beta.3 (2026-07-02 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-02 T0836.csv (273 cards).
   v4.4.0-beta.2 (2026-07-02 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-02 T0836.csv (327 cards).
   v4.4.0-beta.1 (2026-07-01T22:59:33Z UTC - Claude Fable 5):
@@ -5216,7 +5219,7 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.4.0-beta.3';
+const QUIZ_VERSION = '4.5.0';
 const LAST_UPDATE = '2026-07-02 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
@@ -6572,6 +6575,34 @@ const GIHQuiz = () => {
     generateQuestion();
   }, [generateQuestion]);
 
+  // Keyboard shortcuts: 1/2 or ArrowLeft/ArrowRight pick a card in comparison
+  // mode; Enter/Space advances once the result is shown (both modes). Skipped
+  // while focus is on a form control or button so typing in the filter box or
+  // activating a focused button never double-fires.
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+      if (showResult) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNextQuestion();
+        }
+      } else if (quizMode === 'comparison' && currentPair) {
+        if (e.key === '1' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handleSelectCard(0);
+        } else if (e.key === '2' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleSelectCard(1);
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showResult, quizMode, currentPair, handleSelectCard, handleNextQuestion]);
+
   // Shared reset when the user changes anything that invalidates the shown answer
   const resetAnswerState = () => {
     setShowResult(false);
@@ -6627,10 +6658,10 @@ const GIHQuiz = () => {
     const resultsGrid = recentHistory.map(h => {
       if (quizMode === 'grading') {
         // Grading mode: map points earned to emoji
-        return h.pointsEarned === 1.0 ? '🟩' : h.pointsEarned > 0 ? '🟨' : '🟥';
+        return h.pointsEarned === 1.0 ? '✅' : h.pointsEarned > 0 ? '🟨' : '❌';
       } else {
         // Comparison mode: map correctness to emoji
-        return h.isCorrect ? '🟩' : '🟥';
+        return h.isCorrect ? '✅' : '❌';
       }
     }).join('');
 
@@ -6796,6 +6827,7 @@ Play at: ${baseUrl}#${currentSetCode}`,
                 Click the better card!
                 <div style={{fontSize: '13px', marginTop: '16px', textAlign: 'left', display: 'inline-block', color: '#bbb'}}>
                   <ul style={{marginLeft: '20px', lineHeight: '1.6'}}>
+                    <li>Keyboard: <strong>1</strong>/<strong>2</strong> or <strong>←</strong>/<strong>→</strong> pick a card; <strong>Enter</strong>/<strong>Space</strong> next question.</li>
                     <li>Use the <strong>?</strong> buttons below to learn more about metrics and selection modes.</li>
                     <li>Scores and data are from <a href={currentSetConfig.ratingsLink} target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>17Lands {currentSetConfig.shortName} {currentSetConfig.draftFormat || 'Premier Draft'}</a> (accurate as of {currentSetConfig.dataTimestamp}{currentSetCode === 'SOS' ? ', note this is early in the life of the format so may not reflect final rankings' : ''}). <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
                     <li>Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer" style={{color: '#4a9eff', textDecoration: 'underline', cursor: 'pointer'}}>Support them on Patreon</a></li>
