@@ -6,9 +6,13 @@ in this pipeline, so — unlike refresh_sos_17lands.py — this script touches o
 17Lands quiz. It:
 
   1. Optionally downloads a fresh MSH CSV from the 17Lands JSON API (--fetch).
-  2. Regenerates the MSH_CARDS array + SET_CONFIG.MSH metadata in quiz-beta.html
-     (--apply), reusing the shared, set-agnostic quiz_updater.
-  3. Optionally promotes quiz-beta.html -> index.html (--promote).
+  2. Regenerates the MSH_CARDS array + SET_CONFIG.MSH metadata (--apply), reusing
+     the shared, set-agnostic quiz_updater. The refresh is applied INDEPENDENTLY to
+     quiz-beta.html AND index.html (each file keeps its own QUIZ_VERSION/changelog),
+     so production data stays fresh without shipping beta code changes.
+  3. Optionally promotes quiz-beta.html -> index.html (--promote). This is a MANUAL
+     step for shipping code changes; the daily Action must NOT pass it (that would
+     silently push untested beta code to production).
 
 Card types come from the local Scryfall snapshot (mtg/shared-data/data/msh/
 msh-scryfall-full.json); if that file is absent (e.g. in CI), quiz_updater falls
@@ -18,7 +22,8 @@ keep working. No guessed data: cards without a valid 17Lands GIH WR are skipped.
 Usage:
     python refresh_msh_quiz.py                 # dry-run report on newest MSH CSV
     python refresh_msh_quiz.py --fetch         # download fresh CSV, then dry-run
-    python refresh_msh_quiz.py --fetch --apply --force --promote   # what the Action runs
+    python refresh_msh_quiz.py --fetch --apply --force   # what the Action runs
+    python refresh_msh_quiz.py --promote       # manual: ship beta code to production
 
 The script never commits or pushes. Review with `git diff` after --apply.
 """
@@ -73,6 +78,20 @@ def _extract_csv_date(csv_path: Path) -> str:
     return f"{m.group(1)}-{m.group(2)}-{m.group(3)} UTC"
 
 
+def _quiz_targets() -> list[Path]:
+    """Quiz files the data refresh applies to, independently: beta always,
+    index (production) when configured and present. Each keeps its own
+    QUIZ_VERSION and changelog, so beta code changes never leak to production
+    via the data refresh."""
+    targets = [config.QUIZ_BETA_HTML]
+    index = getattr(config, 'QUIZ_INDEX_HTML', None)
+    if index is not None and index.exists():
+        targets.append(index)
+    elif index is not None:
+        print(f"  [WARN] {index} not found - refreshing beta only.")
+    return targets
+
+
 def _promote() -> None:
     src = config.QUIZ_BETA_HTML
     dst = getattr(config, 'QUIZ_INDEX_HTML', None)
@@ -104,8 +123,17 @@ def main(argv: list[str] | None = None) -> int:
                         help="With --apply: proceed even if the card count looks low "
                              "or many cards were removed.")
     parser.add_argument("--promote", action="store_true",
-                        help="After --apply: copy quiz-beta.html -> index.html.")
+                        help="Copy quiz-beta.html -> index.html (ships beta CODE to "
+                             "production). Manual use only - the daily Action refreshes "
+                             "data in both files and must not pass this. Works standalone "
+                             "or after --apply.")
     args = parser.parse_args(argv)
+
+    # --- Standalone promote (manual code-shipping, no data refresh) ---
+    if args.promote and not args.apply:
+        print("Promoting beta -> main (no data refresh)...")
+        _promote()
+        return 0
 
     # --- Optional fresh fetch ---
     if args.fetch:
@@ -127,8 +155,9 @@ def main(argv: list[str] | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 2
 
+    targets = _quiz_targets()
     print(f"Set:        {SET_CODE}")
-    print(f"Quiz file:  {config.QUIZ_BETA_HTML}")
+    print(f"Quiz files: {', '.join(t.name for t in targets)}")
     print(f"CSV:        {new_csv.name}")
     print()
 
@@ -179,21 +208,31 @@ def main(argv: list[str] | None = None) -> int:
               f"Re-run with --force if this is expected.", file=sys.stderr)
         return 1
 
-    try:
-        result = quiz_updater.update_quiz(
-            quiz_html_path=config.QUIZ_BETA_HTML,
-            new_csv_path=new_csv,
-            new_data_date=data_date,
-            dry_run=False,
-            set_code=SET_CODE,
-        )
-    except Exception as exc:
-        print(f"Apply failed: {exc}", file=sys.stderr)
-        return 2
+    # Apply to each target independently; a failure in one file must not block
+    # the other (each file's version/changelog is self-contained).
+    failures = 0
+    for target in targets:
+        try:
+            result = quiz_updater.update_quiz(
+                quiz_html_path=target,
+                new_csv_path=new_csv,
+                new_data_date=data_date,
+                dry_run=False,
+                set_code=SET_CODE,
+            )
+        except Exception as exc:
+            print(f"[FAILED]  {target.name}: {exc}", file=sys.stderr)
+            failures += 1
+            continue
 
-    print(f"[APPLIED] quiz-beta.html  v{result['old_quiz_version']} -> "
-          f"v{result['new_quiz_version']}  "
-          f"({result['cards_old_count']} -> {result['cards_new_count']} cards)")
+        print(f"[APPLIED] {target.name}  v{result['old_quiz_version']} -> "
+              f"v{result['new_quiz_version']}  "
+              f"({result['cards_old_count']} -> {result['cards_new_count']} cards)")
+
+    if failures:
+        print(f"\n{failures} of {len(targets)} quiz file(s) FAILED to update.",
+              file=sys.stderr)
+        return 2
 
     if args.promote:
         print()
