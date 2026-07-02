@@ -4,8 +4,14 @@
 Runs in two phases:
   1. Default: generate a diff report comparing the currently-active CSV
      against a new one. No writes. Exit 1 if review-needed flags fire.
-  2. With --apply: also run the three updaters (sos-beta.html, quiz-beta.html,
-     ARCHETYPE_ANALYSIS.html). Gated by diff flags unless --force is given.
+  2. With --apply: run the consumer updaters. The under/over-rated page and the
+     quiz are refreshed INDEPENDENTLY in both their beta and index (production)
+     files — each file keeps its own version/changelog — plus
+     ARCHETYPE_ANALYSIS.html. Gated by diff flags unless --force is given.
+
+--promote (copy beta over index) is a MANUAL step for shipping code changes;
+the daily Action must NOT pass it (that would silently push untested beta code
+to production). Data freshness no longer depends on promotion.
 
 Usage:
     python refresh_sos_17lands.py
@@ -113,8 +119,9 @@ def _run_diff(active_csv: Path, new_csv: Path, iso_date: str) -> dict:
 def _promote_beta_to_main() -> None:
     """Copy beta versions over their 'main' (index) counterparts.
 
-    Used to make sure the public-facing pages stay in sync with the latest
-    refreshed data. Only runs when --promote is passed.
+    MANUAL code-shipping step (--promote). The daily data refresh updates beta
+    and index independently, so this is only needed to release beta CODE changes
+    to production - never for data freshness.
     """
     import shutil
 
@@ -139,55 +146,78 @@ def _promote_beta_to_main() -> None:
         print(f"  [PROMOTE] {src.name} -> {dst.name}")
 
 
+def _existing_targets(beta: Path, index: Path | None, label: str) -> list[Path]:
+    """Beta always; index (production) when configured and present. Both are
+    refreshed independently so beta code changes never reach production via
+    the data refresh."""
+    targets = [beta]
+    if index is not None and index.exists():
+        targets.append(index)
+    elif index is not None:
+        print(f"  [WARN] {label}: {index} not found - refreshing beta only.")
+    return targets
+
+
 def _run_updaters(new_csv: Path, human_date: str, quiz_date_str: str) -> int:
-    """Run the three consumer updaters in sequence. Returns exit code."""
+    """Run the consumer updaters in sequence (each beta AND index file
+    independently, then the archetype page). Returns exit code; continues past
+    per-file failures so one bad file never blocks the others."""
     print()
     print("Applying updates...")
     print()
 
-    # 1. SOS Over/Under-Rated
-    try:
-        r1 = underover_updater.update_sos_beta(
-            html_path=config.SOS_BETA_HTML,
-            new_csv_filename=new_csv.name,
-            new_lands_date=human_date,
-            dry_run=False,
-        )
-        print(
-            f"[1/3] sos-beta.html        "
-            f"v{r1['old_version']} -> v{r1['new_version']}   "
-            f"(date: {r1['old_lands_date']} -> {r1['new_lands_date']})"
-        )
-    except Exception as exc:
-        print(f"[1/3] sos-beta.html        FAILED: {exc}", file=sys.stderr)
-        return 2
+    sos_targets = _existing_targets(
+        config.SOS_BETA_HTML, getattr(config, 'SOS_INDEX_HTML', None), 'under/over-rated')
+    quiz_targets = _existing_targets(
+        config.QUIZ_BETA_HTML, getattr(config, 'QUIZ_INDEX_HTML', None), 'quiz')
+    total = len(sos_targets) + len(quiz_targets) + 1
+    step = 0
+    failures: list[str] = []
 
-    # 2. Quiz
-    try:
-        r2 = quiz_updater.update_quiz(
-            quiz_html_path=config.QUIZ_BETA_HTML,
-            new_csv_path=new_csv,
-            new_data_date=quiz_date_str,
-            dry_run=False,
-        )
-        print(
-            f"[2/3] quiz-beta.html       "
-            f"v{r2['old_quiz_version']} -> v{r2['new_quiz_version']}   "
-            f"({r2['cards_old_count']} -> {r2['cards_new_count']} cards)"
-        )
-        if r2.get('cards_added'):
-            print(f"      added: {', '.join(r2['cards_added'])}")
-        if r2.get('cards_removed'):
-            print(f"      removed: {', '.join(r2['cards_removed'])}")
-    except Exception as exc:
-        print(
-            f"[2/3] quiz-beta.html       FAILED: {exc}\n"
-            f"      sos-beta.html was already updated. Inspect with `git diff`.",
-            file=sys.stderr,
-        )
-        return 2
+    # 1. SOS Over/Under-Rated (beta + index)
+    for target in sos_targets:
+        step += 1
+        try:
+            r1 = underover_updater.update_sos_beta(
+                html_path=target,
+                new_csv_filename=new_csv.name,
+                new_lands_date=human_date,
+                dry_run=False,
+            )
+            print(
+                f"[{step}/{total}] {target.name:22s} "
+                f"v{r1['old_version']} -> v{r1['new_version']}   "
+                f"(date: {r1['old_lands_date']} -> {r1['new_lands_date']})"
+            )
+        except Exception as exc:
+            print(f"[{step}/{total}] {target.name:22s} FAILED: {exc}", file=sys.stderr)
+            failures.append(target.name)
 
-    # 3. Archetype HTML
+    # 2. Quiz (beta + index)
+    for target in quiz_targets:
+        step += 1
+        try:
+            r2 = quiz_updater.update_quiz(
+                quiz_html_path=target,
+                new_csv_path=new_csv,
+                new_data_date=quiz_date_str,
+                dry_run=False,
+            )
+            print(
+                f"[{step}/{total}] {target.name:22s} "
+                f"v{r2['old_quiz_version']} -> v{r2['new_quiz_version']}   "
+                f"({r2['cards_old_count']} -> {r2['cards_new_count']} cards)"
+            )
+            if r2.get('cards_added'):
+                print(f"      added: {', '.join(r2['cards_added'])}")
+            if r2.get('cards_removed'):
+                print(f"      removed: {', '.join(r2['cards_removed'])}")
+        except Exception as exc:
+            print(f"[{step}/{total}] {target.name:22s} FAILED: {exc}", file=sys.stderr)
+            failures.append(target.name)
+
+    # 3. Archetype HTML (no beta/index split)
+    step += 1
     try:
         r3 = archetype_updater.update_archetype_html(
             archetype_html_path=config.ARCHETYPE_HTML,
@@ -197,20 +227,22 @@ def _run_updaters(new_csv: Path, human_date: str, quiz_date_str: str) -> int:
             dry_run=False,
         )
         print(
-            f"[3/3] ARCHETYPE_ANALYSIS   "
+            f"[{step}/{total}] {'ARCHETYPE_ANALYSIS':22s} "
             f"v{r3['old_version']} -> v{r3['new_version']}   "
             f"regions: {', '.join(r3['regions_updated'])}"
         )
     except Exception as exc:
+        print(f"[{step}/{total}] {'ARCHETYPE_ANALYSIS':22s} FAILED: {exc}", file=sys.stderr)
+        failures.append('ARCHETYPE_ANALYSIS.html')
+
+    print()
+    if failures:
         print(
-            f"[3/3] ARCHETYPE_ANALYSIS   FAILED: {exc}\n"
-            f"      sos-beta.html and quiz-beta.html were already updated. "
-            f"Inspect with `git diff`.",
+            f"{len(failures)} update(s) FAILED: {', '.join(failures)}. "
+            f"Successful files were still written - inspect with `git diff`.",
             file=sys.stderr,
         )
         return 2
-
-    print()
     print("All updates applied. Review with: git diff")
     print(
         "Then: sync to MTG-GitHub-Pages (if any ClaudeProjects files changed), "
@@ -258,11 +290,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--promote",
         action="store_true",
-        help="After --apply: copy beta pages over their 'main' (index) "
-             "counterparts (sos-beta.html -> sos-index.html, "
-             "quiz-beta.html -> 17lands-quiz/index.html).",
+        help="Copy beta pages over their 'main' (index) counterparts "
+             "(sos-beta.html -> sos-index.html, quiz-beta.html -> "
+             "17lands-quiz/index.html). Ships beta CODE to production - manual "
+             "use only; the daily Action refreshes data in both files and must "
+             "not pass this. Works standalone or after --apply.",
     )
     args = parser.parse_args(argv)
+
+    # --- Standalone promote (manual code-shipping, no data refresh) ---
+    if args.promote and not args.apply:
+        try:
+            _promote_beta_to_main()
+        except Exception as exc:
+            print(f"Promote failed: {exc}", file=sys.stderr)
+            return 2
+        return 0
 
     # --- Optional: fetch a fresh CSV from the 17Lands API first ---
     if args.fetch:

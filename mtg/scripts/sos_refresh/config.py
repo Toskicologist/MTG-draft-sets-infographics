@@ -54,7 +54,8 @@ if _IS_CI:
 
     REPORTS_DIR = _THIS_REPO_ROOT / "tmp" / "sos_refresh_reports"
 
-    # CI-only: locations of the "main" promoted pages (auto-promoted by the orchestrator)
+    # "main" (production) pages. The daily refresh updates these INDEPENDENTLY of
+    # the beta files (data only); --promote (manual) copies beta over them to ship code.
     SOS_INDEX_HTML = _THIS_REPO_ROOT / "mtg" / "underover-rated" / "sos" / "sos-index.html"
     QUIZ_INDEX_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "index.html"
 
@@ -81,7 +82,7 @@ else:
     ARCHETYPE_HTML_GH = GITHUB_PAGES_ROOT / "mtg" / "underover-rated" / "sos" / "ARCHETYPE_ANALYSIS.html"
     ARCHETYPE_PY = CLAUDE_PROJECTS_ROOT / "mtg" / "ratings-project" / "sos" / "analyze_archetypes.py"
 
-    # Consumer 3: SOS Quiz (beta only — promotion to index.html happens via --promote flag)
+    # Consumer 3: SOS Quiz (data refresh applies to beta AND index independently)
     QUIZ_BETA_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "quiz-beta.html"
 
     # Quiz generation dependencies
@@ -91,7 +92,8 @@ else:
     # Reports output
     REPORTS_DIR = CLAUDE_PROJECTS_ROOT / "mtg" / "scripts" / "sos_refresh_reports"
 
-    # Promote targets (used by --promote flag, copy beta -> main)
+    # "main" (production) pages. Refreshed independently by the daily updaters;
+    # --promote (MANUAL only) copies beta over these to ship code changes.
     SOS_INDEX_HTML = CLAUDE_PROJECTS_ROOT / "mtg" / "ratings-project" / "underover-rated" / "sos" / "sos-index.html"
     QUIZ_INDEX_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "index.html"
 

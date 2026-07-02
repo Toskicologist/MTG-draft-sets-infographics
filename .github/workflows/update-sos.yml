@@ -12,6 +12,15 @@ name: Daily 17Lands Data Refresh
 # separate workflows would hit. Each refresh is continue-on-error so a transient
 # failure in one set never blocks the other or the commit.
 #
+# DATA-ONLY: the refresh scripts update the beta AND index (production) files
+# INDEPENDENTLY. Do NOT add --promote here — that copies quiz-beta.html over
+# index.html (and sos-beta over sos-index), silently shipping untested beta CODE
+# to production. Promotion is a manual, human decision:
+#   python mtg/scripts/refresh_msh_quiz.py --promote        (quiz)
+#   python mtg/scripts/refresh_sos_17lands.py --promote     (quiz + SOS pages)
+# (--promote was removed from this workflow on 2026-07-02 after beta code
+# auto-shipped to production overnight.)
+#
 # To pause: disable from the Actions tab.
 # To stop completely: delete this file.
 on:
@@ -34,15 +43,15 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run SOS refresh (fetch + apply + promote)
+      - name: Run SOS refresh (fetch + apply to beta AND index, no promote)
         continue-on-error: true
         run: |
-          python mtg/scripts/refresh_sos_17lands.py --fetch --apply --force --promote
+          python mtg/scripts/refresh_sos_17lands.py --fetch --apply --force
 
-      - name: Run MSH quiz refresh (fetch + apply + promote)
+      - name: Run MSH quiz refresh (fetch + apply to beta AND index, no promote)
         continue-on-error: true
         run: |
-          python mtg/scripts/refresh_msh_quiz.py --fetch --apply --force --promote
+          python mtg/scripts/refresh_msh_quiz.py --fetch --apply --force
 
       - name: Commit and push if anything changed
         run: |
