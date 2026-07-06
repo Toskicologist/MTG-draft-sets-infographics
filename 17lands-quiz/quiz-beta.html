@@ -737,6 +737,138 @@
       font-size: 14px;
     }
 
+    /* Insights panel styles */
+    .insights-panel {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: rgba(74, 158, 255, 0.06);
+      border: 1px solid rgba(74, 158, 255, 0.25);
+      border-radius: 10px;
+    }
+
+    .insights-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .insights-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .insights-pill {
+      padding: 6px 14px;
+      background: rgba(74, 158, 255, 0.12);
+      border: 1px solid rgba(74, 158, 255, 0.35);
+      border-radius: 999px;
+      color: #bbb;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .insights-pill:hover {
+      border-color: #4a9eff;
+      color: #fff;
+    }
+
+    .insights-pill.active {
+      background: rgba(74, 158, 255, 0.35);
+      border-color: #4a9eff;
+      color: #fff;
+    }
+
+    .insights-set-select {
+      padding: 6px 10px;
+      background: #0a0e27;
+      border: 1px solid rgba(74, 158, 255, 0.4);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .insights-caption {
+      width: 100%;
+      color: #777;
+      font-size: 12px;
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
+
+    .insights-section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(74, 158, 255, 0.15);
+    }
+
+    .insights-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4a9eff;
+      margin-bottom: 8px;
+    }
+
+    .insights-headline {
+      color: #ddd;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .insights-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .insights-chip {
+      padding: 4px 10px;
+      background: rgba(74, 158, 255, 0.1);
+      border: 1px solid rgba(74, 158, 255, 0.25);
+      border-radius: 6px;
+      color: #ccc;
+      font-size: 12px;
+    }
+
+    .insights-verdict {
+      color: #ffc107;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .insights-finding {
+      color: #ddd;
+      font-size: 13px;
+      line-height: 1.6;
+      padding-left: 2px;
+    }
+
+    .insights-finding-muted {
+      color: #888;
+      font-weight: 400;
+    }
+
+    .insights-empty {
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .insights-footnote {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(74, 158, 255, 0.1);
+      color: #666;
+      font-size: 11px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
     .grade-badge {
       display: inline-block;
       font-weight: 700;
@@ -894,6 +1026,19 @@
       .history-table th,
       .history-table td {
         padding: 6px 4px;
+      }
+
+      .insights-pills {
+        width: 100%;
+      }
+
+      .insights-pill {
+        flex: 1;
+        text-align: center;
+      }
+
+      .insights-set-select {
+        width: 100%;
       }
     }
 
@@ -1145,6 +1290,10 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.6.0-beta.1 (2026-07-06T11:53:39Z UTC - Claude Sonnet):
+  - FEAT (insights): new retrospective "Insights" panel in the history section — scope pills (All time / Last 100 / 50 / 20, applied per mode) and an all-sets-or-single-set selector
+  - FEAT (insights/grading): calibration verdict (too cautious vs too extreme at the grade extremes) plus quality-adjusted over/under-rating findings bucketed by creature/non-creature, rarity, multicolor/colorless, and hype (trap)/sleeper cards — residualized against each bucket's expected error so an A+ being "missed downward" isn't mistaken for bias
+  - FEAT (insights/comparison): overall and per-metric (GIH WR vs ALSA) accuracy, an accuracy-by-difficulty-gap curve, and head-to-head bias axes (creatures over non-creatures, higher-rarity cards, crowd favorites) comparing pick rate vs which card was actually better
   v4.5.1-beta.9 (2026-07-06 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-06 T0947.csv (274 cards).
   v4.5.1-beta.8 (2026-07-06 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-06 T0947.csv (327 cards).
   v4.5.1-beta.7 (2026-07-05 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-05 T0834.csv (273 cards).
@@ -5230,8 +5379,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.5.1-beta.9';
-const LAST_UPDATE = '2026-07-06 UTC';
+const QUIZ_VERSION = '4.6.0-beta.1';
+const LAST_UPDATE = '2026-07-06T11:53:39Z UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -5669,6 +5818,342 @@ const getGradeRange = (grade) => {
   const upperGrade = GRADE_LABELS[idx + 1];
   const upper = gradeThresholds[upperGrade];
   return `${lower.toFixed(1)}-${upper.toFixed(1)}%`;
+};
+
+// ============================================
+// INSIGHTS ENGINE: retrospective analysis over quiz history
+// Pure functions only — no JSX. Consumed by <InsightsPanel>.
+// ============================================
+
+// Index into GRADE_LABELS (F..A+); -1 for unknown labels (filter these out).
+const gradeIdx = (label) => GRADE_LABELS.indexOf(label);
+
+// Scope a set of history entries down to a set code and a recency window.
+// setCode 'ALL' keeps every set; lastN 0 means "all time" (entries are oldest-first).
+const filterInsightsEntries = (entries, setCode, lastN) => {
+  let scoped = entries;
+  if (setCode !== 'ALL') {
+    scoped = scoped.filter(e => (e.setCode || 'ECL') === setCode);
+  }
+  if (lastN > 0) {
+    scoped = scoped.slice(-lastN);
+  }
+  return scoped;
+};
+
+// Lazily-built, module-level cache: { [setCode]: { [cardName]: card } }
+let _insightsCardIndexCache = null;
+const buildInsightsCardIndex = () => {
+  if (_insightsCardIndexCache) return _insightsCardIndexCache;
+  const idx = {};
+  Object.keys(SET_CONFIG).forEach(setCode => {
+    const bySetName = {};
+    SET_CONFIG[setCode].data.forEach(card => {
+      bySetName[card.name] = card;
+    });
+    idx[setCode] = bySetName;
+  });
+  _insightsCardIndexCache = idx;
+  return idx;
+};
+
+// Classifiers used by the residualized bucket analysis
+const isCreatureCard = (card) => /\bCreature\b/.test(card.type || '');
+const colorClass = (card) => {
+  const c = card.color || '';
+  if (c === '') return 'Colorless';
+  if (c.length === 1) return c;
+  return 'Multicolor';
+};
+
+// Percentile rank (0..1) of value within values — used for the hype/sleeper axis.
+const _percentileRank = (values, value) => {
+  let countBelow = 0;
+  values.forEach(v => { if (v < value) countBelow++; });
+  return values.length > 1 ? countBelow / (values.length - 1) : 0.5;
+};
+
+// Mean/SD helpers for residual buckets
+const _mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+const _sd = (arr, m) => Math.sqrt(arr.reduce((a, b) => a + (b - m) ** 2, 0) / arr.length);
+
+// Actual-grade band for calibration & residualization: low <=D+, high >=B+, mid otherwise.
+const _actualGradeBand = (actualIdx) => {
+  if (actualIdx <= 3) return 'low';
+  if (actualIdx >= 9) return 'high';
+  return 'mid';
+};
+
+// Build a { label, direction, magnitude, n, confidence } finding from a bucket of residuals,
+// or null if the bucket doesn't clear the confidence bar.
+const _residualFinding = (label, residuals) => {
+  const n = residuals.length;
+  if (n < 5) return null;
+  const m = _mean(residuals);
+  const sd = _sd(residuals, m);
+  const se = sd / Math.sqrt(n);
+  let confidence = null;
+  if (n >= 8 && Math.abs(m) >= 2 * se && Math.abs(m) >= 0.25) confidence = 'confident';
+  else if (n >= 5 && Math.abs(m) >= 0.4) confidence = 'provisional';
+  if (!confidence) return null;
+  return {
+    label,
+    direction: m > 0 ? 'overrate' : 'underrate',
+    magnitude: Math.round(Math.abs(m) * 10) / 10,
+    n,
+    confidence
+  };
+};
+
+// Grading-mode analysis: calibration + quality-adjusted (residualized) bucket findings + hype axis.
+// entries: grading-mode history, already scope-filtered by filterInsightsEntries.
+const analyzeGrading = (entries, cardIndex) => {
+  const valid = entries
+    .map(e => {
+      const userIdx = gradeIdx(e.userGrade);
+      const actualIdx = gradeIdx(e.actualGrade);
+      if (userIdx === -1 || actualIdx === -1) return null;
+      return { ...e, userIdx, actualIdx, signedErr: userIdx - actualIdx };
+    })
+    .filter(Boolean);
+
+  if (valid.length < 5) return null;
+
+  const n = valid.length;
+  const exactPct = Math.round(100 * valid.filter(e => e.signedErr === 0).length / n);
+  const within1Pct = Math.round(100 * valid.filter(e => Math.abs(e.signedErr) <= 1).length / n);
+  const meanAbsErr = _mean(valid.map(e => Math.abs(e.signedErr)));
+  const meanSignedErr = _mean(valid.map(e => e.signedErr));
+
+  // Calibration: compare signed error at the low vs high end of the actual-grade scale.
+  const lowEntries = valid.filter(e => _actualGradeBand(e.actualIdx) === 'low');
+  const highEntries = valid.filter(e => _actualGradeBand(e.actualIdx) === 'high');
+  const lowN = lowEntries.length;
+  const highN = highEntries.length;
+  const lowMean = lowN ? _mean(lowEntries.map(e => e.signedErr)) : null;
+  const highMean = highN ? _mean(highEntries.map(e => e.signedErr)) : null;
+  let verdict = null;
+  if (lowN >= 5 && highN >= 5) {
+    if (lowMean >= 0.35 && highMean <= -0.35) verdict = 'compressed';
+    else if (lowMean <= -0.35 && highMean >= 0.35) verdict = 'extreme';
+    else verdict = 'balanced';
+  }
+
+  // Expected signed error per actual-grade band, computed over ALL valid entries in that band
+  // (this is what makes the bucket findings "quality-adjusted": an A+ can only ever be missed
+  // downward, so we compare each bucket's error against the baseline error for cards of that caliber).
+  const expectedErrByBand = {
+    low: lowN ? lowMean : 0,
+    mid: (() => {
+      const midEntries = valid.filter(e => _actualGradeBand(e.actualIdx) === 'mid');
+      return midEntries.length ? _mean(midEntries.map(e => e.signedErr)) : 0;
+    })(),
+    high: highN ? highMean : 0
+  };
+
+  // Only entries whose card resolves in the current card index get bucketed (cards can
+  // leave the data on refresh, so old history may reference names no longer present).
+  const resolvable = valid
+    .map(e => {
+      const bySetName = cardIndex[e.setCode || 'ECL'];
+      const card = bySetName ? bySetName[e.card] : null;
+      if (!card) return null;
+      const band = _actualGradeBand(e.actualIdx);
+      const residual = e.signedErr - expectedErrByBand[band];
+      return { ...e, card, band, residual };
+    })
+    .filter(Boolean);
+
+  const bucketFindings = [];
+  const pushFinding = (label, predicate) => {
+    const residuals = resolvable.filter(predicate).map(e => e.residual);
+    const finding = _residualFinding(label, residuals);
+    if (finding) bucketFindings.push(finding);
+  };
+
+  pushFinding('Creatures', e => isCreatureCard(e.card));
+  pushFinding('Non-creatures', e => !isCreatureCard(e.card));
+  pushFinding('Commons', e => e.card.rarity === 'C');
+  pushFinding('Uncommons', e => e.card.rarity === 'U');
+  pushFinding('Rares', e => e.card.rarity === 'R');
+  pushFinding('Mythics', e => e.card.rarity === 'M');
+  pushFinding('Multicolor cards', e => colorClass(e.card) === 'Multicolor');
+  pushFinding('Colorless cards', e => colorClass(e.card) === 'Colorless');
+
+  // Hype axis: per set present in these entries, rank each card by GIH WR percentile
+  // (performance) vs by "crowd love" percentile (lower ALSA = picked earlier = more loved).
+  // trap = crowd loves it more than it performs; sleeper = it performs better than the crowd rates it.
+  const setsPresent = Array.from(new Set(resolvable.map(e => e.setCode || 'ECL')));
+  const hypeByEntry = new Map();
+  setsPresent.forEach(setCode => {
+    const setData = (SET_CONFIG[setCode] || {}).data;
+    if (!setData) return;
+    const withAlsa = setData.filter(c => c.alsa != null);
+    const wrValues = withAlsa.map(c => c.gihWr);
+    const crowdValues = withAlsa.map(c => -c.alsa);
+    const byName = {};
+    withAlsa.forEach(c => {
+      const wrPct = _percentileRank(wrValues, c.gihWr);
+      const crowdPct = _percentileRank(crowdValues, -c.alsa);
+      byName[c.name] = { wrPct, crowdPct };
+    });
+    hypeByEntry.set(setCode, byName);
+  });
+
+  const isTrap = (e) => {
+    const bySet = hypeByEntry.get(e.setCode || 'ECL');
+    const h = bySet && bySet[e.card.name];
+    if (!h) return false;
+    return (h.crowdPct - h.wrPct) >= 0.25;
+  };
+  const isSleeper = (e) => {
+    const bySet = hypeByEntry.get(e.setCode || 'ECL');
+    const h = bySet && bySet[e.card.name];
+    if (!h) return false;
+    return (h.wrPct - h.crowdPct) >= 0.25;
+  };
+
+  pushFinding('Hype/trap cards', isTrap);
+  pushFinding('Sleeper cards', isSleeper);
+
+  return {
+    n, exactPct, within1Pct, meanAbsErr, meanSignedErr,
+    calibration: { verdict, lowN, lowMean, highN, highMean },
+    bucketFindings
+  };
+};
+
+// Comparison-mode analysis: overall/per-metric accuracy, difficulty curve, and head-to-head bias axes.
+// entries: comparison-mode history, already scope-filtered by filterInsightsEntries.
+const analyzeComparison = (entries, cardIndex) => {
+  if (entries.length < 5) return null;
+
+  const n = entries.length;
+  const accuracyPct = Math.round(100 * entries.filter(e => e.isCorrect).length / n);
+
+  const withMetric = entries.map(e => e.metric || 'gihWr');
+  const hasBothMetrics = withMetric.some(m => m === 'gihWr') && withMetric.some(m => m === 'alsa');
+  let perMetric = null;
+  if (hasBothMetrics) {
+    perMetric = {};
+    ['gihWr', 'alsa'].forEach(metric => {
+      const subset = entries.filter((e, i) => withMetric[i] === metric);
+      if (subset.length) {
+        perMetric[metric] = {
+          n: subset.length,
+          pct: Math.round(100 * subset.filter(e => e.isCorrect).length / subset.length)
+        };
+      }
+    });
+  }
+
+  // Difficulty curve: gihWr-metric entries only, skip exact ties.
+  const gihEntries = entries.filter((e, i) => withMetric[i] === 'gihWr' && e.card1GihWr !== e.card2GihWr);
+  const bandFor = (gap) => {
+    if (gap < 1) return '<1';
+    if (gap < 2) return '1–2';
+    if (gap < 4) return '2–4';
+    return '>4';
+  };
+  const bandOrder = ['<1', '1–2', '2–4', '>4'];
+  const bandBuckets = {};
+  bandOrder.forEach(b => { bandBuckets[b] = []; });
+  gihEntries.forEach(e => {
+    const gap = Math.abs(e.card1GihWr - e.card2GihWr);
+    bandBuckets[bandFor(gap)].push(e);
+  });
+  const difficultyCurve = bandOrder.map(band => {
+    const bucket = bandBuckets[band];
+    return {
+      band,
+      n: bucket.length,
+      accuracyPct: bucket.length ? Math.round(100 * bucket.filter(e => e.isCorrect).length / bucket.length) : null
+    };
+  });
+
+  // Head-to-head bias axes (gihWr-metric entries only; ties on the axis are skipped).
+  const biasFinding = (label, straddlingPairs, isPositivePicked) => {
+    const nPairs = straddlingPairs.length;
+    if (nPairs < 10) return null;
+    const pickRate = straddlingPairs.filter(isPositivePicked).length / nPairs;
+    const betterRate = straddlingPairs.filter(e => e._positiveBetter).length / nPairs;
+    const bias = pickRate - betterRate;
+    if (Math.abs(bias) < 2 * Math.sqrt(0.25 / nPairs)) return null;
+    return {
+      label,
+      bias: Math.round(bias * 100) / 100,
+      pickRate: Math.round(pickRate * 100),
+      betterRate: Math.round(betterRate * 100),
+      n: nPairs
+    };
+  };
+
+  // Creature axis: exactly one of the two cards is a creature.
+  const creaturePairs = [];
+  gihEntries.forEach(e => {
+    const bySet = cardIndex[e.setCode || 'ECL'] || {};
+    const c1 = bySet[e.card1];
+    const c2 = bySet[e.card2];
+    if (!c1 || !c2) return;
+    const c1IsCreature = isCreatureCard(c1);
+    const c2IsCreature = isCreatureCard(c2);
+    if (c1IsCreature === c2IsCreature) return; // need exactly one creature
+    if (e.card1GihWr === e.card2GihWr) return; // skip ties for "better" determination
+    const positiveIsCard1 = c1IsCreature;
+    const positiveGihWr = positiveIsCard1 ? e.card1GihWr : e.card2GihWr;
+    const otherGihWr = positiveIsCard1 ? e.card2GihWr : e.card1GihWr;
+    creaturePairs.push({
+      _positivePicked: e.selectedCard === (positiveIsCard1 ? e.card1 : e.card2),
+      _positiveBetter: positiveGihWr > otherGihWr
+    });
+  });
+  const creatureFinding = biasFinding('creatures over non-creatures', creaturePairs, e => e._positivePicked);
+
+  // Rarity axis: C=0,U=1,R=2,M=3; pairs with different ranks; positive = higher rarity.
+  const rarityRank = { C: 0, U: 1, R: 2, M: 3 };
+  const rarityPairs = [];
+  gihEntries.forEach(e => {
+    const bySet = cardIndex[e.setCode || 'ECL'] || {};
+    const c1 = bySet[e.card1];
+    const c2 = bySet[e.card2];
+    if (!c1 || !c2) return;
+    const r1 = rarityRank[c1.rarity];
+    const r2 = rarityRank[c2.rarity];
+    if (r1 === undefined || r2 === undefined || r1 === r2) return;
+    if (e.card1GihWr === e.card2GihWr) return;
+    const positiveIsCard1 = r1 > r2;
+    const positiveGihWr = positiveIsCard1 ? e.card1GihWr : e.card2GihWr;
+    const otherGihWr = positiveIsCard1 ? e.card2GihWr : e.card1GihWr;
+    rarityPairs.push({
+      _positivePicked: e.selectedCard === (positiveIsCard1 ? e.card1 : e.card2),
+      _positiveBetter: positiveGihWr > otherGihWr
+    });
+  });
+  const rarityFinding = biasFinding('higher-rarity cards', rarityPairs, e => e._positivePicked);
+
+  // Crowd axis: both alsa present and differ by >=1.0; positive = lower ALSA (crowd favorite).
+  const crowdPairs = [];
+  gihEntries.forEach(e => {
+    if (e.card1Alsa == null || e.card2Alsa == null) return;
+    if (Math.abs(e.card1Alsa - e.card2Alsa) < 1.0) return;
+    if (e.card1GihWr === e.card2GihWr) return;
+    const positiveIsCard1 = e.card1Alsa < e.card2Alsa;
+    const positiveGihWr = positiveIsCard1 ? e.card1GihWr : e.card2GihWr;
+    const otherGihWr = positiveIsCard1 ? e.card2GihWr : e.card1GihWr;
+    crowdPairs.push({
+      _positivePicked: e.selectedCard === (positiveIsCard1 ? e.card1 : e.card2),
+      _positiveBetter: positiveGihWr > otherGihWr
+    });
+  });
+  const crowdFinding = biasFinding('crowd favorites (earlier average pick)', crowdPairs, e => e._positivePicked);
+
+  const biasFindings = [creatureFinding, rarityFinding, crowdFinding].filter(Boolean);
+
+  return {
+    n, accuracyPct, perMetric,
+    difficultyCurve,
+    biasFindings
+  };
 };
 
 // Scryfall set codes to search for each quiz set (priority order)
@@ -6143,6 +6628,133 @@ function MultiSelectFilter({ label, plural, options, selected, isOpen, onToggleO
   );
 }
 
+// ============================================
+// InsightsPanel: retrospective analysis UI over the Insights engine functions above.
+// ============================================
+const INSIGHTS_SCOPES = [
+  { value: 0, label: 'All time' },
+  { value: 100, label: 'Last 100' },
+  { value: 50, label: 'Last 50' },
+  { value: 20, label: 'Last 20' }
+];
+
+const InsightsPanel = ({ insightsScope, setInsightsScope, insightsSet, setInsightsSet, insightsData }) => {
+  const gradingFindingLine = (f) => {
+    const verb = f.direction === 'overrate' ? 'overrate' : 'underrate';
+    const suffix = f.confidence === 'provisional'
+      ? <span className="insights-finding-muted"> (provisional — small sample)</span>
+      : null;
+    return (
+      <div className="insights-finding" key={f.label}>
+        You tend to {verb} {f.label} by ~{f.magnitude} grades (n={f.n}){suffix}
+      </div>
+    );
+  };
+
+  const biasFindingLine = (f) => {
+    const favor = f.bias > 0;
+    const verb = favor ? 'favor' : 'under-pick';
+    return (
+      <div className="insights-finding" key={f.label}>
+        {favor ? '⚠ ' : ''}You {verb} {f.label} in head-to-heads: picked{favor ? ' it' : ' the alternative instead'} {f.pickRate}% of the time, but it was the better card only {f.betterRate}% (n={f.n})
+      </div>
+    );
+  };
+
+  const calibrationSentence = (calibration) => {
+    if (!calibration || !calibration.verdict || calibration.verdict === 'balanced') return null;
+    const lowStr = `${calibration.lowMean >= 0 ? '+' : ''}${calibration.lowMean.toFixed(1)}`;
+    const highStr = `${calibration.highMean >= 0 ? '+' : ''}${calibration.highMean.toFixed(1)}`;
+    if (calibration.verdict === 'compressed') {
+      return `📉 Too cautious: bombs graded ${highStr} low (n=${calibration.highN}), duds ${lowStr} high (n=${calibration.lowN}) — trust the extremes more`;
+    }
+    return `📈 Too extreme: bombs graded ${highStr} further off (n=${calibration.highN}), duds ${lowStr} further off (n=${calibration.lowN}) — pull toward the middle`;
+  };
+
+  const grading = insightsData && insightsData.grading;
+  const comparison = insightsData && insightsData.comparison;
+
+  return (
+    <div className="insights-panel">
+      <div className="insights-controls">
+        <div className="insights-pills">
+          {INSIGHTS_SCOPES.map(s => (
+            <button
+              key={s.value}
+              className={`insights-pill${insightsScope === s.value ? ' active' : ''}`}
+              onClick={() => setInsightsScope(s.value)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <select
+          className="insights-set-select"
+          value={insightsSet}
+          onChange={(e) => setInsightsSet(e.target.value)}
+        >
+          <option value="ALL">All sets</option>
+          {Object.keys(SET_CONFIG).map(code => (
+            <option key={code} value={code}>{SET_CONFIG[code].shortName}</option>
+          ))}
+        </select>
+        <div className="insights-caption">Windows apply per mode — e.g. Last 50 = your most recent 50 answers in each mode.</div>
+      </div>
+
+      <div className="insights-section">
+        <div className="insights-section-title">⚖️ Comparison mode</div>
+        {!comparison ? (
+          <div className="insights-empty">Not enough data in this scope (need ≥5 answers)</div>
+        ) : (
+          <React.Fragment>
+            <div className="insights-headline">
+              {comparison.n} answers · {comparison.accuracyPct}% correct
+              {comparison.perMetric && comparison.perMetric.gihWr && comparison.perMetric.alsa && (
+                <span> (GIH WR: {comparison.perMetric.gihWr.pct}% of {comparison.perMetric.gihWr.n}, ALSA: {comparison.perMetric.alsa.pct}% of {comparison.perMetric.alsa.n})</span>
+              )}
+            </div>
+            <div className="insights-chips">
+              {comparison.difficultyCurve.filter(b => b.n >= 5).map(b => (
+                <div className="insights-chip" key={b.band}>gap {b.band}pp: {b.accuracyPct}% (n={b.n})</div>
+              ))}
+            </div>
+            {comparison.biasFindings.length === 0 ? (
+              <div className="insights-empty">No head-to-head bias detected in this scope.</div>
+            ) : (
+              comparison.biasFindings.map(biasFindingLine)
+            )}
+          </React.Fragment>
+        )}
+      </div>
+
+      <div className="insights-section">
+        <div className="insights-section-title">🎯 Grading mode</div>
+        {!grading ? (
+          <div className="insights-empty">Not enough data in this scope (need ≥5 answers)</div>
+        ) : (
+          <React.Fragment>
+            <div className="insights-headline">
+              {grading.n} answers · {grading.exactPct}% exact · {grading.within1Pct}% within one grade · avg miss {grading.meanAbsErr.toFixed(1)} grades
+            </div>
+            {calibrationSentence(grading.calibration) && (
+              <div className="insights-verdict">{calibrationSentence(grading.calibration)}</div>
+            )}
+            {grading.bucketFindings.length === 0 ? (
+              <div className="insights-empty">No quality-adjusted bias detected in this scope.</div>
+            ) : (
+              grading.bucketFindings.map(gradingFindingLine)
+            )}
+          </React.Fragment>
+        )}
+      </div>
+
+      <div className="insights-footnote">
+        Bucket findings are adjusted for card quality (an A+ can only be missed downward), so they reflect real bias, not regression to the mean.
+      </div>
+    </div>
+  );
+};
+
 const GIHQuiz = () => {
   // Run migration on first load
   React.useEffect(() => {
@@ -6211,6 +6823,19 @@ const GIHQuiz = () => {
   const [showToast, setShowToast] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
   const [preferSPM, setPreferSPM] = React.useState(false);
+
+  // Insights panel state
+  const [showInsights, setShowInsights] = React.useState(false);
+  const [insightsScope, setInsightsScope] = React.useState(0); // 0 = all time; else 100/50/20
+  const [insightsSet, setInsightsSet] = React.useState('ALL');
+
+  const insightsData = React.useMemo(() => {
+    if (!showInsights) return null;
+    const idx = buildInsightsCardIndex();
+    const g = filterInsightsEntries(loadAllHistory('grading'), insightsSet, insightsScope);
+    const c = filterInsightsEntries(loadAllHistory('comparison'), insightsSet, insightsScope);
+    return { grading: analyzeGrading(g, idx), comparison: analyzeComparison(c, idx), gN: g.length, cN: c.length };
+  }, [showInsights, insightsScope, insightsSet, history]);
 
   // Update score when mode or set changes (history is now unified across all sets)
   React.useEffect(() => {
@@ -7264,11 +7889,28 @@ Play at: ${baseUrl}#${currentSetCode}`,
                 </div>
               )}
             </div>
+            <button className="action-button" onClick={() => {
+              const next = !showInsights;
+              setShowInsights(next);
+              if (next) trackEvent('quiz-insights-open', 'Insights panel opened');
+            }} title="Show analysis of your quiz history">
+              📊 Insights
+            </button>
             <button className="action-button danger" onClick={handleClearHistory} title="Clear all history">
               🗑️ Clear History
             </button>
           </div>
         </div>
+
+        {showInsights && (
+          <InsightsPanel
+            insightsScope={insightsScope}
+            setInsightsScope={setInsightsScope}
+            insightsSet={insightsSet}
+            setInsightsSet={setInsightsSet}
+            insightsData={insightsData}
+          />
+        )}
 
         {history.length === 0 ? (
           <div className="history-empty">
