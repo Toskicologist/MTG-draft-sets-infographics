@@ -162,6 +162,20 @@ def _run_updaters(new_csv: Path, human_date: str, quiz_date_str: str) -> int:
     """Run the consumer updaters in sequence (each beta AND index file
     independently, then the archetype page). Returns exit code; continues past
     per-file failures so one bad file never blocks the others."""
+    # Up-front CSV sanity gate: after a format rotates off 17Lands the export
+    # still has ~340 rows but every stat is blank (SOS, 2026-07-07) -> 0 valid
+    # cards. Abort ALL consumers rather than wiping arrays / regenerating the
+    # archetype page from nothing. (quiz_updater has its own belt-and-braces
+    # check for the standalone/MSH path.)
+    from sos_refresh.csv_loader import load_sos_csv  # noqa: PLC0415
+    valid_count = len(load_sos_csv(new_csv, min_gih=0))
+    if valid_count < 150:
+        print(
+            f"ABORT: only {valid_count} valid cards in {new_csv.name} — "
+            f"17Lands is likely exporting empty stats; leaving all pages untouched.",
+            file=sys.stderr)
+        return 1
+
     print()
     print("Applying updates...")
     print()

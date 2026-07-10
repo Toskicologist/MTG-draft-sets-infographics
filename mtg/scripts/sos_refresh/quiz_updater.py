@@ -332,6 +332,14 @@ def update_quiz(
 
     # --- Load CSV ---
     csv_cards = load_sos_csv(new_csv_path, min_gih=0)
+    # Guard: 17Lands sometimes returns all-zero stats after a format rotates out
+    # (SOS did this 2026-07-07: 340 rows, every GIH WR blank -> 0 valid cards),
+    # which would silently wipe the embedded card arrays. A real draft set never
+    # has fewer than ~250 rated cards once data exists.
+    if len(csv_cards) < 150:
+        raise ValueError(
+            f"Only {len(csv_cards)} valid cards parsed from {new_csv_path.name} — "
+            f"refusing to rewrite card data (17Lands likely exporting empty stats)")
 
     # --- Build card dicts with resolved types ---
     new_cards = []
