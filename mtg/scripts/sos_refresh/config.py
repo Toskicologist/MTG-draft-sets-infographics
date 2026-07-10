@@ -110,7 +110,11 @@ MIN_GIH = 500
 SOS_CSV_GLOB = "SOS card-ratings-*.csv"
 
 # 17Lands API config for automated CSV fetching
-LANDS_API_URL = "https://www.17lands.com/card_ratings/data"
+# 2026-07-11: 17Lands replaced /card_ratings/data with /api/card_data
+# (params: expansion, event_type, time_period). The old endpoint still answers
+# but silently serves a truncated window (blanked most cards' stats from
+# 2026-07-07, which wiped SOS and degraded MSH in the quiz until restored).
+LANDS_API_URL = "https://www.17lands.com/api/card_data"
 SOS_EXPANSION = "SOS"
 SOS_FORMAT = "PremierDraft"
 SOS_START_DATE = "2026-04-21"  # SOS Premier Draft release date

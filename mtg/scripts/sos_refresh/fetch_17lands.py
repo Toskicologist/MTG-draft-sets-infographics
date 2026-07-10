@@ -88,10 +88,15 @@ def _row_from_json(card: dict) -> list[str]:
 
 
 def _build_url(expansion: str, fmt: str, start_date: str) -> str:
+    # 17Lands' new /api/card_data endpoint (2026-07) takes event_type +
+    # time_period instead of format + start_date. start_date is kept in the
+    # signature so callers/config stay unchanged, but ALL_TIME supersedes it
+    # (our start dates were the sets' release dates, i.e. all-time anyway).
+    del start_date
     qs = urllib.parse.urlencode({
         "expansion": expansion,
-        "format": fmt,
-        "start_date": start_date,
+        "event_type": fmt,
+        "time_period": "ALL_TIME",
     })
     return f"{config.LANDS_API_URL}?{qs}"
 
@@ -99,7 +104,12 @@ def _build_url(expansion: str, fmt: str, start_date: str) -> str:
 def _fetch_json(url: str, timeout: int = 60) -> list[dict]:
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read())
+        payload = json.loads(resp.read())
+    # New endpoint wraps the card list: {"data": [...]}. Old endpoint returned
+    # a bare list; accept both so a rollback of LANDS_API_URL keeps working.
+    if isinstance(payload, dict):
+        return payload["data"]
+    return payload
 
 
 def _build_csv_text(cards: list[dict]) -> str:
