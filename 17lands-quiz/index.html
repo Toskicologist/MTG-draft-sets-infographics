@@ -737,6 +737,241 @@
       font-size: 14px;
     }
 
+    /* Insights panel styles */
+    .insights-panel {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: rgba(74, 158, 255, 0.06);
+      border: 1px solid rgba(74, 158, 255, 0.25);
+      border-radius: 10px;
+    }
+
+    .insights-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .insights-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .insights-pill {
+      padding: 6px 14px;
+      background: rgba(74, 158, 255, 0.12);
+      border: 1px solid rgba(74, 158, 255, 0.35);
+      border-radius: 999px;
+      color: #bbb;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .insights-pill:hover {
+      border-color: #4a9eff;
+      color: #fff;
+    }
+
+    .insights-pill.active {
+      background: rgba(74, 158, 255, 0.35);
+      border-color: #4a9eff;
+      color: #fff;
+    }
+
+    .insights-set-select {
+      padding: 6px 10px;
+      background: #0a0e27;
+      border: 1px solid rgba(74, 158, 255, 0.4);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .insights-caption {
+      width: 100%;
+      color: #777;
+      font-size: 12px;
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
+
+    .insights-section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(74, 158, 255, 0.15);
+    }
+
+    .insights-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4a9eff;
+      margin-bottom: 8px;
+    }
+
+    .insights-headline {
+      color: #ddd;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .insights-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .insights-chip {
+      padding: 4px 10px;
+      background: rgba(74, 158, 255, 0.1);
+      border: 1px solid rgba(74, 158, 255, 0.25);
+      border-radius: 6px;
+      color: #ccc;
+      font-size: 12px;
+    }
+
+    .insights-verdict {
+      color: #ffc107;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .insights-finding {
+      color: #ddd;
+      font-size: 13px;
+      line-height: 1.6;
+      padding-left: 2px;
+    }
+
+    .insights-finding-muted {
+      color: #888;
+      font-weight: 400;
+    }
+
+    .insights-empty {
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .insights-footnote {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(74, 158, 255, 0.1);
+      color: #666;
+      font-size: 11px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .insights-pill-gap {
+      display: inline-block;
+      width: 14px;
+    }
+
+    .insights-grid-scroll {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    .insights-grid {
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 480px;
+    }
+
+    .insights-grid th {
+      color: #999;
+      font-weight: 600;
+      padding: 5px 6px;
+      text-align: center;
+      border-bottom: 1px solid rgba(74, 158, 255, 0.2);
+      white-space: nowrap;
+    }
+
+    .insights-grid th.insights-grid-rowlabel {
+      text-align: left;
+      border-bottom: none;
+      border-right: 1px solid rgba(74, 158, 255, 0.2);
+      padding-right: 10px;
+    }
+
+    .insights-grid-cell {
+      padding: 5px 8px;
+      text-align: center;
+      color: #eee;
+      font-weight: 600;
+      min-width: 52px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .insights-grid-n {
+      color: #aaa;
+      font-size: 10px;
+      font-weight: 400;
+    }
+
+    .insights-grid-dim {
+      opacity: 0.55;
+      font-weight: 400;
+      font-size: 11px;
+      color: #888;
+    }
+
+    .insights-diff-block {
+      margin-bottom: 10px;
+    }
+
+    .insights-diff-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .insights-diff-label {
+      width: 110px;
+      flex-shrink: 0;
+      text-align: right;
+      color: #999;
+      font-size: 12px;
+    }
+
+    .insights-diff-track {
+      flex-grow: 1;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .insights-diff-baseline {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .insights-diff-bar {
+      position: absolute;
+      top: 0;
+      height: 14px;
+    }
+
+    .insights-diff-value {
+      width: 90px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #ccc;
+    }
+
     .grade-badge {
       display: inline-block;
       font-weight: 700;
@@ -894,6 +1129,38 @@
       .history-table th,
       .history-table td {
         padding: 6px 4px;
+      }
+
+      .insights-pills {
+        width: 100%;
+      }
+
+      .insights-pill {
+        flex: 1;
+        text-align: center;
+      }
+
+      .insights-set-select {
+        width: 100%;
+      }
+
+      .insights-grid {
+        font-size: 11px;
+        min-width: 420px;
+      }
+
+      .insights-grid-cell {
+        min-width: 44px;
+        padding: 4px 5px;
+      }
+
+      .insights-diff-label {
+        width: 80px;
+      }
+
+      .insights-diff-value {
+        width: auto;
+        white-space: normal;
       }
     }
 
@@ -1145,26 +1412,38 @@
   Card images from Scryfall API.
 
   CHANGELOG:
-  v4.5.20 (2026-07-12 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-12 T0751.csv (275 cards).
-  v4.5.19 (2026-07-11 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-11 T0727.csv (275 cards).
-  v4.5.18 (2026-07-10 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-11 T0021.csv (275 cards).
-  v4.5.17 (2026-07-10 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-11 T0020.csv (327 cards).
-  v4.5.16 (2026-07-10T10:38:23Z UTC - Claude Fable 5): DATA: Restore SOS (327 cards) and MSH (274 cards) to 2026-07-06 data — 17Lands exports since 2026-07-07 blank most cards' stats (SOS refreshed to 0 cards, MSH to 107) and the daily refresh wrote them through; pipeline now refuses exports with <150 valid cards.
-  v4.5.15 (2026-07-09 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-09 T0902.csv (107 cards).
-  v4.5.14 (2026-07-09 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-09 T0902.csv (0 cards).
-  v4.5.13 (2026-07-08 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-08 T0801.csv (118 cards).
-  v4.5.12 (2026-07-08 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-08 T0801.csv (0 cards).
-  v4.5.11 (2026-07-07 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-07 T0859.csv (132 cards).
-  v4.5.10 (2026-07-07 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-07 T0859.csv (0 cards).
-  v4.5.9 (2026-07-06 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-06 T0947.csv (274 cards).
-  v4.5.8 (2026-07-06 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-06 T0947.csv (327 cards).
-  v4.5.7 (2026-07-05 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-05 T0834.csv (273 cards).
-  v4.5.6 (2026-07-05 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-05 T0834.csv (327 cards).
-  v4.5.5 (2026-07-04 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-04 T0816.csv (273 cards).
-  v4.5.4 (2026-07-04 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-04 T0816.csv (327 cards).
-  v4.5.3 (2026-07-03 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-03 T0841.csv (273 cards).
-  v4.5.2 (2026-07-03 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-03 T0841.csv (327 cards).
-  v4.5.1 (2026-07-02T15:55:08Z UTC - Claude Fable 5): PROMOTE: quiz-beta 4.5.1-beta.1 shipped to production:
+  v4.8.0 (2026-07-11T20:47:20Z UTC - Claude Fable 5): PROMOTE: quiz-beta 4.8.0-beta.4 shipped to production - Insights panel (retrospective per-mode analysis with scope/set filters), bias-map heatmap (combined/grading/head-to-head sources), accuracy-by-difficulty bars, honest empty states, and the restored + endpoint-fixed 17Lands data pipeline.
+  v4.8.0-beta.4 (2026-07-11 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-11 T0727.csv (275 cards).
+  v4.8.0-beta.3 (2026-07-10 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-11 T0021.csv (275 cards).
+  v4.8.0-beta.2 (2026-07-10 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-11 T0020.csv (327 cards).
+  v4.8.0-beta.1 (2026-07-10T10:38:23Z UTC - Claude Fable 5 + Claude Sonnet):
+  - FEAT combined bias-map source (sample-size-weighted blend of quality-adjusted grading + head-to-head, ▲/▼ glyph cells, now the default)
+  - UI accuracy-by-difficulty bars vs the 50% coin-flip baseline replacing the gap chips
+  - FIX misleading empty states (head-to-head axes now always shown with measured pick vs better rates once n≥10; grading distinguishes "well calibrated" from "not enough per-category data")
+  - DATA restore SOS (327 cards) and MSH (274 cards) to 2026-07-06 — 17Lands exports since 2026-07-07 blank most cards' stats (SOS dropped to 0 valid cards, MSH shrank 274→107) and the daily refresh wrote them through; refresh pipeline now refuses any export with fewer than 150 valid cards
+  v4.7.0-beta.7 (2026-07-09 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-09 T0902.csv (107 cards).
+  v4.7.0-beta.6 (2026-07-09 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-09 T0902.csv (0 cards).
+  v4.7.0-beta.5 (2026-07-08 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-08 T0801.csv (118 cards).
+  v4.7.0-beta.4 (2026-07-08 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-08 T0801.csv (0 cards).
+  v4.7.0-beta.3 (2026-07-07 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-07 T0859.csv (132 cards).
+  v4.7.0-beta.2 (2026-07-07 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-07 T0859.csv (0 cards).
+  v4.7.0-beta.1 (2026-07-06T22:23:41Z UTC - Claude Fable 5 + Claude Sonnet):
+  - FEAT (insights): "Bias map" heatmap grid — rows per color (W/U/B/R/G/Multi/Colorless/All), columns per type (Creature/Non-creature) and rarity (C/U/R/M) plus All; red = overrate, blue = underrate, cell shows magnitude + sample size, n<5 gated, statistically-insignificant cells faded
+  - FEAT (insights): two bias-map data sources — Grading (your grade minus actual, in grade notches, with Quality-adjusted/Raw toggle) and Head-to-head (inferred from comparison picks: each card in a pair counts +1 picked-though-worse, −1 passed-though-better; shown as net % of appearances)
+  - REFACTOR (insights): grading join/residual logic extracted to _resolveGradingEntries, shared by analyzeGrading and the grid builders
+  v4.6.0-beta.1 (2026-07-06T11:53:39Z UTC - Claude Sonnet):
+  - FEAT (insights): new retrospective "Insights" panel in the history section — scope pills (All time / Last 100 / 50 / 20, applied per mode) and an all-sets-or-single-set selector
+  - FEAT (insights/grading): calibration verdict (too cautious vs too extreme at the grade extremes) plus quality-adjusted over/under-rating findings bucketed by creature/non-creature, rarity, multicolor/colorless, and hype (trap)/sleeper cards — residualized against each bucket's expected error so an A+ being "missed downward" isn't mistaken for bias
+  - FEAT (insights/comparison): overall and per-metric (GIH WR vs ALSA) accuracy, an accuracy-by-difficulty-gap curve, and head-to-head bias axes (creatures over non-creatures, higher-rarity cards, crowd favorites) comparing pick rate vs which card was actually better
+  v4.5.1-beta.9 (2026-07-06 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-06 T0947.csv (274 cards).
+  v4.5.1-beta.8 (2026-07-06 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-06 T0947.csv (327 cards).
+  v4.5.1-beta.7 (2026-07-05 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-05 T0834.csv (273 cards).
+  v4.5.1-beta.6 (2026-07-05 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-05 T0834.csv (327 cards).
+  v4.5.1-beta.5 (2026-07-04 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-04 T0816.csv (273 cards).
+  v4.5.1-beta.4 (2026-07-04 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-04 T0816.csv (327 cards).
+  v4.5.1-beta.3 (2026-07-03 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-03 T0841.csv (273 cards).
+  v4.5.1-beta.2 (2026-07-03 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-03 T0841.csv (327 cards).
+  v4.5.1-beta.1 (2026-07-02T15:55:08Z UTC - Claude Fable 5):
   - FIX (UX): clicking through the result panel (Next Question, or Enter/Space) now scrolls the freshly generated question into view, mirroring the scroll-to-result on answering — previously the viewport was left above the new cards
   v4.5.0-beta.1 (2026-07-02T15:41:59Z UTC - Claude Fable 5):
   - FEAT (keyboard): shortcuts matching the card-knowledge quiz — 1/2 or ArrowLeft/ArrowRight pick a card in Comparison Mode, Enter/Space advances to the next question in both modes; ignored while typing in inputs or when a button has focus; hint added to the Comparison Mode instructions
@@ -5242,8 +5521,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.5.20';
-const LAST_UPDATE = '2026-07-12 UTC';
+const QUIZ_VERSION = '4.8.0';
+const LAST_UPDATE = '2026-07-11T20:47:20Z UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -5681,6 +5960,453 @@ const getGradeRange = (grade) => {
   const upperGrade = GRADE_LABELS[idx + 1];
   const upper = gradeThresholds[upperGrade];
   return `${lower.toFixed(1)}-${upper.toFixed(1)}%`;
+};
+
+// ============================================
+// INSIGHTS ENGINE: retrospective analysis over quiz history
+// Pure functions only — no JSX. Consumed by <InsightsPanel>.
+// ============================================
+
+// Index into GRADE_LABELS (F..A+); -1 for unknown labels (filter these out).
+const gradeIdx = (label) => GRADE_LABELS.indexOf(label);
+
+// Scope a set of history entries down to a set code and a recency window.
+// setCode 'ALL' keeps every set; lastN 0 means "all time" (entries are oldest-first).
+const filterInsightsEntries = (entries, setCode, lastN) => {
+  let scoped = entries;
+  if (setCode !== 'ALL') {
+    scoped = scoped.filter(e => (e.setCode || 'ECL') === setCode);
+  }
+  if (lastN > 0) {
+    scoped = scoped.slice(-lastN);
+  }
+  return scoped;
+};
+
+// Lazily-built, module-level cache: { [setCode]: { [cardName]: card } }
+let _insightsCardIndexCache = null;
+const buildInsightsCardIndex = () => {
+  if (_insightsCardIndexCache) return _insightsCardIndexCache;
+  const idx = {};
+  Object.keys(SET_CONFIG).forEach(setCode => {
+    const bySetName = {};
+    SET_CONFIG[setCode].data.forEach(card => {
+      bySetName[card.name] = card;
+    });
+    idx[setCode] = bySetName;
+  });
+  _insightsCardIndexCache = idx;
+  return idx;
+};
+
+// Classifiers used by the residualized bucket analysis
+const isCreatureCard = (card) => /\bCreature\b/.test(card.type || '');
+const colorClass = (card) => {
+  const c = card.color || '';
+  if (c === '') return 'Colorless';
+  if (c.length === 1) return c;
+  return 'Multicolor';
+};
+
+// Percentile rank (0..1) of value within values — used for the hype/sleeper axis.
+const _percentileRank = (values, value) => {
+  let countBelow = 0;
+  values.forEach(v => { if (v < value) countBelow++; });
+  return values.length > 1 ? countBelow / (values.length - 1) : 0.5;
+};
+
+// Mean/SD helpers for residual buckets
+const _mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+const _sd = (arr, m) => Math.sqrt(arr.reduce((a, b) => a + (b - m) ** 2, 0) / arr.length);
+
+// Actual-grade band for calibration & residualization: low <=D+, high >=B+, mid otherwise.
+const _actualGradeBand = (actualIdx) => {
+  if (actualIdx <= 3) return 'low';
+  if (actualIdx >= 9) return 'high';
+  return 'mid';
+};
+
+// Build a { label, direction, magnitude, n, confidence } finding from a bucket of residuals,
+// or null if the bucket doesn't clear the confidence bar.
+const _residualFinding = (label, residuals) => {
+  const n = residuals.length;
+  if (n < 5) return null;
+  const m = _mean(residuals);
+  const sd = _sd(residuals, m);
+  const se = sd / Math.sqrt(n);
+  let confidence = null;
+  if (n >= 8 && Math.abs(m) >= 2 * se && Math.abs(m) >= 0.25) confidence = 'confident';
+  else if (n >= 5 && Math.abs(m) >= 0.4) confidence = 'provisional';
+  if (!confidence) return null;
+  return {
+    label,
+    direction: m > 0 ? 'overrate' : 'underrate',
+    magnitude: Math.round(Math.abs(m) * 10) / 10,
+    n,
+    confidence
+  };
+};
+
+// Shared join/residual logic for grading-mode entries: parses user/actual grades into
+// indices + signedErr, computes the per-band expected error, and resolves each entry's
+// card in cardIndex (cards can leave the data on refresh, so old history may reference
+// names no longer present — those are dropped from `resolvable`, not from `valid`).
+// Extracted from analyzeGrading so buildGradingGrid can reuse the identical join.
+const _resolveGradingEntries = (entries, cardIndex) => {
+  const valid = entries
+    .map(e => {
+      const userIdx = gradeIdx(e.userGrade);
+      const actualIdx = gradeIdx(e.actualGrade);
+      if (userIdx === -1 || actualIdx === -1) return null;
+      return { ...e, userIdx, actualIdx, signedErr: userIdx - actualIdx };
+    })
+    .filter(Boolean);
+
+  const lowEntries = valid.filter(e => _actualGradeBand(e.actualIdx) === 'low');
+  const highEntries = valid.filter(e => _actualGradeBand(e.actualIdx) === 'high');
+  const lowN = lowEntries.length;
+  const highN = highEntries.length;
+  const lowMean = lowN ? _mean(lowEntries.map(e => e.signedErr)) : null;
+  const highMean = highN ? _mean(highEntries.map(e => e.signedErr)) : null;
+
+  // Expected signed error per actual-grade band, computed over ALL valid entries in that band
+  // (this is what makes the bucket findings "quality-adjusted": an A+ can only ever be missed
+  // downward, so we compare each bucket's error against the baseline error for cards of that caliber).
+  const expectedErrByBand = {
+    low: lowN ? lowMean : 0,
+    mid: (() => {
+      const midEntries = valid.filter(e => _actualGradeBand(e.actualIdx) === 'mid');
+      return midEntries.length ? _mean(midEntries.map(e => e.signedErr)) : 0;
+    })(),
+    high: highN ? highMean : 0
+  };
+
+  const resolvable = valid
+    .map(e => {
+      const bySetName = cardIndex[e.setCode || 'ECL'];
+      const card = bySetName ? bySetName[e.card] : null;
+      if (!card) return null;
+      const band = _actualGradeBand(e.actualIdx);
+      const residual = e.signedErr - expectedErrByBand[band];
+      return { ...e, card, band, residual };
+    })
+    .filter(Boolean);
+
+  return { valid, lowN, highN, lowMean, highMean, expectedErrByBand, resolvable };
+};
+
+// Grading-mode analysis: calibration + quality-adjusted (residualized) bucket findings + hype axis.
+// entries: grading-mode history, already scope-filtered by filterInsightsEntries.
+const analyzeGrading = (entries, cardIndex) => {
+  const { valid, lowN, highN, lowMean, highMean, resolvable } = _resolveGradingEntries(entries, cardIndex);
+
+  if (valid.length < 5) return null;
+
+  const n = valid.length;
+  const exactPct = Math.round(100 * valid.filter(e => e.signedErr === 0).length / n);
+  const within1Pct = Math.round(100 * valid.filter(e => Math.abs(e.signedErr) <= 1).length / n);
+  const meanAbsErr = _mean(valid.map(e => Math.abs(e.signedErr)));
+  const meanSignedErr = _mean(valid.map(e => e.signedErr));
+
+  // Calibration: compare signed error at the low vs high end of the actual-grade scale.
+  let verdict = null;
+  if (lowN >= 5 && highN >= 5) {
+    if (lowMean >= 0.35 && highMean <= -0.35) verdict = 'compressed';
+    else if (lowMean <= -0.35 && highMean >= 0.35) verdict = 'extreme';
+    else verdict = 'balanced';
+  }
+
+  const bucketFindings = [];
+  let bucketsEvaluated = 0;
+  const pushFinding = (label, predicate) => {
+    const residuals = resolvable.filter(predicate).map(e => e.residual);
+    if (residuals.length >= 8) bucketsEvaluated++;
+    const finding = _residualFinding(label, residuals);
+    if (finding) bucketFindings.push(finding);
+  };
+
+  pushFinding('Creatures', e => isCreatureCard(e.card));
+  pushFinding('Non-creatures', e => !isCreatureCard(e.card));
+  pushFinding('Commons', e => e.card.rarity === 'C');
+  pushFinding('Uncommons', e => e.card.rarity === 'U');
+  pushFinding('Rares', e => e.card.rarity === 'R');
+  pushFinding('Mythics', e => e.card.rarity === 'M');
+  pushFinding('Multicolor cards', e => colorClass(e.card) === 'Multicolor');
+  pushFinding('Colorless cards', e => colorClass(e.card) === 'Colorless');
+
+  // Hype axis: per set present in these entries, rank each card by GIH WR percentile
+  // (performance) vs by "crowd love" percentile (lower ALSA = picked earlier = more loved).
+  // trap = crowd loves it more than it performs; sleeper = it performs better than the crowd rates it.
+  const setsPresent = Array.from(new Set(resolvable.map(e => e.setCode || 'ECL')));
+  const hypeByEntry = new Map();
+  setsPresent.forEach(setCode => {
+    const setData = (SET_CONFIG[setCode] || {}).data;
+    if (!setData) return;
+    const withAlsa = setData.filter(c => c.alsa != null);
+    const wrValues = withAlsa.map(c => c.gihWr);
+    const crowdValues = withAlsa.map(c => -c.alsa);
+    const byName = {};
+    withAlsa.forEach(c => {
+      const wrPct = _percentileRank(wrValues, c.gihWr);
+      const crowdPct = _percentileRank(crowdValues, -c.alsa);
+      byName[c.name] = { wrPct, crowdPct };
+    });
+    hypeByEntry.set(setCode, byName);
+  });
+
+  const isTrap = (e) => {
+    const bySet = hypeByEntry.get(e.setCode || 'ECL');
+    const h = bySet && bySet[e.card.name];
+    if (!h) return false;
+    return (h.crowdPct - h.wrPct) >= 0.25;
+  };
+  const isSleeper = (e) => {
+    const bySet = hypeByEntry.get(e.setCode || 'ECL');
+    const h = bySet && bySet[e.card.name];
+    if (!h) return false;
+    return (h.wrPct - h.crowdPct) >= 0.25;
+  };
+
+  pushFinding('Hype/trap cards', isTrap);
+  pushFinding('Sleeper cards', isSleeper);
+
+  return {
+    n, exactPct, within1Pct, meanAbsErr, meanSignedErr,
+    calibration: { verdict, lowN, lowMean, highN, highMean },
+    bucketFindings, bucketsEvaluated
+  };
+};
+
+// Comparison-mode analysis: overall/per-metric accuracy, difficulty curve, and head-to-head bias axes.
+// entries: comparison-mode history, already scope-filtered by filterInsightsEntries.
+const analyzeComparison = (entries, cardIndex) => {
+  if (entries.length < 5) return null;
+
+  const n = entries.length;
+  const accuracyPct = Math.round(100 * entries.filter(e => e.isCorrect).length / n);
+
+  const withMetric = entries.map(e => e.metric || 'gihWr');
+  const hasBothMetrics = withMetric.some(m => m === 'gihWr') && withMetric.some(m => m === 'alsa');
+  let perMetric = null;
+  if (hasBothMetrics) {
+    perMetric = {};
+    ['gihWr', 'alsa'].forEach(metric => {
+      const subset = entries.filter((e, i) => withMetric[i] === metric);
+      if (subset.length) {
+        perMetric[metric] = {
+          n: subset.length,
+          pct: Math.round(100 * subset.filter(e => e.isCorrect).length / subset.length)
+        };
+      }
+    });
+  }
+
+  // Difficulty curve: gihWr-metric entries only, skip exact ties.
+  const gihEntries = entries.filter((e, i) => withMetric[i] === 'gihWr' && e.card1GihWr !== e.card2GihWr);
+  const bandFor = (gap) => {
+    if (gap < 1) return '<1';
+    if (gap < 2) return '1–2';
+    if (gap < 4) return '2–4';
+    return '>4';
+  };
+  const bandOrder = ['<1', '1–2', '2–4', '>4'];
+  const bandBuckets = {};
+  bandOrder.forEach(b => { bandBuckets[b] = []; });
+  gihEntries.forEach(e => {
+    const gap = Math.abs(e.card1GihWr - e.card2GihWr);
+    bandBuckets[bandFor(gap)].push(e);
+  });
+  const difficultyCurve = bandOrder.map(band => {
+    const bucket = bandBuckets[band];
+    return {
+      band,
+      n: bucket.length,
+      accuracyPct: bucket.length ? Math.round(100 * bucket.filter(e => e.isCorrect).length / bucket.length) : null
+    };
+  });
+
+  // Head-to-head bias axes (gihWr-metric entries only; ties on the axis are skipped).
+  // Every evaluated axis is reported (n>0); `significant` gates the "confident" wording,
+  // requiring n>=10 AND |bias| at least 2 standard errors from zero.
+  const axisStats = (label, straddlingPairs, isPositivePicked) => {
+    const n = straddlingPairs.length;
+    if (n === 0) return null;
+    const pickRate = straddlingPairs.filter(isPositivePicked).length / n;
+    const betterRate = straddlingPairs.filter(e => e._positiveBetter).length / n;
+    const bias = pickRate - betterRate;
+    const significant = n >= 10 && Math.abs(bias) >= 2 * Math.sqrt(0.25 / n);
+    return {
+      label,
+      n,
+      pickRatePct: Math.round(pickRate * 100),
+      betterRatePct: Math.round(betterRate * 100),
+      biasPct: Math.round(bias * 100),
+      significant
+    };
+  };
+
+  // Creature axis: exactly one of the two cards is a creature.
+  const creaturePairs = [];
+  gihEntries.forEach(e => {
+    const bySet = cardIndex[e.setCode || 'ECL'] || {};
+    const c1 = bySet[e.card1];
+    const c2 = bySet[e.card2];
+    if (!c1 || !c2) return;
+    const c1IsCreature = isCreatureCard(c1);
+    const c2IsCreature = isCreatureCard(c2);
+    if (c1IsCreature === c2IsCreature) return; // need exactly one creature
+    if (e.card1GihWr === e.card2GihWr) return; // skip ties for "better" determination
+    const positiveIsCard1 = c1IsCreature;
+    const positiveGihWr = positiveIsCard1 ? e.card1GihWr : e.card2GihWr;
+    const otherGihWr = positiveIsCard1 ? e.card2GihWr : e.card1GihWr;
+    creaturePairs.push({
+      _positivePicked: e.selectedCard === (positiveIsCard1 ? e.card1 : e.card2),
+      _positiveBetter: positiveGihWr > otherGihWr
+    });
+  });
+  const creatureAxis = axisStats('creatures over non-creatures', creaturePairs, e => e._positivePicked);
+
+  // Rarity axis: C=0,U=1,R=2,M=3; pairs with different ranks; positive = higher rarity.
+  const rarityRank = { C: 0, U: 1, R: 2, M: 3 };
+  const rarityPairs = [];
+  gihEntries.forEach(e => {
+    const bySet = cardIndex[e.setCode || 'ECL'] || {};
+    const c1 = bySet[e.card1];
+    const c2 = bySet[e.card2];
+    if (!c1 || !c2) return;
+    const r1 = rarityRank[c1.rarity];
+    const r2 = rarityRank[c2.rarity];
+    if (r1 === undefined || r2 === undefined || r1 === r2) return;
+    if (e.card1GihWr === e.card2GihWr) return;
+    const positiveIsCard1 = r1 > r2;
+    const positiveGihWr = positiveIsCard1 ? e.card1GihWr : e.card2GihWr;
+    const otherGihWr = positiveIsCard1 ? e.card2GihWr : e.card1GihWr;
+    rarityPairs.push({
+      _positivePicked: e.selectedCard === (positiveIsCard1 ? e.card1 : e.card2),
+      _positiveBetter: positiveGihWr > otherGihWr
+    });
+  });
+  const rarityAxis = axisStats('higher-rarity cards', rarityPairs, e => e._positivePicked);
+
+  // Crowd axis: both alsa present and differ by >=1.0; positive = lower ALSA (crowd favorite).
+  const crowdPairs = [];
+  gihEntries.forEach(e => {
+    if (e.card1Alsa == null || e.card2Alsa == null) return;
+    if (Math.abs(e.card1Alsa - e.card2Alsa) < 1.0) return;
+    if (e.card1GihWr === e.card2GihWr) return;
+    const positiveIsCard1 = e.card1Alsa < e.card2Alsa;
+    const positiveGihWr = positiveIsCard1 ? e.card1GihWr : e.card2GihWr;
+    const otherGihWr = positiveIsCard1 ? e.card2GihWr : e.card1GihWr;
+    crowdPairs.push({
+      _positivePicked: e.selectedCard === (positiveIsCard1 ? e.card1 : e.card2),
+      _positiveBetter: positiveGihWr > otherGihWr
+    });
+  });
+  const crowdAxis = axisStats('crowd favorites (earlier average pick)', crowdPairs, e => e._positivePicked);
+
+  const axes = [creatureAxis, rarityAxis, crowdAxis].filter(Boolean);
+
+  return {
+    n, accuracyPct, perMetric,
+    difficultyCurve,
+    axes
+  };
+};
+
+// ============================================
+// BIAS MAP: color x type/rarity heatmap grid, shared by grading and comparison sources.
+// ============================================
+
+const BIAS_GRID_ROWS = ['W', 'U', 'B', 'R', 'G', 'Multicolor', 'Colorless', 'All'];
+const BIAS_GRID_COLS = ['All', 'Creature', 'Non-creature', 'C', 'U', 'R', 'M'];
+
+// Does `card` belong in grid row `row`? 'All' matches every card.
+const _gridRowMatch = (row, card) => row === 'All' || colorClass(card) === row;
+
+// Does `card` belong in grid column `col`? 'All' matches every card; Creature/Non-creature
+// use isCreatureCard; the remaining columns are rarity codes matched against card.rarity.
+const _gridColMatch = (col, card) => {
+  if (col === 'All') return true;
+  if (col === 'Creature') return isCreatureCard(card);
+  if (col === 'Non-creature') return !isCreatureCard(card);
+  return card.rarity === col;
+};
+
+// Aggregate a list of {card, value} appearances into the {rows, cols, cells} grid shape
+// used by both buildGradingGrid and buildComparisonGrid.
+const _buildGrid = (appearances) => {
+  const cells = {};
+  BIAS_GRID_ROWS.forEach(row => {
+    cells[row] = {};
+    const inRow = appearances.filter(a => _gridRowMatch(row, a.card));
+    BIAS_GRID_COLS.forEach(col => {
+      const values = inRow.filter(a => _gridColMatch(col, a.card)).map(a => a.value);
+      const n = values.length;
+      const mean = n ? _mean(values) : null;
+      const se = n ? _sd(values, mean) / Math.sqrt(n) : null;
+      cells[row][col] = { n, mean, se };
+    });
+  });
+  return { rows: BIAS_GRID_ROWS, cols: BIAS_GRID_COLS, cells };
+};
+
+// Grading-source bias grid: value per resolvable entry is either the quality-adjusted
+// residual or the raw signedErr, depending on `adjusted`.
+// entries: grading-mode history, already scope-filtered by filterInsightsEntries.
+const buildGradingGrid = (entries, cardIndex, adjusted) => {
+  const { resolvable } = _resolveGradingEntries(entries, cardIndex);
+  const appearances = resolvable.map(e => ({ card: e.card, value: adjusted ? e.residual : e.signedErr }));
+  return _buildGrid(appearances);
+};
+
+// Comparison-source (head-to-head) bias grid: each entry yields up to two card
+// appearances (one per card in the pair), valued +1/-1/0 by pick-vs-quality outcome.
+// entries: comparison-mode history, already scope-filtered by filterInsightsEntries.
+const buildComparisonGrid = (entries, cardIndex) => {
+  const appearances = [];
+  entries.forEach(e => {
+    if ((e.metric || 'gihWr') !== 'gihWr') return;
+    if (e.card1GihWr === e.card2GihWr) return; // skip ties
+    const bySet = cardIndex[e.setCode || 'ECL'] || {};
+    const better = e.card1GihWr > e.card2GihWr ? e.card1 : e.card2;
+    [
+      { name: e.card1, gihWr: e.card1GihWr },
+      { name: e.card2, gihWr: e.card2GihWr }
+    ].forEach(({ name }) => {
+      const card = bySet[name];
+      if (!card) return; // skip unresolvable appearances individually
+      const picked = name === e.selectedCard;
+      const isBetter = name === better;
+      let value = 0;
+      if (picked && !isBetter) value = 1;   // over-picked (chosen though worse)
+      else if (!picked && isBetter) value = -1; // under-picked (passed though better)
+      appearances.push({ card, value });
+    });
+  });
+  return _buildGrid(appearances);
+};
+
+// Combined bias grid: sample-size-weighted blend of the quality-adjusted grading grid and
+// the head-to-head grid, on a common -1..1 scale (grading capped at 1.0 grade, head-to-head
+// at 0.5 net appearance rate). A source only participates in a cell when its own n >= 5.
+const buildCombinedGrid = (gridGradingAdj, gridComparison) => {
+  const cells = {};
+  BIAS_GRID_ROWS.forEach(row => {
+    cells[row] = {};
+    BIAS_GRID_COLS.forEach(col => {
+      const g = gridGradingAdj.cells[row][col];
+      const h = gridComparison.cells[row][col];
+      const parts = [];
+      if (g.n >= 5) parts.push({ n: g.n, s: Math.max(-1, Math.min(1, g.mean / 1.0)), significant: Math.abs(g.mean) >= 2 * g.se });
+      if (h.n >= 5) parts.push({ n: h.n, s: Math.max(-1, Math.min(1, h.mean / 0.5)), significant: Math.abs(h.mean) >= 2 * h.se });
+      const n = parts.reduce((a, p) => a + p.n, 0);
+      const s = n > 0 ? parts.reduce((a, p) => a + p.n * p.s, 0) / n : null;
+      const significant = parts.some(p => p.significant);
+      const anySmall = n === 0 && (g.n > 0 || h.n > 0);
+      cells[row][col] = { n, s, significant, g, h, anySmall };
+    });
+  });
+  return { rows: BIAS_GRID_ROWS, cols: BIAS_GRID_COLS, cells };
 };
 
 // Scryfall set codes to search for each quiz set (priority order)
@@ -6155,6 +6881,424 @@ function MultiSelectFilter({ label, plural, options, selected, isOpen, onToggleO
   );
 }
 
+// ============================================
+// InsightsPanel: retrospective analysis UI over the Insights engine functions above.
+// ============================================
+const INSIGHTS_SCOPES = [
+  { value: 0, label: 'All time' },
+  { value: 100, label: 'Last 100' },
+  { value: 50, label: 'Last 50' },
+  { value: 20, label: 'Last 20' }
+];
+
+const InsightsPanel = ({ insightsScope, setInsightsScope, insightsSet, setInsightsSet, insightsData }) => {
+  const gradingFindingLine = (f) => {
+    const verb = f.direction === 'overrate' ? 'overrate' : 'underrate';
+    const suffix = f.confidence === 'provisional'
+      ? <span className="insights-finding-muted"> (provisional — small sample)</span>
+      : null;
+    return (
+      <div className="insights-finding" key={f.label}>
+        You tend to {verb} {f.label} by ~{f.magnitude} grades (n={f.n}){suffix}
+      </div>
+    );
+  };
+
+  const biasFindingLine = (f) => {
+    const favor = f.biasPct > 0;
+    const verb = favor ? 'favor' : 'under-pick';
+    return (
+      <div className="insights-finding" key={f.label}>
+        {favor ? '⚠ ' : ''}You {verb} {f.label} in head-to-heads: picked{favor ? ' it' : ' the alternative instead'} {f.pickRatePct}% of the time, but it was the better card only {f.betterRatePct}% (n={f.n})
+      </div>
+    );
+  };
+
+  const axisMutedLine = (f) => {
+    const label = f.label.charAt(0).toUpperCase() + f.label.slice(1);
+    return (
+      <div className="insights-finding insights-finding-muted" key={f.label}>
+        ✓ {label}: picked {f.pickRatePct}% vs {f.betterRatePct}% actually better (n={f.n}) — no significant lean
+      </div>
+    );
+  };
+
+  const DIFF_BAND_LABELS = { '<1': 'Coin flip (<1pp)', '1–2': 'Close (1–2pp)', '2–4': 'Clear (2–4pp)', '>4': 'Obvious (>4pp)' };
+
+  const renderDifficultyBlock = (difficultyCurve) => (
+    <div className="insights-diff-block">
+      <div className="insights-headline" style={{ fontSize: '13px' }}>
+        Accuracy by difficulty <span className="insights-finding-muted">(gap = win-rate difference between the two cards · 50% = coin flip)</span>
+      </div>
+      {difficultyCurve.map(b => {
+        const label = DIFF_BAND_LABELS[b.band];
+        if (b.n === 0) {
+          return (
+            <div className="insights-diff-row" key={b.band}>
+              <div className="insights-diff-label">{label}</div>
+              <div className="insights-diff-track"><div className="insights-diff-baseline"></div></div>
+              <div className="insights-diff-value insights-finding-muted">—</div>
+            </div>
+          );
+        }
+        if (b.n < 5) {
+          return (
+            <div className="insights-diff-row" key={b.band}>
+              <div className="insights-diff-label">{label}</div>
+              <div className="insights-diff-track"><div className="insights-diff-baseline"></div></div>
+              <div className="insights-diff-value insights-finding-muted">n&lt;5</div>
+            </div>
+          );
+        }
+        const pct = b.accuracyPct;
+        const diff = pct - 50;
+        const se = 100 * Math.sqrt(0.25 / b.n);
+        const faded = Math.abs(diff) < 2 * se;
+        const above = diff >= 0;
+        const barStyle = above
+          ? { left: '50%', width: `${Math.abs(diff)}%`, background: 'rgba(74,158,255,0.85)', borderRadius: '0 4px 4px 0' }
+          : { left: `${pct}%`, width: `${Math.abs(diff)}%`, background: 'rgba(220,60,60,0.8)', borderRadius: '4px 0 0 4px' };
+        const title = `Pairs ${b.band}pp apart: ${pct}% correct of ${b.n} — ${above ? 'above' : 'below'} coin-flip by ${Math.abs(diff)}pp`;
+        return (
+          <div className="insights-diff-row" key={b.band} title={title}>
+            <div className="insights-diff-label">{label}</div>
+            <div className="insights-diff-track">
+              <div className="insights-diff-baseline"></div>
+              <div className="insights-diff-bar" style={{ ...barStyle, opacity: faded ? 0.55 : 1 }}></div>
+            </div>
+            <div className="insights-diff-value">{pct}% · n={b.n}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const calibrationSentence = (calibration) => {
+    if (!calibration || !calibration.verdict || calibration.verdict === 'balanced') return null;
+    const lowStr = `${calibration.lowMean >= 0 ? '+' : ''}${calibration.lowMean.toFixed(1)}`;
+    const highStr = `${calibration.highMean >= 0 ? '+' : ''}${calibration.highMean.toFixed(1)}`;
+    if (calibration.verdict === 'compressed') {
+      return `📉 Too cautious: bombs graded ${highStr} low (n=${calibration.highN}), duds ${lowStr} high (n=${calibration.lowN}) — trust the extremes more`;
+    }
+    return `📈 Too extreme: bombs graded ${highStr} further off (n=${calibration.highN}), duds ${lowStr} further off (n=${calibration.lowN}) — pull toward the middle`;
+  };
+
+  const grading = insightsData && insightsData.grading;
+  const comparison = insightsData && insightsData.comparison;
+
+  // Bias map state: which source feeds the grid, and (grading-only) raw vs quality-adjusted.
+  const [biasSource, setBiasSource] = React.useState('combined'); // 'combined' | 'grading' | 'comparison'
+  const [biasAdjusted, setBiasAdjusted] = React.useState(true); // true = quality-adjusted, false = raw
+
+  const ROW_ICONS = { W: '⚪', U: '🔵', B: '⚫', R: '🔴', G: '🟢', Multicolor: '🌈', Colorless: '◇', All: 'Σ' };
+  const ROW_LABELS = { W: 'W', U: 'U', B: 'B', R: 'R', G: 'G', Multicolor: 'Multi', Colorless: 'Colorless', All: 'All' };
+  const COL_LABELS = { All: 'All', Creature: 'Creature', 'Non-creature': 'Non-creat.', C: 'C', U: 'U', R: 'R', M: 'M' };
+
+  const biasCellFormat = (mean) => {
+    const scaled = biasSource === 'grading' ? mean : mean * 100;
+    const rounded = biasSource === 'grading' ? scaled.toFixed(1) : Math.round(scaled);
+    const sign = scaled >= 0 ? '+' : '';
+    return biasSource === 'grading' ? `${sign}${rounded}` : `${sign}${rounded}%`;
+  };
+
+  const biasCellTitle = (rowKey, colKey, cell) => {
+    const rowLabel = ROW_LABELS[rowKey] === 'All' ? 'All colors' : ROW_LABELS[rowKey];
+    const colLabel = COL_LABELS[colKey] === 'All' ? '' : ` / ${COL_LABELS[colKey]}`;
+    if (cell.n === 0) return `${rowLabel}${colLabel}: no data`;
+    if (cell.n < 5) return `${rowLabel}${colLabel}: n=${cell.n} (too few to show)`;
+    const desc = biasSource === 'grading'
+      ? `${biasCellFormat(cell.mean)} grades ${cell.mean >= 0 ? 'over' : 'under'}, n=${cell.n}`
+      : `${cell.mean >= 0 ? 'over-picked' : 'under-picked'} in ${Math.abs(Math.round(cell.mean * 100))}% of appearances, n=${cell.n}`;
+    return `${rowLabel}${colLabel}: ${desc}`;
+  };
+
+  // Combined-source glyph: strength/direction of the sample-size-weighted blend.
+  const combinedGlyph = (s) => {
+    if (s >= 0.45) return '▲▲';
+    if (s >= 0.15) return '▲';
+    if (s > -0.15) return '·';
+    if (s > -0.45) return '▼';
+    return '▼▼';
+  };
+
+  const combinedTooltip = (rowKey, colKey, cell) => {
+    const rowLabel = ROW_LABELS[rowKey] === 'All' ? 'All colors' : ROW_LABELS[rowKey];
+    const colLabel = COL_LABELS[colKey] === 'All' ? '' : ` / ${COL_LABELS[colKey]}`;
+    const prefix = `${rowLabel}${colLabel}`;
+    if (cell.n === 0 && !cell.anySmall) return `${prefix}: no data`;
+    if (cell.n === 0 && cell.anySmall) return `${prefix}: too few in either source to show (need n≥5 per source)`;
+    const parts = [];
+    if (cell.g.n >= 5) parts.push(`Grading ${cell.g.mean >= 0 ? '+' : ''}${cell.g.mean.toFixed(1)} grades (n=${cell.g.n})`);
+    if (cell.h.n >= 5) parts.push(`Head-to-head ${cell.h.mean >= 0 ? '+' : ''}${Math.round(cell.h.mean * 100)}% (n=${cell.h.n})`);
+    let lean;
+    if (Math.abs(cell.s) < 0.15) lean = 'balanced';
+    else if (cell.s > 0) lean = 'leans overrate';
+    else lean = 'leans underrate/under-pick';
+    return `${prefix}: ${parts.join(' · ')} — ${lean}`;
+  };
+
+  const renderCombinedGrid = (grid) => (
+    <div className="insights-grid-scroll">
+      <table className="insights-grid">
+        <thead>
+          <tr>
+            <th></th>
+            {grid.cols.map(col => <th key={col}>{COL_LABELS[col]}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {grid.rows.map(row => (
+            <tr key={row}>
+              <th className="insights-grid-rowlabel">{ROW_ICONS[row]} {ROW_LABELS[row]}</th>
+              {grid.cols.map(col => {
+                const cell = grid.cells[row][col];
+                let content = '—';
+                let dim = false;
+                let bg = 'transparent';
+                if (cell.n === 0 && cell.anySmall) {
+                  content = <span className="insights-grid-dim">n&lt;5</span>;
+                } else if (cell.n > 0) {
+                  dim = !cell.significant;
+                  const alpha = Math.abs(cell.s) * 0.55;
+                  bg = cell.s > 0 ? `rgba(220,60,60,${alpha})` : (cell.s < 0 ? `rgba(70,120,220,${alpha})` : 'transparent');
+                  content = (
+                    <React.Fragment>
+                      <div>{combinedGlyph(cell.s)}</div>
+                      <div className="insights-grid-n">n={cell.n}</div>
+                    </React.Fragment>
+                  );
+                }
+                return (
+                  <td
+                    key={col}
+                    className={`insights-grid-cell${dim ? ' insights-grid-dim' : ''}`}
+                    style={{ background: bg }}
+                    title={combinedTooltip(row, col, cell)}
+                  >
+                    {content}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderBiasGrid = (grid) => {
+    if (biasSource === 'combined') return renderCombinedGrid(grid);
+    const CAP = biasSource === 'grading' ? 1.0 : 0.5;
+    return (
+      <div className="insights-grid-scroll">
+        <table className="insights-grid">
+          <thead>
+            <tr>
+              <th></th>
+              {grid.cols.map(col => <th key={col}>{COL_LABELS[col]}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {grid.rows.map(row => (
+              <tr key={row}>
+                <th className="insights-grid-rowlabel">{ROW_ICONS[row]} {ROW_LABELS[row]}</th>
+                {grid.cols.map(col => {
+                  const cell = grid.cells[row][col];
+                  let content = '—';
+                  let dim = false;
+                  let bg = 'transparent';
+                  if (cell.n > 0 && cell.n < 5) {
+                    content = <span className="insights-grid-dim">n&lt;5</span>;
+                  } else if (cell.n >= 5) {
+                    const insignificant = Math.abs(cell.mean) < 2 * cell.se;
+                    dim = insignificant;
+                    const alpha = Math.min(1, Math.abs(cell.mean) / CAP) * 0.55;
+                    bg = cell.mean > 0 ? `rgba(220,60,60,${alpha})` : (cell.mean < 0 ? `rgba(70,120,220,${alpha})` : 'transparent');
+                    content = (
+                      <React.Fragment>
+                        <div>{biasCellFormat(cell.mean)}</div>
+                        <div className="insights-grid-n">n={cell.n}</div>
+                      </React.Fragment>
+                    );
+                  }
+                  return (
+                    <td
+                      key={col}
+                      className={`insights-grid-cell${dim ? ' insights-grid-dim' : ''}`}
+                      style={{ background: bg }}
+                      title={biasCellTitle(row, col, cell)}
+                    >
+                      {content}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const gridGradingRaw = insightsData && insightsData.gridGradingRaw;
+  const gridGradingAdj = insightsData && insightsData.gridGradingAdj;
+  const gridComparison = insightsData && insightsData.gridComparison;
+  const gridCombined = insightsData && insightsData.gridCombined;
+  const gradingGridN = grading ? grading.n : 0;
+  const comparisonGridN = comparison ? comparison.n : 0;
+  const biasMapHasAnyData = gradingGridN >= 5 || comparisonGridN >= 5;
+  const activeGrid = biasSource === 'combined' ? gridCombined
+    : biasSource === 'grading' ? (biasAdjusted ? gridGradingAdj : gridGradingRaw)
+    : gridComparison;
+  const activeSourceHasData = biasSource === 'combined' ? biasMapHasAnyData
+    : biasSource === 'grading' ? gradingGridN >= 5
+    : comparisonGridN >= 5;
+
+  return (
+    <div className="insights-panel">
+      <div className="insights-controls">
+        <div className="insights-pills">
+          {INSIGHTS_SCOPES.map(s => (
+            <button
+              key={s.value}
+              className={`insights-pill${insightsScope === s.value ? ' active' : ''}`}
+              onClick={() => setInsightsScope(s.value)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <select
+          className="insights-set-select"
+          value={insightsSet}
+          onChange={(e) => setInsightsSet(e.target.value)}
+        >
+          <option value="ALL">All sets</option>
+          {Object.keys(SET_CONFIG).map(code => (
+            <option key={code} value={code}>{SET_CONFIG[code].shortName}</option>
+          ))}
+        </select>
+        <div className="insights-caption">Windows apply per mode — e.g. Last 50 = your most recent 50 answers in each mode.</div>
+      </div>
+
+      <div className="insights-section">
+        <div className="insights-section-title">⚖️ Comparison mode</div>
+        {!comparison ? (
+          <div className="insights-empty">Not enough data in this scope (need ≥5 answers)</div>
+        ) : (
+          <React.Fragment>
+            <div className="insights-headline">
+              {comparison.n} answers · {comparison.accuracyPct}% correct
+              {comparison.perMetric && comparison.perMetric.gihWr && comparison.perMetric.alsa && (
+                <span> (GIH WR: {comparison.perMetric.gihWr.pct}% of {comparison.perMetric.gihWr.n}, ALSA: {comparison.perMetric.alsa.pct}% of {comparison.perMetric.alsa.n})</span>
+              )}
+            </div>
+            {renderDifficultyBlock(comparison.difficultyCurve)}
+            {(() => {
+              const evaluableAxes = comparison.axes.filter(a => a.n >= 10);
+              if (evaluableAxes.length === 0) {
+                return <div className="insights-empty">Not enough cross-category pairs yet for head-to-head bias (need ≥10 per axis).</div>;
+              }
+              return evaluableAxes.map(a => a.significant ? biasFindingLine(a) : axisMutedLine(a));
+            })()}
+          </React.Fragment>
+        )}
+      </div>
+
+      <div className="insights-section">
+        <div className="insights-section-title">🎯 Grading mode</div>
+        {!grading ? (
+          <div className="insights-empty">Not enough data in this scope (need ≥5 answers)</div>
+        ) : (
+          <React.Fragment>
+            <div className="insights-headline">
+              {grading.n} answers · {grading.exactPct}% exact · {grading.within1Pct}% within one grade · avg miss {grading.meanAbsErr.toFixed(1)} grades
+            </div>
+            {calibrationSentence(grading.calibration) && (
+              <div className="insights-verdict">{calibrationSentence(grading.calibration)}</div>
+            )}
+            {grading.bucketFindings.length === 0 ? (
+              grading.bucketsEvaluated > 0 ? (
+                <div className="insights-empty">✓ No consistent bias across the {grading.bucketsEvaluated} categories with enough data — your grading looks well calibrated.</div>
+              ) : (
+                <div className="insights-empty">Not enough answers per category yet — category findings unlock as you answer more (roughly 20+).</div>
+              )
+            ) : (
+              grading.bucketFindings.map(gradingFindingLine)
+            )}
+          </React.Fragment>
+        )}
+      </div>
+
+      <div className="insights-section">
+        <div className="insights-section-title">🗺️ Bias map</div>
+        <div className="insights-pills">
+          <button
+            className={`insights-pill${biasSource === 'combined' ? ' active' : ''}`}
+            onClick={() => setBiasSource('combined')}
+          >
+            Combined
+          </button>
+          <button
+            className={`insights-pill${biasSource === 'grading' ? ' active' : ''}`}
+            onClick={() => setBiasSource('grading')}
+          >
+            Grading
+          </button>
+          <button
+            className={`insights-pill${biasSource === 'comparison' ? ' active' : ''}`}
+            onClick={() => setBiasSource('comparison')}
+          >
+            Head-to-head
+          </button>
+          {biasSource === 'grading' && (
+            <React.Fragment>
+              <span className="insights-pill-gap"></span>
+              <button
+                className={`insights-pill${biasAdjusted ? ' active' : ''}`}
+                title="Bias relative to what's expected for cards of that quality"
+                onClick={() => setBiasAdjusted(true)}
+              >
+                Quality-adjusted
+              </button>
+              <button
+                className={`insights-pill${!biasAdjusted ? ' active' : ''}`}
+                title="Your grade minus the actual grade, unadjusted"
+                onClick={() => setBiasAdjusted(false)}
+              >
+                Raw
+              </button>
+            </React.Fragment>
+          )}
+        </div>
+        {!biasMapHasAnyData ? (
+          <div className="insights-empty">Not enough data for the bias map in this scope.</div>
+        ) : (!activeSourceHasData || !activeGrid) ? (
+          <div className="insights-empty">Not enough {biasSource === 'grading' ? 'grading' : biasSource === 'comparison' ? 'head-to-head' : 'combined'} answers in this scope (need ≥5).</div>
+        ) : (
+          <React.Fragment>
+            {renderBiasGrid(activeGrid)}
+            <div className="insights-footnote">
+              {biasSource === 'combined' ? (
+                '▲ overrate / over-pick · ▼ underrate / under-pick · double = strong · Combined = Grading (quality-adjusted) + Head-to-head, weighted by sample size'
+              ) : (
+                <React.Fragment>
+                  Red = you overrate / over-pick · Blue = you underrate / under-pick · Faded = not statistically distinguishable from zero
+                  {biasSource === 'comparison' && ' · Each card in a pair counts once: +1 picked-though-worse, −1 passed-though-better.'}
+                </React.Fragment>
+              )}
+            </div>
+          </React.Fragment>
+        )}
+      </div>
+
+      <div className="insights-footnote">
+        Bucket findings are adjusted for card quality (an A+ can only be missed downward), so they reflect real bias, not regression to the mean.
+      </div>
+    </div>
+  );
+};
+
 const GIHQuiz = () => {
   // Run migration on first load
   React.useEffect(() => {
@@ -6223,6 +7367,27 @@ const GIHQuiz = () => {
   const [showToast, setShowToast] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
   const [preferSPM, setPreferSPM] = React.useState(false);
+
+  // Insights panel state
+  const [showInsights, setShowInsights] = React.useState(false);
+  const [insightsScope, setInsightsScope] = React.useState(0); // 0 = all time; else 100/50/20
+  const [insightsSet, setInsightsSet] = React.useState('ALL');
+
+  const insightsData = React.useMemo(() => {
+    if (!showInsights) return null;
+    const idx = buildInsightsCardIndex();
+    const g = filterInsightsEntries(loadAllHistory('grading'), insightsSet, insightsScope);
+    const c = filterInsightsEntries(loadAllHistory('comparison'), insightsSet, insightsScope);
+    const gridGradingAdj = buildGradingGrid(g, idx, true);
+    const gridComparison = buildComparisonGrid(c, idx);
+    return {
+      grading: analyzeGrading(g, idx), comparison: analyzeComparison(c, idx), gN: g.length, cN: c.length,
+      gridGradingRaw: buildGradingGrid(g, idx, false),
+      gridGradingAdj,
+      gridComparison,
+      gridCombined: buildCombinedGrid(gridGradingAdj, gridComparison)
+    };
+  }, [showInsights, insightsScope, insightsSet, history]);
 
   // Update score when mode or set changes (history is now unified across all sets)
   React.useEffect(() => {
@@ -7276,11 +8441,28 @@ Play at: ${baseUrl}#${currentSetCode}`,
                 </div>
               )}
             </div>
+            <button className="action-button" onClick={() => {
+              const next = !showInsights;
+              setShowInsights(next);
+              if (next) trackEvent('quiz-insights-open', 'Insights panel opened');
+            }} title="Show analysis of your quiz history">
+              📊 Insights
+            </button>
             <button className="action-button danger" onClick={handleClearHistory} title="Clear all history">
               🗑️ Clear History
             </button>
           </div>
         </div>
+
+        {showInsights && (
+          <InsightsPanel
+            insightsScope={insightsScope}
+            setInsightsScope={setInsightsScope}
+            insightsSet={insightsSet}
+            setInsightsSet={setInsightsSet}
+            insightsData={insightsData}
+          />
+        )}
 
         {history.length === 0 ? (
           <div className="history-empty">
