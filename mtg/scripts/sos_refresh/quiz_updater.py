@@ -21,6 +21,7 @@ from pathlib import Path
 
 from sos_refresh.csv_loader import load_sos_csv
 from sos_refresh import config
+from sos_refresh.fetch_17lands import images_sidecar_filename
 from sos_refresh.underover_updater import increment_version
 
 
@@ -73,15 +74,14 @@ def _load_scryfall_reference(set_code: str) -> dict:
     return ref
 
 
-def _extract_existing_types(html: str, set_code: str) -> dict:
-    """
-    Parse <SET>_CARDS from the HTML to build {name: type} fallback dict.
-    Matches both double-quoted and single-quoted object literals.
-    """
-    types = {}
+def _extract_cards_array_block(html: str, set_code: str) -> str:
+    """Return the raw text between 'const <SET>_CARDS = [' and its matching ']',
+    or '' if the array isn't present in html. Shared by _extract_existing_types
+    and _extract_existing_imgs so both tolerate whatever extra fields (e.g. img)
+    the per-card object literals happen to contain."""
     m = re.search(rf'const {set_code}_CARDS\s*=\s*\[', html)
     if not m:
-        return types
+        return ''
     start = m.end()
     # Find the end of the array (bracket-balanced)
     depth = 1
@@ -93,7 +93,18 @@ def _extract_existing_types(html: str, set_code: str) -> dict:
         elif ch == ']':
             depth -= 1
         pos += 1
-    block = html[start:pos]
+    return html[start:pos]
+
+
+def _extract_existing_types(html: str, set_code: str) -> dict:
+    """
+    Parse <SET>_CARDS from the HTML to build {name: type} fallback dict.
+    Matches both double-quoted and single-quoted object literals.
+    """
+    types = {}
+    block = _extract_cards_array_block(html, set_code)
+    if not block:
+        return types
 
     name_re = re.compile(r'name:\s*"((?:[^"\\]|\\.)*)"')
     type_re = re.compile(r'type:\s*"((?:[^"\\]|\\.)*)"')
@@ -106,6 +117,76 @@ def _extract_existing_types(html: str, set_code: str) -> dict:
             types[nm.group(1)] = tp.group(1) if tp else ''
 
     return types
+
+
+def _extract_existing_imgs(html: str, set_code: str) -> dict:
+    """
+    Parse <SET>_CARDS from the HTML to build {name: uuid} fallback dict, mirroring
+    _extract_existing_types. Only cards with a non-empty existing 'img: "..."'
+    field are included.
+    """
+    imgs = {}
+    block = _extract_cards_array_block(html, set_code)
+    if not block:
+        return imgs
+
+    name_re = re.compile(r'name:\s*"((?:[^"\\]|\\.)*)"')
+    img_re = re.compile(r'img:\s*"((?:[^"\\]|\\.)*)"')
+
+    for obj_match in re.finditer(r'\{[^{}]*\}', block):
+        obj = obj_match.group()
+        nm = name_re.search(obj)
+        im = img_re.search(obj)
+        if nm and im and im.group(1):
+            imgs[nm.group(1)] = im.group(1)
+
+    return imgs
+
+
+def _images_sidecar_path(csv_path: Path) -> Path | None:
+    """Return the expected images-sidecar Path for a card-ratings CSV path
+    (same directory; name transform via fetch_17lands.images_sidecar_filename).
+    Returns None if csv_path's name doesn't match the expected pattern (e.g. a
+    user-downloaded CSV, which never has a sidecar)."""
+    try:
+        return csv_path.with_name(images_sidecar_filename(csv_path.name))
+    except ValueError:
+        return None
+
+
+def _load_images_sidecar(csv_path: Path) -> dict:
+    """Load the {name: uuid} images sidecar for a given CSV path. Returns {}
+    if there is no matching sidecar file (e.g. user-downloaded CSVs) or if it
+    fails to parse."""
+    sidecar_path = _images_sidecar_path(csv_path)
+    if not sidecar_path or not sidecar_path.exists():
+        return {}
+    try:
+        data = json.loads(sidecar_path.read_text(encoding='utf-8'))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _resolve_img(name: str, sidecar: dict, existing_imgs: dict, scryfall: dict) -> str:
+    """
+    Img (Scryfall UUID) fallback chain:
+      1. images sidecar (freshest — from the same 17Lands fetch as this CSV)
+      2. existing quiz HTML img
+      3. scryfall reference card object's id (checks both 'id' and 'scryfall_id'
+         keys, since snapshot shapes vary across sets)
+      4. '' (unresolved; omitted from emitted JS)
+    """
+    if sidecar.get(name):
+        return sidecar[name]
+    if existing_imgs.get(name):
+        return existing_imgs[name]
+    card = scryfall.get(name)
+    if card:
+        img_id = card.get('id') or card.get('scryfall_id')
+        if img_id:
+            return img_id
+    return ''
 
 
 def _resolve_type(name: str, types_map: dict, scryfall: dict, existing: dict) -> str:
@@ -140,6 +221,8 @@ def _format_card_js(card: dict, set_code: str) -> str:
     """
     Format one card dict as a JS object literal matching the existing <SET>_CARDS style:
       {name: "...", color: "...", type: "...", rarity: "...", gihWr: X.X, alsa: X.XX, set: "<SET>"}
+    When card['img'] is a resolved Scryfall UUID, an 'img: "<uuid>", ' field is inserted
+    right before 'set: "..."'; when unresolved (falsy), the field is omitted entirely.
     """
     def js_str(s: str) -> str:
         # Escape backslash and double-quotes; leave apostrophes as-is (JS double-quoted string)
@@ -149,6 +232,7 @@ def _format_card_js(card: dict, set_code: str) -> str:
     color = js_str(card['color'])
     type_ = js_str(card['type'])
     rarity = js_str(card['rarity'])
+    img = card.get('img') or ''
 
     gih_wr = card['gihWr']
     alsa = card['alsa']
@@ -160,9 +244,11 @@ def _format_card_js(card: dict, set_code: str) -> str:
 
     alsa_str = f"{alsa:.2f}"
 
+    img_part = f'img: "{js_str(img)}", ' if img else ''
+
     return (
         f'  {{name: "{name}", color: "{color}", type: "{type_}", '
-        f'rarity: "{rarity}", gihWr: {gih_str}, alsa: {alsa_str}, set: "{set_code}"}}'
+        f'rarity: "{rarity}", gihWr: {gih_str}, alsa: {alsa_str}, {img_part}set: "{set_code}"}}'
     )
 
 
@@ -309,6 +395,10 @@ def update_quiz(
     scryfall = _load_scryfall_reference(set_code)
     existing_types = _extract_existing_types(html, set_code)
 
+    # --- Load img (Scryfall UUID) resolution sources ---
+    images_sidecar = _load_images_sidecar(new_csv_path)
+    existing_imgs = _extract_existing_imgs(html, set_code)
+
     # --- Parse existing <SET>_CARDS for old_count and added/removed diff ---
     old_names: set[str] = set(existing_types.keys())
     cards_old_count = len(old_names)
@@ -350,6 +440,7 @@ def update_quiz(
         rarity = row['rarity']
         gih_wr = round(row['gih_wr'], 1)
         alsa = round(row['alsa'], 2)
+        img = _resolve_img(name, images_sidecar, existing_imgs, scryfall)
         new_cards.append({
             'name': name,
             'color': color,
@@ -357,6 +448,7 @@ def update_quiz(
             'rarity': rarity,
             'gihWr': gih_wr,
             'alsa': alsa,
+            'img': img,
         })
 
     new_cards.sort(key=lambda c: c['name'])

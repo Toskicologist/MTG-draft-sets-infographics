@@ -18,6 +18,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -132,6 +133,49 @@ def _make_filename(prefix: str = "SOS", now: datetime | None = None) -> str:
     return f"{prefix} card-ratings-{now:%Y-%m-%d} T{now:%H%M}.csv"
 
 
+def images_sidecar_filename(csv_filename: str) -> str:
+    """Derive the images-sidecar filename from a card-ratings CSV filename.
+
+    Same basename, "card-ratings" -> "card-images", ".csv" -> ".json", e.g.
+        "SOS card-ratings-2026-07-11 T1200.csv" -> "SOS card-images-2026-07-11 T1200.json"
+
+    Exposed (no leading underscore) because quiz_updater.py also uses this
+    transform to locate the sidecar for an arbitrary CSV path.
+    Raises ValueError if csv_filename doesn't match the expected pattern
+    (e.g. a user-downloaded CSV with a different name).
+    """
+    if not csv_filename.endswith('.csv'):
+        raise ValueError(f"Expected a .csv filename, got: {csv_filename!r}")
+    stem = csv_filename[:-4]
+    if 'card-ratings' not in stem:
+        raise ValueError(f"Expected 'card-ratings' in filename, got: {csv_filename!r}")
+    return stem.replace('card-ratings', 'card-images', 1) + '.json'
+
+
+# Matches the Scryfall image UUID out of a cards.scryfall.io URL, e.g.
+#   https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223
+_IMAGE_UUID_RE = re.compile(
+    r'/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\.jpg'
+)
+
+
+def _extract_images(cards: list[dict]) -> dict[str, str]:
+    """Map card name -> bare Scryfall image UUID, parsed from each card's 'url'.
+    Skips cards with a missing/empty url or a url that doesn't match the expected
+    cards.scryfall.io pattern."""
+    images: dict[str, str] = {}
+    for card in cards:
+        name = card.get("name")
+        url = card.get("url")
+        if not name or not url:
+            continue
+        m = _IMAGE_UUID_RE.search(url)
+        if not m:
+            continue
+        images[name] = m.group(1)
+    return images
+
+
 def fetch_and_save(
     output_dir: Path | None = None,
     start_date: str | None = None,
@@ -167,6 +211,14 @@ def fetch_and_save(
         f.write(csv_text.encode("utf-8"))
 
     print(f"  Saved: {out_path.name}")
+
+    # Sidecar: name -> bare Scryfall image UUID, same timestamp/name base as the CSV.
+    images = _extract_images(cards)
+    images_path = output_dir / images_sidecar_filename(out_path.name)
+    images_json = json.dumps(images, ensure_ascii=False, sort_keys=True)
+    images_path.write_text(images_json, encoding="utf-8")
+    print(f"  Saved images sidecar: {images_path.name} ({len(images)} cards)")
+
     return out_path
 
 
