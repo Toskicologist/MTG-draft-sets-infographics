@@ -12,7 +12,7 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
     """Parse a 17Lands SOS CSV. Returns list of card dicts (sorted by name) with keys:
         name (str), color (str), rarity (str),
         gih_wr (float, percent-stripped, e.g. 54.2),
-        gih_count (int), alsa (float)
+        gih_count (int), alsa (float | None; None when 17Lands exports no ALSA)
     Cards skipped if: name empty, gih_wr invalid/<=0, OR (min_gih > 0 AND gih_count < min_gih).
     Note: min_gih=0 (default) means "include all cards with valid GIH WR" — matches the JS generator.
           min_gih=500 is the threshold analyze_archetypes.py uses.
@@ -92,14 +92,17 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
         if min_gih > 0 and gih_count < min_gih:
             continue
 
-        # Parse ALSA (default to 0 if NaN, matching JS behavior)
+        # Parse ALSA. Blank/NaN becomes None (emitted as JS null) — 17Lands
+        # exports no ALSA for special-slot cards (e.g. MSH Sword of Fire and
+        # Ice, 2026-07-16). The old 0.0 default made such cards look like the
+        # best possible pick in ALSA contexts (lower = better).
         try:
             alsa = float(alsa_str)
         except ValueError:
             alsa = float('nan')
 
         if not (-1 < alsa):  # nan check
-            alsa = 0.0
+            alsa = None
 
         cards.append({
             'name': name,

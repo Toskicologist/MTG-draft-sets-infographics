@@ -242,7 +242,9 @@ def _format_card_js(card: dict, set_code: str) -> str:
     if gih_str.endswith('.0'):
         gih_str = gih_str[:-2]
 
-    alsa_str = f"{alsa:.2f}"
+    # None -> JS null: 17Lands reports no ALSA for special-slot cards; the
+    # quiz pages guard with `c.alsa != null` (a 0.00 would read as best-possible).
+    alsa_str = f"{alsa:.2f}" if alsa is not None else "null"
 
     img_part = f'img: "{js_str(img)}", ' if img else ''
 
@@ -439,7 +441,7 @@ def update_quiz(
         type_ = _resolve_type(name, types_map, scryfall, existing_types)
         rarity = row['rarity']
         gih_wr = round(row['gih_wr'], 1)
-        alsa = round(row['alsa'], 2)
+        alsa = round(row['alsa'], 2) if row['alsa'] is not None else None
         img = _resolve_img(name, images_sidecar, existing_imgs, scryfall)
         new_cards.append({
             'name': name,
