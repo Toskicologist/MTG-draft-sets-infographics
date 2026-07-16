@@ -184,6 +184,10 @@ def _run_updaters(new_csv: Path, human_date: str, quiz_date_str: str) -> int:
         config.SOS_BETA_HTML, getattr(config, 'SOS_INDEX_HTML', None), 'under/over-rated')
     quiz_targets = _existing_targets(
         config.QUIZ_BETA_HTML, getattr(config, 'QUIZ_INDEX_HTML', None), 'quiz')
+    # P1P1 pack quiz shares the card-quiz anchors; refresh it too when present.
+    pack_beta = getattr(config, 'PACK_BETA_HTML', None)
+    if pack_beta is not None and pack_beta.exists():
+        quiz_targets.append(pack_beta)
     total = len(sos_targets) + len(quiz_targets) + 1
     step = 0
     failures: list[str] = []

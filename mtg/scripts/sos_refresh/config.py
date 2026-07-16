@@ -63,6 +63,10 @@ if _IS_CI:
     # If this file is absent in CI, quiz_updater falls back to the types already
     # embedded in the quiz HTML, so ongoing GIH-WR refreshes still work.
     MSH_SCRYFALL_REFERENCE_JSON = _THIS_REPO_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"
+
+    # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
+    # anchors as the card quiz; refreshed as an extra quiz target when present.
+    PACK_BETA_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "pack-beta.html"
 else:
     # ----- LOCAL mode: ClaudeProjects + MTG-GitHub-Pages as separate folders -----
     CLAUDE_PROJECTS_ROOT = Path(r"c:\Users\Johnw\ClaudeProjects")
@@ -99,6 +103,10 @@ else:
 
     # MSH quiz refresh: local Scryfall snapshot supplies card types for the quiz.
     MSH_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"
+
+    # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
+    # anchors as the card quiz; refreshed as an extra quiz target when present.
+    PACK_BETA_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "pack-beta.html"
 
 # Module mode flag — useful for log output and conditional behavior in updaters.
 IS_CI = _IS_CI
