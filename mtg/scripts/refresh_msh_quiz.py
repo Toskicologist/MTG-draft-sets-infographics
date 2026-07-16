@@ -89,6 +89,10 @@ def _quiz_targets() -> list[Path]:
         targets.append(index)
     elif index is not None:
         print(f"  [WARN] {index} not found - refreshing beta only.")
+    # P1P1 pack quiz shares the card-quiz anchors; refresh it too when present.
+    pack_beta = getattr(config, 'PACK_BETA_HTML', None)
+    if pack_beta is not None and pack_beta.exists():
+        targets.append(pack_beta)
     return targets
 
 
