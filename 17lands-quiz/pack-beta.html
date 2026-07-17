@@ -202,6 +202,20 @@
       border: 1px solid #3b82f6;
     }
 
+    .size-slider-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #cfd6ea;
+      white-space: nowrap;
+    }
+
+    .size-slider {
+      width: 90px;
+      accent-color: #3b82f6;
+    }
+
     .new-badge {
       font-size: 9px;
       font-weight: 700;
@@ -237,6 +251,13 @@
       margin: 0 0 16px 0;
     }
 
+    .rank-headline {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
     .percentile-headline {
       font-size: 26px;
       font-weight: 800;
@@ -257,17 +278,9 @@
 
     .pack-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(calc(165px * var(--card-scale, 1)), 1fr));
       gap: 10px;
       margin-bottom: 90px;
-    }
-
-    @media (min-width: 700px) {
-      .pack-grid { grid-template-columns: repeat(4, 1fr); }
-    }
-
-    @media (min-width: 1100px) {
-      .pack-grid { grid-template-columns: repeat(7, 1fr); }
     }
 
     .pack-card {
@@ -446,6 +459,37 @@
       top: 22px;
     }
 
+    .ribbon-taken {
+      background: #6b7280;
+      color: #f3f4f6;
+    }
+
+    .rank-badge {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      z-index: 4;
+      background: rgba(10, 14, 39, 0.85);
+      color: #ffe9a8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 215, 120, 0.4);
+    }
+
+    .pack-card.taken { cursor: default; }
+
+    .pack-card.taken .card-image,
+    .pack-card.taken .card-placeholder {
+      filter: grayscale(0.9) brightness(0.75);
+      opacity: 0.55;
+    }
+
+    .pack-card.taken .card-name {
+      opacity: 0.55;
+    }
+
     .card-name {
       margin-top: 5px;
       font-size: 10.5px;
@@ -549,14 +593,15 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.2.0-beta.1 (2026-07-17T19:00:27Z UTC - Claude Sonnet): Draft-sim mode (toggle in settings row; pack N has N-1 cards pre-taken by simulated opponents by lowest ALSA default or highest GIH WR optional, greyed with a TAKEN ribbon and inert to click/keyboard, scoring/ranking recomputed over remaining pickable cards only, separate pack_quiz_stats_*_sim lifetime bucket); ranked reveal (grid re-sorts by the active metric on lock, competition-ranked "#N" badges on pickable cards, banner headline "You took the Nth best card"); card-size slider (--card-scale CSS var driving a fluid auto-fill grid, replacing the fixed 2/4/7-column breakpoints); hover pop-out card preview (ReactDOM.createPortal to document.body, cursor-following, edge-flipping, CDN-image-only, gated to hover-capable devices).
   v1.1.0-beta.1 (2026-07-17T14:47:57Z UTC - Claude Sonnet): All 12 sets (ECL, TMT, FDN, CUBE, BLB, TLA, OM1, EOE, TDM, FIN, SOS, MSH) with a quiz-style set-symbol selector; big quiz-style reveal overlay (metric value + letter-grade badge, ported .gih-percentage/.grade-badge) covering the top of each card face on lock; Powered Cube special-cased to 15 unique random cards with no rarity collation, pack length now fully dynamic everywhere (percentile divisor, keyboard 1-9 0 Q W E R T, key badges); type-field guards so cards missing `type` (common across several sets, not just CUBE) no longer crash pack generation; added collapsible GIH WR/ALSA data-source explanation and "how packs are generated" sections ported from the card quiz's info-help style.
   v1.0.0-beta.3 (2026-07-16 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-16 T2107.csv (276 cards).
   v1.0.0-beta.2 (2026-07-16 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-16 T2107.csv (327 cards).
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.1.0-beta.1';
-const LAST_UPDATE = '2026-07-17T14:47:57Z UTC';
+const QUIZ_VERSION = '1.2.0-beta.1';
+const LAST_UPDATE = '2026-07-17T19:00:27Z UTC';
 
 const ECL_CARDS = [
   {name: "Abigale, Eloquent First-Year", color: "WB", type: "Legendary Creature — Bird Bard", rarity: "R", gihWr: 58.6, alsa: 1.67, img: "bf708169-a307-494b-b8d8-baae53b2e2f2"},
@@ -4453,25 +4498,76 @@ const generatePack = (cardData, seed, setCode) => {
 };
 
 // ============================================
+// DRAFT-SIM OPPONENTS — simulated opponents pre-take the top N cards by the
+// opponent metric each pack (N = packNumber - 1). ALSA opponents can never
+// take a null-ALSA card (17Lands reports no signal to rank it on), so those
+// cards are excluded from the takeable pool but remain pickable by the
+// player. Returns a Set of taken pack indices.
+// ============================================
+const computeTakenSet = (pack, n, oppMetric) => {
+  const taken = new Set();
+  if (n <= 0) return taken;
+  const higherIsBetter = oppMetric !== 'alsa';
+  const rankable = pack
+    .map((c, i) => ({ i, v: oppMetric === 'alsa' ? c.alsa : c.gihWr }))
+    .filter(x => oppMetric !== 'alsa' || x.v != null);
+  rankable.sort((a, b) => higherIsBetter ? b.v - a.v : a.v - b.v);
+  rankable.slice(0, n).forEach(x => taken.add(x.i));
+  return taken;
+};
+
+// Proper ordinal suffix: 1st, 2nd, 3rd, 4th ... 11th/12th/13th, 21st, etc.
+const ordinal = (n) => {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  const suffixes = { 1: 'st', 2: 'nd', 3: 'rd' };
+  return `${n}${suffixes[n % 10] || 'th'}`;
+};
+
+// ============================================
 // SCORING
 // ============================================
-const computePackResult = (pack, pickIndex, metric) => {
+const computePackResult = (pack, pickIndex, metric, takenSet) => {
+  takenSet = takenSet || new Set();
   const higherIsBetter = metric !== 'alsa';
   const values = pack.map(c => metric === 'alsa' ? c.alsa : c.gihWr);
   const pickVal = values[pickIndex];
-  const bestVal = higherIsBetter ? Math.max(...values) : Math.min(...values);
-  const bestIndex = values.findIndex(v => v === bestVal);
+
+  // Best/percentile/ranking are computed over PICKABLE cards only — taken
+  // cards (draft-sim mode) are excluded so a player is never scored against
+  // a card that was never available to them.
+  const pickable = pack.map((c, i) => i).filter(i => !takenSet.has(i));
+  const pickableValues = pickable.map(i => values[i]);
+  const bestVal = higherIsBetter ? Math.max(...pickableValues) : Math.min(...pickableValues);
+  const bestIndex = pickable.find(i => values[i] === bestVal);
 
   let beaten = 0;
-  pack.forEach((c, i) => {
+  pickable.forEach(i => {
     if (i === pickIndex) return;
     const v = values[i];
     if (pickVal === v) beaten += 0.5;
     else if (higherIsBetter ? pickVal > v : pickVal < v) beaten += 1;
   });
 
-  const percentile = Math.round(100 * beaten / (pack.length - 1));
+  const percentile = Math.round(100 * beaten / (pickable.length - 1));
   const perfect = pickVal === bestVal;
+
+  // Competition ranking (ties share a rank, next rank skips) over pickable
+  // cards only, best-first — powers the ranked-reveal "#N" badges and the
+  // "You took the Nth best card" banner.
+  const sortedPickable = pickable.slice().sort((a, b) => higherIsBetter ? values[b] - values[a] : values[a] - values[b]);
+  const ranks = {};
+  let rank = 0, seen = 0, prevVal = null;
+  sortedPickable.forEach(i => {
+    seen += 1;
+    if (prevVal === null || values[i] !== prevVal) { rank = seen; prevVal = values[i]; }
+    ranks[i] = rank;
+  });
+
+  // Full reveal order: every card in the pack (taken + pickable), sorted
+  // best-first by value (stable sort) so taken cards slot into their real
+  // position in the ranking even though they carry no rank number.
+  const revealOrder = pack.map((c, i) => i).sort((a, b) => higherIsBetter ? values[b] - values[a] : values[a] - values[b]);
 
   return {
     pick: pack[pickIndex],
@@ -4480,7 +4576,10 @@ const computePackResult = (pack, pickIndex, metric) => {
     bestVal,
     bestIndex,
     percentile,
-    perfect
+    perfect,
+    ranks,
+    pickRank: ranks[pickIndex],
+    revealOrder
   };
 };
 
@@ -4570,18 +4669,23 @@ const saveStats = (setCode, metric, stats) => {
   safeStorage.setItem(statsKey(setCode, metric), JSON.stringify(stats));
 };
 
+const DEFAULT_PREFS = { setCode: 'MSH', metric: 'gihWr', draftSim: false, oppMetric: 'alsa', cardScale: 100 };
+
 const loadPrefs = () => {
   try {
     const raw = safeStorage.getItem(PREFS_KEY);
     const prefs = raw ? JSON.parse(raw) : {};
     const setCode = SET_CONFIG[prefs.setCode] ? prefs.setCode : 'MSH';
     const metric = prefs.metric === 'alsa' ? 'alsa' : 'gihWr';
-    return { setCode, metric };
-  } catch (e) { return { setCode: 'MSH', metric: 'gihWr' }; }
+    const draftSim = prefs.draftSim === true;
+    const oppMetric = prefs.oppMetric === 'gihWr' ? 'gihWr' : 'alsa';
+    const cardScale = Number.isFinite(prefs.cardScale) ? Math.min(170, Math.max(60, prefs.cardScale)) : 100;
+    return { setCode, metric, draftSim, oppMetric, cardScale };
+  } catch (e) { return { ...DEFAULT_PREFS }; }
 };
 
-const savePrefs = (setCode, metric) => {
-  safeStorage.setItem(PREFS_KEY, JSON.stringify({ setCode, metric }));
+const savePrefs = (setCode, metric, draftSim, oppMetric, cardScale) => {
+  safeStorage.setItem(PREFS_KEY, JSON.stringify({ setCode, metric, draftSim, oppMetric, cardScale }));
 };
 
 const randomSeed = () => (Math.random() * 2 ** 31) | 0;
@@ -4591,15 +4695,44 @@ const randomSeed = () => (Math.random() * 2 ** 31) | 0;
 // ============================================
 const KEY_LABELS = ['1','2','3','4','5','6','7','8','9','0','Q','W','E','R','T'];
 
-function CardTile({ card, keyLabel, selected, locked, isPick, isBest, grade, metricLabel, metricValue, onClick, onDoubleClick }) {
+// Hover pop-out is gated to hover-capable pointers (mouse/trackpad) so it
+// never fires on touch and interferes with tap-to-select. Checked once at
+// module load - device pointer capability doesn't change mid-session.
+const HOVER_CAPABLE = typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(hover: hover)').matches;
+const PREVIEW_WIDTH = 380;
+const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH * 7 / 5); // matches the 5:7 card aspect ratio
+
+function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, rank, grade, metricLabel, metricValue, onClick, onDoubleClick }) {
   const imgUrl = cdnImageUrl(card);
   const classes = ['pack-card'];
   if (selected) classes.push('selected');
+  if (taken) classes.push('taken');
   if (locked && isBest) classes.push('best');
   if (locked && isPick) classes.push('pick');
 
+  const [hovered, setHovered] = React.useState(false);
+  const [previewPos, setPreviewPos] = React.useState({ x: 0, y: 0 });
+  // Cards without an img (placeholder cards) never get a popout.
+  const canPreview = HOVER_CAPABLE && !!imgUrl;
+
+  const movePreview = (e) => {
+    const flipX = window.innerWidth - e.clientX < 400;
+    const flipY = window.innerHeight - e.clientY < 400;
+    setPreviewPos({
+      x: flipX ? e.clientX - 14 - PREVIEW_WIDTH : e.clientX + 14,
+      y: flipY ? e.clientY - 14 - PREVIEW_HEIGHT : e.clientY + 14
+    });
+  };
+
   return (
-    <div className={classes.join(' ')} onClick={onClick} onDoubleClick={onDoubleClick}>
+    <div
+      className={classes.join(' ')}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      onMouseEnter={canPreview ? (e => { setHovered(true); movePreview(e); }) : undefined}
+      onMouseMove={canPreview ? movePreview : undefined}
+      onMouseLeave={canPreview ? (() => setHovered(false)) : undefined}
+    >
       <div className="card-image-wrap">
         <div className="card-key-badge">{keyLabel}</div>
         {imgUrl ? (
@@ -4610,6 +4743,7 @@ function CardTile({ card, keyLabel, selected, locked, isPick, isBest, grade, met
             <span className="placeholder-name">{card.name}</span>
           </div>
         )}
+        {taken && <div className="ribbon ribbon-taken">TAKEN</div>}
         {locked && isBest && <div className="ribbon ribbon-best">DATA BEST</div>}
         {locked && isPick && <div className="ribbon ribbon-pick">YOUR PICK</div>}
         {locked && (
@@ -4620,8 +4754,19 @@ function CardTile({ card, keyLabel, selected, locked, isPick, isBest, grade, met
             </div>
           </div>
         )}
+        {locked && !taken && rank != null && <div className="rank-badge">#{rank}</div>}
       </div>
       <div className="card-name">{card.name}</div>
+      {hovered && canPreview && ReactDOM.createPortal(
+        <div style={{ position: 'fixed', left: previewPos.x, top: previewPos.y, zIndex: 99999, pointerEvents: 'none' }}>
+          <img
+            src={imgUrl}
+            alt={card.name}
+            style={{ width: `${PREVIEW_WIDTH}px`, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.6)', display: 'block' }}
+          />
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -4657,6 +4802,9 @@ function App() {
   const initialPrefs = React.useMemo(loadPrefs, []);
   const [setCode, setSetCode] = React.useState(initialPrefs.setCode);
   const [metric, setMetric] = React.useState(initialPrefs.metric);
+  const [draftSim, setDraftSim] = React.useState(initialPrefs.draftSim);
+  const [oppMetric, setOppMetric] = React.useState(initialPrefs.oppMetric);
+  const [cardScale, setCardScale] = React.useState(initialPrefs.cardScale);
   const [seed, setSeed] = React.useState(randomSeed);
   const [selectedIndex, setSelectedIndex] = React.useState(null);
   const [locked, setLocked] = React.useState(false);
@@ -4667,7 +4815,10 @@ function App() {
   const [runRareMythicPacks, setRunRareMythicPacks] = React.useState(0);
   const [runRareMythicFound, setRunRareMythicFound] = React.useState(0);
   const [showEndOfRun, setShowEndOfRun] = React.useState(false);
-  const [lifetimeStats, setLifetimeStats] = React.useState(() => loadStats(initialPrefs.setCode, initialPrefs.metric));
+  // Draft-sim runs keep a separate lifetime-stats bucket (statsKey metric arg
+  // gets a `_sim` suffix) so classic and sim averages never mix.
+  const statsMetric = draftSim ? `${metric}_sim` : metric;
+  const [lifetimeStats, setLifetimeStats] = React.useState(() => loadStats(initialPrefs.setCode, initialPrefs.draftSim ? `${initialPrefs.metric}_sim` : initialPrefs.metric));
   const [showMetricInfo, setShowMetricInfo] = React.useState(false);
   const [showPackInfo, setShowPackInfo] = React.useState(false);
 
@@ -4684,7 +4835,13 @@ function App() {
   const gradeStats = React.useMemo(() => computeGradeStats(cardData), [setCode]);
   const pack = React.useMemo(() => generatePack(packData, seed, setCode), [packData, seed, setCode]);
 
-  React.useEffect(() => { savePrefs(setCode, metric); }, [setCode, metric]);
+  // Draft-sim: pack N has N-1 cards pre-taken by simulated opponents (0 on
+  // pack 1 - identical to classic). Capped defensively so at least one card
+  // always stays pickable even on an unusually short pack.
+  const takenN = draftSim ? Math.min(packNum - 1, Math.max(0, pack.length - 1)) : 0;
+  const takenSet = React.useMemo(() => computeTakenSet(pack, takenN, oppMetric), [pack, takenN, oppMetric]);
+
+  React.useEffect(() => { savePrefs(setCode, metric, draftSim, oppMetric, cardScale); }, [setCode, metric, draftSim, oppMetric, cardScale]);
 
   // Preload the current pack's images.
   React.useEffect(() => {
@@ -4723,24 +4880,34 @@ function App() {
   };
 
   // Mid-run set/metric switches are confirm-free but reset the current run;
-  // lifetime stats are namespaced per set+metric so nothing is corrupted.
+  // lifetime stats are namespaced per set+metric(+_sim) so nothing is corrupted.
   const changeSet = (code) => {
     if (code === setCode) return;
     setSetCode(code);
-    setLifetimeStats(loadStats(code, metric));
+    setLifetimeStats(loadStats(code, statsMetric));
     resetRun();
   };
 
   const changeMetric = (m) => {
     if (m === metric) return;
     setMetric(m);
-    setLifetimeStats(loadStats(setCode, m));
+    setLifetimeStats(loadStats(setCode, draftSim ? `${m}_sim` : m));
+    resetRun();
+  };
+
+  // Toggling draft-sim swaps to/from the `_sim` lifetime-stats bucket and
+  // resets the current run (taken-card counts are meaningless mid-run if the
+  // mode just changed).
+  const toggleDraftSim = () => {
+    const next = !draftSim;
+    setDraftSim(next);
+    setLifetimeStats(loadStats(setCode, next ? `${metric}_sim` : metric));
     resetRun();
   };
 
   const lockPick = (idx) => {
-    if (idx == null || locked) return;
-    const res = computePackResult(pack, idx, metric);
+    if (idx == null || locked || takenSet.has(idx)) return;
+    const res = computePackResult(pack, idx, metric, takenSet);
     setResult(res);
     setLocked(true);
     setSelectedIndex(idx);
@@ -4765,31 +4932,32 @@ function App() {
       bestVal: res.bestVal,
       percentile: res.percentile,
       perfect: res.perfect,
-      mode: 'pack'
+      mode: 'pack',
+      ...(draftSim ? { simPicks: takenN, oppMetric } : {})
     });
 
-    const stats = loadStats(setCode, metric);
+    const stats = loadStats(setCode, statsMetric);
     stats.packs += 1;
     stats.percentileSum += res.percentile;
     if (res.perfect) stats.perfects += 1;
-    saveStats(setCode, metric, stats);
+    saveStats(setCode, statsMetric, stats);
     setLifetimeStats(stats);
 
     trackEvent(`pack-answer-${setCode.toLowerCase()}`, `Pack answer (${setCode})`);
   };
 
   const selectCard = (i) => {
-    if (locked) return;
+    if (locked || takenSet.has(i)) return;
     if (selectedIndex === i) { lockPick(i); return; }
     setSelectedIndex(i);
   };
 
   const finishRun = (finalPercentiles) => {
-    const stats = loadStats(setCode, metric);
+    const stats = loadStats(setCode, statsMetric);
     stats.runs += 1;
     const runAvg = finalPercentiles.reduce((a, b) => a + b, 0) / finalPercentiles.length;
     if (runAvg > (stats.bestRunAvg || 0)) stats.bestRunAvg = runAvg;
-    saveStats(setCode, metric, stats);
+    saveStats(setCode, statsMetric, stats);
     setLifetimeStats(stats);
     trackEvent(`pack-run-finish-${setCode.toLowerCase()}`, `Pack run finish (${setCode})`);
   };
@@ -4834,7 +5002,7 @@ function App() {
       }
       if (!locked && KEY_MAP.hasOwnProperty(key)) {
         const idx = KEY_MAP[key];
-        if (idx < pack.length) selectCard(idx);
+        if (idx < pack.length && !takenSet.has(idx)) selectCard(idx);
       }
     };
     window.addEventListener('keydown', handler);
@@ -4888,6 +5056,29 @@ function App() {
               <button className={`pill ${metric === 'gihWr' ? 'active' : ''}`} onClick={() => changeMetric('gihWr')}>GIH WR</button>
               <button className={`pill ${metric === 'alsa' ? 'active' : ''}`} onClick={() => changeMetric('alsa')}>ALSA</button>
             </div>
+            <button
+              className={`pill ${draftSim ? 'active' : ''}`}
+              onClick={toggleDraftSim}
+              title="Each pack has cards already taken by simulated opponents"
+            >Draft sim</button>
+            {draftSim && (
+              <div className="pill-group">
+                <button className={`pill ${oppMetric === 'alsa' ? 'active' : ''}`} onClick={() => setOppMetric('alsa')}>Opp: ALSA</button>
+                <button className={`pill ${oppMetric === 'gihWr' ? 'active' : ''}`} onClick={() => setOppMetric('gihWr')}>Opp: GIH WR</button>
+              </div>
+            )}
+            <label className="size-slider-label">
+              Card size
+              <input
+                type="range"
+                min="60"
+                max="170"
+                step="5"
+                value={cardScale}
+                onChange={e => setCardScale(Number(e.target.value))}
+                className="size-slider"
+              />
+            </label>
             <button className="info-link" onClick={() => setShowMetricInfo(v => !v)}>{showMetricInfo ? 'Hide metric info' : 'What do these mean?'}</button>
             <button className="info-link" onClick={() => setShowPackInfo(v => !v)}>{showPackInfo ? 'Hide' : 'How are packs generated?'}</button>
             <a className="nav-link" href="index.html">Card quiz</a>
@@ -4919,35 +5110,41 @@ function App() {
       </div>
 
       <div className="stats-row">
-        <div className="stat-chip">Pack {packNum}/10</div>
+        <div className="stat-chip">Pack {packNum}/10{draftSim && takenN > 0 ? ` - ${takenN} taken` : ''}</div>
         <div className="stat-chip">Run avg: {runAvgSoFar === null ? '-' : runAvgSoFar + '%'}</div>
         <div className="stat-chip">Lifetime: {lifetimeStats.packs} packs, {lifetimeAvg}% avg, {lifetimeStats.perfects} perfect</div>
       </div>
 
       {locked && result && (
         <div className="reveal-banner">
+          <div className="rank-headline">{result.pickRank === 1 ? 'You took the best card!' : `You took the ${ordinal(result.pickRank)} best card`}</div>
           <div className="percentile-headline">{result.percentile}%{result.perfect ? ' - Perfect pick!' : ''}</div>
           <div className="left-on-table">{leftOnTableText(result, metric, gradeStats)}</div>
           <div className="run-progress-line">Pack {packNum}/10 - run avg {runAvgSoFar === null ? '-' : runAvgSoFar + '%'}</div>
         </div>
       )}
 
-      <div className="pack-grid">
-        {pack.map((card, i) => (
-          <CardTile
-            key={card.name + '-' + i}
-            card={card}
-            keyLabel={KEY_LABELS[i]}
-            selected={selectedIndex === i && !locked}
-            locked={locked}
-            isPick={locked && selectedIndex === i}
-            isBest={locked && result && result.bestIndex === i}
-            grade={getGrade(card.gihWr, gradeStats)}
-            metricValue={metric === 'alsa' ? (card.alsa != null ? card.alsa.toFixed(2) : 'n/a') : card.gihWr.toFixed(1) + '%'}
-            onClick={() => selectCard(i)}
-            onDoubleClick={() => lockPick(i)}
-          />
-        ))}
+      <div className="pack-grid" style={{ '--card-scale': cardScale / 100 }}>
+        {(locked && result ? result.revealOrder : pack.map((c, i) => i)).map(i => {
+          const card = pack[i];
+          return (
+            <CardTile
+              key={card.name + '-' + i}
+              card={card}
+              keyLabel={KEY_LABELS[i]}
+              selected={selectedIndex === i && !locked}
+              locked={locked}
+              taken={takenSet.has(i)}
+              isPick={locked && selectedIndex === i}
+              isBest={locked && result && result.bestIndex === i}
+              rank={locked && result ? result.ranks[i] : null}
+              grade={getGrade(card.gihWr, gradeStats)}
+              metricValue={metric === 'alsa' ? (card.alsa != null ? card.alsa.toFixed(2) : 'n/a') : card.gihWr.toFixed(1) + '%'}
+              onClick={() => selectCard(i)}
+              onDoubleClick={() => lockPick(i)}
+            />
+          );
+        })}
       </div>
 
       <div className="action-bar">
