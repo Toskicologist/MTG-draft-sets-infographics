@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 
-def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
+def load_sos_csv(csv_path: Path, min_gih: int = 0, include_no_data: bool = False) -> list[dict]:
     """Parse a 17Lands SOS CSV. Returns list of card dicts (sorted by name) with keys:
         name (str), color (str), rarity (str),
         gih_wr (float, percent-stripped, e.g. 54.2),
@@ -16,6 +16,13 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
     Cards skipped if: name empty, gih_wr invalid/<=0, OR (min_gih > 0 AND gih_count < min_gih).
     Note: min_gih=0 (default) means "include all cards with valid GIH WR" — matches the JS generator.
           min_gih=500 is the threshold analyze_archetypes.py uses.
+
+    include_no_data=True additionally KEEPS rows whose GIH WR is blank (17Lands
+    suppresses each stat below ~500 games of that stat's sample) with
+    gih_wr=None, plus auxiliary keys on every card:
+        gp_wr (float | None), gp_count (int)  — Games Played win rate, which
+        17Lands often still serves for GIH-suppressed cards (bigger sample).
+    min_gih is not applied to the no-data rows (their point is being kept).
     """
     csv_path = Path(csv_path)
     with open(csv_path, 'rb') as f:
@@ -37,6 +44,8 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
         alsa_idx = headers.index('ALSA')
         gih_wr_idx = headers.index('GIH WR')
         gih_count_idx = headers.index('# GIH')
+        gp_wr_idx = headers.index('GP WR')
+        gp_count_idx = headers.index('# GP')
     except ValueError as e:
         raise ValueError(f"Missing required CSV column: {e}")
 
@@ -66,6 +75,8 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
         alsa_str = fields[alsa_idx].strip() if alsa_idx < len(fields) else ''
         gih_wr_str = fields[gih_wr_idx].strip() if gih_wr_idx < len(fields) else ''
         gih_count_str = fields[gih_count_idx].strip() if gih_count_idx < len(fields) else ''
+        gp_wr_str = fields[gp_wr_idx].strip() if gp_wr_idx < len(fields) else ''
+        gp_count_str = fields[gp_count_idx].strip() if gp_count_idx < len(fields) else ''
 
         # Skip if no name
         if not name:
@@ -78,9 +89,13 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
         except ValueError:
             gih_wr = float('nan')
 
-        # Skip if GIH WR invalid or <= 0
-        if not (-1 < gih_wr) or gih_wr <= 0:  # nan check and <= 0
-            continue
+        # Blank/invalid/<=0 GIH WR: 17Lands suppressed the stat. Normally skip;
+        # with include_no_data keep the card with gih_wr=None.
+        no_data = not (-1 < gih_wr) or gih_wr <= 0  # nan check and <= 0
+        if no_data:
+            if not include_no_data:
+                continue
+            gih_wr = None
 
         # Parse GIH count
         try:
@@ -88,8 +103,9 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
         except ValueError:
             gih_count = 0
 
-        # Skip if min_gih threshold not met
-        if min_gih > 0 and gih_count < min_gih:
+        # Skip if min_gih threshold not met (scored cards only — no-data rows
+        # are kept regardless, that being the point of include_no_data)
+        if not no_data and min_gih > 0 and gih_count < min_gih:
             continue
 
         # Parse ALSA. Blank/NaN becomes None (emitted as JS null) — 17Lands
@@ -104,14 +120,28 @@ def load_sos_csv(csv_path: Path, min_gih: int = 0) -> list[dict]:
         if not (-1 < alsa):  # nan check
             alsa = None
 
-        cards.append({
+        card = {
             'name': name,
             'color': color,
             'rarity': rarity,
             'gih_wr': gih_wr,
             'gih_count': gih_count,
             'alsa': alsa,
-        })
+        }
+        if include_no_data:
+            # Auxiliary GP (Games Played) stats: often still served for
+            # GIH-suppressed cards; pages show them in the low-data note.
+            try:
+                gp_wr = float(gp_wr_str.replace('%', ''))
+            except ValueError:
+                gp_wr = None
+            try:
+                gp_count = int(gp_count_str)
+            except ValueError:
+                gp_count = 0
+            card['gp_wr'] = gp_wr
+            card['gp_count'] = gp_count
+        cards.append(card)
 
     # Sort alphabetically by name
     cards.sort(key=lambda c: c['name'])

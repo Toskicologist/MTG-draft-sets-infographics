@@ -1055,6 +1055,39 @@
             return cards;
         }
 
+        // Card images: cache-first from the embedded scryfall_reference.json sidecar.
+        // A cache miss is resolved via a throttled, cached Scryfall JSON lookup and
+        // never a direct, rate-limited (429s) api.scryfall.com image hotlink.
+        // See docs/SCRYFALL_IMAGE_LOADING.md.
+        const SCRYFALL_IMG_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+        const scryfallImageResolveCache = new Map();
+        let scryfallImageResolveQueue = Promise.resolve();
+
+        function resolveCardImage(cardName, setCode) {
+            const cacheKey = cardName + '|' + (setCode || '');
+            if (scryfallImageResolveCache.has(cacheKey)) return;
+            scryfallImageResolveCache.set(cacheKey, null); // claim immediately so concurrent calls don't double-queue
+            scryfallImageResolveQueue = scryfallImageResolveQueue.then(() => {
+                const primaryUrl = setCode
+                    ? `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=${setCode.toLowerCase()}`
+                    : `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`;
+                return fetch(primaryUrl)
+                    .then(r => (r.ok || !setCode) ? r : fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`))
+                    .then(r => r.ok ? r.json() : null)
+                    .then(card => {
+                        const imgUrl = card && (card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal);
+                        if (imgUrl) {
+                            scryfallImageResolveCache.set(cacheKey, imgUrl);
+                            document.querySelectorAll('img').forEach(img => {
+                                if (img.alt === cardName && img.src === SCRYFALL_IMG_PLACEHOLDER) img.src = imgUrl;
+                            });
+                        }
+                    })
+                    .catch(() => {})
+                    .then(() => new Promise(resolve => setTimeout(resolve, 100))); // ~10 req/sec pacing, matches SCRYFALL_DELAY convention used elsewhere in this codebase
+            });
+        }
+
         function getCardImage(cardName) {
             // Check Scryfall cache first
             const cachedCard = scryfallCache.cards?.find(c =>
@@ -1065,13 +1098,14 @@
                 return cachedCard.image_url;
             }
 
-            // Fallback: Check if this is a special guest card and fetch from SPG set
-            if (specialGuestCards.has(cardName)) {
-                return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=spg&format=image`;
-            }
-
-            // Regular ECL cards not in cache
-            return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=ecl&format=image`;
+            // Fallback: Check if this is a special guest card and fetch from SPG set;
+            // regular ECL cards not in cache default to the ecl set.
+            const setCode = specialGuestCards.has(cardName) ? 'spg' : 'ecl';
+            const cacheKey = cardName + '|' + setCode;
+            const resolved = scryfallImageResolveCache.get(cacheKey);
+            if (resolved) return resolved;
+            resolveCardImage(cardName, setCode);
+            return SCRYFALL_IMG_PLACEHOLDER;
         }
 
         function renderCard(card, isUnderrated) {
