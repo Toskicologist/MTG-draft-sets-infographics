@@ -217,12 +217,16 @@ def _resolve_type(name: str, types_map: dict, scryfall: dict, existing: dict) ->
 # JS array formatting
 # ---------------------------------------------------------------------------
 
-def _format_card_js(card: dict, set_code: str) -> str:
+def _format_card_js(card: dict, set_code: str, extended: bool = False) -> str:
     """
     Format one card dict as a JS object literal matching the existing <SET>_CARDS style:
       {name: "...", color: "...", type: "...", rarity: "...", gihWr: X.X, alsa: X.XX, set: "<SET>"}
     When card['img'] is a resolved Scryfall UUID, an 'img: "<uuid>", ' field is inserted
     right before 'set: "..."'; when unresolved (falsy), the field is omitted entirely.
+
+    extended=True (pack page): gihWr may be None -> emitted as null; adds
+    'gihN: <int>' after alsa on every card, and 'gpWr'/'gpN' auxiliary stats on
+    GIH-suppressed cards where 17Lands still serves a Games Played win rate.
     """
     def js_str(s: str) -> str:
         # Escape backslash and double-quotes; leave apostrophes as-is (JS double-quoted string)
@@ -238,28 +242,41 @@ def _format_card_js(card: dict, set_code: str) -> str:
     alsa = card['alsa']
 
     # Format matching existing: e.g. 51.4, 5.71; strip a trailing ".0" like the file does.
-    gih_str = f"{gih_wr:.1f}"
-    if gih_str.endswith('.0'):
-        gih_str = gih_str[:-2]
+    # None -> null (extended mode only; classic targets never receive None here).
+    if gih_wr is None:
+        gih_str = "null"
+    else:
+        gih_str = f"{gih_wr:.1f}"
+        if gih_str.endswith('.0'):
+            gih_str = gih_str[:-2]
 
     # None -> JS null: 17Lands reports no ALSA for special-slot cards; the
     # quiz pages guard with `c.alsa != null` (a 0.00 would read as best-possible).
     alsa_str = f"{alsa:.2f}" if alsa is not None else "null"
 
+    extra = ''
+    if extended:
+        extra = f'gihN: {int(card.get("gihN") or 0)}, '
+        if gih_wr is None and card.get('gpWr') is not None:
+            gp_str = f"{card['gpWr']:.1f}"
+            if gp_str.endswith('.0'):
+                gp_str = gp_str[:-2]
+            extra += f'gpWr: {gp_str}, gpN: {int(card.get("gpN") or 0)}, '
+
     img_part = f'img: "{js_str(img)}", ' if img else ''
 
     return (
         f'  {{name: "{name}", color: "{color}", type: "{type_}", '
-        f'rarity: "{rarity}", gihWr: {gih_str}, alsa: {alsa_str}, {img_part}set: "{set_code}"}}'
+        f'rarity: "{rarity}", gihWr: {gih_str}, alsa: {alsa_str}, {extra}{img_part}set: "{set_code}"}}'
     )
 
 
-def _build_cards_block(cards: list[dict], set_code: str) -> str:
+def _build_cards_block(cards: list[dict], set_code: str, extended: bool = False) -> str:
     """Build the full const <SET>_CARDS = [...]; block."""
     lines = [f'const {set_code}_CARDS = [']
     for i, card in enumerate(cards):
         suffix = ',' if i < len(cards) - 1 else ''
-        lines.append(_format_card_js(card, set_code) + suffix)
+        lines.append(_format_card_js(card, set_code, extended) + suffix)
     lines.append('];')
     return '\n'.join(lines)
 
@@ -378,6 +395,7 @@ def update_quiz(
     new_data_date: str,
     dry_run: bool = False,
     set_code: str = 'SOS',
+    include_no_data: bool = False,
 ) -> dict:
     """
     Regenerate <SET>_CARDS and update <SET> metadata in the quiz HTML.
@@ -423,14 +441,16 @@ def update_quiz(
     old_quiz_version = ver_m.group(1)
 
     # --- Load CSV ---
-    csv_cards = load_sos_csv(new_csv_path, min_gih=0)
+    csv_cards = load_sos_csv(new_csv_path, min_gih=0, include_no_data=include_no_data)
     # Guard: 17Lands sometimes returns all-zero stats after a format rotates out
     # (SOS did this 2026-07-07: 340 rows, every GIH WR blank -> 0 valid cards),
     # which would silently wipe the embedded card arrays. A real draft set never
-    # has fewer than ~250 rated cards once data exists.
-    if len(csv_cards) < 150:
+    # has fewer than ~250 rated cards once data exists. Counts SCORED cards only
+    # so include_no_data can't mask an all-blank export.
+    scored_count = sum(1 for c in csv_cards if c['gih_wr'] is not None)
+    if scored_count < 150:
         raise ValueError(
-            f"Only {len(csv_cards)} valid cards parsed from {new_csv_path.name} — "
+            f"Only {scored_count} valid cards parsed from {new_csv_path.name} — "
             f"refusing to rewrite card data (17Lands likely exporting empty stats)")
 
     # --- Build card dicts with resolved types ---
@@ -440,10 +460,10 @@ def update_quiz(
         color = row['color']
         type_ = _resolve_type(name, types_map, scryfall, existing_types)
         rarity = row['rarity']
-        gih_wr = round(row['gih_wr'], 1)
+        gih_wr = round(row['gih_wr'], 1) if row['gih_wr'] is not None else None
         alsa = round(row['alsa'], 2) if row['alsa'] is not None else None
         img = _resolve_img(name, images_sidecar, existing_imgs, scryfall)
-        new_cards.append({
+        card = {
             'name': name,
             'color': color,
             'type': type_,
@@ -451,7 +471,12 @@ def update_quiz(
             'gihWr': gih_wr,
             'alsa': alsa,
             'img': img,
-        })
+        }
+        if include_no_data:
+            card['gihN'] = row.get('gih_count', 0)
+            card['gpWr'] = round(row['gp_wr'], 1) if row.get('gp_wr') is not None else None
+            card['gpN'] = row.get('gp_count', 0)
+        new_cards.append(card)
 
     new_cards.sort(key=lambda c: c['name'])
 
@@ -491,7 +516,7 @@ def update_quiz(
         return result
 
     # --- Build new <SET>_CARDS JS block ---
-    new_block = _build_cards_block(new_cards, set_code)
+    new_block = _build_cards_block(new_cards, set_code, extended=include_no_data)
 
     # --- Splice <SET>_CARDS into HTML ---
     span_start, span_end = _find_cards_span(html, set_code)

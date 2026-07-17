@@ -703,22 +703,47 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   );
 };
 
+// Card preview images are resolved via the Scryfall JSON API (cached by
+// name+set) and rendered from the CDN url in the response - see
+// docs/SCRYFALL_IMAGE_LOADING.md for why a direct API image-redirect hotlink
+// is never used here.
+const cardLinkImageCache = new Map();
+
 const CardLink = ({ cardName, setCode, fg }) => {
   const [hovered, setHovered] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [imgSrc, setImgSrc] = useState(null);
   const frontName = cardName.split(' // ')[0];
-  const imgSrc = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}&set=${setCode}&format=image&version=normal`;
   const scryfallUrl = `https://scryfall.com/search?q=set%3A${setCode}+%22${encodeURIComponent(frontName)}%22`;
+
+  const loadImage = () => {
+    const cacheKey = `${frontName}|${setCode}`;
+    if (cardLinkImageCache.has(cacheKey)) {
+      setImgSrc(cardLinkImageCache.get(cacheKey));
+      return;
+    }
+    fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}&set=${setCode}`)
+      .then(r => r.ok ? r.json() : fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}`).then(r2 => r2.ok ? r2.json() : null))
+      .then(card => {
+        const url = card && (card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal);
+        if (url) {
+          cardLinkImageCache.set(cacheKey, url);
+          setImgSrc(url);
+        }
+      })
+      .catch(() => {});
+  };
+
   return (
     <span style={{ display: 'inline' }}>
       <a href={scryfallUrl} target="_blank" rel="noopener noreferrer"
          style={{ color: fg, textDecoration: 'underline' }}
-         onMouseEnter={e => { setHovered(true); setPos({ x: e.clientX, y: e.clientY }); }}
+         onMouseEnter={e => { setHovered(true); setPos({ x: e.clientX, y: e.clientY }); loadImage(); }}
          onMouseMove={e => setPos({ x: e.clientX, y: e.clientY })}
          onMouseLeave={() => setHovered(false)}>
         {cardName}
       </a>
-      {hovered && ReactDOM.createPortal(
+      {hovered && imgSrc && ReactDOM.createPortal(
         <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 99999, pointerEvents: 'none' }}>
           <img src={imgSrc} alt={cardName} style={{ width: '150px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', display: 'block' }} />
         </span>,

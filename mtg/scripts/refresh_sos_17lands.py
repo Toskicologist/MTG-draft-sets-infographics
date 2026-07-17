@@ -220,6 +220,9 @@ def _run_updaters(new_csv: Path, human_date: str, quiz_date_str: str) -> int:
                 new_csv_path=new_csv,
                 new_data_date=quiz_date_str,
                 dry_run=False,
+                # Pack page embeds GIH-suppressed cards too (gihWr: null +
+                # gihN/gpWr aux); card-quiz files keep scored cards only.
+                include_no_data=(pack_beta is not None and target == pack_beta),
             )
             print(
                 f"[{step}/{total}] {target.name:22s} "
