@@ -215,6 +215,7 @@ def main(argv: list[str] | None = None) -> int:
     # Apply to each target independently; a failure in one file must not block
     # the other (each file's version/changelog is self-contained).
     failures = 0
+    pack_beta = getattr(config, 'PACK_BETA_HTML', None)
     for target in targets:
         try:
             result = quiz_updater.update_quiz(
@@ -223,6 +224,9 @@ def main(argv: list[str] | None = None) -> int:
                 new_data_date=data_date,
                 dry_run=False,
                 set_code=SET_CODE,
+                # Pack page embeds GIH-suppressed cards too (gihWr: null +
+                # gihN/gpWr aux); card-quiz files keep scored cards only.
+                include_no_data=(pack_beta is not None and target == pack_beta),
             )
         except Exception as exc:
             print(f"[FAILED]  {target.name}: {exc}", file=sys.stderr)
