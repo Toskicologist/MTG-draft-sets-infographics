@@ -478,6 +478,34 @@
       border: 1px solid rgba(255, 215, 120, 0.4);
     }
 
+    /* ============== LOW-DATA / SUPPRESSED-STAT WARNING (Feature A v1.3.0) ============== */
+    .low-data-badge {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      z-index: 4;
+      background: rgba(120, 40, 0, 0.85);
+      color: #ffd166;
+      font-size: 11px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 190, 90, 0.5);
+      cursor: help;
+    }
+
+    .low-data-note {
+      font-size: 8px;
+      line-height: 1.25;
+      color: #ffd166;
+      text-align: center;
+      max-width: 100%;
+    }
+
     .pack-card.taken { cursor: default; }
 
     .pack-card.taken .card-image,
@@ -595,6 +623,7 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.3.0-beta.1 (2026-07-18T00:46:42Z UTC - Claude Sonnet): Below-threshold cards (17Lands-suppressed gihWr/alsa now score as worst-case sentinels via a single metricValue() helper shared by scoring/ranking/reveal-sort/draft-sim opponents; display always shows "n/a" + an always-on warning-chip corner badge + a reveal-overlay significance-threshold note with GP WR fallback stat where present; computeGradeStats now filters to scored cards only; removed the v1.2 ALSA-mode pack filter so null-alsa/null-gihWr cards participate in pack generation in both metrics); bonus-sheet slots (BONUS_CARDS spliced card-name membership + BONUS_SHEETS config adds dedicated generator slots for MSH Marvel Source Material, SOS Mystical Archive (guaranteed, rarity-weighted) + Special Guests, ECL/FDN/BLB/EOE/TDM Special Guests, TLA Source Material, FIN Through the Ages; sheet cards removed from normal rarity pools; OM1/TMT excluded - unmatchable/absent 17Lands data).
   v1.2.0-beta.5 (2026-07-18 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-17 T2010.csv (334 cards).
   v1.2.0-beta.4 (2026-07-18 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-17 T2010.csv (341 cards).
   v1.2.0-beta.3 (2026-07-17 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-17 T2010.csv (276 cards).
@@ -606,8 +635,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.2.0-beta.5';
-const LAST_UPDATE = '2026-07-17 UTC';
+const QUIZ_VERSION = '1.3.0-beta.1';
+const LAST_UPDATE = '2026-07-18T00:46:42Z UTC';
 
 const ECL_CARDS = [
   {name: "Abigale, Eloquent First-Year", color: "WB", type: "Legendary Creature — Bird Bard", rarity: "R", gihWr: 58.6, alsa: 1.67, img: "bf708169-a307-494b-b8d8-baae53b2e2f2"},
@@ -4294,6 +4323,367 @@ const SET_ICONS = {
   SOS: {viewBox: '0 0 1108 881', path: 'M520.5 36.6c-1.6.2-7.9.9-14 1.5-18.8 1.8-38.9 5.6-68 12.8-41.2 10.2-90.2 20.2-118.8 24.2-4.8.7-8.5 1.4-8.3 1.6.2.3 7.5 1.1 16.3 1.9 32.8 2.9 68.1 8.1 99 14.5l15.1 3.2 6.7 9.8c25.6 37.9 68.9 90.4 98.8 119.8l6.5 6.3 13-13.3c31.4-32.4 61.4-68.8 87.6-106.4 5.4-7.7 10.4-14.6 11-15.3 3-3.2 71.3-14.6 106.1-17.7 26.8-2.4 26.9-2.5 14-4.7-47.1-7.9-80.5-14.8-118-24.2-46.1-11.5-63.5-13.8-109-14.1-19.2-.2-36.3-.1-38 .1 M314 123.7c-69.5 2.9-137.8 18.5-201.5 46-12.4 5.4-38.1 17.7-39.3 18.8-.2.2 3.5 5 8.3 10.7 15.4 18.2 29.6 39.3 38.6 57.1l5 9.9 3.2-2.5c21.8-16.5 36.8-25.7 60.2-37.2C227.7 207.4 253 201 288.8 201c40 0 66.7 9.8 100.2 36.7 53.1 42.6 114.7 133.9 156.3 231.6l8.4 19.8 2.8-6.8C600 377.1 662.3 282.9 718.3 237.9c33.5-27 60.3-36.9 99.7-36.9 25.8 0 48.5 4 71.5 12.5 25.1 9.2 62.9 30 84.7 46.6 4.3 3.4 8.1 5.9 8.2 5.7.2-.1 2.8-5.3 5.9-11.3 9.3-18.2 23.5-38.9 38.9-56.8 3.8-4.4 6.8-8.3 6.8-8.8 0-1.7-33.8-17.5-56.2-26.3C887 126.9 786.6 115 693.5 129l-8 1.2-11.5 14.7c-28.3 36-66.3 81-100.7 119.3l-19.4 21.7-5.8-6.2c-29-31.1-72.3-81.8-107-125.2-13.2-16.5-20-24.2-21.8-24.7-4.8-1.3-39.9-4.8-57.8-5.8-16.7-.9-31.7-1-47.5-.3 M297.2 251.2c-22.8 55.2-26.3 109-9.9 151.5 11.7 30.1 29.1 53.8 49.8 67.6 16.2 10.7 29.8 15.4 48 16.4 37.4 2.1 73.9-17.4 96.9-51.9l6-8.9-3.2-5.7c-32.5-58.2-58.1-94.5-88.3-124.8-33.1-33.2-61.8-50.5-89.6-53.9l-5.4-.6zM794 242.6c-25.9 5.5-49 19.8-78.4 48.4-28 27.2-49.2 54.9-74.3 97-11.2 18.8-21.3 36.7-21.3 37.9 0 2.6 13.3 20.3 21 28.1 14.9 14.8 33.2 25.3 52.9 30.3 7.1 1.8 11.4 2.1 24.1 2.1 13.9-.1 16.4-.3 24.4-2.8 10.8-3.3 23.8-9.8 32.7-16.5 23.7-17.9 44.4-52.9 52-87.9 2.6-12.4 3.7-41.3 2-56.3-2.7-23.3-9.4-48.7-18.8-71.2-5.1-12.1-4.3-11.7-16.3-9.1 M251 244.5c-35.5 7.8-70.9 27.3-101.3 55.7l-7.8 7.3 2.6 7.5c19.7 56.8 32.3 135.4 33.8 210.1l.2 10.6 45.5-41.9c25-23.1 45.9-42.3 46.4-42.8s-.3-2.9-1.9-5.7c-8.4-14.9-16.8-39.5-21.2-62.2-2.5-12.6-2.7-15.5-2.7-40.1 0-23.1.2-28.2 2.2-39.4 2.8-16.3 7.3-33.9 12.3-48.7 2.1-6.4 3.9-11.9 3.9-12.3 0-.8.3-.8-12 1.9 M844.5 243.8c.3.9 2.4 6.9 4.5 13.2 21.3 63.8 19.2 126.7-6.1 179.9-3.2 6.8-5.9 12.9-5.8 13.5 0 .6 20.6 20 45.7 43l45.7 42 1.2-27c3-68.9 12.8-128.4 30.8-185.8l4.6-14.9-5.3-5.4c-2.9-3-9.8-9.1-15.3-13.6-26.6-21.5-56.1-36.7-83.8-43.1-16.1-3.8-17-3.9-16.2-1.8 M500.8 466.2c-2.6 3.5-7.9 9.8-11.9 14.1l-7.2 7.9 1.2 20.6c5.9 102.4 28.9 204.1 67.4 298l3.4 8.3 3.2-7.7c10.1-24.1 24.6-65.8 33-94.9 19.3-67 31.3-139 34.9-209l.8-15-6.5-7.3c-3.6-4.1-8.8-10.2-11.4-13.5-2.7-3.4-5.2-6.6-5.7-7.1-1.5-1.5-25.7 48.9-40.7 84.4-3.6 8.5-6.9 15.9-7.3 16.3-.4.5-1.8-1.8-3-5-9-22.4-43.5-96.3-45-96.3-.3 0-2.7 2.8-5.2 6.2 M267.8 487.2c-16.5 16.4-27.3 28.7-39.8 45.3-7.3 9.8-20 28.4-20 29.4 0 .3 6 2.1 13.3 4 57.3 14.5 123.6 44.3 177.5 79.8 25.9 17.1 56.7 41.2 78.5 61.4 6.1 5.7 10.7 9.4 10.7 8.5s-2-8.8-4.5-17.7c-15.3-54-29-127.5-33.1-176.9-.3-4.7-.8-8.8-1.1-9.2-.2-.4-2.7.4-5.6 1.9-7.3 3.6-20.6 8-30 9.8-32.9 6.2-65.2-.3-93.1-18.9-9.2-6.1-23.9-19.5-30.6-28-2.5-3.1-4.8-5.6-5.2-5.6-.3 0-8 7.3-17 16.2 M811.1 483.1c-13.6 14.3-25.1 23.1-38.6 29.8-18.8 9.3-33.5 12.6-55.5 12.5-19.5 0-35.5-3.4-51.7-10.9-4-1.8-7.3-3.2-7.3-3.1 0 2.4-3.7 34.5-5.6 48.6-6.1 45.9-17.7 101.4-30.4 145-1.6 5.8-3 10.9-3 11.3 0 .5 5.1-3.8 11.3-9.4 60.9-55.5 127.5-96.2 203.5-124.5 15.7-5.9 44.8-15 57.5-17.9 4.2-1 7.7-2.4 7.7-3 0-2.6-20.7-31.2-33.9-47-9-10.6-29.3-31.7-37.1-38.5l-5.5-4.7z'}
 };
 
+// GENERATED by tmp/build-bonus-cards.py from Scryfall sheet lists x embedded arrays.
+// Only names present in the embedded card data are listed.
+const BONUS_CARDS = {
+ "MSH": {
+  "mar": {
+   "label": "Marvel Source Material",
+   "names": [
+    "Anthem of Champions",
+    "Archangel of Thune",
+    "Aurelia, the Warleader",
+    "Beast Within",
+    "Bedlam",
+    "Black Panther, Wakandan King",
+    "Captain America, First Avenger",
+    "Chaos Warp",
+    "Concerted Effort",
+    "Counterspell",
+    "Cyberdrive Awakener",
+    "Dauthi Voidwalker",
+    "Deadly Dispute",
+    "Defense of the Heart",
+    "Dig Through Time",
+    "Don't Move",
+    "Ephemerate",
+    "Escape to the Wilds",
+    "Extinction Event",
+    "Fiery Emancipation",
+    "Fight to the Death",
+    "Final Act",
+    "Final Showdown",
+    "Force of Vigor",
+    "Fury of the Horde",
+    "Harbinger of the Seas",
+    "Heroic Intervention",
+    "Horn of Greed",
+    "Iron Man, Titan of Innovation",
+    "Light of Promise",
+    "Lord of Atlantis",
+    "Massacre Girl",
+    "Mechanized Production",
+    "Monstrous Rage",
+    "Narset's Reversal",
+    "No Mercy",
+    "Path to Exile",
+    "Primal Vigor",
+    "Privileged Position",
+    "Rancor",
+    "Ravenous Tyrannosaurus",
+    "Reconnaissance Mission",
+    "Return to the Ranks",
+    "Righteous Fury",
+    "Roaming Throne",
+    "Seize the Day",
+    "Show and Tell",
+    "Simulacrum Synthesizer",
+    "Steelshaper's Gift",
+    "Steely Resolve",
+    "Storm, Force of Nature",
+    "Sundering Growth",
+    "Sword of Fire and Ice",
+    "Teferi's Protection",
+    "Three Steps Ahead",
+    "Unnatural Growth",
+    "Warleader's Call",
+    "Wolverine, Best There Is"
+   ]
+  }
+ },
+ "OM1": {
+  "mar": {
+   "label": "Marvel Source Material",
+   "names": [
+    "Shock"
+   ]
+  }
+ },
+ "SOS": {
+  "soa": {
+   "label": "Mystical Archive",
+   "names": [
+    "Abrade",
+    "Ad Nauseam",
+    "Akroma's Will",
+    "Angel's Grace",
+    "Armageddon",
+    "Awaken the Woods",
+    "Berserk",
+    "Big Score",
+    "Bitter Triumph",
+    "Brain Freeze",
+    "Bring to Light",
+    "Brotherhood's End",
+    "Bulk Up",
+    "Burst Lightning",
+    "Crackle with Power",
+    "Crop Rotation",
+    "Culling Ritual",
+    "Culling the Weak",
+    "Cyclonic Rift",
+    "Daze",
+    "Deduce",
+    "Deflecting Palm",
+    "Disdainful Stroke",
+    "Dismember",
+    "Duty Beyond Death",
+    "Empty the Warrens",
+    "Expressive Iteration",
+    "Feed the Swarm",
+    "Flusterstorm",
+    "Force of Will",
+    "Fracture",
+    "Giant Growth",
+    "Glimpse of Nature",
+    "Helping Hand",
+    "Hop to It",
+    "Jeska's Will",
+    "Knockout Maneuver",
+    "Living End",
+    "Locust Spray",
+    "Monstrous Rage",
+    "Pick Your Poison",
+    "Pongify",
+    "Preordain",
+    "Prismatic Ending",
+    "Pyretic Ritual",
+    "Repel Calamity",
+    "Reprieve",
+    "Requisition Raid",
+    "Return the Favor",
+    "Return to the Ranks",
+    "Royal Treatment",
+    "Shamanic Revelation",
+    "Shared Roots",
+    "Sheoldred's Edict",
+    "Sleight of Hand",
+    "Smallpox",
+    "Spell Pierce",
+    "Stargaze",
+    "Stock Up",
+    "Subterranean Tremors",
+    "Triumph of the Hordes",
+    "Vampiric Tutor",
+    "Veil of Summer",
+    "Winds of Abandon",
+    "Zombify"
+   ]
+  },
+  "spg": {
+   "label": "Special Guests",
+   "names": [
+    "Adrix and Nev, Twincasters",
+    "Archaeomancer",
+    "Archmage Emeritus",
+    "Codie, Vociferous Codex",
+    "Dualcaster Mage",
+    "Grim Haruspex",
+    "Library of Alexandria",
+    "Magus of the Library",
+    "Murmuring Mystic",
+    "Sylvan Library"
+   ]
+  }
+ },
+ "ECL": {
+  "spg": {
+   "label": "Special Guests",
+   "names": [
+    "Bitterblossom",
+    "Devoted Druid",
+    "Door of Destinies",
+    "Goblin Chieftain",
+    "Goblin Sharpshooter",
+    "Leaf-Crowned Visionary",
+    "Regal Force",
+    "Risen Reef"
+   ]
+  }
+ },
+ "FDN": {
+  "spg": {
+   "label": "Special Guests",
+   "names": [
+    "Akroma's Memorial",
+    "Bloom Tender",
+    "Condemn",
+    "Embercleave",
+    "Fiend Artisan",
+    "Goblin Bushwhacker",
+    "Paradise Druid",
+    "Sphinx's Tutelage",
+    "Temporal Manipulation"
+   ]
+  }
+ },
+ "BLB": {
+  "spg": {
+   "label": "Special Guests",
+   "names": [
+    "Ledger Shredder",
+    "Sword of Fire and Ice",
+    "Swords to Plowshares",
+    "Toski, Bearer of Secrets"
+   ]
+  }
+ },
+ "TLA": {
+  "tle": {
+   "label": "Source Material",
+   "names": [
+    "Agent of Treachery",
+    "Black Sun's Zenith",
+    "Blasphemous Act",
+    "Bribery",
+    "Cityscape Leveler",
+    "Clone",
+    "Fabled Passage",
+    "Koma, Cosmos Serpent",
+    "Lightning Bolt",
+    "Lita, Mechanical Engineer",
+    "Mirrorwing Dragon",
+    "Noxious Gearhulk",
+    "Rhys the Redeemed",
+    "The Great Henge",
+    "Treetop Village",
+    "Volcanic Torrent"
+   ]
+  }
+ },
+ "EOE": {
+  "eos": {
+   "label": "Stellar Sights",
+   "names": [
+    "Ancient Tomb",
+    "Blast Zone",
+    "Blinkmoth Nexus",
+    "Bonders' Enclave",
+    "Cascading Cataracts",
+    "Cathedral of War",
+    "Celestial Colonnade",
+    "Creeping Tar Pit",
+    "Crystal Quarry",
+    "Endless Sands",
+    "Gemstone Caverns",
+    "Grove of the Burnwillows",
+    "High Market",
+    "Hissing Quagmire",
+    "Inkmoth Nexus",
+    "Inventors' Fair",
+    "Lavaclaw Reaches",
+    "Lotus Field",
+    "Lumbering Falls",
+    "Mana Confluence",
+    "Meteor Crater",
+    "Mutavault",
+    "Mystifying Maze",
+    "Needle Spires",
+    "Nesting Grounds",
+    "Power Depot",
+    "Raging Ravine",
+    "Reflecting Pool",
+    "Shambling Vent",
+    "Stirring Wildwood",
+    "Strip Mine",
+    "Sunken Citadel",
+    "Swarmyard",
+    "Terrain Generator",
+    "Wandering Fumarole"
+   ]
+  },
+  "spg": {
+   "label": "Special Guests",
+   "names": [
+    "Green Sun's Zenith",
+    "Nexus of Fate"
+   ]
+  }
+ },
+ "TDM": {
+  "spg": {
+   "label": "Special Guests",
+   "names": [
+    "Arid Mesa",
+    "Eerie Ultimatum",
+    "Genesis Ultimatum",
+    "Inspired Ultimatum",
+    "Marsh Flats",
+    "Misty Rainforest",
+    "Ruinous Ultimatum",
+    "Scalding Tarn",
+    "Verdant Catacombs"
+   ]
+  }
+ },
+ "FIN": {
+  "fca": {
+   "label": "Through the Ages",
+   "names": [
+    "Adeline, Resplendent Cathar",
+    "Akroma's Will",
+    "Ancient Copper Dragon",
+    "Atraxa, Grand Unifier",
+    "Bolas's Citadel",
+    "Brainstorm",
+    "Bruse Tarl, Boorish Herder",
+    "Captain Lannery Storm",
+    "Chromatic Lantern",
+    "Counterspell",
+    "Cryptic Command",
+    "Danitha Capashen, Paragon",
+    "Dark Ritual",
+    "Deadly Dispute",
+    "Diabolic Intent",
+    "Dovin's Veto",
+    "Farseek",
+    "Fatal Push",
+    "Fynn, the Fangbearer",
+    "Gix, Yawgmoth Praetor",
+    "Godo, Bandit Warlord",
+    "Ishai, Ojutai Dragonspeaker",
+    "Jodah, the Unifier",
+    "K'rrik, Son of Yawgmoth",
+    "Kenrith, the Returned King",
+    "Kinnan, Bonder Prodigy",
+    "Kraum, Ludevic's Opus",
+    "Laboratory Maniac",
+    "Light Up the Stage",
+    "Lightning Bolt",
+    "Loran of the Third Path",
+    "Mangara, the Diplomat",
+    "Mizzix's Mastery",
+    "Muldrotha, the Gravetide",
+    "Najeela, the Blade-Blossom",
+    "Nature's Claim",
+    "Primeval Titan",
+    "Purphoros, God of the Forge",
+    "Ragavan, Nimble Pilferer",
+    "Ranger-Captain of Eos",
+    "Rhystic Study",
+    "Smuggler's Copter",
+    "Sram, Senior Edificer",
+    "Strixhaven Stadium",
+    "Stroke of Midnight",
+    "Syr Konrad, the Grim",
+    "Teferi, Mage of Zhalfir",
+    "Thrasios, Triton Hero",
+    "Traxos, Scourge of Kroog",
+    "Tymna the Weaver",
+    "Urza, Lord High Artificer",
+    "Varragoth, Bloodsky Sire",
+    "Venser, Shaper Savant",
+    "Vial Smasher the Fierce",
+    "Wall of Omens",
+    "Winota, Joiner of Forces",
+    "Yawgmoth, Thran Physician",
+    "Yuriko, the Tiger's Shadow"
+   ]
+  }
+ }
+};
+
+
 const SET_CONFIG = {
   MSH: {
     name: 'MSH (Marvel Super Heroes)',
@@ -4399,13 +4789,92 @@ const SET_CONFIG = {
 const SET_SELECTOR_ORDER = ['MSH', 'SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'MSH' && code !== 'SOS')];
 
 // ============================================
+// BONUS-SHEET SLOTS (Feature B v1.3.0) — dedicated generator slots for
+// paper Play Booster bonus sheets (Marvel Source Material, Mystical
+// Archive, Special Guests, etc). Rates/modes researched per-set (see
+// tmp/bonus-sheet-research.md); "replaceCommon" rolls independently at
+// `rate` and swaps a normal common for a bonus card on a hit; "guaranteed"
+// is an always-on dedicated slot. OM1 and TMT are deliberately absent: OM1's
+// Marvel Source Material sheet is unmatchable in our 17Lands data (it used
+// Universes-Within card names) and TMT's Source Material (PZA) sheet isn't
+// in the 17Lands data at all.
+// ============================================
+const BONUS_SHEETS = {
+  MSH: [
+    { sheet: 'mar', mode: 'replaceCommon', rate: 1 / 24 }
+  ],
+  SOS: [
+    { sheet: 'soa', mode: 'guaranteed', rate: 1, rarityOdds: { U: 0.875, R: 0.096, M: 0.029 } },
+    { sheet: 'spg', mode: 'replaceCommon', rate: 1 / 55 }
+  ],
+  ECL: [
+    { sheet: 'spg', mode: 'replaceCommon', rate: 1 / 55 }
+  ],
+  FDN: [
+    { sheet: 'spg', mode: 'replaceCommon', rate: 1 / 64 }
+  ],
+  BLB: [
+    { sheet: 'spg', mode: 'replaceCommon', rate: 1 / 64 }
+  ],
+  TLA: [
+    { sheet: 'tle', mode: 'replaceCommon', rate: 1 / 26 }
+  ],
+  EOE: [
+    { sheet: 'eos', mode: 'replaceCommon', rate: 1 / 8 },
+    { sheet: 'spg', mode: 'replaceCommon', rate: 0.018 }
+  ],
+  TDM: [
+    { sheet: 'spg', mode: 'replaceCommon', rate: 0.015 }
+  ],
+  FIN: [
+    { sheet: 'fca', mode: 'replaceCommon', rate: 1 / 3 }
+  ]
+};
+
+// Resolve BONUS_CARDS' name lists to real card objects once at load time
+// (membership is partial for legacy sets — only 17Lands-tracked cards are
+// listed, e.g. TLA 16/61 — draws are uniform over whatever is listed).
+const BONUS_SHEET_POOLS = {};
+Object.keys(BONUS_CARDS).forEach(setCode => {
+  const setConfig = SET_CONFIG[setCode];
+  if (!setConfig) return;
+  const byName = {};
+  setConfig.data.forEach(c => { byName[c.name] = c; });
+  BONUS_SHEET_POOLS[setCode] = {};
+  Object.keys(BONUS_CARDS[setCode]).forEach(sheetKey => {
+    const sheetDef = BONUS_CARDS[setCode][sheetKey];
+    const cards = sheetDef.names.map(n => byName[n]).filter(Boolean);
+    BONUS_SHEET_POOLS[setCode][sheetKey] = { label: sheetDef.label, cards, fullSheetSize: sheetDef.names.length };
+  });
+});
+
+// Names to exclude from a set's normal C/U/R/M/land pools — the union of
+// every BONUS_SHEETS-configured sheet's resolved cards for that set. (OM1's
+// BONUS_CARDS entry is intentionally not unioned in since OM1 has no
+// BONUS_SHEETS config.)
+const BONUS_EXCLUDED_NAMES = {};
+const EMPTY_NAME_SET = new Set();
+Object.keys(BONUS_SHEETS).forEach(setCode => {
+  const names = new Set();
+  BONUS_SHEETS[setCode].forEach(spec => {
+    const pool = BONUS_SHEET_POOLS[setCode] && BONUS_SHEET_POOLS[setCode][spec.sheet];
+    if (pool) pool.cards.forEach(c => names.add(c.name));
+  });
+  BONUS_EXCLUDED_NAMES[setCode] = names;
+});
+
+// ============================================
 // GRADE ALGORITHM (copied verbatim from the 17Lands card quiz — do not
 // reinvent; the two quizzes must always agree on what an "A-" means)
 // ============================================
 const GRADE_LABELS = ["F","D-","D","D+","C-","C","C+","B-","B","B+","A-","A","A+"];
 const GRADE_OFFSET = 2 - 1/6;  // 11/6
 const computeGradeStats = (cardData) => {
-  const gihValues = cardData.map(c => c.gihWr);
+  // Feature A v1.3.0: some cards now carry gihWr: null (17Lands suppresses
+  // stats below its ~500-game significance threshold) — exclude them so a
+  // handful of suppressed cards can't skew the mean/SD every other card is
+  // graded against.
+  const gihValues = cardData.filter(c => c.gihWr != null).map(c => c.gihWr);
   const mean = gihValues.reduce((a, b) => a + b, 0) / gihValues.length;
   const sd = Math.sqrt(gihValues.reduce((a, b) => a + (b - mean) ** 2, 0) / gihValues.length);
   return { mean, sd };
@@ -4425,6 +4894,33 @@ const getGradeClass = (grade) => {
   if (className.endsWith('+')) className = className.replace('+', '-plus');
   else if (className.endsWith('-')) className = className.replace('-', '-minus');
   return `grade-${className}`;
+};
+
+// ============================================
+// SENTINEL SCORING (Feature A v1.3.0) — 17Lands suppresses gihWr (and
+// occasionally alsa) below its significance threshold. For ranking /
+// percentile / best-card math ONLY, a suppressed stat is treated as the
+// worst possible value; it is NEVER shown to the player (the UI always
+// displays "n/a" — see isLowData below). Single source of truth so no null
+// check is scattered across scoring, ranking, reveal-sort, or draft-sim
+// opponent code — every one of those goes through this helper.
+// ============================================
+const metricValue = (card, metric) => {
+  if (metric === 'alsa') return card.alsa == null ? 99 : card.alsa;
+  return card.gihWr == null ? 0 : card.gihWr;
+};
+
+// Low-data flag: true when the currently-viewed metric (or the always-
+// gihWr-derived letter grade) can't be trusted for this card. Drives the
+// always-on "⚠" corner badge, hides the letter grade (grades are always
+// gihWr-derived, so no gihWr means no grade is possible), and gates the
+// reveal-overlay note chip.
+const isLowData = (card, metric) => card.gihWr == null || (metric === 'alsa' && card.alsa == null);
+
+const lowDataNoteText = (card) => {
+  let note = "Below 17Lands' significance threshold — score may not reflect actual value";
+  if (card.gpWr != null) note += ` — GP WR ${card.gpWr.toFixed(1)}% (${card.gpN} games)`;
+  return note;
 };
 
 // ============================================
@@ -4501,6 +4997,30 @@ const drawCommonsBatch = (pool, count, usedNames, rng) => {
   return best || [];
 };
 
+// Rarity-weighted draw within a bonus sheet (SOS's Mystical Archive slot):
+// bucket the sheet's own cards by their `rarity` field, roll against the
+// given odds, and draw uniformly within the rolled bucket. If the rolled
+// bucket is empty, fall through in a fixed U -> R -> M order.
+const drawRarityWeighted = (pool, rarityOdds, rng) => {
+  const buckets = {
+    U: pool.filter(c => c.rarity === 'U'),
+    R: pool.filter(c => c.rarity === 'R'),
+    M: pool.filter(c => c.rarity === 'M')
+  };
+  const order = ['U', 'R', 'M'];
+  const roll = rng();
+  let cum = 0, chosen = order[order.length - 1];
+  for (const r of order) {
+    cum += rarityOdds[r] || 0;
+    if (roll < cum) { chosen = r; break; }
+  }
+  const tryOrder = [chosen, ...order.filter(r => r !== chosen)];
+  for (const r of tryOrder) {
+    if (buckets[r].length > 0) return buckets[r][Math.floor(rng() * buckets[r].length)];
+  }
+  return pool.length > 0 ? pool[Math.floor(rng() * pool.length)] : null;
+};
+
 const generatePack = (cardData, seed, setCode) => {
   const rng = mulberry32(seed);
 
@@ -4517,13 +5037,19 @@ const generatePack = (cardData, seed, setCode) => {
     return pack;
   }
 
+  // Feature B v1.3.0: bonus-sheet cards (Marvel Source Material, Mystical
+  // Archive, Special Guests, etc) are drawn through their own dedicated
+  // slot(s) below and must not also be eligible from the normal rarity
+  // pools.
+  const bonusExcluded = BONUS_EXCLUDED_NAMES[setCode] || EMPTY_NAME_SET;
+
   // `type` is missing on a meaningful chunk of cards across several sets
   // (not just CUBE) — guard every access so pack generation never crashes.
-  const commons = cardData.filter(c => c.rarity === 'C' && !(c.type || '').includes('Land'));
-  const commonLands = cardData.filter(c => c.rarity === 'C' && (c.type || '').includes('Land'));
-  const uncommons = cardData.filter(c => c.rarity === 'U');
-  const rares = cardData.filter(c => c.rarity === 'R');
-  const mythics = cardData.filter(c => c.rarity === 'M');
+  const commons = cardData.filter(c => c.rarity === 'C' && !(c.type || '').includes('Land') && !bonusExcluded.has(c.name));
+  const commonLands = cardData.filter(c => c.rarity === 'C' && (c.type || '').includes('Land') && !bonusExcluded.has(c.name));
+  const uncommons = cardData.filter(c => c.rarity === 'U' && !bonusExcluded.has(c.name));
+  const rares = cardData.filter(c => c.rarity === 'R' && !bonusExcluded.has(c.name));
+  const mythics = cardData.filter(c => c.rarity === 'M' && !bonusExcluded.has(c.name));
 
   const usedNames = new Set();
   const pack = [];
@@ -4559,9 +5085,32 @@ const generatePack = (cardData, seed, setCode) => {
     landFallback = 1;
   }
 
-  // 5. 9 - uExtra - rmExtra nonland commons (+ the land fallback, if any),
-  // subject to the color-balance rejection sampling above.
-  const commonsNeeded = (9 - uExtra - rmExtra) + landFallback;
+  // 4b. Bonus-sheet slot(s) (Feature B v1.3.0): each configured sheet rolls
+  // independently at its researched rate ("guaranteed" sheets always hit);
+  // every hit replaces one of the normal commons drawn below. A clamp keeps
+  // at least 3 normal commons in the pack — guaranteed slots are exempt
+  // from the clamp since they are an unconditional dedicated slot in the
+  // real product, not a chance-to-replace mechanic.
+  const commonsNeededBase = (9 - uExtra - rmExtra) + landFallback;
+  let bonusReplaceCount = 0;
+  (BONUS_SHEETS[setCode] || []).forEach(spec => {
+    const sheetPool = (BONUS_SHEET_POOLS[setCode] && BONUS_SHEET_POOLS[setCode][spec.sheet] && BONUS_SHEET_POOLS[setCode][spec.sheet].cards) || [];
+    if (sheetPool.length === 0) return;
+    const hit = spec.mode === 'guaranteed' || rng() < spec.rate;
+    if (!hit) return;
+    if (spec.mode !== 'guaranteed' && (commonsNeededBase - bonusReplaceCount) <= 3) return;
+    const card = spec.rarityOdds
+      ? drawRarityWeighted(sheetPool, spec.rarityOdds, rng)
+      : sheetPool[Math.floor(rng() * sheetPool.length)];
+    if (card && !usedNames.has(card.name)) {
+      addCard(card);
+      bonusReplaceCount += 1;
+    }
+  });
+
+  // 5. 9 - uExtra - rmExtra - bonusReplaceCount nonland commons (+ the land
+  // fallback, if any), subject to the color-balance rejection sampling above.
+  const commonsNeeded = commonsNeededBase - bonusReplaceCount;
   const commonPicks = drawCommonsBatch(commons, commonsNeeded, usedNames, rng);
   commonPicks.forEach(addCard);
 
@@ -4577,18 +5126,18 @@ const generatePack = (cardData, seed, setCode) => {
 
 // ============================================
 // DRAFT-SIM OPPONENTS — simulated opponents pre-take the top N cards by the
-// opponent metric each pack (N = packNumber - 1). ALSA opponents can never
-// take a null-ALSA card (17Lands reports no signal to rank it on), so those
-// cards are excluded from the takeable pool but remain pickable by the
-// player. Returns a Set of taken pack indices.
+// opponent metric each pack (N = packNumber - 1). Ranking goes through
+// metricValue's sentinel worst-case scoring (Feature A v1.3.0), so ALSA
+// opponents never take a null-ALSA card and GIH WR opponents never take a
+// null-gihWr card - that behavior falls out of the sentinel naturally,
+// with no separate null check needed here. Returns a Set of taken pack
+// indices.
 // ============================================
 const computeTakenSet = (pack, n, oppMetric) => {
   const taken = new Set();
   if (n <= 0) return taken;
   const higherIsBetter = oppMetric !== 'alsa';
-  const rankable = pack
-    .map((c, i) => ({ i, v: oppMetric === 'alsa' ? c.alsa : c.gihWr }))
-    .filter(x => oppMetric !== 'alsa' || x.v != null);
+  const rankable = pack.map((c, i) => ({ i, v: metricValue(c, oppMetric) }));
   rankable.sort((a, b) => higherIsBetter ? b.v - a.v : a.v - b.v);
   rankable.slice(0, n).forEach(x => taken.add(x.i));
   return taken;
@@ -4608,7 +5157,10 @@ const ordinal = (n) => {
 const computePackResult = (pack, pickIndex, metric, takenSet) => {
   takenSet = takenSet || new Set();
   const higherIsBetter = metric !== 'alsa';
-  const values = pack.map(c => metric === 'alsa' ? c.alsa : c.gihWr);
+  // Sentinel worst-case scoring (Feature A v1.3.0, see metricValue) - a
+  // suppressed card ranks last but is never displayed as its sentinel
+  // value, only ever as "n/a".
+  const values = pack.map(c => metricValue(c, metric));
   const pickVal = values[pickIndex];
 
   // Best/percentile/ranking are computed over PICKABLE cards only — taken
@@ -4780,7 +5332,7 @@ const HOVER_CAPABLE = typeof window !== 'undefined' && !!window.matchMedia && wi
 const PREVIEW_WIDTH = 380;
 const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH * 7 / 5); // matches the 5:7 card aspect ratio
 
-function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, rank, grade, metricLabel, metricValue, onClick, onDoubleClick }) {
+function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, rank, grade, metricLabel, metricValue, lowData, lowDataNote, onClick, onDoubleClick }) {
   const imgUrl = cdnImageUrl(card);
   const classes = ['pack-card'];
   if (selected) classes.push('selected');
@@ -4821,6 +5373,7 @@ function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, ran
             <span className="placeholder-name">{card.name}</span>
           </div>
         )}
+        {lowData && <div className="low-data-badge" title={lowDataNote}>⚠</div>}
         {taken && <div className="ribbon ribbon-taken">TAKEN</div>}
         {locked && isBest && <div className="ribbon ribbon-best">DATA BEST</div>}
         {locked && isPick && <div className="ribbon ribbon-pick">YOUR PICK</div>}
@@ -4828,7 +5381,8 @@ function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, ran
           <div className="gih-percentage show">
             <div className="gih-value">
               <span>{metricValue}</span>
-              <span className={`grade-badge ${getGradeClass(grade)}`}>{grade}</span>
+              {!lowData && <span className={`grade-badge ${getGradeClass(grade)}`}>{grade}</span>}
+              {lowData && <div className="low-data-note">⚠ {lowDataNote}</div>}
             </div>
           </div>
         )}
@@ -4903,13 +5457,13 @@ function App() {
   const pendingNextRef = React.useRef(null);
 
   const cardData = SET_CONFIG[setCode].data;
-  // ALSA mode: exclude cards 17Lands reports no ALSA for (alsa: null — e.g.
-  // special-slot cards like Sword of Fire and Ice), since they can't be scored
-  // on that metric. Mirrors the card quiz's withAlsa filter. Grade stats stay
-  // set-wide (gihWr-based) regardless of metric.
-  const packData = React.useMemo(
-    () => metric === 'alsa' ? cardData.filter(c => c.alsa != null) : cardData,
-    [cardData, metric]);
+  // Feature A v1.3.0: the v1.2 ALSA-mode filter that excluded null-alsa
+  // cards from pack generation is gone - every card participates in both
+  // metrics now. Null gihWr/alsa cards are scored as worst-case sentinels
+  // (see metricValue) and always displayed as "n/a" with a warning chip,
+  // never excluded from a pack. Grade stats stay set-wide (gihWr-based,
+  // excluding suppressed cards - see computeGradeStats) regardless of metric.
+  const packData = cardData;
   const gradeStats = React.useMemo(() => computeGradeStats(cardData), [setCode]);
   const pack = React.useMemo(() => generatePack(packData, seed, setCode), [packData, seed, setCode]);
 
@@ -5172,6 +5726,9 @@ function App() {
                 <strong>ALSA (Average Last Seen At)</strong>: the average pick number at which a card was last seen in a pack (low = taken early/high demand, high = often passed). See the <a href="https://www.17lands.com/metrics_definitions#alsa" target="_blank" rel="noopener noreferrer">17Lands definition</a>. Grades in this quiz always derive from GIH WR, even in ALSA mode.<br/><br/>
                 More on the tradeoffs between these metrics: <a href="https://www.17lands.com/articles/using_win_rate_data" target="_blank" rel="noopener noreferrer">17Lands "Using Win Rate Data"</a> and <a href="https://www.mtgdatasci.com/estimating-adjusted-win-rate/" target="_blank" rel="noopener noreferrer">MTG Data Science "Estimating Adjusted Win Rate"</a>.
               </div>
+              <div className="info-box">
+                <strong>⚠ Below significance threshold</strong>: 17Lands withholds GIH WR (and sometimes ALSA) for cards it hasn't seen in roughly 500+ games of that stat yet - usually very new or very niche cards. This quiz still deals those cards into packs and scores them as worst-case so they don't skip evaluation, but never shows the withheld number as a real score - the card face always shows "n/a" plus a ⚠ badge instead, both before and after you pick. Where 17Lands does report a Games Played win rate for a suppressed card (a related but distinct, less selective metric), the reveal overlay shows it labeled "GP WR" so it's never confused for GIH WR.
+              </div>
             </div>
           )}
 
@@ -5180,7 +5737,22 @@ function App() {
               <div className="info-box" style={{flex: '1 1 100%'}}>
                 Packs approximate a 14-card Arena-style Play Booster: 1 rare/mythic slot (mythic about 1-in-7), 3 uncommons, 1 common-land slot (or an extra common if the set's 17Lands data has no common lands), and 9 commons. Wildcard slots are approximated on top: a 40% chance of a bonus uncommon and a 10% chance of a bonus rare/mythic, each replacing a common. Monocolored commons are resampled (up to 40 tries) until at least 4 of the 5 colors appear and no single color exceeds 4 copies. No duplicate card names (real packs can repeat rares via wildcards; this quiz doesn't).<br/><br/>
                 <strong>Powered Cube</strong> is the exception - cube boosters have no rarity collation at all, so its packs are just 15 unique random cards from the pool.<br/><br/>
-                Card pools are drawn from cards with 17Lands data, so ultra-rare specials appear at their listed rarity while basic lands and tokens are absent. This is an approximation built for a pick quiz, not collector-accurate booster collation.
+                Card pools are drawn from cards with 17Lands data, so ultra-rare specials appear at their listed rarity while basic lands and tokens are absent. This is an approximation built for a pick quiz, not collector-accurate booster collation.<br/><br/>
+                <strong>Bonus-sheet slots</strong>: nine sets add a dedicated slot for their paper Play Booster bonus sheet, researched from WotC's "Collecting..." articles and Scryfall (paper Play Booster rates - Arena mirrors these approximately). A bonus sheet's cards are pulled out of the set's normal common/uncommon/rare/mythic pools entirely and drawn only through their own slot, replacing one common on a hit. Sheet membership only covers cards 17Lands has data for, so smaller/older sheets are only partially represented; draws are uniform over whatever's listed. Suppressed-score bonus cards still carry the ⚠ warning like any other card.
+                <ul style={{margin: '6px 0 0 18px', padding: 0}}>
+                  <li>MSH - Marvel Source Material: 58/60 cards with data, 1-in-24 packs, replaces a common.</li>
+                  <li>SOS - Mystical Archive: 65/65 cards with data, guaranteed every pack (not a chance slot), rarity-weighted uncommon 87.5% / rare 9.6% / mythic 2.9%.</li>
+                  <li>SOS - Special Guests: 10/10 cards with data, 1-in-55 packs, replaces a common.</li>
+                  <li>ECL - Special Guests: 8/20 cards with data, 1-in-55 packs, replaces a common.</li>
+                  <li>FDN - Special Guests: 9/10 cards with data, 1-in-64 packs, replaces a common.</li>
+                  <li>BLB - Special Guests: 4/10 cards with data, 1-in-64 packs, replaces a common.</li>
+                  <li>TLA - Source Material: 16/61 cards with data, 1-in-26 packs, replaces a common.</li>
+                  <li>EOE - Stellar Sights: 35/45 cards with data, 1-in-8 packs, replaces a common (occupies paper's wildcard land slot - our documented approximation).</li>
+                  <li>EOE - Special Guests: 2/10 cards with data, 1.8% of packs, replaces a common.</li>
+                  <li>TDM - Special Guests: 9/10 cards with data, 1.5% of packs, replaces a common.</li>
+                  <li>FIN - Through the Ages: 58/64 cards with data, 1-in-3 packs, replaces a common.</li>
+                </ul>
+                <strong>OM1</strong> and <strong>TMT</strong> get no bonus-sheet slot: OM1's Marvel Source Material cards were released under different Universes-Within names on Arena so they can't be matched to our 17Lands data, and TMT's Source Material (PZA) sheet isn't in the 17Lands data at all.
               </div>
             </div>
           )}
@@ -5216,8 +5788,10 @@ function App() {
               isPick={locked && selectedIndex === i}
               isBest={locked && result && result.bestIndex === i}
               rank={locked && result ? result.ranks[i] : null}
-              grade={getGrade(card.gihWr, gradeStats)}
-              metricValue={metric === 'alsa' ? (card.alsa != null ? card.alsa.toFixed(2) : 'n/a') : card.gihWr.toFixed(1) + '%'}
+              grade={card.gihWr != null ? getGrade(card.gihWr, gradeStats) : null}
+              metricValue={metric === 'alsa' ? (card.alsa != null ? card.alsa.toFixed(2) : 'n/a') : (card.gihWr != null ? card.gihWr.toFixed(1) + '%' : 'n/a')}
+              lowData={isLowData(card, metric)}
+              lowDataNote={isLowData(card, metric) ? lowDataNoteText(card) : null}
               onClick={() => selectCard(i)}
               onDoubleClick={() => lockPick(i)}
             />
