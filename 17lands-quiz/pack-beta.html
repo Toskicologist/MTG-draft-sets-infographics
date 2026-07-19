@@ -30,12 +30,25 @@
 
     .banner {
       position: relative;
-      background: radial-gradient(circle at 30% 20%, #234d3a 0%, #0f2b3f 55%, #0a0e27 100%);
+      background-image: url('../mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       padding: 18px 12px;
       text-align: center;
       overflow: hidden;
       margin: -5px -5px 16px -5px;
-      border-bottom: 2px solid rgba(255, 215, 120, 0.25);
+    }
+
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.78) 0%, rgba(118, 75, 162, 0.78) 100%);
+      z-index: 1;
     }
 
     .banner-content {
@@ -242,13 +255,19 @@
       color: #dfe4f5;
     }
 
+    .action-area {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
     .reveal-banner {
       text-align: center;
       background: rgba(59, 130, 246, 0.12);
       border: 1px solid rgba(59, 130, 246, 0.35);
       border-radius: 10px;
       padding: 12px;
-      margin: 0 0 16px 0;
+      width: 100%;
     }
 
     .rank-headline {
@@ -258,7 +277,9 @@
       margin-bottom: 4px;
     }
 
-    .percentile-headline {
+    /* v1.4.0: renamed from .percentile-headline - now holds the gap-based
+       "left on the table" text (the big highlighted reveal-banner line). */
+    .gap-headline {
       font-size: 26px;
       font-weight: 800;
       color: #ffe9a8;
@@ -276,11 +297,15 @@
       margin-top: 6px;
     }
 
+    .reveal-banner .next-btn {
+      margin-top: 12px;
+    }
+
     .pack-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(calc(165px * var(--card-scale, 1)), 1fr));
       gap: 10px;
-      margin-bottom: 90px;
+      margin-bottom: 24px;
     }
 
     .pack-card {
@@ -376,9 +401,9 @@
       transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.9);
       color: #4a9eff;
-      padding: 4px 6px;
+      padding: 6px 8px;
       border-radius: 6px;
-      font-size: clamp(12px, 3.2vw, 22px);
+      font-size: clamp(17px, 4.5vw, 32px);
       font-weight: 700;
       display: none;
       border: 2px solid #4a9eff;
@@ -416,7 +441,7 @@
     .grade-badge {
       display: inline-block;
       font-weight: 700;
-      font-size: clamp(10px, 2.4vw, 15px);
+      font-size: clamp(15px, 3.4vw, 24px);
       padding: 2px 5px;
       border-radius: 4px;
       font-family: 'Courier New', monospace;
@@ -499,7 +524,7 @@
     }
 
     .low-data-note {
-      font-size: 8px;
+      font-size: 9px;
       line-height: 1.25;
       color: #ffd166;
       text-align: center;
@@ -526,18 +551,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .action-bar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 10;
-      display: flex;
-      justify-content: center;
-      padding: 12px;
-      background: linear-gradient(0deg, #0a0e27 60%, rgba(10,14,39,0));
     }
 
     .lock-btn, .next-btn, .new-run-btn {
@@ -570,7 +583,7 @@
       font-size: 11px;
       color: #9aa3bd;
       line-height: 1.6;
-      padding: 16px 8px 100px 8px;
+      padding: 16px 8px 24px 8px;
     }
 
     .end-of-run-panel {
@@ -623,8 +636,7 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
-  v1.3.0-beta.3 (2026-07-19 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-19 T0752.csv (334 cards).
-  v1.3.0-beta.2 (2026-07-19 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-19 T0752.csv (341 cards).
+  v1.4.0-beta.1 (2026-07-19T14:30:38Z UTC - Claude Sonnet): Bigger per-card percentage/grade reveal overlays; draft-sim "Hide taken" option (taken cards filtered out of the grid entirely instead of greyed out); gap-based scoring replaces grade-notch "left on the table" (computePackResult returns gap = bestVal-pickVal in gihWr mode / pickVal-bestVal in alsa mode, null when the pick's own metric stat is 17Lands-suppressed - never computed from a sentinel; reveal banner's big highlighted line is now the gap text, percentile demoted to a smaller "Beat X%" line; new runGapTotal run accumulator shown in a stats-row chip, the reveal banner's run-progress line, and a new EndOfRun summary line; new "How scoring works" info-box; changing METRIC mid-run now resets the run since gap units differ between modes - changeMetric already called resetRun so no behavior change was needed there); Space now advances lock/next/new-run alongside Enter, advertised as "(Space)" on every action button, with a tag-based focus guard so a focused button's native keypress doesn't double-fire; result + next-pack button moved from a fixed bottom action-bar to a new in-flow action area between the stats-row and pack-grid, with scroll-into-view + auto-focus onto the next button after locking a pick; standard header template adopted from quiz-beta.html (banner background-image + gradient overlay, GITHUB_REPO + attribution paragraph with version/last-updated and the usual cross-links).
   v1.3.0-beta.1 (2026-07-18T00:46:42Z UTC - Claude Sonnet): Below-threshold cards (17Lands-suppressed gihWr/alsa now score as worst-case sentinels via a single metricValue() helper shared by scoring/ranking/reveal-sort/draft-sim opponents; display always shows "n/a" + an always-on warning-chip corner badge + a reveal-overlay significance-threshold note with GP WR fallback stat where present; computeGradeStats now filters to scored cards only; removed the v1.2 ALSA-mode pack filter so null-alsa/null-gihWr cards participate in pack generation in both metrics); bonus-sheet slots (BONUS_CARDS spliced card-name membership + BONUS_SHEETS config adds dedicated generator slots for MSH Marvel Source Material, SOS Mystical Archive (guaranteed, rarity-weighted) + Special Guests, ECL/FDN/BLB/EOE/TDM Special Guests, TLA Source Material, FIN Through the Ages; sheet cards removed from normal rarity pools; OM1/TMT excluded - unmatchable/absent 17Lands data).
   v1.2.0-beta.5 (2026-07-18 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-17 T2010.csv (334 cards).
   v1.2.0-beta.4 (2026-07-18 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-17 T2010.csv (341 cards).
@@ -637,8 +649,9 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.3.0-beta.3';
-const LAST_UPDATE = '2026-07-19 UTC';
+const QUIZ_VERSION = '1.4.0-beta.1';
+const LAST_UPDATE = '2026-07-19T14:30:38Z UTC';
+const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
   {name: "Abigale, Eloquent First-Year", color: "WB", type: "Legendary Creature — Bird Bard", rarity: "R", gihWr: 58.6, alsa: 1.67, img: "bf708169-a307-494b-b8d8-baae53b2e2f2"},
@@ -4693,8 +4706,8 @@ const SET_CONFIG = {
     isNew: true,
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
-    dataDate: '2026-07-19 UTC',
-    dataTimestamp: '2026-07-19 UTC'
+    dataDate: '2026-07-17 UTC',
+    dataTimestamp: '2026-07-17 UTC'
   },
   ECL: {
     name: 'ECL (Etchings of Cryptic Lore)',
@@ -4782,8 +4795,8 @@ const SET_CONFIG = {
     shortName: 'SOS',
     data: SOS_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft',
-    dataDate: '2026-07-19 UTC',
-    dataTimestamp: '2026-07-19 UTC'
+    dataDate: '2026-07-17 UTC',
+    dataTimestamp: '2026-07-17 UTC'
   }
 };
 
@@ -5184,6 +5197,14 @@ const computePackResult = (pack, pickIndex, metric, takenSet) => {
   const percentile = Math.round(100 * beaten / (pickable.length - 1));
   const perfect = pickVal === bestVal;
 
+  // Gap-based scoring (v1.4.0): the raw distance between the pick and the
+  // pack's best pickable card, in the metric's own units - gihWr mode in
+  // percentage points, alsa mode in picks. Never computed from a sentinel
+  // value: if the picked card's OWN metric stat is 17Lands-suppressed, the
+  // gap is null (shown as "No gap computed" rather than a fake number).
+  const pickSuppressed = metric === 'alsa' ? pack[pickIndex].alsa == null : pack[pickIndex].gihWr == null;
+  const gap = pickSuppressed ? null : (higherIsBetter ? bestVal - pickVal : pickVal - bestVal);
+
   // Competition ranking (ties share a rank, next rank skips) over pickable
   // cards only, best-first — powers the ranked-reveal "#N" badges and the
   // "You took the Nth best card" banner.
@@ -5209,20 +5230,22 @@ const computePackResult = (pack, pickIndex, metric, takenSet) => {
     bestIndex,
     percentile,
     perfect,
+    gap,
     ranks,
     pickRank: ranks[pickIndex],
     revealOrder
   };
 };
 
-const leftOnTableText = (result, metric, gradeStats) => {
+// Gap-based scoring copy (replaces the old grade-notch phrasing, v1.4.0).
+// "pp" = percentage points of GIH WR; alsa mode's gap is already in picks.
+const leftOnTableText = (result, metric) => {
   if (result.perfect) return 'Nothing left behind.';
+  if (result.gap === null) return "No gap computed - your pick is below 17Lands' significance threshold.";
   if (metric === 'alsa') {
-    const diff = (result.pickVal - result.bestVal).toFixed(1);
-    return `The crowd takes ${result.bestCard.name} ${diff} picks earlier on average.`;
+    return `The crowd takes ${result.bestCard.name} ${result.gap.toFixed(1)} picks earlier on average.`;
   }
-  const notches = ((result.bestVal - result.pickVal) / (gradeStats.sd / 3)).toFixed(1);
-  return `You left ${notches} grade notches on the table.`;
+  return `You left ${result.gap.toFixed(1)} pp of win rate on the table (${result.bestCard.name}).`;
 };
 
 // ============================================
@@ -5301,7 +5324,7 @@ const saveStats = (setCode, metric, stats) => {
   safeStorage.setItem(statsKey(setCode, metric), JSON.stringify(stats));
 };
 
-const DEFAULT_PREFS = { setCode: 'MSH', metric: 'gihWr', draftSim: false, oppMetric: 'alsa', cardScale: 100 };
+const DEFAULT_PREFS = { setCode: 'MSH', metric: 'gihWr', draftSim: false, oppMetric: 'alsa', cardScale: 100, hideTaken: false };
 
 const loadPrefs = () => {
   try {
@@ -5312,12 +5335,13 @@ const loadPrefs = () => {
     const draftSim = prefs.draftSim === true;
     const oppMetric = prefs.oppMetric === 'gihWr' ? 'gihWr' : 'alsa';
     const cardScale = Number.isFinite(prefs.cardScale) ? Math.min(170, Math.max(60, prefs.cardScale)) : 100;
-    return { setCode, metric, draftSim, oppMetric, cardScale };
+    const hideTaken = prefs.hideTaken === true;
+    return { setCode, metric, draftSim, oppMetric, cardScale, hideTaken };
   } catch (e) { return { ...DEFAULT_PREFS }; }
 };
 
-const savePrefs = (setCode, metric, draftSim, oppMetric, cardScale) => {
-  safeStorage.setItem(PREFS_KEY, JSON.stringify({ setCode, metric, draftSim, oppMetric, cardScale }));
+const savePrefs = (setCode, metric, draftSim, oppMetric, cardScale, hideTaken) => {
+  safeStorage.setItem(PREFS_KEY, JSON.stringify({ setCode, metric, draftSim, oppMetric, cardScale, hideTaken }));
 };
 
 const randomSeed = () => (Math.random() * 2 ** 31) | 0;
@@ -5405,7 +5429,7 @@ function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, ran
   );
 }
 
-function EndOfRun({ setCode, avg, perfects, rareMythicPacks, rareMythicFound, lifetimeStats, onNewRun }) {
+function EndOfRun({ setCode, avg, perfects, rareMythicPacks, rareMythicFound, runGapTotal, gapUnits, packCount, lifetimeStats, onNewRun }) {
   return (
     <div className="container">
       <div className="banner">
@@ -5424,9 +5448,12 @@ function EndOfRun({ setCode, avg, perfects, rareMythicPacks, rareMythicFound, li
             : 'No pack this run had a Rare/Mythic as the best card'}
         </div>
         <div className="end-stat">
+          Left on the table: {runGapTotal.toFixed(1)} {gapUnits} across the run (avg {(runGapTotal / (packCount || 1)).toFixed(1)} per pack)
+        </div>
+        <div className="end-stat">
           Lifetime: {lifetimeStats.packs} packs, {lifetimeStats.packs ? Math.round(lifetimeStats.percentileSum / lifetimeStats.packs) : 0}% avg, {lifetimeStats.perfects} perfect, {lifetimeStats.runs} runs, best run avg {Math.round(lifetimeStats.bestRunAvg || 0)}%
         </div>
-        <button className="new-run-btn" onClick={onNewRun}>New run</button>
+        <button className="new-run-btn" onClick={onNewRun}>New run (Space)</button>
       </div>
     </div>
   );
@@ -5439,6 +5466,7 @@ function App() {
   const [draftSim, setDraftSim] = React.useState(initialPrefs.draftSim);
   const [oppMetric, setOppMetric] = React.useState(initialPrefs.oppMetric);
   const [cardScale, setCardScale] = React.useState(initialPrefs.cardScale);
+  const [hideTaken, setHideTaken] = React.useState(initialPrefs.hideTaken);
   const [seed, setSeed] = React.useState(randomSeed);
   const [selectedIndex, setSelectedIndex] = React.useState(null);
   const [locked, setLocked] = React.useState(false);
@@ -5448,6 +5476,7 @@ function App() {
   const [runPerfects, setRunPerfects] = React.useState(0);
   const [runRareMythicPacks, setRunRareMythicPacks] = React.useState(0);
   const [runRareMythicFound, setRunRareMythicFound] = React.useState(0);
+  const [runGapTotal, setRunGapTotal] = React.useState(0);
   const [showEndOfRun, setShowEndOfRun] = React.useState(false);
   // Draft-sim runs keep a separate lifetime-stats bucket (statsKey metric arg
   // gets a `_sim` suffix) so classic and sim averages never mix.
@@ -5457,6 +5486,12 @@ function App() {
   const [showPackInfo, setShowPackInfo] = React.useState(false);
 
   const pendingNextRef = React.useRef(null);
+  // Refs for the lock/next focus-and-scroll choreography (item 5, mirrors
+  // the card quiz's scroll-to-result pattern plus an explicit focus shift so
+  // a native Enter/Space on the focused button advances the quiz).
+  const statsRowRef = React.useRef(null);
+  const revealBannerRef = React.useRef(null);
+  const nextBtnRef = React.useRef(null);
 
   const cardData = SET_CONFIG[setCode].data;
   // Feature A v1.3.0: the v1.2 ALSA-mode filter that excluded null-alsa
@@ -5475,7 +5510,7 @@ function App() {
   const takenN = draftSim ? Math.min(packNum - 1, Math.max(0, pack.length - 1)) : 0;
   const takenSet = React.useMemo(() => computeTakenSet(pack, takenN, oppMetric), [pack, takenN, oppMetric]);
 
-  React.useEffect(() => { savePrefs(setCode, metric, draftSim, oppMetric, cardScale); }, [setCode, metric, draftSim, oppMetric, cardScale]);
+  React.useEffect(() => { savePrefs(setCode, metric, draftSim, oppMetric, cardScale, hideTaken); }, [setCode, metric, draftSim, oppMetric, cardScale, hideTaken]);
 
   // Preload the current pack's images.
   React.useEffect(() => {
@@ -5505,6 +5540,7 @@ function App() {
     setRunPerfects(0);
     setRunRareMythicPacks(0);
     setRunRareMythicFound(0);
+    setRunGapTotal(0);
     setShowEndOfRun(false);
     setSelectedIndex(null);
     setLocked(false);
@@ -5548,6 +5584,7 @@ function App() {
 
     setRunPercentiles(prev => [...prev, res.percentile]);
     if (res.perfect) setRunPerfects(n => n + 1);
+    if (res.gap !== null) setRunGapTotal(t => t + res.gap);
     const bestIsRareOrMythic = res.bestCard.rarity === 'R' || res.bestCard.rarity === 'M';
     if (bestIsRareOrMythic) {
       setRunRareMythicPacks(n => n + 1);
@@ -5566,6 +5603,7 @@ function App() {
       bestVal: res.bestVal,
       percentile: res.percentile,
       perfect: res.perfect,
+      gap: res.gap,
       mode: 'pack',
       ...(draftSim ? { simPicks: takenN, oppMetric } : {})
     });
@@ -5578,6 +5616,14 @@ function App() {
     setLifetimeStats(stats);
 
     trackEvent(`pack-answer-${setCode.toLowerCase()}`, `Pack answer (${setCode})`);
+
+    // After the reveal banner has rendered, scroll it into view and shift
+    // focus onto the next-pack button so a native Enter/Space advances
+    // (mirrors the card quiz's scroll-to-result setTimeout(50) pattern).
+    setTimeout(() => {
+      if (revealBannerRef.current) revealBannerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (nextBtnRef.current) nextBtnRef.current.focus();
+    }, 50);
   };
 
   const selectCard = (i) => {
@@ -5610,6 +5656,12 @@ function App() {
     setResult(null);
     setSeed(pending && pending.setCode === setCode ? pending.seed : randomSeed());
     pendingNextRef.current = null;
+
+    // Mirror the card quiz: scroll back up so the fresh pack is visible from
+    // the top. The now-disabled lock button drops focus on its own.
+    setTimeout(() => {
+      if (statsRowRef.current) statsRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   };
 
   const startNewRun = () => resetRun();
@@ -5618,17 +5670,28 @@ function App() {
     const KEY_MAP = { '1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,'0':9,'q':10,'w':11,'e':12,'r':13,'t':14 };
     const handler = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // Focus guard (first check, mirrors the card quiz): once focus has
+      // moved onto a form control or button - e.g. the next-pack button
+      // auto-focused after lock - the window handler must stay out of the
+      // way, since the focused element already handles Enter/Space natively.
+      // Without this, a Space/Enter press would fire both the native button
+      // click AND this handler's advance logic.
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
       const key = e.key.toLowerCase();
+      // Space bar doesn't need lowering, but it's not covered by the enter
+      // check above - test e.key directly rather than relying on `key`.
+      const isAdvanceKey = key === 'enter' || e.key === ' ';
 
       if (showEndOfRun) {
-        if (key === 'enter') { e.preventDefault(); startNewRun(); }
+        if (isAdvanceKey) { e.preventDefault(); startNewRun(); }
         return;
       }
       if (key === 'escape') {
         if (!locked) setSelectedIndex(null);
         return;
       }
-      if (key === 'enter') {
+      if (isAdvanceKey) {
         e.preventDefault();
         if (locked) nextPack();
         else if (selectedIndex != null) lockPick(selectedIndex);
@@ -5643,6 +5706,10 @@ function App() {
     return () => window.removeEventListener('keydown', handler);
   });
 
+  // Gap units follow the active metric: percentage points of GIH WR, or
+  // picks of ALSA. Shared by the stats-row chip, reveal banner, and EndOfRun.
+  const gapUnits = metric === 'alsa' ? 'picks' : 'pp';
+
   if (showEndOfRun) {
     const avg = runPercentiles.reduce((a, b) => a + b, 0) / runPercentiles.length;
     return (
@@ -5652,6 +5719,9 @@ function App() {
         perfects={runPerfects}
         rareMythicPacks={runRareMythicPacks}
         rareMythicFound={runRareMythicFound}
+        runGapTotal={runGapTotal}
+        gapUnits={gapUnits}
+        packCount={runPercentiles.length}
         lifetimeStats={lifetimeStats}
         onNewRun={startNewRun}
       />
@@ -5670,6 +5740,13 @@ function App() {
           <h1>P1P1 Pack Quiz</h1>
           <div className="version-badge">v{QUIZ_VERSION} BETA</div>
           <div className="subtitle">17Lands data - pick the best card in a simulated draft pack</div>
+
+          <p style={{fontSize: '11px', color: '#e0e0e0', marginTop: '8px', lineHeight: '1.5', maxWidth: '65ch', marginLeft: 'auto', marginRight: 'auto'}}>
+            Lovingly vibe coded with Claude Code • <a href={GITHUB_REPO} target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>View source on GitHub</a> • Version {QUIZ_VERSION} • Last updated {LAST_UPDATE}
+            <br />
+            Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>toskicologist@protonmail.com</a>. You might also like my <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#sos" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Draft Archetypes Color Wheel</a>, <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>card knowledge quiz</a>, or comparison of ratings from different reviewers for <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>SOS</a> and <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings.html" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>ECL</a>. For more follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer" style={{color: '#fff', textDecoration: 'underline', cursor: 'pointer'}}>Reddit</a>.
+          </p>
+
           <div className="set-selector">
             {SET_SELECTOR_ORDER.map(code => (
               <button
@@ -5701,6 +5778,13 @@ function App() {
                 <button className={`pill ${oppMetric === 'gihWr' ? 'active' : ''}`} onClick={() => setOppMetric('gihWr')}>Opp: GIH WR</button>
               </div>
             )}
+            {draftSim && (
+              <button
+                className={`pill ${hideTaken ? 'active' : ''}`}
+                onClick={() => setHideTaken(v => !v)}
+                title="Hide taken cards entirely instead of greying them out"
+              >Hide taken</button>
+            )}
             <label className="size-slider-label">
               Card size
               <input
@@ -5730,6 +5814,9 @@ function App() {
               </div>
               <div className="info-box">
                 <strong>⚠ Below significance threshold</strong>: 17Lands withholds GIH WR (and sometimes ALSA) for cards it hasn't seen in roughly 500+ games of that stat yet - usually very new or very niche cards. This quiz still deals those cards into packs and scores them as worst-case so they don't skip evaluation, but never shows the withheld number as a real score - the card face always shows "n/a" plus a ⚠ badge instead, both before and after you pick. Where 17Lands does report a Games Played win rate for a suppressed card (a related but distinct, less selective metric), the reveal overlay shows it labeled "GP WR" so it's never confused for GIH WR.
+              </div>
+              <div className="info-box">
+                <strong>How scoring works</strong>: <strong>rank</strong> is your pick's position among pickable cards sorted by the active metric. The big <strong>gap</strong> line is the raw distance between your pick and the pack's best pickable card, in the metric's own units - pp (percentage points) of GIH WR, or picks of ALSA - summed across the run as "left on the table". <strong>Beat X%</strong> is the share of the other pickable cards in that pack your pick beat (ties count half).
               </div>
             </div>
           )}
@@ -5761,23 +5848,31 @@ function App() {
         </div>
       </div>
 
-      <div className="stats-row">
+      <div className="stats-row" ref={statsRowRef}>
         <div className="stat-chip">Pack {packNum}/10{draftSim && takenN > 0 ? ` - ${takenN} taken` : ''}</div>
         <div className="stat-chip">Run avg: {runAvgSoFar === null ? '-' : runAvgSoFar + '%'}</div>
+        <div className="stat-chip">Left on table: {runGapTotal.toFixed(1)} {gapUnits}</div>
         <div className="stat-chip">Lifetime: {lifetimeStats.packs} packs, {lifetimeAvg}% avg, {lifetimeStats.perfects} perfect</div>
       </div>
 
-      {locked && result && (
-        <div className="reveal-banner">
-          <div className="rank-headline">{result.pickRank === 1 ? 'You took the best card!' : `You took the ${ordinal(result.pickRank)} best card`}</div>
-          <div className="percentile-headline">{result.percentile}%{result.perfect ? ' - Perfect pick!' : ''}</div>
-          <div className="left-on-table">{leftOnTableText(result, metric, gradeStats)}</div>
-          <div className="run-progress-line">Pack {packNum}/10 - run avg {runAvgSoFar === null ? '-' : runAvgSoFar + '%'}</div>
-        </div>
-      )}
+      <div className="action-area">
+        {!locked ? (
+          <button className="lock-btn" disabled={selectedIndex == null} onClick={() => lockPick(selectedIndex)}>Lock pick (Space)</button>
+        ) : result && (
+          <div className="reveal-banner" ref={revealBannerRef}>
+            <div className="rank-headline">{result.pickRank === 1 ? 'You took the best card!' : `You took the ${ordinal(result.pickRank)} best card`}</div>
+            <div className="gap-headline">{leftOnTableText(result, metric)}</div>
+            <div className="left-on-table">Beat {result.percentile}% of this pack{result.perfect ? ' - Perfect pick!' : ''}</div>
+            <div className="run-progress-line">Pack {packNum}/10 - run avg {runAvgSoFar === null ? '-' : runAvgSoFar + '%'} - left on table so far: {runGapTotal.toFixed(1)} {gapUnits}</div>
+            <button className="next-btn" ref={nextBtnRef} onClick={nextPack}>{packNum < 10 ? 'Next pack (Space)' : 'See results (Space)'}</button>
+          </div>
+        )}
+      </div>
 
       <div className="pack-grid" style={{ '--card-scale': cardScale / 100 }}>
-        {(locked && result ? result.revealOrder : pack.map((c, i) => i)).map(i => {
+        {(locked && result ? result.revealOrder : pack.map((c, i) => i))
+          .filter(i => !(hideTaken && takenSet.has(i)))
+          .map(i => {
           const card = pack[i];
           return (
             <CardTile
@@ -5799,14 +5894,6 @@ function App() {
             />
           );
         })}
-      </div>
-
-      <div className="action-bar">
-        {!locked ? (
-          <button className="lock-btn" disabled={selectedIndex == null} onClick={() => lockPick(selectedIndex)}>Lock pick</button>
-        ) : (
-          <button className="next-btn" onClick={nextPack}>{packNum < 10 ? 'Next pack' : 'See results'}</button>
-        )}
       </div>
 
       <div className="footer">
