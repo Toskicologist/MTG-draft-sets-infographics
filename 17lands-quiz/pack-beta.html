@@ -182,6 +182,29 @@
     .info-box strong { color: #ffe9a8; }
     .info-box a { color: #8fb4ff; text-decoration: underline; }
 
+    /* Full-width break element: forces the set selector onto a second line
+       after TLA on wide windows; narrow windows keep wrapping naturally on
+       top of it (same technique as the card-knowledge quiz's flex breaks). */
+    .selector-break {
+      flex-basis: 100%;
+      height: 0;
+    }
+
+    /* Hide-taken is a display toggle, not a gameplay mode - amber dashed
+       outline keeps it visually distinct from the blue gameplay pills. */
+    .pill.hide-taken {
+      border: 1px dashed rgba(255, 233, 168, 0.55);
+      color: #ffe9a8;
+      padding: 5px 13px;
+    }
+
+    .pill.hide-taken.active {
+      background: #b98a1c;
+      border-style: solid;
+      border-color: #ffe9a8;
+      color: #1a1205;
+    }
+
     /* ============== SET SELECTOR (ported from 17Lands card quiz) ============== */
     .set-selector {
       display: flex;
@@ -335,7 +358,8 @@
     }
 
     .pack-card.pick .card-image-wrap {
-      outline: 3px solid #3b82f6;
+      outline: 3px solid #f97316;
+      box-shadow: 0 0 16px rgba(249, 115, 22, 0.55);
     }
 
     .card-image-wrap {
@@ -488,7 +512,7 @@
     }
 
     .ribbon-pick {
-      background: #6fb1ff;
+      background: #f97316;
       top: 22px;
     }
 
@@ -644,6 +668,7 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.4.0-beta.3 (2026-07-19T16:02:09Z UTC - Claude Fable): Set selector splits onto a second line after TLA by default via a flex-basis:100% break element (narrow windows keep wrapping naturally); controls split into two rows - gameplay (metric, Draft sim, Opp, Hide taken) then display (card size, info links, card quiz link); Hide taken moved to the end of the gameplay row with a distinct amber dashed-outline style; YOUR PICK outline + ribbon at reveal switched from blue to orange (with glow) so the picked card stands apart from the blue pre-lock selection styling.
   v1.4.0-beta.2 (2026-07-19T15:40:47Z UTC - Claude Fable): Set selector, metric/draft-sim/size controls, caveat and info panels moved out of the image banner into a plain .controls-section below it - banner now holds only title, version badge, subtitle and the attribution paragraph.
   v1.4.0-beta.1 (2026-07-19T14:30:38Z UTC - Claude Sonnet): Bigger per-card percentage/grade reveal overlays; draft-sim "Hide taken" option (taken cards filtered out of the grid entirely instead of greyed out); gap-based scoring replaces grade-notch "left on the table" (computePackResult returns gap = bestVal-pickVal in gihWr mode / pickVal-bestVal in alsa mode, null when the pick's own metric stat is 17Lands-suppressed - never computed from a sentinel; reveal banner's big highlighted line is now the gap text, percentile demoted to a smaller "Beat X%" line; new runGapTotal run accumulator shown in a stats-row chip, the reveal banner's run-progress line, and a new EndOfRun summary line; new "How scoring works" info-box; changing METRIC mid-run now resets the run since gap units differ between modes - changeMetric already called resetRun so no behavior change was needed there); Space now advances lock/next/new-run alongside Enter, advertised as "(Space)" on every action button, with a tag-based focus guard so a focused button's native keypress doesn't double-fire; result + next-pack button moved from a fixed bottom action-bar to a new in-flow action area between the stats-row and pack-grid, with scroll-into-view + auto-focus onto the next button after locking a pick; standard header template adopted from quiz-beta.html (banner background-image + gradient overlay, GITHUB_REPO + attribution paragraph with version/last-updated and the usual cross-links).
   v1.3.0-beta.1 (2026-07-18T00:46:42Z UTC - Claude Sonnet): Below-threshold cards (17Lands-suppressed gihWr/alsa now score as worst-case sentinels via a single metricValue() helper shared by scoring/ranking/reveal-sort/draft-sim opponents; display always shows "n/a" + an always-on warning-chip corner badge + a reveal-overlay significance-threshold note with GP WR fallback stat where present; computeGradeStats now filters to scored cards only; removed the v1.2 ALSA-mode pack filter so null-alsa/null-gihWr cards participate in pack generation in both metrics); bonus-sheet slots (BONUS_CARDS spliced card-name membership + BONUS_SHEETS config adds dedicated generator slots for MSH Marvel Source Material, SOS Mystical Archive (guaranteed, rarity-weighted) + Special Guests, ECL/FDN/BLB/EOE/TDM Special Guests, TLA Source Material, FIN Through the Ages; sheet cards removed from normal rarity pools; OM1/TMT excluded - unmatchable/absent 17Lands data).
@@ -658,8 +683,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.4.0-beta.2';
-const LAST_UPDATE = '2026-07-19T15:40:47Z UTC';
+const QUIZ_VERSION = '1.4.0-beta.3';
+const LAST_UPDATE = '2026-07-19T16:02:09Z UTC';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
@@ -5761,17 +5786,19 @@ function App() {
       <div className="controls-section">
           <div className="set-selector">
             {SET_SELECTOR_ORDER.map(code => (
-              <button
-                key={code}
-                className={`mode-option ${setCode === code ? 'active' : ''}`}
-                onClick={() => changeSet(code)}
-              >
-                <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
-                  <path d={SET_ICONS[code].path} />
-                </svg>
-                <span style={{fontSize: code === 'CUBE' ? '11px' : '13px', lineHeight: '1'}}>{SET_CONFIG[code].shortName}</span>
-                {SET_CONFIG[code].isNew && <span className="new-badge">NEW</span>}
-              </button>
+              <React.Fragment key={code}>
+                <button
+                  className={`mode-option ${setCode === code ? 'active' : ''}`}
+                  onClick={() => changeSet(code)}
+                >
+                  <svg viewBox={SET_ICONS[code].viewBox} style={{width: '14px', height: '14px', fill: 'currentColor', flexShrink: 0}}>
+                    <path d={SET_ICONS[code].path} />
+                  </svg>
+                  <span style={{fontSize: code === 'CUBE' ? '11px' : '13px', lineHeight: '1'}}>{SET_CONFIG[code].shortName}</span>
+                  {SET_CONFIG[code].isNew && <span className="new-badge">NEW</span>}
+                </button>
+                {code === 'TLA' && <div className="selector-break" />}
+              </React.Fragment>
             ))}
           </div>
           <div className="controls-row">
@@ -5792,11 +5819,13 @@ function App() {
             )}
             {draftSim && (
               <button
-                className={`pill ${hideTaken ? 'active' : ''}`}
+                className={`pill hide-taken ${hideTaken ? 'active' : ''}`}
                 onClick={() => setHideTaken(v => !v)}
                 title="Hide taken cards entirely instead of greying them out"
               >Hide taken</button>
             )}
+          </div>
+          <div className="controls-row">
             <label className="size-slider-label">
               Card size
               <input
