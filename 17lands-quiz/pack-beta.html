@@ -668,13 +668,7 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
-  v1.4.0-beta.9 (2026-07-22 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-22 T0802.csv (334 cards).
-  v1.4.0-beta.8 (2026-07-22 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-22 T0802.csv (341 cards).
-  v1.4.0-beta.7 (2026-07-21 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-21 T0801.csv (334 cards).
-  v1.4.0-beta.6 (2026-07-21 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-21 T0801.csv (341 cards).
-  v1.4.0-beta.5 (2026-07-20 UTC): DATA: Refresh MSH to MSH card-ratings-2026-07-20 T0830.csv (334 cards).
-  v1.4.0-beta.4 (2026-07-20 UTC): DATA: Refresh SOS to SOS card-ratings-2026-07-20 T0830.csv (341 cards).
-  v1.4.0-beta.3 (2026-07-19T16:02:09Z UTC - Claude Fable): Set selector splits onto a second line after TLA by default via a flex-basis:100% break element (narrow windows keep wrapping naturally); controls split into two rows - gameplay (metric, Draft sim, Opp, Hide taken) then display (card size, info links, card quiz link); Hide taken moved to the end of the gameplay row with a distinct amber dashed-outline style; YOUR PICK outline + ribbon at reveal switched from blue to orange (with glow) so the picked card stands apart from the blue pre-lock selection styling.
+  v1.4.0-beta.4 (2026-07-21T13:15:57Z UTC - Claude Fable): Bugfixes found by a multi-angle code review of the v1.4 series: (1) the keyboard focus-guard was scoped down to only intercept Enter/Space on a focused button/link, no longer silently blocking digit card-selection and Escape after clicking any pill/set-selector button; (2) EndOfRun's "avg per pack" now divides by a new runGapPackCount (packs where a gap was actually computed) instead of the full 10-pack count, so a run with any suppressed picks no longer understates the average; (3) leftOnTableText now checks the suppressed-pick (gap===null) case before the perfect-pick case, so a fully-suppressed pickable pool can no longer show a false "Nothing left behind"/perfect banner; (4) the gap-null gate now reuses the existing isLowData() helper instead of a bespoke alsa-only check, so it can never disagree with the card face's own ⚠ badge; (5) the set-selector line break is now keyed off position (7th button) instead of the literal set code 'TLA', so it survives future SET_CONFIG reordering. Set selector splits onto a second line after TLA by default via a flex-basis:100% break element (narrow windows keep wrapping naturally); controls split into two rows - gameplay (metric, Draft sim, Opp, Hide taken) then display (card size, info links, card quiz link); Hide taken moved to the end of the gameplay row with a distinct amber dashed-outline style; YOUR PICK outline + ribbon at reveal switched from blue to orange (with glow) so the picked card stands apart from the blue pre-lock selection styling.
   v1.4.0-beta.2 (2026-07-19T15:40:47Z UTC - Claude Fable): Set selector, metric/draft-sim/size controls, caveat and info panels moved out of the image banner into a plain .controls-section below it - banner now holds only title, version badge, subtitle and the attribution paragraph.
   v1.4.0-beta.1 (2026-07-19T14:30:38Z UTC - Claude Sonnet): Bigger per-card percentage/grade reveal overlays; draft-sim "Hide taken" option (taken cards filtered out of the grid entirely instead of greyed out); gap-based scoring replaces grade-notch "left on the table" (computePackResult returns gap = bestVal-pickVal in gihWr mode / pickVal-bestVal in alsa mode, null when the pick's own metric stat is 17Lands-suppressed - never computed from a sentinel; reveal banner's big highlighted line is now the gap text, percentile demoted to a smaller "Beat X%" line; new runGapTotal run accumulator shown in a stats-row chip, the reveal banner's run-progress line, and a new EndOfRun summary line; new "How scoring works" info-box; changing METRIC mid-run now resets the run since gap units differ between modes - changeMetric already called resetRun so no behavior change was needed there); Space now advances lock/next/new-run alongside Enter, advertised as "(Space)" on every action button, with a tag-based focus guard so a focused button's native keypress doesn't double-fire; result + next-pack button moved from a fixed bottom action-bar to a new in-flow action area between the stats-row and pack-grid, with scroll-into-view + auto-focus onto the next button after locking a pick; standard header template adopted from quiz-beta.html (banner background-image + gradient overlay, GITHUB_REPO + attribution paragraph with version/last-updated and the usual cross-links).
   v1.3.0-beta.1 (2026-07-18T00:46:42Z UTC - Claude Sonnet): Below-threshold cards (17Lands-suppressed gihWr/alsa now score as worst-case sentinels via a single metricValue() helper shared by scoring/ranking/reveal-sort/draft-sim opponents; display always shows "n/a" + an always-on warning-chip corner badge + a reveal-overlay significance-threshold note with GP WR fallback stat where present; computeGradeStats now filters to scored cards only; removed the v1.2 ALSA-mode pack filter so null-alsa/null-gihWr cards participate in pack generation in both metrics); bonus-sheet slots (BONUS_CARDS spliced card-name membership + BONUS_SHEETS config adds dedicated generator slots for MSH Marvel Source Material, SOS Mystical Archive (guaranteed, rarity-weighted) + Special Guests, ECL/FDN/BLB/EOE/TDM Special Guests, TLA Source Material, FIN Through the Ages; sheet cards removed from normal rarity pools; OM1/TMT excluded - unmatchable/absent 17Lands data).
@@ -689,8 +683,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.4.0-beta.9';
-const LAST_UPDATE = '2026-07-22 UTC';
+const QUIZ_VERSION = '1.4.0-beta.4';
+const LAST_UPDATE = '2026-07-21T13:15:57Z UTC';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
@@ -5242,8 +5236,12 @@ const computePackResult = (pack, pickIndex, metric, takenSet) => {
   // percentage points, alsa mode in picks. Never computed from a sentinel
   // value: if the picked card's OWN metric stat is 17Lands-suppressed, the
   // gap is null (shown as "No gap computed" rather than a fake number).
-  const pickSuppressed = metric === 'alsa' ? pack[pickIndex].alsa == null : pack[pickIndex].gihWr == null;
-  const gap = pickSuppressed ? null : (higherIsBetter ? bestVal - pickVal : pickVal - bestVal);
+  // Reuses isLowData (the same check driving the card face's ⚠ badge) so the
+  // gap-null gate can never disagree with the warning shown on the card
+  // itself - fix v1.4.0-beta.4 (a bespoke alsa-only check here used to let a
+  // card with alsa present but gihWr null show both a ⚠ badge AND a real
+  // numeric gap message at once).
+  const gap = isLowData(pack[pickIndex], metric) ? null : (higherIsBetter ? bestVal - pickVal : pickVal - bestVal);
 
   // Competition ranking (ties share a rank, next rank skips) over pickable
   // cards only, best-first — powers the ranked-reveal "#N" badges and the
@@ -5280,8 +5278,12 @@ const computePackResult = (pack, pickIndex, metric, takenSet) => {
 // Gap-based scoring copy (replaces the old grade-notch phrasing, v1.4.0).
 // "pp" = percentage points of GIH WR; alsa mode's gap is already in picks.
 const leftOnTableText = (result, metric) => {
-  if (result.perfect) return 'Nothing left behind.';
+  // Suppressed-pick check MUST come before the perfect-pick check: perfect
+  // is computed from sentinel-substituted values, so if every pickable card
+  // shares the suppressed sentinel, pickVal ties bestVal and perfect would
+  // be (wrongly) true here too - fix v1.4.0-beta.4.
   if (result.gap === null) return "No gap computed - your pick is below 17Lands' significance threshold.";
+  if (result.perfect) return 'Nothing left behind.';
   if (metric === 'alsa') {
     return `The crowd takes ${result.bestCard.name} ${result.gap.toFixed(1)} picks earlier on average.`;
   }
@@ -5469,7 +5471,7 @@ function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, ran
   );
 }
 
-function EndOfRun({ setCode, avg, perfects, rareMythicPacks, rareMythicFound, runGapTotal, gapUnits, packCount, lifetimeStats, onNewRun }) {
+function EndOfRun({ setCode, avg, perfects, rareMythicPacks, rareMythicFound, runGapTotal, gapUnits, gapPackCount, lifetimeStats, onNewRun }) {
   return (
     <div className="container">
       <div className="banner">
@@ -5488,7 +5490,7 @@ function EndOfRun({ setCode, avg, perfects, rareMythicPacks, rareMythicFound, ru
             : 'No pack this run had a Rare/Mythic as the best card'}
         </div>
         <div className="end-stat">
-          Left on the table: {runGapTotal.toFixed(1)} {gapUnits} across the run (avg {(runGapTotal / (packCount || 1)).toFixed(1)} per pack)
+          Left on the table: {runGapTotal.toFixed(1)} {gapUnits} across the run (avg {(runGapTotal / (gapPackCount || 1)).toFixed(1)} per pack{gapPackCount < 10 ? `, ${gapPackCount}/10 packs had a computed gap` : ''})
         </div>
         <div className="end-stat">
           Lifetime: {lifetimeStats.packs} packs, {lifetimeStats.packs ? Math.round(lifetimeStats.percentileSum / lifetimeStats.packs) : 0}% avg, {lifetimeStats.perfects} perfect, {lifetimeStats.runs} runs, best run avg {Math.round(lifetimeStats.bestRunAvg || 0)}%
@@ -5517,6 +5519,10 @@ function App() {
   const [runRareMythicPacks, setRunRareMythicPacks] = React.useState(0);
   const [runRareMythicFound, setRunRareMythicFound] = React.useState(0);
   const [runGapTotal, setRunGapTotal] = React.useState(0);
+  // Packs where a gap was actually computed - excludes suppressed picks
+  // (res.gap === null), so the end-of-run average divides by the right
+  // denominator instead of every pack in the run (fix v1.4.0-beta.4).
+  const [runGapPackCount, setRunGapPackCount] = React.useState(0);
   const [showEndOfRun, setShowEndOfRun] = React.useState(false);
   // Draft-sim runs keep a separate lifetime-stats bucket (statsKey metric arg
   // gets a `_sim` suffix) so classic and sim averages never mix.
@@ -5581,6 +5587,7 @@ function App() {
     setRunRareMythicPacks(0);
     setRunRareMythicFound(0);
     setRunGapTotal(0);
+    setRunGapPackCount(0);
     setShowEndOfRun(false);
     setSelectedIndex(null);
     setLocked(false);
@@ -5624,7 +5631,7 @@ function App() {
 
     setRunPercentiles(prev => [...prev, res.percentile]);
     if (res.perfect) setRunPerfects(n => n + 1);
-    if (res.gap !== null) setRunGapTotal(t => t + res.gap);
+    if (res.gap !== null) { setRunGapTotal(t => t + res.gap); setRunGapPackCount(n => n + 1); }
     const bestIsRareOrMythic = res.bestCard.rarity === 'R' || res.bestCard.rarity === 'M';
     if (bestIsRareOrMythic) {
       setRunRareMythicPacks(n => n + 1);
@@ -5710,18 +5717,21 @@ function App() {
     const KEY_MAP = { '1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,'0':9,'q':10,'w':11,'e':12,'r':13,'t':14 };
     const handler = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      // Focus guard (first check, mirrors the card quiz): once focus has
-      // moved onto a form control or button - e.g. the next-pack button
-      // auto-focused after lock - the window handler must stay out of the
-      // way, since the focused element already handles Enter/Space natively.
-      // Without this, a Space/Enter press would fire both the native button
-      // click AND this handler's advance logic.
+      // Typing guard: never intercept keys while a real form control has focus.
       const tag = e.target.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const key = e.key.toLowerCase();
       // Space bar doesn't need lowering, but it's not covered by the enter
       // check above - test e.key directly rather than relying on `key`.
       const isAdvanceKey = key === 'enter' || e.key === ' ';
+      // Focus guard: a focused button or link already handles Enter/Space
+      // natively (e.g. the next-pack button auto-focused after lock), so
+      // only suppress THOSE two keys there - fix v1.4.0-beta.4: this used to
+      // early-return for BUTTON on every key, which also silently ate digit
+      // card-selection and Escape any time a pill/set-selector button still
+      // held focus after being clicked. Digit selection and Escape are
+      // unaffected by focus and must keep working regardless.
+      if (isAdvanceKey && (tag === 'BUTTON' || tag === 'A')) return;
 
       if (showEndOfRun) {
         if (isAdvanceKey) { e.preventDefault(); startNewRun(); }
@@ -5761,7 +5771,7 @@ function App() {
         rareMythicFound={runRareMythicFound}
         runGapTotal={runGapTotal}
         gapUnits={gapUnits}
-        packCount={runPercentiles.length}
+        gapPackCount={runGapPackCount}
         lifetimeStats={lifetimeStats}
         onNewRun={startNewRun}
       />
@@ -5791,7 +5801,7 @@ function App() {
 
       <div className="controls-section">
           <div className="set-selector">
-            {SET_SELECTOR_ORDER.map(code => (
+            {SET_SELECTOR_ORDER.map((code, i) => (
               <React.Fragment key={code}>
                 <button
                   className={`mode-option ${setCode === code ? 'active' : ''}`}
@@ -5803,7 +5813,12 @@ function App() {
                   <span style={{fontSize: code === 'CUBE' ? '11px' : '13px', lineHeight: '1'}}>{SET_CONFIG[code].shortName}</span>
                   {SET_CONFIG[code].isNew && <span className="new-badge">NEW</span>}
                 </button>
-                {code === 'TLA' && <div className="selector-break" />}
+                {/* Break after the 7th button (index 6) rather than a named
+                    set code - fix v1.4.0-beta.4: SET_SELECTOR_ORDER is
+                    derived from SET_CONFIG's key order, so a literal set-code
+                    check would silently stop matching the intended split
+                    point if a set is ever added/removed/reordered before it. */}
+                {i === 6 && <div className="selector-break" />}
               </React.Fragment>
             ))}
           </div>
