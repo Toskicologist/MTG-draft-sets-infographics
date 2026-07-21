@@ -668,6 +668,7 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.4.0-beta.5 (2026-07-21T13:36:50Z UTC - Claude Fable): Hover popout now clamps to the viewport - prefers right/below the cursor, flips near an edge, and a final clamp keeps the whole 380x532 image inside the window regardless of cursor position (previously the fixed 400px flip threshold, smaller than the 532px-tall preview, let it run off the top/bottom near screen edges).
   v1.4.0-beta.4 (2026-07-21T13:15:57Z UTC - Claude Fable): Bugfixes found by a multi-angle code review of the v1.4 series: (1) the keyboard focus-guard was scoped down to only intercept Enter/Space on a focused button/link, no longer silently blocking digit card-selection and Escape after clicking any pill/set-selector button; (2) EndOfRun's "avg per pack" now divides by a new runGapPackCount (packs where a gap was actually computed) instead of the full 10-pack count, so a run with any suppressed picks no longer understates the average; (3) leftOnTableText now checks the suppressed-pick (gap===null) case before the perfect-pick case, so a fully-suppressed pickable pool can no longer show a false "Nothing left behind"/perfect banner; (4) the gap-null gate now reuses the existing isLowData() helper instead of a bespoke alsa-only check, so it can never disagree with the card face's own ⚠ badge; (5) the set-selector line break is now keyed off position (7th button) instead of the literal set code 'TLA', so it survives future SET_CONFIG reordering. Set selector splits onto a second line after TLA by default via a flex-basis:100% break element (narrow windows keep wrapping naturally); controls split into two rows - gameplay (metric, Draft sim, Opp, Hide taken) then display (card size, info links, card quiz link); Hide taken moved to the end of the gameplay row with a distinct amber dashed-outline style; YOUR PICK outline + ribbon at reveal switched from blue to orange (with glow) so the picked card stands apart from the blue pre-lock selection styling.
   v1.4.0-beta.2 (2026-07-19T15:40:47Z UTC - Claude Fable): Set selector, metric/draft-sim/size controls, caveat and info panels moved out of the image banner into a plain .controls-section below it - banner now holds only title, version badge, subtitle and the attribution paragraph.
   v1.4.0-beta.1 (2026-07-19T14:30:38Z UTC - Claude Sonnet): Bigger per-card percentage/grade reveal overlays; draft-sim "Hide taken" option (taken cards filtered out of the grid entirely instead of greyed out); gap-based scoring replaces grade-notch "left on the table" (computePackResult returns gap = bestVal-pickVal in gihWr mode / pickVal-bestVal in alsa mode, null when the pick's own metric stat is 17Lands-suppressed - never computed from a sentinel; reveal banner's big highlighted line is now the gap text, percentile demoted to a smaller "Beat X%" line; new runGapTotal run accumulator shown in a stats-row chip, the reveal banner's run-progress line, and a new EndOfRun summary line; new "How scoring works" info-box; changing METRIC mid-run now resets the run since gap units differ between modes - changeMetric already called resetRun so no behavior change was needed there); Space now advances lock/next/new-run alongside Enter, advertised as "(Space)" on every action button, with a tag-based focus guard so a focused button's native keypress doesn't double-fire; result + next-pack button moved from a fixed bottom action-bar to a new in-flow action area between the stats-row and pack-grid, with scroll-into-view + auto-focus onto the next button after locking a pick; standard header template adopted from quiz-beta.html (banner background-image + gradient overlay, GITHUB_REPO + attribution paragraph with version/last-updated and the usual cross-links).
@@ -683,8 +684,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.4.0-beta.4';
-const LAST_UPDATE = '2026-07-21T13:15:57Z UTC';
+const QUIZ_VERSION = '1.4.0-beta.5';
+const LAST_UPDATE = '2026-07-21T13:36:50Z UTC';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
@@ -5414,12 +5415,19 @@ function CardTile({ card, keyLabel, selected, locked, taken, isPick, isBest, ran
   const canPreview = HOVER_CAPABLE && !!imgUrl;
 
   const movePreview = (e) => {
-    const flipX = window.innerWidth - e.clientX < 400;
-    const flipY = window.innerHeight - e.clientY < 400;
-    setPreviewPos({
-      x: flipX ? e.clientX - 14 - PREVIEW_WIDTH : e.clientX + 14,
-      y: flipY ? e.clientY - 14 - PREVIEW_HEIGHT : e.clientY + 14
-    });
+    // Prefer the popout to the right of / below the cursor; flip to the other
+    // side when that side lacks room. The 380x532 preview is taller than the
+    // old fixed 400px flip threshold accounted for, so a final clamp keeps the
+    // whole image inside the viewport regardless of cursor position or preview
+    // size (v1.4.0-beta.5) - previously it could still run off the top/bottom.
+    const margin = 8;
+    const wantRight = e.clientX + 14 + PREVIEW_WIDTH + margin <= window.innerWidth;
+    const wantBelow = e.clientY + 14 + PREVIEW_HEIGHT + margin <= window.innerHeight;
+    let x = wantRight ? e.clientX + 14 : e.clientX - 14 - PREVIEW_WIDTH;
+    let y = wantBelow ? e.clientY + 14 : e.clientY - 14 - PREVIEW_HEIGHT;
+    x = Math.max(margin, Math.min(x, window.innerWidth - PREVIEW_WIDTH - margin));
+    y = Math.max(margin, Math.min(y, window.innerHeight - PREVIEW_HEIGHT - margin));
+    setPreviewPos({ x, y });
   };
 
   return (
