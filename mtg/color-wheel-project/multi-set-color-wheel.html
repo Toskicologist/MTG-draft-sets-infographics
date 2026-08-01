@@ -78,6 +78,17 @@
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *
  * CHANGELOG:
+ * 1.4.2 (2026-07-30, 23:05 UTC) - [Claude Opus 5]
+ *   - FIX: browser Back/Forward now switches sets. The hash was read only once, in
+ *     the useState initializer, so anything changing it after mount (Back/Forward,
+ *     editing the URL, an in-page anchor) moved the URL without moving the view.
+ *     Added a hashchange listener that pulls the hash back into state. Setting the
+ *     same key is a React no-op, so it cannot loop against the hash-writing effect.
+ *     Deep links on first load, tab clicks and GoatCounter hash tracking are all
+ *     unchanged. Same fix applied to the beta file (1.5.0-beta.3).
+ *   - NOTE: this file is otherwise unchanged - The Hobbit (HOB) is beta-only and
+ *     has NOT been promoted to main.
+ *
  * 1.4.1 (2026-06-19, 16:22 UTC) - [Claude Opus 4.8]
  *   - Social preview: updated og/twitter image to msh-color-wheel-preview-v2.png
  *     (new filename to bust social-crawler URL caches)
@@ -951,10 +962,26 @@ function MultiSetColorWheel() {
 
   useEffect(() => { setConfig(getConfig(textSize)); }, [textSize]);
 
-  // Sync URL hash with current set
+  // Sync URL hash with current set (write direction).
+  // Assigning to location.hash pushes a history entry, which is what makes
+  // Back/Forward able to step between sets - see the read direction below.
   useEffect(() => {
     window.location.hash = currentSetKey.toLowerCase();
   }, [currentSetKey]);
+
+  // Read direction: the hash was previously read ONCE, in the useState
+  // initializer, so anything that changed it after mount (Back/Forward, editing
+  // the URL, an in-page anchor) moved the URL without moving the view. Listen for
+  // hashchange and pull it back into state. Setting the same key is a no-op in
+  // React, so this cannot loop against the write effect above.
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.slice(1).toUpperCase();
+      if (SET_ORDER.includes(hash)) setCurrentSetKey(hash);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   // Reset hover state when set changes
   useEffect(() => {
@@ -1007,7 +1034,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.4.1 &middot; 2026-06-19 16:22 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.4.2 &middot; 2026-07-30 23:05 UTC</span></h1>
           <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
