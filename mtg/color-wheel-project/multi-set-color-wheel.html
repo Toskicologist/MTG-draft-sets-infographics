@@ -4,15 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel</title>
-  <meta property="og:title" content="Marvel Super Heroes Draft Archetypes — MTG Multi-Set Color Wheel">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel featuring Marvel Super Heroes — plus Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven.">
+  <meta property="og:title" content="MTG Draft Archetypes — Multi-Set Color Wheel">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, Marvel Super Heroes, and The Hobbit.">
   <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
-  <meta name="twitter:title" content="Marvel Super Heroes Draft Archetypes — MTG Multi-Set Color Wheel">
-  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel featuring Marvel Super Heroes — plus Lorwyn Eclipsed, Foundations, TMT, and Secrets of Strixhaven.">
+  <meta name="twitter:title" content="MTG Draft Archetypes — Multi-Set Color Wheel">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, Marvel Super Heroes, and The Hobbit.">
+  <!-- GoatCounter PATTERN A: count the #hash so each set view (#hob, #msh, …) is its own dashboard path.
+       The public count.js snippet is auto-injected at push time, just before the closing head tag; this
+       inline config must run first, and does. NOTE: do NOT write the closing-head string literally in this
+       comment — the injector inserts before the FIRST such string and would bury count.js inside the comment.
+       See mtg/SHARED_HEADER_FOOTER.md "Analytics — GoatCounter". -->
+  <script>
+    window.goatcounter = {
+      path: function () { return location.pathname + location.search + location.hash; }
+    };
+    addEventListener('hashchange', function () {
+      if (window.goatcounter && window.goatcounter.count)
+        window.goatcounter.count({ path: location.pathname + location.search + location.hash });
+    });
+  </script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
@@ -65,10 +79,85 @@
 <body>
   <div id="root"></div>
 
+  <!--
+    Offline / CDN guard. Everything below is rendered by the type="text/babel" block, which
+    needs React, ReactDOM and Babel from unpkg. With no network those never load, Babel never
+    compiles the JSX, and #root stays empty - a silent white page. This turns that into a
+    readable message. Plain <script> on purpose: it must run when Babel is exactly what failed.
+  -->
+  <script>
+    (function () {
+      var firstError = null;
+      window.addEventListener('error', function (e) {
+        if (!firstError && e && e.message) firstError = e.message;
+      }, true);
+
+      function missingLibs() {
+        var missing = [];
+        if (!window.React) missing.push('React');
+        if (!window.ReactDOM) missing.push('ReactDOM');
+        if (!window.Babel) missing.push('Babel');
+        return missing;
+      }
+
+      function el(tag, css, text) {
+        var node = document.createElement(tag);
+        if (css) node.setAttribute('style', css);
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      function showFailure() {
+        var root = document.getElementById('root');
+        if (!root || root.childElementCount > 0) return;  // rendered fine, nothing to do
+
+        var missing = missingLibs();
+        var box = el('div', 'max-width:620px;margin:80px auto;padding:32px 24px;text-align:center;' +
+                            'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;' +
+                            'background:#fff;border:1px solid #e2e2e2;border-radius:10px;');
+
+        if (missing.length) {
+          box.appendChild(el('div', 'font-size:40px;line-height:1;margin-bottom:16px;', '📡'));
+          box.appendChild(el('h1', 'font-size:21px;color:#1a1a1a;margin-bottom:12px;font-weight:600;',
+            'This page needs an internet connection'));
+          box.appendChild(el('p', 'font-size:15px;color:#555;line-height:1.6;',
+            'The color wheel is drawn in your browser by React, which loads from a CDN along with ' +
+            'Babel. Those files could not be fetched, so there is nothing to draw.'));
+          box.appendChild(el('p', 'font-size:13px;color:#888;line-height:1.6;margin-top:14px;',
+            'Did not load: ' + missing.join(', ')));
+        } else {
+          box.appendChild(el('div', 'font-size:40px;line-height:1;margin-bottom:16px;', '⚠️'));
+          box.appendChild(el('h1', 'font-size:21px;color:#1a1a1a;margin-bottom:12px;font-weight:600;',
+            'Something went wrong rendering this page'));
+          box.appendChild(el('p', 'font-size:15px;color:#555;line-height:1.6;',
+            'The libraries loaded, but the page failed to draw. This is a bug, not a connection ' +
+            'problem - the browser console has the details.'));
+          if (firstError) {
+            box.appendChild(el('p', 'font-size:12px;color:#888;margin-top:14px;text-align:left;' +
+                                    'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;' +
+                                    'background:#f7f7f7;border-radius:6px;padding:10px 12px;' +
+                                    'word-break:break-word;', firstError));
+          }
+        }
+
+        var retry = el('button', 'margin-top:22px;padding:9px 20px;font-size:14px;color:#fff;' +
+                                 'background:#4a5568;border:0;border-radius:6px;cursor:pointer;', 'Reload');
+        retry.onclick = function () { location.reload(); };
+        box.appendChild(retry);
+
+        root.appendChild(box);
+      }
+
+      // window.load fires after Babel's DOMContentLoaded transform pass; the timeout leaves
+      // room for the first React render before we call it a failure.
+      window.addEventListener('load', function () { setTimeout(showFailure, 500); });
+    })();
+  </script>
+
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.2.1
+ * 1.5.0
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -76,18 +165,196 @@
  *   - Teenage Mutant Ninja Turtles (TMT) - v1.0.4 - Mar 2026
  *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
+ *   - The Hobbit (HOB) - v1.0.0 - Aug 2026
  *
  * CHANGELOG:
- * 1.4.2 (2026-07-30, 23:05 UTC) - [Claude Opus 5]
+ * 1.5.0 (2026-08-07, 13:34 UTC) - [Claude Opus 5] - PROMOTED FROM BETA
+ *   - THE HOBBIT (HOB) IS NOW LIVE. It was beta-only from 2026-07-30 (main 1.4.2 said so
+ *     explicitly); this promotion ships it: a sixth tab with 5 populated archetypes, 5 blank
+ *     pairs hidden on the wheel, 3 set-wide mechanics, 7 resource links and a #hob hash route.
+ *   - Every 1.5.0-beta.1 .. beta.12 change below is now live. The headline ones:
+ *       * One shared <ScryfallRow> replaces four hand-copied Scryfall button rows, so the
+ *         diagram popup and the archetype boxes can no longer drift apart (beta.10/.11).
+ *       * The popup gained the "Scryfall:" caption format and the o:<mechanic> button.
+ *       * Card hover-previews doubled to 300px and clamped inside the viewport (beta.9).
+ *       * <SourceLine> supports two separately-linked sources per archetype (beta.8).
+ *       * The de-overlap solver, multi-line labels and richer card linkifying (beta.1).
+ *   - main 1.4.2's Back/Forward hash fix is already here as 1.5.0-beta.3 (same fix, same
+ *     2026-07-30 23:05 timestamp), so this promotion regresses nothing.
+ *   - Carried over from beta: the GoatCounter Pattern A inline config, which counts the
+ *     #hash so each set view (#hob, #msh, ...) is its own dashboard path. main did not have
+ *     this before. The count.js snippet is still auto-injected at push time, after this config.
+ *
+ * 1.5.0-beta.12 (2026-08-07, 13:34 UTC) - [Claude Opus 5]
+ *   - HOB's own set version 1.0.0-beta.4 -> 1.0.0, ahead of promoting this page to main.
+ *     It is user-visible ("Set code: HOB - Released: ... - Wheel v1.0.0"), and the data
+ *     behind it is settled: the spoiler completed 2026-07-31 and a re-fetch on 08-07 came
+ *     back byte-identical, so there is nothing provisional left to signal. 17lands ratings
+ *     are still pending (~08-28) but those were never part of this page.
+ *
+ * 1.5.0-beta.11 (2026-08-07, 13:29 UTC) - [Claude Opus 5]
+ *   - HOB archetype searches de-duplicated. Merging the four button rows in beta.10 exposed
+ *     that four pairs carried a theme search that just restated the o:<mechanic> button
+ *     (o:storied vs oracle:storied are the SAME query - `o:` IS shorthand for `oracle:`;
+ *     o:amass/o:ferocious/o:landfall vs keyword:<same> differ only in principle). Dropped the
+ *     redundant theme search on BR, BG, RW and GU; the o:<mechanic> button is now the single
+ *     mechanic search there. Creature-type/payoff searches are untouched (Goblins, Power 4+,
+ *     Dwarves, Elves), so those four boxes go 5 buttons -> 4.
+ *   - WU was the one genuine exception - its old theme search was BROADER than o:recruit, not
+ *     a restatement - so instead of dropping it, it is now its own clearly-named search:
+ *     "Second-card payoffs" = set:hob (o:"second card" OR otag:second-draw-matters).
+ *     Verified live against Scryfall 2026-08-07: o:"second card" alone = 4 cards,
+ *     otag:second-draw-matters alone = 4, the union = 5 - each side catches one the other
+ *     misses, so the OR is doing real work. (Note this tag DOES resolve for HOB, unlike
+ *     otag:synergy-draw-two which is still empty - Scryfall's tagger is partway through the set.)
+ *     WU keeps o:recruit alongside it, so WU stays at 5 buttons.
+ *
+ * 1.5.0-beta.10 (2026-08-07, 11:55 UTC) - [Claude Opus 5]
+ *   - FIX: HOB's creature-type searches (t:human, t:goblin, t:dwarf, t:elf) were visible in
+ *     the diagram popup but missing from the boxes under "Primary Archetypes". Root cause:
+ *     the Scryfall button row existed as FOUR hand-copied blocks (InfoPanel, the all-10 grid,
+ *     the primary-archetype grid, the off-arch grid) and beta.9 only added themeSearches to
+ *     two of them. A set renders through the all-10 grid when primaryArchetypes.length === 10
+ *     (MSH, FDN) and through the primary/off-arch grids otherwise (HOB, ECL, TMT, SOS) - so
+ *     MSH's theme buttons appeared and HOB's did not, from identical-looking data.
+ *   - All four blocks replaced by ONE shared <ScryfallRow> component, following the same
+ *     pattern as SourceLine. A new kind of search now gets added in one place. It builds the
+ *     button list in a fixed order (exact identity, inclusive identity, o:mechanic, wedge,
+ *     then themeSearches) and keeps the off-arch rule that wedge boxes drop the exact-identity
+ *     search. WEDGE_COLORS hoisted out of the off-arch map callback to module scope.
+ *   - The diagram popup now matches the boxes' format: a "Scryfall:" caption line, then
+ *     buttons labelled with just the query. Its two buttons lose the redundant word
+ *     ("Scryfall W&U" -> "W&U"). Popup buttons keep their larger padding/font for tap targets.
+ *   - Off-arch boxes gained themeSearches support too. No set has that data today, so no
+ *     visible change - but the row can no longer go missing in one place and not another.
+ *   - Not touched, both already in this format: the single-colour boxes (ColorGrid keeps its
+ *     friendlier "W only" / "W included" labels) and the Set-Wide Mechanics boxes.
+ *
+ * 1.5.0-beta.9 (2026-08-07, 10:07 UTC) - [Claude Sonnet 5]
+ *   - CardLink hover-image no longer overflows the viewport: it now flips to the left
+ *     and/or above the cursor whenever the default down-right placement would run the
+ *     300px preview off the window edge (CARD_PREVIEW_W/H constants, ~14px margin,
+ *     4px clamp as a last-resort fallback). Affects every set, since CardLink is shared.
+ *   - HOB Sagas set-mechanic: cut "Not a new mechanic, but load-bearing here:" - the
+ *     following sentence already says what it needs to without the throat-clearing.
+ *   - InfoPanel (the popup shown when you hover/tap a box on the SVG wheel) now also
+ *     renders each archetype's themeSearches buttons, not just the two generic identity
+ *     searches it always had. This surfaces the creature-type searches (Humans, Goblins,
+ *     Dwarves, Elves) - and any other theme search - directly on the diagram, not only in
+ *     the archetype grid below it. Guarded by `labelData.themeSearches &&`, so it's a
+ *     no-op for ECL/FDN/TMT/SOS (no themeSearches data); HOB and MSH now show it in both
+ *     places.
+ *
+ *   - CardLink hover-image doubled: 150px -> 300px wide (still well under the Scryfall
+ *     `normal` image's native ~488px, so no upscale blur). Radius bumped 8px -> 14px to match.
+ *   - HOB's five unsupported pairs (UB, RG, GW, WB, UR) no longer render a box on the SVG
+ *     wheel at all - previously they showed a small blank box with just the pair code
+ *     (e.g. "UB"). New LabelBox behaviour is gated on the `unsupported` flag, which only
+ *     HOB's blank entries carry, so every other set's wheel is pixel-identical to before.
+ *     The conditional return is placed AFTER the component's hooks (not as an early return
+ *     before them), because the same keyed LabelBox instance is reused across a set switch -
+ *     an early return before a hook would change the hook count between renders when the
+ *     user tabs from HOB to a set with no unsupported pairs. The "Off-Arch / Secondary" list
+ *     section below the diagram is unrelated code and untouched - it already only iterates
+ *     currentSet's actual secondary pairs, never the SVG's blank boxes.
+ *   - New shared `SourceLine` helper (mirrors the existing `linkifyCards` pattern - one
+ *     function, four call sites) renders "Source: X" as before, or "Source: X Y" as two
+ *     independent links when a label carries sourceText2/sourceUrl2. HOB's WU/BR/RW entries
+ *     previously said "Draftsim / WotC Mechanics" as one link pointing only at Draftsim; now
+ *     "Draftsim" and "WotC Mechanics" are separate links, each to its own source.
+ *
+ * 1.5.0-beta.7 (2026-08-07, 09:12 UTC) - [Claude Sonnet 5]
+ *   - HOB spoiler re-check (baseline was 2026-07-31): re-fetched set:hob from Scryfall,
+ *     193 unique cards - byte-identical to baseline (same rarity split, same 5 gold pairs
+ *     WU/BR/BG/RW/GU with the other five still at zero, same layout counts). Recomputed
+ *     all 13 archetype/mechanic search counts from the fresh data - every one unchanged.
+ *     Multiple outside sources (CardGameBase) independently confirm the spoiler completed
+ *     on 2026-07-31, so this is not partial data awaiting more cards - it is the full set.
+ *     Note: WotC's Gatherer lists 278 cards and an early estimate cited 236; both appear to
+ *     be broader-scope figures (e.g. including bonus/box-topper product beyond the 193-card
+ *     Limited-legal main set), not evidence our 193-card Scryfall pull is incomplete.
+ *   - Added The Hobbit Release Notes to resourceLinks - official WotC page, live since
+ *     2026-07-31, previously unlinked. Confirms our storied/recruit/hone-counters reminder
+ *     text verbatim; no new archetype or mechanic information.
+ *   - 17lands data confirmed still unavailable (expected ~2026-08-28, per plan).
+ *
+ * 1.5.0-beta.6 (2026-08-01, 15:38 UTC) - [Claude Opus 5]
+ *   - Off-Arch section: the "most likely 3 colour combinations are the wedges" paragraph
+ *     is now conditional on the set actually framing its off-archetype pairs as wedges
+ *     (secondaryHasWedges). It does not apply to HOB, whose unsupported pairs are simply
+ *     blank, so it is hidden there. SOS still shows it - its off-college labels ARE
+ *     wedges ("Jeskai (WUR) Wedge"), so deleting the line outright would have broken SOS.
+ *   - HOB set-wide mechanics trimmed from 6 to 3. Counted every card carrying each
+ *     mechanic in the Scryfall snapshot and bucketed by colour identity:
+ *       Storied  9 cards - W 4, R 3, WR 2   -> entirely within RW, which lists it already
+ *       Recruit 10 cards - W 5, U 3, WU 2   -> entirely within WU, which lists it already
+ *       Amass   14 cards - B 7, R 4, BR 3   -> entirely within BR, which lists it already
+ *     Those three are removed as duplicates of their archetype's own mechanic entry.
+ *     Nothing is lost: the verbatim reminder text survives in each archetype's
+ *     mechanicDef, and the Scryfall queries survive in each archetype's themeSearches.
+ *     KEPT: Adventure (17 cards) and Sagas (8) are spread across all five colours, and
+ *     Hone counters (2) sits in RW's colours but is NOT any archetype's listed mechanic.
+ *
+ * 1.5.0-beta.5 (2026-08-01, 13:19 UTC) - [Claude Opus 5]
+ *   - Offline / CDN failure is now visible instead of silent. Opening this page with no
+ *     network gave a blank white page: React, ReactDOM and Babel all come from unpkg, so
+ *     Babel never ran, the JSX below was never compiled, and #root stayed empty with no
+ *     error anywhere on screen. A plain (non-Babel) guard script in the body now waits for
+ *     window.load, and if #root is still empty it renders an explanation plus a Reload
+ *     button. It distinguishes the two cases: libraries missing -> "needs an internet
+ *     connection" with the list of what failed; libraries present but nothing drawn ->
+ *     "something went wrong" with the first captured error message.
+ *   - No change to the wheel, data, or any set content.
+ *
+ * 1.5.0-beta.4 (2026-07-31, 21:30 UTC) - [Claude Opus 5]
+ *   - HOB spoiler refresh: snapshot re-fetched, 141 -> 193 of 236 cards (commons
+ *     31 -> 70, the gap that mattered). The five-archetype structure is now
+ *     strongly confirmed: WU 6, BR 7, BG 6, RW 6, GU 5 gold cards, and the other
+ *     five pairs still hold at EXACTLY ZERO with 82% of the set revealed.
+ *   - Official WotC Prerelease Guide is now published and is the new official
+ *     source link; it confirms five archetypes and their signpost uncommons. The
+ *     mechanics article stays as a secondary link.
+ *   - Corrected counts that the refresh made stale: Adventure 14 -> 17 cards,
+ *     Sagas seven -> eight.
+ *
+ * 1.5.0-beta.3 (2026-07-30, 23:05 UTC) - [Claude Opus 5]
  *   - FIX: browser Back/Forward now switches sets. The hash was read only once, in
  *     the useState initializer, so anything changing it after mount (Back/Forward,
  *     editing the URL, an in-page anchor) moved the URL without moving the view.
  *     Added a hashchange listener that pulls the hash back into state. Setting the
  *     same key is a React no-op, so it cannot loop against the hash-writing effect.
  *     Deep links on first load, tab clicks and GoatCounter hash tracking are all
- *     unchanged. Same fix applied to the beta file (1.5.0-beta.3).
- *   - NOTE: this file is otherwise unchanged - The Hobbit (HOB) is beta-only and
- *     has NOT been promoted to main.
+ *     unchanged. Applied identically to main (1.4.2) to keep beta and main in sync.
+ *
+ * 1.5.0-beta.2 (2026-07-30, 22:35 UTC) - [Claude Opus 5]
+ *   - Two fixes found by browser-testing the HOB tab:
+ *     1. The deep-link hint in the subtitle was a hardcoded list that stopped at #msh.
+ *        It is now generated from SET_ORDER, so any future set is listed automatically.
+ *     2. The "Off-Arch / Secondary" color-fixing link was hardcoded to set:sos. That
+ *        section only renders when a set HAS secondary pairs, so MSH/FDN (all 10 pairs
+ *        primary) never showed it and the bug stayed hidden - but HOB has 5 secondary
+ *        pairs, so HOB was linking to an SOS search. Now uses the active set's code.
+ *        Pre-existing bug; also affected ECL and TMT.
+ *
+ * 1.5.0-beta.1 (2026-07-30, 20:40 UTC) - [Claude Opus 5]
+ *   - RECONCILED BETA WITH MAIN. Beta had drifted behind main (was 1.2.0-beta.7 vs main
+ *     1.4.1): it was missing getLabelBoxHeight + the box-height-aware de-overlap solver,
+ *     multi-line tspan titles (titleExtra), the getBbox hOverride param, the "default hash
+ *     route to last set in SET_ORDER" fix, and the richer linkifyCards (bold "Cards:" /
+ *     "Top commons:" labels + <br /> handling). Beta is now main's code baseline plus the
+ *     beta-only GoatCounter Pattern A hash-pageview config, which main does NOT have.
+ *   - Also fixed: old beta's og/twitter image pointed at sos-preview.png, which does not
+ *     exist in this folder (404 for social crawlers). Now uses msh-color-wheel-preview-v2.png.
+ *   - NEW SET: The Hobbit (HOB), releases 2026-08-14. Scryfall set code `hob`.
+ *     HOB supports only FIVE draft archetypes (confirmed two ways: Draftsim names five, and
+ *     the Scryfall snapshot has gold cards in exactly five pairs and zero in the other five).
+ *     Per instruction the 10-label structure is kept and the five unsupported pairs
+ *     (UB, RG, GW, WB, UR) render as blank boxes.
+ *     Archetype prose, signpost uncommons, mechanics reminder text (verbatim from card oracle
+ *     text) and per-archetype Scryfall theme searches all sourced and validated - every search
+ *     URL was executed and returns > 0 cards.
+ *     DATA IS PARTIAL: 141 of 236 cards spoiled as of 2026-07-30 (31 commons of ~80-100
+ *     expected). No HOB top-cards yet - that needs 17lands data (~2026-08-28).
  *
  * 1.4.1 (2026-06-19, 16:22 UTC) - [Claude Opus 4.8]
  *   - Social preview: updated og/twitter image to msh-color-wheel-preview-v2.png
@@ -430,10 +697,69 @@ const SET_DATA = {
       { name: "Plans", keyword: "plan", description: "Enchantments that build toward an ultimate reward: a triggered ability puts plan counters on the enchantment as you meet its condition; when the fourth plan counter is placed, sacrifice it and unlock the payoff (e.g. Political Triumph, Rewrite History).", cards: ["Political Triumph", "Rewrite History"], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-mechanics" },
       { name: "Modal / Transforming Double-Faced Cards", description: "Five modal double-faced cards (e.g. Bruce Banner // The Incredible Hulk, Tony Stark // The Invincible Iron Man) have two faces, and you choose which to cast. Per the release notes, this set's modal DFCs can also transform during play — flipping the alter ego to the more powerful hero side.", cards: ["Bruce Banner // The Incredible Hulk", "Tony Stark // The Invincible Iron Man"], source: "WotC Release Notes", sourceUrl: "https://magic.wizards.com/en/news/feature/marvel-super-heroes-release-notes", scryfallQuery: "https://scryfall.com/search?q=set%3Amsh+is%3Amdfc&unique=cards&as=grid&order=rarity", scryfallLabel: "is:mdfc" },
     ]
+  },
+
+  // ---------------------------------------------------------------------------
+  // The Hobbit (HOB) - releases 2026-08-14. Data partial: 193 of 236 cards
+  // spoiled as of 2026-07-31 (70 commons; was 141 cards / 31 commons on 07-30).
+  //
+  // HOB supports only FIVE draft archetypes. Confirmed two independent ways:
+  // Draftsim names five, and the Scryfall snapshot has gold cards in exactly
+  // five colour pairs (WU, BR, BG, RW, GU) and ZERO in the other five. The
+  // unsupported pairs (UB, RG, GW, WB, UR) are kept as blank entries so the
+  // 10-position wheel geometry is preserved.
+  //
+  // All mechanic reminder text below is verbatim from card oracle text, not
+  // paraphrased. Every themeSearches URL was executed and returns > 0 cards.
+  // ---------------------------------------------------------------------------
+  HOB: {
+    key: 'HOB',
+    name: 'The Hobbit',
+    shortName: 'HOB',
+    releaseDate: 'August 14, 2026',
+    version: '1.0.0',
+    scryfallCodes: ['hob'],
+    primaryArchetypes: ['WU', 'BR', 'BG', 'RW', 'GU'],
+    primaryLabel: 'Only 5 archetypes supported',
+    primaryDescription: "The Hobbit is a smaller set that supports just five two-colour archetypes rather than the usual ten. The remaining five pairs (UB, RG, GW, WB, UR) have no gold cards at all and no signpost uncommons, so they are shown blank. Each supported pair gets a signpost uncommon, a common creature, a dual land, and a \"Company\" rare.",
+    accentColor: '#2E7D32',
+    colorDescriptions: {
+      W: { name: "White", description: "Humans and Dwarves. Feeds Draw Two (WU) with recruit tokens and Storied (RW) with legendary Dwarves and Sagas. White supplies the 1/1 Human Soldier go-wide bodies that recruit generates." },
+      U: { name: "Blue", description: "Card draw and Elves. Feeds Draw Two (WU) by making the second draw each turn trivial, and Landfall (GU) with raft-steerers and ramp payoffs. Blue holds most of the set's explicit \"second card\" triggers." },
+      B: { name: "Black", description: "Goblins and big predators. Feeds Amass Goblins (BR) with the bulk of the set's amass cards, and Ferocious (BG) with hunters that want a power-4 creature around." },
+      R: { name: "Red", description: "Goblins and Dwarves. Feeds Amass Goblins (BR) with aggressive raiders, and Storied (RW) with legendary Dwarves, Equipment and hone counters." },
+      G: { name: "Green", description: "Elves, beasts and lands. Feeds Ferocious (BG) with power-4 threats and Landfall (GU) with extra land drops. Green has the set's largest creatures and its ramp." }
+    },
+    labels: {
+      WU: { text: "Draw Two", sub: "Humans\nRecruit", details: "Drawing a second card each turn is the payoff, and the new recruit mechanic is the enabler — it draws, discards, and leaves a 1/1 Human Soldier behind when you pitch a nonland card. Go wide with Soldiers while the draw triggers accrue value.\nCards: Bard the Bowman; The Queen of Dale; Patient Instructor; Master's Councillors.", cards: ["Bard the Bowman", "The Queen of Dale", "Patient Instructor", "Master's Councillors"], themeSearches: [{ label: "Second-card payoffs", url: "https://scryfall.com/search?q=set%3Ahob+%28o%3A%22second+card%22+OR+otag%3Asecond-draw-matters%29&unique=cards&as=grid&order=name" }, { label: "Humans", url: "https://scryfall.com/search?q=set%3Ahob+t%3Ahuman&unique=cards&as=grid&order=name" }], sourceText: "Draftsim", sourceUrl: "https://draftsim.com/mtg-hob-draft-archetypes/", sourceText2: "WotC Mechanics", sourceUrl2: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", mechanic: "recruit", mechanicDef: "Recruit — \"Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.\"" },
+      UB: { text: "", sub: "", details: "", cards: [], unsupported: true },
+      BR: { text: "Amass\nGoblins", sub: "Aggro", details: "Amass returns building Goblin Armies instead of Orc ones. Pile +1/+1 counters onto a single 0/0 black Goblin Army token, then back it with Goblin typal payoffs and Equipment.\nCards: Bolg of the North; The Great Goblin; Fearsome Goblin Pair; Goblin Plate Mail.", cards: ["Bolg of the North", "The Great Goblin", "Fearsome Goblin Pair", "Goblin Plate Mail"], themeSearches: [{ label: "Goblins", url: "https://scryfall.com/search?q=set%3Ahob+t%3Agoblin&unique=cards&as=grid&order=name" }], sourceText: "Draftsim", sourceUrl: "https://draftsim.com/mtg-hob-draft-archetypes/", sourceText2: "WotC Mechanics", sourceUrl2: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", mechanic: "amass", mechanicDef: "Amass Goblins N — \"To amass Goblins N, put N +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.\"" },
+      RG: { text: "", sub: "", details: "", cards: [], unsupported: true },
+      GW: { text: "", sub: "", details: "", cards: [], unsupported: true },
+      WB: { text: "", sub: "", details: "", cards: [], unsupported: true },
+      UR: { text: "", sub: "", details: "", cards: [], unsupported: true },
+      BG: { text: "Ferocious", sub: "Power 4+\nMidrange", details: "Ferocious asks you to control a creature with power 4 or greater, then rewards you for it. Wolves, bears and trolls supply the bodies; the payoffs turn them into card advantage.\nCards: The Chief Warg; Tom, Bert, and William; Duskwatch Hunter; Large Bear.", cards: ["The Chief Warg", "Tom, Bert, and William", "Duskwatch Hunter", "Large Bear"], themeSearches: [{ label: "Power 4+", url: "https://scryfall.com/search?q=set%3Ahob+power%3E%3D4&unique=cards&as=grid&order=name" }], sourceText: "Draftsim", sourceUrl: "https://draftsim.com/mtg-hob-draft-archetypes/", mechanic: "ferocious", mechanicDef: "Ferocious — a returning ability word checking whether you control a creature with power 4 or greater." },
+      RW: { text: "Storied", sub: "Dwarves\nEquipment", details: "Storied is the set's headline mechanic and works like Ascend: once you control three or more artifacts, legendaries and/or Sagas, you have an enduring story for the rest of the game and it cannot be taken away. Legendary Dwarves, Equipment with hone counters, and the set's seven Sagas all count.\nCards: Thorin Oakenshield; Bifur, Melodic Rider; Dwalin, Weaponmaster; Balin, Loremaster.", cards: ["Thorin Oakenshield", "Bifur, Melodic Rider", "Dwalin, Weaponmaster", "Balin, Loremaster"], themeSearches: [{ label: "Dwarves", url: "https://scryfall.com/search?q=set%3Ahob+t%3Adwarf&unique=cards&as=grid&order=name" }], sourceText: "Draftsim", sourceUrl: "https://draftsim.com/mtg-hob-draft-archetypes/", sourceText2: "WotC Mechanics", sourceUrl2: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", mechanic: "storied", mechanicDef: "Storied — \"If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.\"" },
+      GU: { text: "Landfall", sub: "Elves\nRamp", details: "Every land drop matters. Elves ramp and fix while landfall triggers accumulate; Thranduil's Adventure half rallies the Elves before the creature ever hits the battlefield.\nCards: Silvan Reveler; Thranduil, Sindarin Liege; Thranduil's Company; Mirkwood Nurturer.", cards: ["Silvan Reveler", "Thranduil, Sindarin Liege", "Thranduil's Company", "Mirkwood Nurturer"], themeSearches: [{ label: "Elves", url: "https://scryfall.com/search?q=set%3Ahob+t%3Aelf&unique=cards&as=grid&order=name" }], sourceText: "Draftsim", sourceUrl: "https://draftsim.com/mtg-hob-draft-archetypes/", mechanic: "landfall", mechanicDef: "Landfall — a returning ability word triggering whenever a land enters the battlefield under your control." },
+    },
+    resourceLinks: [
+      { label: "The Hobbit Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/the-hobbit-prerelease-guide", desc: "Official Wizards of the Coast archetype guide - confirms five two-colour archetypes and their signpost uncommons", official: true },
+      { label: "The Hobbit Mechanics", url: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", desc: "Official Wizards of the Coast mechanics breakdown (storied, recruit, hone counters, amass, Adventure)", official: false },
+      { label: "The Hobbit Release Notes", url: "https://magic.wizards.com/en/news/feature/the-hobbit-release-notes", desc: "Official Wizards of the Coast release notes - card-specific rulings and interaction clarifications", official: false },
+      { label: "Exploring All Five of The Hobbit's Limited Archetypes", url: "https://draftsim.com/mtg-hob-draft-archetypes/", desc: "Draftsim's archetype-by-archetype breakdown with signpost uncommons" },
+      { label: "MTG Prerelease Guide: The Hobbit", url: "https://cardgamebase.com/mtg-prerelease-guide-the-hobbit/", desc: "Card Game Base prerelease tips and archetype overview" },
+      { label: "The Hobbit on Scryfall", url: "https://scryfall.com/sets/hob", desc: "Full card gallery and search - the data source behind this page" },
+      { label: "The Hobbit - MTG Wiki", url: "https://mtg.fandom.com/wiki/The_Hobbit", desc: "Set facts: release dates, product configuration, set size" },
+    ],
+    setMechanics: [
+      { name: "Hone counters", keyword: "hone", description: "New. Reminder text: \"Each hone counter on an Equipment grants +1/+0 to equipped creature.\" This is a property of the counter itself, not an ability granted to the Equipment, so it works no matter how the counter arrives. Rewards long games and Equipment decks.", cards: ["Sting, Bilbo's Sword", "Dwalin, Weaponmaster"], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Ahob+o%3Ahone&unique=cards&as=grid&order=rarity", scryfallLabel: "o:hone" },
+      { name: "Adventure", keyword: "adventure", description: "Returning with no rules changes. The card has two castable halves: an instant or sorcery Adventure, which exiles on resolution, and a permanent you may then cast from exile. 17 Adventure cards in the spoiled set so far - a strong signal for two-for-one value across all five archetypes.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Ahob+is%3Aadventure&unique=cards&as=grid&order=rarity", scryfallLabel: "is:adventure" },
+      { name: "Sagas", description: "Eight Sagas in the spoiled set. Sagas are one of the three permanent types that turn on storied, alongside artifacts and legendaries.", source: "Scryfall set data (2026-07-31)", sourceUrl: "https://scryfall.com/sets/hob", scryfallQuery: "https://scryfall.com/search?q=set%3Ahob+t%3Asaga&unique=cards&as=grid&order=rarity", scryfallLabel: "t:saga" },
+    ]
   }
 };
 
-const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH'];
+const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH', 'HOB'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -691,6 +1017,13 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
     }
   }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
 
+  // Unsupported pairs (HOB's five off-archetype pairs) render nothing at all, rather
+  // than the small "code only" blank box other sets' off-pairs get. Placed after every
+  // hook above (not as an early return before them) so hook order stays identical across
+  // renders of this same keyed instance when the user switches sets — a set with no
+  // unsupported pairs must still call the exact same hooks in the exact same order.
+  if (labelData.unsupported) return null;
+
   return (
     <g ref={groupRef} onMouseEnter={onHover} onMouseLeave={onLeave} onClick={onClick}
        style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
@@ -719,6 +1052,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
 // docs/SCRYFALL_IMAGE_LOADING.md for why a direct API image-redirect hotlink
 // is never used here.
 const cardLinkImageCache = new Map();
+const CARD_PREVIEW_W = 300;
+const CARD_PREVIEW_H = Math.round(CARD_PREVIEW_W * 680 / 488); // Scryfall "normal" card image aspect ratio
 
 const CardLink = ({ cardName, setCode, fg }) => {
   const [hovered, setHovered] = useState(false);
@@ -754,12 +1089,22 @@ const CardLink = ({ cardName, setCode, fg }) => {
          onMouseLeave={() => setHovered(false)}>
         {cardName}
       </a>
-      {hovered && imgSrc && ReactDOM.createPortal(
-        <span style={{ position: 'fixed', top: pos.y + 14, left: pos.x + 14, zIndex: 99999, pointerEvents: 'none' }}>
-          <img src={imgSrc} alt={cardName} style={{ width: '150px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', display: 'block' }} />
-        </span>,
-        document.body
-      )}
+      {hovered && imgSrc && (() => {
+        // Flip to the opposite side of the cursor whenever the default (down-right)
+        // placement would run the 300px-wide preview off the viewport edge.
+        const margin = 14, w = CARD_PREVIEW_W, h = CARD_PREVIEW_H;
+        let left = pos.x + margin, top = pos.y + margin;
+        if (left + w > window.innerWidth) left = pos.x - margin - w;
+        if (top + h > window.innerHeight) top = pos.y - margin - h;
+        left = Math.max(4, left);
+        top = Math.max(4, top);
+        return ReactDOM.createPortal(
+          <span style={{ position: 'fixed', top, left, zIndex: 99999, pointerEvents: 'none' }}>
+            <img src={imgSrc} alt={cardName} style={{ width: CARD_PREVIEW_W + 'px', borderRadius: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', display: 'block' }} />
+          </span>,
+          document.body
+        );
+      })()}
     </span>
   );
 };
@@ -820,6 +1165,77 @@ const linkifyCards = (text, cards, setCode, fg) => {
       return <CardLink key={i} cardName={s.__card} setCode={setCode} fg={fg} />;
     }
   });
+};
+
+// Renders "Source: X" as a link, or "Source: X Y" as two separate links (space-separated)
+// when a label carries a second source (sourceText2/sourceUrl2) — e.g. HOB's archetypes
+// citing both Draftsim and the WotC mechanics article.
+const SourceLine = ({ data, fg }) => {
+  if (!data.sourceText) return null;
+  const sources = [{ text: data.sourceText, url: data.sourceUrl }];
+  if (data.sourceText2) sources.push({ text: data.sourceText2, url: data.sourceUrl2 });
+  return (
+    <>
+      Source:{' '}
+      {sources.map((s, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && ' '}
+          {s.url && s.url !== '#'
+            ? <a href={s.url} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{s.text}</a>
+            : <span>{s.text}</span>}
+        </React.Fragment>
+      ))}
+    </>
+  );
+};
+
+const WEDGE_COLORS = { Jeskai: 'W\u222AU\u222AR', Sultai: 'U\u222AB\u222AG', Mardu: 'B\u222AR\u222AW', Temur: 'R\u222AG\u222AU', Abzan: 'G\u222AW\u222AB' };
+
+// The one and only Scryfall button row for a colour pair: a "Scryfall:" caption then one
+// button per search, each labelled with the query itself.
+//
+// This used to be four hand-copied blocks (InfoPanel, the all-10 grid, the primary-archetype
+// grid, the off-arch grid), which is exactly how HOB's themeSearches ended up visible in the
+// diagram popup but missing from the boxes: the block was added to two copies and not the
+// other two. Adding a new kind of search now means adding it here, once.
+//
+// `large` = the floating popup's roomier buttons (easier to tap); grids use the compact size.
+const ScryfallRow = ({ data, pair, sc, bg, fg, large, center }) => {
+  const btns = [];
+  // Off-arch wedge boxes deliberately drop the exact-identity search: for a pair with no
+  // archetype, "cards that are exactly these two colours" is a near-empty result.
+  if (!data.wedge) {
+    btns.push({ label: `${pair[0]}&${pair[1]}`, url: `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}` });
+  }
+  btns.push({ label: `${pair[0]}\u222A${pair[1]}`, url: `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})` });
+  if (data.mechanic) {
+    btns.push({ label: `o:${data.mechanic}`, url: `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` });
+  }
+  if (data.wedge) {
+    btns.push({ label: `${data.wedge} (${WEDGE_COLORS[data.wedge]})`, url: `https://scryfall.com/search?q=set%3A${sc}+id%3C${data.wedge}` });
+  }
+  if (data.themeSearches) btns.push(...data.themeSearches);
+
+  const btnStyle = large
+    ? { padding: '6px 14px', borderRadius: '4px', fontSize: '0.75rem', opacity: 0.8 }
+    : { padding: '4px 10px', borderRadius: '3px', fontSize: '0.65rem' };
+
+  return (
+    <>
+      <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600',
+        textAlign: center ? 'center' : 'left' }}>Scryfall:</div>
+      <div style={{ display: 'flex', gap: large ? '6px' : '4px', flexWrap: 'wrap',
+        justifyContent: center ? 'center' : 'flex-start' }}>
+        {btns.map((b, i) => (
+          <a key={i} href={b.url} target="_blank" rel="noopener noreferrer"
+             style={{ display: 'inline-block', backgroundColor: fg, color: bg,
+               textDecoration: 'none', fontWeight: '600', ...btnStyle }}>
+            {b.label}
+          </a>
+        ))}
+      </div>
+    </>
+  );
 };
 
 const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHover, onColorLeave, currentSet }) => {
@@ -892,8 +1308,6 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
   const { bg, fg } = getLabelColors(pair[0], pair[1]);
   const isPrimary = primaryArchetypes.includes(pair);
   const sc = scryfallCodes[0];
-  const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
-  const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
   return (
     <div onMouseEnter={onHover} onMouseLeave={onLeave}
          style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
@@ -912,25 +1326,10 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
       <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>{linkifyCards(labelData.details, labelData.cards, sc, fg)}</div>
       {labelData.sourceText && (
         <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '12px', fontStyle: 'italic' }}>
-          Source:{' '}
-          {labelData.sourceUrl && labelData.sourceUrl !== '#'
-            ? <a href={labelData.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{labelData.sourceText}</a>
-            : <span>{labelData.sourceText}</span>
-          }
+          <SourceLine data={labelData} fg={fg} />
         </div>
       )}
-      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <a href={exactUrl} target="_blank" rel="noopener noreferrer"
-           style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg,
-             textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', opacity: 0.8 }}>
-          Scryfall {pair[0]}&amp;{pair[1]}
-        </a>
-        <a href={orUrl} target="_blank" rel="noopener noreferrer"
-           style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg,
-             textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', opacity: 0.8 }}>
-          Scryfall {pair[0]}&#x222A;{pair[1]}
-        </a>
-      </div>
+      <ScryfallRow data={labelData} pair={pair} sc={sc} bg={bg} fg={fg} large center />
     </div>
   );
 };
@@ -1023,6 +1422,10 @@ function MultiSetColorWheel() {
 
   const primaryPairs = Object.entries(currentSet.labels).filter(([pair]) => currentSet.primaryArchetypes.includes(pair));
   const secondaryPairs = Object.entries(currentSet.labels).filter(([pair]) => !currentSet.primaryArchetypes.includes(pair));
+  // The wedge advice below only makes sense for sets whose off-archetype pairs are
+  // actually framed as wedges (SOS labels them "Jeskai (WUR) Wedge" etc.). HOB's
+  // unsupported pairs are simply blank, so the wedge paragraph is hidden there.
+  const secondaryHasWedges = secondaryPairs.some(([, data]) => data && data.wedge);
   const allArch = currentSet.primaryArchetypes.length === 10;
 
   return (
@@ -1034,8 +1437,9 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.4.2 &middot; 2026-07-30 23:05 UTC</span></h1>
-          <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with #ecl, #fdn, #tmt, #sos, #msh.</p>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.5.0 &middot; 2026-08-07 13:34 UTC</span></h1>
+          {/* Hash hint is generated from SET_ORDER so a new set is listed automatically. */}
+          <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with {SET_ORDER.map(k => '#' + k.toLowerCase()).join(', ')}.</p>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
@@ -1071,6 +1475,7 @@ function MultiSetColorWheel() {
           const scryfallIcon = {
             SOS: 'https://svgs.scryfall.io/sets/sos.svg',
             MSH: 'https://svgs.scryfall.io/sets/msh.svg',
+            HOB: 'https://svgs.scryfall.io/sets/hob.svg',
           }[key];
           return (
             <button
@@ -1202,9 +1607,6 @@ function MultiSetColorWheel() {
               {Object.entries(currentSet.labels).map(([pair, data]) => {
                 const { bg, fg } = getLabelColors(pair[0], pair[1]);
                 const sc = currentSet.scryfallCodes[0];
-                const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
-                const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-                const mechanicUrl = data.mechanic ? `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` : null;
                 return (
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
@@ -1213,39 +1615,10 @@ function MultiSetColorWheel() {
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                        Source:{' '}
-                        {data.sourceUrl && data.sourceUrl !== '#'
-                          ? <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                          : <span>{data.sourceText}</span>}
+                        <SourceLine data={data} fg={fg} />
                       </div>
                     )}
-                    <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                      <a href={exactUrl} target="_blank" rel="noopener noreferrer"
-                         style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                           textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                        {pair[0]}&amp;{pair[1]}
-                      </a>
-                      <a href={orUrl} target="_blank" rel="noopener noreferrer"
-                         style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                           textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                        {pair[0]}&#x222A;{pair[1]}
-                      </a>
-                      {mechanicUrl && (
-                        <a href={mechanicUrl} target="_blank" rel="noopener noreferrer"
-                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                          o:{data.mechanic}
-                        </a>
-                      )}
-                      {data.themeSearches && data.themeSearches.map((ts, ti) => (
-                        <a key={ti} href={ts.url} target="_blank" rel="noopener noreferrer"
-                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                          {ts.label}
-                        </a>
-                      ))}
-                    </div>
+                    <ScryfallRow data={data} pair={pair} sc={sc} bg={bg} fg={fg} />
                   </div>
                 );
               })}
@@ -1268,9 +1641,6 @@ function MultiSetColorWheel() {
               {primaryPairs.map(([pair, data]) => {
                 const { bg, fg } = getLabelColors(pair[0], pair[1]);
                 const sc = currentSet.scryfallCodes[0];
-                const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
-                const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-                const mechanicUrl = data.mechanic ? `https://scryfall.com/search?q=set%3A${sc}+o%3A${data.mechanic}` : null;
                 return (
                   <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                     border: `2px solid ${blend(pair[0], pair[1])}` }}>
@@ -1279,32 +1649,10 @@ function MultiSetColorWheel() {
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
                     {data.sourceText && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                        Source:{' '}
-                        {data.sourceUrl && data.sourceUrl !== '#'
-                          ? <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                          : <span>{data.sourceText}</span>}
+                        <SourceLine data={data} fg={fg} />
                       </div>
                     )}
-                    <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                      <a href={exactUrl} target="_blank" rel="noopener noreferrer"
-                         style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                           textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                        {pair[0]}&amp;{pair[1]}
-                      </a>
-                      <a href={orUrl} target="_blank" rel="noopener noreferrer"
-                         style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                           textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                        {pair[0]}&#x222A;{pair[1]}
-                      </a>
-                      {mechanicUrl && (
-                        <a href={mechanicUrl} target="_blank" rel="noopener noreferrer"
-                           style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                             textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                          o:{data.mechanic}
-                        </a>
-                      )}
-                    </div>
+                    <ScryfallRow data={data} pair={pair} sc={sc} bg={bg} fg={fg} />
                     {data.mechanicDef && (
                       <div style={{ fontSize: '0.7rem', marginTop: '10px', padding: '6px 8px', borderRadius: '4px',
                         backgroundColor: 'rgba(255,255,255,0.15)', fontStyle: 'italic', lineHeight: '1.4', opacity: 0.9 }}>
@@ -1325,24 +1673,21 @@ function MultiSetColorWheel() {
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '8px' }}>
                   These pairs have no dedicated archetype. You will very rarely be playing them, but the set has a decent amount of{' '}
-                  <a href="https://scryfall.com/search?q=%28otag%3Amana-producer+OR+type%3Aland+OR+otag%3Aramp%29+set%3Asos&unique=cards&as=grid&order=edhrec&dir=" target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>color fixing</a>
+                  <a href={`https://scryfall.com/search?q=%28otag%3Amana-producer+OR+type%3Aland+OR+otag%3Aramp%29+set%3A${currentSet.scryfallCodes[0]}&unique=cards&as=grid&order=edhrec&dir=`} target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>color fixing</a>
                   {' '}so 3 color is doable.
                 </p>
-                <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-                  The most likely 3 color combinations for this set are the{' '}
-                  <a href="https://mtg.fandom.com/wiki/Wedge" target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>'wedges'</a>
-                  , with one 'central' color and its two 'enemy' colors (the ones opposite it on the color wheel). e.g. red, plus its enemies blue and white is Jeskai.
-                </p>
+                {secondaryHasWedges && (
+                  <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
+                    The most likely 3 color combinations for this set are the{' '}
+                    <a href="https://mtg.fandom.com/wiki/Wedge" target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>'wedges'</a>
+                    , with one 'central' color and its two 'enemy' colors (the ones opposite it on the color wheel). e.g. red, plus its enemies blue and white is Jeskai.
+                  </p>
+                )}
                 <div className="archetype-grid" style={{ display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
                   {secondaryPairs.map(([pair, data]) => {
-                    const WEDGE_COLORS = { Jeskai: 'W\u222AU\u222AR', Sultai: 'U\u222AB\u222AG', Mardu: 'B\u222AR\u222AW', Temur: 'R\u222AG\u222AU', Abzan: 'G\u222AW\u222AB' };
                     const { bg, fg } = getLabelColors(pair[0], pair[1]);
                     const sc = currentSet.scryfallCodes[0];
-                    const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}`;
-                    const orUrl = `https://scryfall.com/search?q=set%3A${sc}+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-                    const wedgeUrl = data.wedge ? `https://scryfall.com/search?q=set%3A${sc}+id%3C${data.wedge}` : null;
-                    const wedgeLabel = data.wedge ? `${data.wedge} (${WEDGE_COLORS[data.wedge]})` : null;
                     return (
                       <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                         border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
@@ -1352,34 +1697,10 @@ function MultiSetColorWheel() {
                         <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
                         {data.sourceText && (
                           <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                            Source:{' '}
-                            {data.sourceUrl && data.sourceUrl !== '#'
-                              ? <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                              : <span>{data.sourceText}</span>}
+                            <SourceLine data={data} fg={fg} />
                           </div>
                         )}
-                        <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
-                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                          {!data.wedge && (
-                            <a href={exactUrl} target="_blank" rel="noopener noreferrer"
-                               style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                                 textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                              {pair[0]}&amp;{pair[1]}
-                            </a>
-                          )}
-                          <a href={orUrl} target="_blank" rel="noopener noreferrer"
-                             style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                               textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                            {pair[0]}&#x222A;{pair[1]}
-                          </a>
-                          {wedgeUrl && (
-                            <a href={wedgeUrl} target="_blank" rel="noopener noreferrer"
-                               style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg,
-                                 textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                              {wedgeLabel}
-                            </a>
-                          )}
-                        </div>
+                        <ScryfallRow data={data} pair={pair} sc={sc} bg={bg} fg={fg} />
                       </div>
                     );
                   })}
