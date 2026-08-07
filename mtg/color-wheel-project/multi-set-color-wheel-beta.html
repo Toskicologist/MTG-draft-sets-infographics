@@ -68,14 +68,20 @@
     .site-header .data-info strong { color: #fff; font-weight: 600; }
     .site-header .data-info .sep { opacity: .45; margin: 0 6px; }
     .site-header .data-info .row { margin-top: 7px; }
+    /* "Make your own!" CTA under the set tabs. Outlined rather than filled so it never reads
+       as an eleventh set tab, and tinted with the active set's accentColor via --accent. */
+    .make-your-own { display: inline-block; padding: 7px 18px; border-radius: 999px;
+      border: 2px solid var(--accent, #6B7280); color: var(--accent, #374151);
+      background: transparent; font-size: .85rem; font-weight: 700; text-decoration: none;
+      cursor: pointer; transition: background-color .2s ease, color .2s ease, box-shadow .2s ease; }
+    .make-your-own:hover, .make-your-own:focus-visible {
+      background: var(--accent, #374151); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
     @media (max-width: 560px) {
       .site-header .header-content { padding: 20px 16px; }
       .site-header h1 { font-size: 22px; }
     }
   </style>
-  <script data-goatcounter="https://toskicologist.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-  </head>
+</head>
 <body>
   <div id="root"></div>
 
@@ -168,6 +174,52 @@
  *   - The Hobbit (HOB) - v1.0.0 - Aug 2026
  *
  * CHANGELOG:
+ * 1.6.1-beta.1 (2026-08-07, 15:20 UTC) - [Claude Opus 5]
+ *   - FIX: three HOB top-card names were missing the possessive "s" - "Bilbo' Deadly Slice",
+ *     "Enchanted River' Grasp" and "Bilbo, Luckwearer // Burglar' Plot". The beta.13 generator
+ *     script used an "@S" placeholder that expanded to an escaped apostrophe, and the s after
+ *     it was dropped in three of the six apostrophe names. Those three CardLinks showed the
+ *     wrong name, their exact-name hover lookup could not match, and their Scryfall link
+ *     returned nothing. Caught before this ever went live - 1.6.0 was never pushed.
+ *   - Root cause of it going unnoticed: validate-multiset-beta.js only checks card names under
+ *     labels / colorDescriptions / setMechanics, so HOB_TOP_CARDS was never validated at all.
+ *     All 30 names are now checked against mtg/shared-data/data/hob/hob-scryfall-full.json,
+ *     plus an assertion that Adventure cards keep their full two-part names.
+ *
+ * 1.6.0-beta.1 (2026-08-07, 15:14 UTC) - [Claude Opus 5]
+ *   - Version re-baseline only, NO functional change from 1.5.0-beta.14. Promoted to main as
+ *     1.6.0 in the same pass; without this bump beta would read as older than main (1.5.0-beta.14
+ *     sorts below 1.6.0) while holding byte-identical page content.
+ *
+ * 1.5.0-beta.14 (2026-08-07, 15:12 UTC) - [Claude Opus 5]
+ *   - Added a "Make your own!" button between the set tab bar and the set title, linking to
+ *     the custom colour wheel builder (custom-color-wheel.html on Pages). Deliberately
+ *     OUTLINED rather than filled: the active set tab is the filled pill in the bar right
+ *     above it, so a filled CTA there would read as an eleventh set tab. It picks up the
+ *     current set's accentColor through a --accent custom property, so it re-tints as you
+ *     switch sets, and fills in on hover/focus-visible (keyboard users get the same cue).
+ *
+ * 1.5.0-beta.13 (2026-08-07, 15:03 UTC) - [Claude Opus 5]
+ *   - HOB colour boxes now list Draftsim's top uncommons and top commons per colour (3 each,
+ *     best first) in place of the prose description, with hover-image CardLinks and a
+ *     "Source: Draftsim" credit at the bottom of each box. All 30 names were checked against
+ *     Scryfall's /cards/collection endpoint before being written in: 30/30 resolved in
+ *     set:hob with zero not_found. Six are Adventure cards, so they are stored under their
+ *     FULL two-part names (e.g. "Velvetwing Butterflies // Gaze in Wonder") - Draftsim prints
+ *     only the front half, but CardLink splits on ' // ' before querying and the exact-name
+ *     lookup needs the real name. Same convention as the SOS entries.
+ *   - The SOS-only top-cards block is now data-driven: TOP_CARDS_BY_SET says which sets show
+ *     card lists instead of a description, in which rarity order, and in which layout
+ *     ('inline' = comma-separated, as SOS has always looked; 'stacked' = one name per line,
+ *     which HOB uses). `isSOSSet` is gone. Same lesson as beta.10's ScryfallRow: a second set
+ *     wanting the same feature must not mean a second copy of the renderer. SOS is unchanged
+ *     on screen - it keeps 'inline' and its three rarity rows.
+ *   - HOB's colorDescriptions[*].description strings are now unused (the card lists replace
+ *     them) but are left in place, exactly as SOS's already were - they are the fallback if a
+ *     set is ever taken back out of TOP_CARDS_BY_SET.
+ *   - Removed the shared "Hover archetypes & colors for strategy and Scryfall links. Select a
+ *     set above, or deep-link with #ecl, #fdn, ..." subtitle from the header on all six sets.
+ *
  * 1.5.0-beta.12 (2026-08-07, 13:34 UTC) - [Claude Opus 5]
  *   - HOB's own set version 1.0.0-beta.4 -> 1.0.0, ahead of promoting this page to main.
  *     It is user-visible ("Set code: HOB - Released: ... - Wheel v1.0.0"), and the data
@@ -481,6 +533,53 @@ const SOS_TOP_CARDS = {
     commons: ['Studious First-Year // Rampant Growth', 'Burrog Barrage', 'Noxious Newt'],
     uncommons: ['Additive Evolution', 'Environmental Scientist', 'Topiary Lecturer'],
     rares: ['Germination Practicum', 'Emeritus of Abundance // Regrowth', 'Vastlands Scavenger // Bind to Life'],
+  },
+};
+
+// Top commons/uncommons by color for HOB, from Draftsim's set review. The set is not out yet,
+// so there is no 17lands data to rank by - these are Draftsim's picks, listed best first.
+// Names are full Scryfall names: six of these are Adventure cards, and CardLink splits on
+// ' // ' before querying, exactly as the SOS entries above rely on.
+const HOB_TOP_CARDS = {
+  W: {
+    uncommons: ['Celebrate the Mountain-king', 'Stone by Sunlight', 'Iron Hills Blacksmith'],
+    commons: ['Velvetwing Butterflies // Gaze in Wonder', 'Magnificent End', 'Dwarven Shortsword'],
+  },
+  U: {
+    uncommons: ['Bilbo, Luckwearer // Burglar\'s Plot', 'Lake-town Mariners // Gone Fishing', 'Ravenhill Flock'],
+    commons: ['Bilbo Baggins, Burglar // Take a Glance', 'Uneasy Partings', 'Enchanted River\'s Grasp'],
+  },
+  B: {
+    uncommons: ['Gnashing of Teeth', 'Nighthowl Pursuer', 'Desolation Prowler'],
+    commons: ['Bilbo\'s Deadly Slice', 'Rage into the Valley', 'Stony-Voiced Goblins'],
+  },
+  R: {
+    uncommons: ['Snowslope Hunter', 'Gandalf, Spark Starter', 'Burn, Burn, Tree and Fern'],
+    commons: ['Pinecone Strike', 'Dori, Bearer of Friends', 'Smaug, the Great Calamity // Spew Flame'],
+  },
+  G: {
+    uncommons: ['Nasty Little Rabbit', 'Woodland Weavemaster', 'Troll Negotiations'],
+    commons: ['Quarrel', 'Wood Elves', 'Beorn, Reluctant Host // Till and Tend'],
+  },
+};
+
+// Which sets show a top-cards list in their colour boxes INSTEAD of the prose description,
+// and how. Adding a set here is the whole change - the colour box reads this, and nothing
+// is special-cased by set key any more.
+//   rows    - rarity buckets to show, in display order, with their labels
+//   layout  - 'inline'  packs names comma-separated after the label (SOS)
+//             'stacked' puts one name per line under the label (HOB)
+//   source* - optional credit link, rendered at the bottom of the box
+const TOP_CARDS_BY_SET = {
+  SOS: {
+    cards: SOS_TOP_CARDS, layout: 'inline',
+    rows: [['Top commons', 'commons'], ['Top uncommons', 'uncommons'], ['Top rares/mythics', 'rares']],
+  },
+  HOB: {
+    cards: HOB_TOP_CARDS, layout: 'stacked',
+    rows: [['Top Uncommons', 'uncommons'], ['Top Commons', 'commons']],
+    sourceText: 'Draftsim',
+    sourceUrl: 'https://draftsim.com/best-commons-uncommons-mtg-the-hobbit/',
   },
 };
 
@@ -1224,7 +1323,7 @@ const ScryfallRow = ({ data, pair, sc, bg, fg, large, center }) => {
 const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHover, onColorLeave, currentSet }) => {
   const sc = scryfallCodes[0];
   const colorMap = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
-  const isSOSSet = currentSet.key === 'SOS';
+  const topCfg = TOP_CARDS_BY_SET[currentSet.key];
 
   return (
     <div id="colors" className="color-grid" style={{
@@ -1237,7 +1336,7 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
         const inclUrl = `https://scryfall.com/search?q=set%3A${sc}+id>%3D${color}`;
         const bg = baseHex[color], fg = color === 'W' ? '#000000' : '#FFFFFF';
         const isHovered = hoveredColor === color;
-        const topCards = isSOSSet ? SOS_TOP_CARDS[color] : null;
+        const topCards = topCfg ? topCfg.cards[color] : null;
 
         return (
           <div key={color} onMouseEnter={() => onColorHover(color)} onMouseLeave={onColorLeave}
@@ -1247,17 +1346,21 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
                  transition: 'all 0.2s ease', cursor: 'pointer' }}>
             <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}><i className={manaClasses[color]} /></div>
             <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>{color}: {d.name}</div>
-            {isSOSSet && topCards ? (
+            {topCards ? (
               <div style={{ fontSize: '0.65rem', lineHeight: '1.6', marginBottom: '8px', textAlign: 'left' }}>
-                {[['Top commons', topCards.commons], ['Top uncommons', topCards.uncommons], ['Top rares/mythics', topCards.rares]].map(([label, cards]) => (
-                  <div key={label} style={{ marginBottom: '2px' }}>
-                    <span style={{ fontWeight: '700' }}>{label}:</span>{' '}
-                    {cards.map((card, i) => (
-                      <React.Fragment key={i}>
-                        <CardLink cardName={card} setCode={sc} fg={fg} />
-                        {i < cards.length - 1 ? ', ' : ''}
-                      </React.Fragment>
-                    ))}
+                {topCfg.rows.map(([label, key]) => (
+                  <div key={key} style={{ marginBottom: topCfg.layout === 'stacked' ? '7px' : '2px' }}>
+                    <span style={{ fontWeight: '700' }}>{label}:</span>{topCfg.layout === 'inline' ? ' ' : null}
+                    {topCfg.layout === 'stacked'
+                      ? topCards[key].map((card, i) => (
+                          <div key={i}><CardLink cardName={card} setCode={sc} fg={fg} /></div>
+                        ))
+                      : topCards[key].map((card, i) => (
+                          <React.Fragment key={i}>
+                            <CardLink cardName={card} setCode={sc} fg={fg} />
+                            {i < topCards[key].length - 1 ? ', ' : ''}
+                          </React.Fragment>
+                        ))}
                   </div>
                 ))}
               </div>
@@ -1277,6 +1380,12 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
                 {color} included
               </a>
             </div>
+            {topCfg && topCfg.sourceUrl && (
+              <div style={{ fontSize: '0.6rem', opacity: 0.8, fontStyle: 'italic', marginTop: '8px', textAlign: 'left' }}>
+                Source: <a href={topCfg.sourceUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ color: fg, textDecoration: 'underline' }}>{topCfg.sourceText}</a>
+              </div>
+            )}
           </div>
         );
       })}
@@ -1420,9 +1529,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.5.0-beta.12 &middot; 2026-08-07 13:34 UTC &middot; BETA</span></h1>
-          {/* Hash hint is generated from SET_ORDER so a new set is listed automatically. */}
-          <p className="subtitle">Hover archetypes &amp; colors for strategy and Scryfall links. Select a set above, or deep-link with {SET_ORDER.map(k => '#' + k.toLowerCase()).join(', ')}.</p>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.6.1-beta.1 &middot; 2026-08-07 15:20 UTC &middot; BETA</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
@@ -1488,6 +1595,15 @@ function MultiSetColorWheel() {
             </button>
           );
         })}
+      </div>
+
+      {/* Link out to the custom wheel builder */}
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        <a className="make-your-own" style={{ '--accent': currentSet.accentColor }}
+           href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/custom-color-wheel.html"
+           target="_blank" rel="noopener noreferrer">
+          Make your own!
+        </a>
       </div>
 
       {/* Current Set Info */}
