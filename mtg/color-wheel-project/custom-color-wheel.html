@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom MTG Color Wheel Builder</title>
+  <meta property="og:title" content="Custom MTG Color Wheel Builder">
+  <meta property="og:description" content="Type your own archetype names into a blank Magic: The Gathering color wheel and download the graphic.">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
+  <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/custom-color-wheel.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
+  <meta name="twitter:title" content="Custom MTG Color Wheel Builder">
+  <meta name="twitter:description" content="Type your own archetype names into a blank Magic: The Gathering color wheel and download the graphic.">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    @media (max-width: 768px) {
+      .color-wheel-svg { max-height: none !important; max-width: 100% !important; width: 100% !important; }
+      .main-container { padding: 4px !important; }
+    }
+    /* ---- shared site header (image + credits, matches other MTG project pages) ----
+       Image referenced by ABSOLUTE Pages URL so it survives this file's folder
+       location (it lives under mtg/, not the Pages root). See mtg/SHARED_HEADER_FOOTER.md. */
+    .site-header { position: relative; border-radius: 12px; overflow: hidden;
+      width: 100%; max-width: 900px; margin: 0 0 22px; box-shadow: 0 4px 6px rgba(0,0,0,.18);
+      background-image: url('https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018,%202026,%2010_33_59%20PM.png');
+      background-size: cover; background-position: center; background-repeat: no-repeat; }
+    .site-header::before { content: ''; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(135deg, rgba(102,126,234,.78) 0%, rgba(118,75,162,.78) 100%); }
+    .site-header .header-content { position: relative; z-index: 2; padding: 26px 28px; color: #fff; }
+    .site-header h1 { color: #fff; font-size: 28px; margin: 0 0 6px; text-align: center;
+      text-shadow: 1px 1px 3px rgba(0,0,0,.4); font-weight: 700; }
+    .site-header h1 span { color: rgba(255,255,255,.78); font-size: 12px; font-weight: 400; text-shadow: none; }
+    .site-header .subtitle { text-align: center; color: rgba(255,255,255,.95); font-size: 14px; margin: 0 0 14px; line-height: 1.5; }
+    .site-header .data-info { background: rgba(255,255,255,.13); padding: 11px 14px; border-radius: 8px;
+      text-align: center; font-size: 12.5px; line-height: 1.7; color: rgba(255,255,255,.95); }
+    .site-header .data-info a { color: #fff; text-decoration: underline; }
+    .site-header .data-info a:hover { opacity: .85; }
+    .site-header .data-info strong { color: #fff; font-weight: 600; }
+    .site-header .data-info .sep { opacity: .45; margin: 0 6px; }
+    .site-header .data-info .row { margin-top: 7px; }
+    @media (max-width: 560px) {
+      .site-header .header-content { padding: 20px 16px; }
+      .site-header h1 { font-size: 22px; }
+    }
+
+    /* ---- label builder table ---- */
+    .builder { width: 100%; max-width: 900px; }
+    .builder-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .builder-table th { text-align: left; font-size: 12px; text-transform: uppercase;
+      letter-spacing: .04em; color: #6B7280; font-weight: 600; padding: 8px 10px;
+      border-bottom: 2px solid #E5E7EB; }
+    .builder-table td { padding: 7px 10px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+    .builder-table tr.is-active td { background: #FFFBEB; }
+    .builder-table tr.is-off td { opacity: .55; }
+    .builder-table input[type="text"] { width: 100%; padding: 7px 9px; font-size: 14px;
+      font-family: inherit; border: 1px solid #D1D5DB; border-radius: 6px; background: #fff; color: #111827; }
+    .builder-table input[type="text"]:focus { outline: none; border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,.18); }
+    .builder-table input[type="checkbox"] { width: 17px; height: 17px; cursor: pointer; }
+    .pair-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px;
+      border-radius: 6px; font-weight: 700; font-size: 13px; white-space: nowrap; }
+    .pair-guild { display: block; font-size: 11.5px; color: #9CA3AF; margin-top: 3px; }
+    .mlabel { display: none; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+      color: #9CA3AF; font-weight: 600; margin-bottom: 3px; }
+    /* Stack each row into a card on narrow screens - a 4-column table does not fit a phone. */
+    @media (max-width: 700px) {
+      .builder-table thead { display: none; }
+      .builder-table, .builder-table tbody, .builder-table tr, .builder-table td { display: block; width: 100%; }
+      .builder-table tr { border: 1px solid #E5E7EB; border-radius: 10px; margin-bottom: 10px; padding: 8px 4px; }
+      .builder-table td { border-bottom: none; padding: 5px 10px; }
+      .mlabel { display: block; }
+      .builder-table td.cell-toggle { display: flex; align-items: center; gap: 8px; }
+      /* nowrap: in the stacked card this cell is a flex row, so "Show on wheel" would
+         otherwise break across three lines next to its checkbox. */
+      .builder-table td.cell-toggle .mlabel { margin: 0; white-space: nowrap; }
+    }
+    .btn { padding: 9px 16px; font-size: 14px; font-weight: 600; font-family: inherit;
+      border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; }
+    .btn-primary { background: #4F46E5; color: #fff; }
+    .btn-primary:hover { background: #4338CA; }
+    .btn-secondary { background: #fff; color: #374151; border-color: #D1D5DB; }
+    .btn-secondary:hover { background: #F9FAFB; border-color: #9CA3AF; }
+  </style>
+  <script data-goatcounter="https://toskicologist.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+  </head>
+<body>
+  <div id="root"></div>
+
+  <!--
+    Offline / CDN guard. Everything below is rendered by the type="text/babel" block, which
+    needs React, ReactDOM and Babel from unpkg. With no network those never load, Babel never
+    compiles the JSX, and #root stays empty - a silent white page. This turns that into a
+    readable message. Plain <script> on purpose: it must run when Babel is exactly what failed.
+  -->
+  <script>
+    (function () {
+      var firstError = null;
+      window.addEventListener('error', function (e) {
+        if (!firstError && e && e.message) firstError = e.message;
+      }, true);
+
+      function missingLibs() {
+        var missing = [];
+        if (!window.React) missing.push('React');
+        if (!window.ReactDOM) missing.push('ReactDOM');
+        if (!window.Babel) missing.push('Babel');
+        return missing;
+      }
+
+      function el(tag, css, text) {
+        var node = document.createElement(tag);
+        if (css) node.setAttribute('style', css);
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      function showFailure() {
+        var root = document.getElementById('root');
+        if (!root || root.childElementCount > 0) return;  // rendered fine, nothing to do
+
+        var missing = missingLibs();
+        var box = el('div', 'max-width:620px;margin:80px auto;padding:32px 24px;text-align:center;' +
+                            'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;' +
+                            'background:#fff;border:1px solid #e2e2e2;border-radius:10px;');
+
+        if (missing.length) {
+          box.appendChild(el('div', 'font-size:40px;line-height:1;margin-bottom:16px;', '📡'));
+          box.appendChild(el('h1', 'font-size:21px;color:#1a1a1a;margin-bottom:12px;font-weight:600;',
+            'This page needs an internet connection'));
+          box.appendChild(el('p', 'font-size:15px;color:#555;line-height:1.6;',
+            'The color wheel is drawn in your browser by React, which loads from a CDN along with ' +
+            'Babel. Those files could not be fetched, so there is nothing to draw.'));
+          box.appendChild(el('p', 'font-size:13px;color:#888;line-height:1.6;margin-top:14px;',
+            'Did not load: ' + missing.join(', ')));
+        } else {
+          box.appendChild(el('div', 'font-size:40px;line-height:1;margin-bottom:16px;', '⚠️'));
+          box.appendChild(el('h1', 'font-size:21px;color:#1a1a1a;margin-bottom:12px;font-weight:600;',
+            'Something went wrong rendering this page'));
+          box.appendChild(el('p', 'font-size:15px;color:#555;line-height:1.6;',
+            'The libraries loaded, but the page failed to draw. This is a bug, not a connection ' +
+            'problem - the browser console has the details.'));
+          if (firstError) {
+            box.appendChild(el('p', 'font-size:12px;color:#888;margin-top:14px;text-align:left;' +
+                                    'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;' +
+                                    'background:#f7f7f7;border-radius:6px;padding:10px 12px;' +
+                                    'word-break:break-word;', firstError));
+          }
+        }
+
+        var retry = el('button', 'margin-top:22px;padding:9px 20px;font-size:14px;color:#fff;' +
+                                 'background:#4a5568;border:0;border-radius:6px;cursor:pointer;', 'Reload');
+        retry.onclick = function () { location.reload(); };
+        box.appendChild(retry);
+
+        root.appendChild(box);
+      }
+
+      // window.load fires after Babel's DOMContentLoaded transform pass; the timeout leaves
+      // room for the first React render before we call it a failure.
+      window.addEventListener('load', function () { setTimeout(showFailure, 500); });
+    })();
+  </script>
+
+  <script type="text/babel">
+/**
+ * Custom MTG Color Wheel Builder
+ * 1.0.0
+ *
+ * A blank version of the multi-set color wheel: no set data, no archetype write-ups,
+ * no Scryfall lookups. The wheel skeleton (5 colour nodes, 10 pair edges, 10 label
+ * boxes) renders empty, and the user types their own label into a table below it.
+ *
+ * The geometry, colour maths and SVG components are ported verbatim from
+ * multi-set-color-wheel.html v1.5.0 so a custom wheel looks identical to the
+ * published ones. Only the data source differs: React state fed by text inputs
+ * instead of a hard-coded SET_DATA object.
+ *
+ * CHANGELOG:
+ * 1.0.0 (2026-08-07, 14:54 UTC) - [Claude Opus 5] - PROMOTED FROM BETA
+ *   - First public release. Identical to 1.0.0-beta.1 below apart from the version
+ *     stamp, the og:url, and the localStorage key (the beta uses a "-beta" suffix so
+ *     experimenting there cannot overwrite work saved on this page - same origin).
+ *     The beta had no outstanding issues to fix.
+ *
+ * 1.0.0-beta.1 (2026-08-07, 14:37 UTC) - [Claude Opus 5]
+ *   - New page. Shared site header, blank wheel, and a 10-row builder table
+ *     (pair badge / label / sub-label / show-on-wheel toggle).
+ *   - A "|" in either text field is a line break, since a single-line input cannot
+ *     hold the "\n" the ported label boxes stack on.
+ *   - Wheel title field, B&W toggle and text-size slider carried over from the
+ *     multi-set wheel's controls.
+ *   - Hovering or focusing a table row highlights that pair on the wheel, and
+ *     vice versa.
+ *   - Download PNG: clears any hover highlight first (otherwise the highlighted pair's
+ *     gold outline and every other pair's dimming get baked into the image), clones the
+ *     live SVG, swaps each mana-font foreignObject for a plain SVG letter (icon fonts do
+ *     not survive canvas rasterisation), and renders at 2x on a white background.
+ *   - Work autosaves to localStorage; "Guild names" prefills all ten, "Clear all"
+ *     empties them.
+ */
+
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+
+const baseHex = {
+  W: "#FFFFFF",
+  U: "#3366FF",
+  B: "#000000",
+  R: "#FF3333",
+  G: "#2ECC40",
+};
+
+const manaClasses = {
+  W: 'ms ms-w',
+  U: 'ms ms-u',
+  B: 'ms ms-b',
+  R: 'ms ms-r',
+  G: 'ms ms-g',
+};
+
+const colorOrder = ['W', 'U', 'B', 'R', 'G'];
+
+// Same key set and ordering the published wheels use for a 10-archetype set
+// (see FDN in multi-set-color-wheel.html): five allied pairs, then five enemy.
+const ALL_PAIRS = ['WU', 'UB', 'BR', 'RG', 'GW', 'WB', 'UR', 'BG', 'RW', 'GU'];
+
+// Shown as a greyed hint beside each pair, and used by the "Guild names" prefill.
+const GUILD_NAMES = {
+  WU: 'Azorius', UB: 'Dimir', BR: 'Rakdos', RG: 'Gruul', GW: 'Selesnya',
+  WB: 'Orzhov', UR: 'Izzet', BG: 'Golgari', RW: 'Boros', GU: 'Simic',
+};
+
+const COLOR_NAMES = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+
+// A single-line <input> cannot hold a newline, but the wheel's label boxes stack lines
+// exactly like the published ones ("Flying\nTempo"). A pipe in the input is the user's
+// line break; everything downstream (box height, de-overlap solver, rendering) then sees
+// the same "\n" the ported code already understands.
+const LINE_BREAK_CHAR = '|';
+const toWheelText = (s) => (s || '').split(LINE_BREAK_CHAR).map(t => t.trim()).join('\n');
+const toWheelEntry = (entry) => ({ text: toWheelText(entry.text), sub: toWheelText(entry.sub) });
+
+const STORAGE_KEY = 'mtg-custom-color-wheel-v1';
+
+const SVG_FONT_STACK = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+// ─── HELPERS (ported from multi-set-color-wheel.html v1.5.0) ──────────────────
+
+const isMobile = () => window.innerWidth <= 768;
+
+const getConfig = (textSizeMultiplier = 1.0) => {
+  const mobile = isMobile();
+  const baseFontSize = mobile ? 10 : 11;
+  return {
+    width: 700,
+    height: 700,
+    cx: 350,
+    cy: 330,
+    radius: mobile ? 140 : 180,
+    nodeRadius: mobile ? 24 : 30,
+    edgeWidth: mobile ? 4 : 5,
+    boxW: mobile ? 58 : 62,
+    boxH: mobile ? 32 : 36,
+    primaryBoxW: mobile ? 68 : 72,
+    primaryBoxH: mobile ? 40 : 44,
+    fontSize: Math.round(baseFontSize * textSizeMultiplier),
+    lineSpacing: mobile ? 9 : 10,
+    iterMax: 240,
+    pushStep: 6,
+  };
+};
+
+const hexToRgb = (h) => {
+  const hex = h.replace('#', '');
+  return [parseInt(hex.substring(0,2),16), parseInt(hex.substring(2,4),16), parseInt(hex.substring(4,6),16)];
+};
+
+const rgbToHex = (r, g, b) =>
+  '#' + [r, g, b].map(x => Math.round(x).toString(16).padStart(2, '0')).join('');
+
+const darken = (h, amt = 0.4) => {
+  const [r, g, b] = hexToRgb(h);
+  return rgbToHex(r*(1-amt), g*(1-amt), b*(1-amt));
+};
+
+const blend = (u, v) => {
+  const [r1,g1,b1] = hexToRgb(baseHex[u]);
+  const [r2,g2,b2] = hexToRgb(baseHex[v]);
+  return rgbToHex((r1+r2)/2, (g1+g2)/2, (b1+b2)/2);
+};
+
+const relLum = (h) => {
+  const [r,g,b] = hexToRgb(h).map(x => x/255);
+  const f = (c) => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+  return 0.2126*f(r) + 0.7152*f(g) + 0.0722*f(b);
+};
+
+const contrastRatio = (bg, fg) => {
+  const [L1,L2] = [relLum(bg), relLum(fg)].sort((a,b) => b-a);
+  return (L1+0.05)/(L2+0.05);
+};
+
+const getLabelColors = (u, v) => {
+  let bg, fg;
+  if (u === 'B' || v === 'B') {
+    bg = '#000000';
+    const partner = u === 'B' ? v : u;
+    fg = partner === 'W' ? '#FFFFFF' : baseHex[partner];
+  } else if (u === 'W' || v === 'W') {
+    const partner = u === 'W' ? v : u;
+    bg = darken(baseHex[partner], 0.4);
+    fg = '#FFFFFF';
+  } else {
+    bg = darken(baseHex[u], 0.4);
+    fg = baseHex[v];
+    if (contrastRatio(bg, fg) < 4.5) {
+      const [r,g,b] = hexToRgb(fg);
+      fg = rgbToHex(Math.min(r+140,255), Math.min(g+140,255), Math.min(b+140,255));
+    }
+  }
+  return { bg, fg };
+};
+
+const getEdgeList = (labels) => Object.keys(labels).map(pair => ({
+  u: pair[0], v: pair[1],
+  uIdx: colorOrder.indexOf(pair[0]),
+  vIdx: colorOrder.indexOf(pair[1]),
+}));
+
+const getNodePos = (index, config) => {
+  const angle = (index * 72 - 90) * (Math.PI / 180);
+  return { x: config.cx + config.radius * Math.cos(angle), y: config.cy + config.radius * Math.sin(angle) };
+};
+
+const getNodePositions = (config) => colorOrder.map((_,i) => getNodePos(i, config));
+
+const getEdgeGeometry = (uIdx, vIdx, config) => {
+  const np = getNodePositions(config);
+  const p1 = np[uIdx], p2 = np[vIdx];
+  const dx = p2.x-p1.x, dy = p2.y-p1.y;
+  const L = Math.hypot(dx, dy);
+  const ux = dx/L, uy = dy/L;
+  const x = (p1.x + ux*config.nodeRadius + p2.x - ux*config.nodeRadius)/2;
+  const y = (p1.y + uy*config.nodeRadius + p2.y - uy*config.nodeRadius)/2;
+  return { x, y, tx: ux, ty: uy, nx: -uy, ny: ux };
+};
+
+const getBbox = (cx, cy, isPrimary, config, hOverride) => {
+  const w = isPrimary ? config.primaryBoxW : config.boxW;
+  const h = hOverride != null ? hOverride : (isPrimary ? config.primaryBoxH : config.boxH);
+  return { x1: cx-w/2, x2: cx+w/2, y1: cy-h/2, y2: cy+h/2 };
+};
+
+// True rendered box height for a label, mirroring LabelBox's totalTextHeight (so the
+// de-overlap solver knows when a wrapped title makes a box taller). Never smaller than config.
+const getLabelBoxHeight = (labelData, isPrimary, config) => {
+  const lh = config.fontSize * 1.1;
+  const titleLines = (labelData && labelData.text ? labelData.text : '').split('\n');
+  const subLines = labelData && labelData.sub ? labelData.sub.split('\n') : [];
+  const textH = lh /*code*/ + lh /*title line 1*/ + (titleLines.length - 1) * lh
+    + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
+  return Math.max(textH + 6, isPrimary ? config.primaryBoxH : config.boxH);
+};
+
+const isOverlap = (b1, b2, margin = 2) =>
+  !(b1.x2+margin < b2.x1 || b2.x2+margin < b1.x1 || b1.y2+margin < b2.y1 || b2.y2+margin < b1.y1);
+
+const computeLabelPositions = (config, labels, primaryArchetypes) => {
+  const edges = getEdgeList(labels);
+  const groups = edges.map(edge => {
+    const pairCode = edge.u + edge.v;
+    const isPrimary = primaryArchetypes.includes(pairCode);
+    const labelData = labels[pairCode] || labels[edge.v + edge.u];
+    const boxH = getLabelBoxHeight(labelData, isPrimary, config);
+    const { x, y, tx, ty, nx, ny } = getEdgeGeometry(edge.uIdx, edge.vIdx, config);
+    const sgn = (x - config.cx)*nx + (y - config.cy)*ny > 0 ? 1 : -1;
+    const off = sgn * (isPrimary ? 20 : 15);
+    const tshift = edge.u < edge.v ? 3 : -3;
+    const cx = x + nx*off + tx*tshift;
+    const cy = y + ny*off + ty*tshift;
+    return { ...edge, cx, cy, isPrimary, boxH, bbox: getBbox(cx, cy, isPrimary, config, boxH) };
+  });
+  for (let iter = 0; iter < config.iterMax; iter++) {
+    let moved = false;
+    for (let i = 0; i < groups.length; i++) {
+      for (let j = i+1; j < groups.length; j++) {
+        if (isOverlap(groups[i].bbox, groups[j].bbox)) {
+          const dx = groups[i].cx - groups[j].cx;
+          const dy = groups[i].cy - groups[j].cy;
+          const L = Math.hypot(dx, dy) + 0.001;
+          groups[i].cx += (dx/L)*config.pushStep;
+          groups[i].cy += (dy/L)*config.pushStep;
+          groups[j].cx -= (dx/L)*config.pushStep;
+          groups[j].cy -= (dy/L)*config.pushStep;
+          groups[i].bbox = getBbox(groups[i].cx, groups[i].cy, groups[i].isPrimary, config, groups[i].boxH);
+          groups[j].bbox = getBbox(groups[j].cx, groups[j].cy, groups[j].isPrimary, config, groups[j].boxH);
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+  return groups;
+};
+
+// ─── SVG COMPONENTS ───────────────────────────────────────────────────────────
+
+const ManaSymbol = ({ color, size = 24, isSimple = false }) => (
+  <i
+    className={manaClasses[color]}
+    style={{
+      fontSize: `${size}px`,
+      color: isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF'),
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}
+  />
+);
+
+const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple, config }) => {
+  const pos = getNodePositions(config)[index];
+  const pipColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
+  return (
+    <g onMouseEnter={onHover} onMouseLeave={onLeave}
+       style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+       opacity={isDimmed ? 0.3 : 1}>
+      <circle cx={pos.x} cy={pos.y} r={config.nodeRadius + (isHighlighted ? 12 : 8)}
+        fill={isHighlighted ? "#FFD700" : (isSimple ? 'transparent' : baseHex[color])}
+        opacity={isHighlighted ? 0.6 : 0.25} style={{ transition: 'all 0.2s ease' }} />
+      <circle cx={pos.x} cy={pos.y} r={config.nodeRadius}
+        fill={isSimple ? '#FFFFFF' : baseHex[color]}
+        stroke={isHighlighted ? "#FFD700" : "#000000"}
+        strokeWidth={isHighlighted ? 4 : 3} style={{ transition: 'all 0.2s ease' }} />
+      {/* data-* attributes are read by the PNG exporter, which swaps this whole
+          foreignObject for a plain SVG letter - see exportPng(). */}
+      <foreignObject x={pos.x-20} y={pos.y-20} width={40} height={40}
+        data-pip={color} data-pip-fill={pipColor}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px',
+          color: pipColor }}>
+          <ManaSymbol color={color} size={30} isSimple={isSimple} />
+        </div>
+      </foreignObject>
+    </g>
+  );
+};
+
+const EdgeLine = ({ edge, isHighlighted, isDimmed, isOn, isSimple, config }) => {
+  const np = getNodePositions(config);
+  const p1 = np[edge.uIdx], p2 = np[edge.vIdx];
+  const lineOpacity = isDimmed ? 0.1 : (isOn ? 1 : 0.18);
+  return (
+    <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+      stroke={isHighlighted ? "#FFD700" : (isSimple ? '#000000' : blend(edge.u, edge.v))}
+      strokeWidth={isHighlighted ? config.edgeWidth+3 : (isOn ? config.edgeWidth+2 : config.edgeWidth)}
+      opacity={lineOpacity} style={{ transition: 'all 0.2s ease' }} />
+  );
+};
+
+const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple, config, labels }) => {
+  const groupRef = useRef(null);
+  const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
+  const code = group.u + group.v;
+  const labelData = labels[code] || { text: '', sub: '' };
+  const { bg, fg } = getLabelColors(group.u, group.v);
+  const subLines = labelData.sub ? labelData.sub.split('\n') : [];
+  const boxBg = isSimple ? '#FFFFFF' : bg;
+  const boxStroke = isSimple ? '#000000' : blend(group.u, group.v);
+  const textColor = isSimple ? '#000000' : fg;
+
+  const titleLines = (labelData.text || '').split('\n');
+  const lh = config.fontSize * 1.1;
+  const titleExtra = (titleLines.length - 1) * lh; // extra height per wrapped title line
+  const totalTextHeight = lh /*code*/ + lh /*title line 1*/ + titleExtra + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
+  const startY = group.cy - totalTextHeight / 2;
+  const y1 = startY + lh * 0.8, y2 = y1 + lh, y3 = y2 + titleExtra + lh * 0.9;
+
+  useEffect(() => {
+    if (groupRef.current) {
+      const texts = groupRef.current.querySelectorAll('text');
+      let maxWidth = 0;
+      texts.forEach(t => { try { maxWidth = Math.max(maxWidth, t.getBBox().width); } catch(e){} });
+      setBoxSize({ width: Math.max(maxWidth + 10, 38), height: totalTextHeight + 6 });
+    }
+  }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
+
+  return (
+    <g ref={groupRef} onMouseEnter={onHover} onMouseLeave={onLeave}
+       style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+       opacity={isDimmed ? 0.15 : 1}
+       transform={isHighlighted ? `translate(${group.cx},${group.cy}) scale(1.08) translate(${-group.cx},${-group.cy})` : undefined}>
+      <rect x={group.cx-boxSize.width/2} y={group.cy-boxSize.height/2}
+        width={boxSize.width} height={boxSize.height} rx={4}
+        fill={boxBg} stroke={isHighlighted ? "#FFD700" : boxStroke}
+        strokeWidth={isHighlighted ? 3 : 2}
+        style={{ transition: 'all 0.2s ease' }} />
+      <text x={group.cx} y={y1} textAnchor="middle" fontSize={config.fontSize} fontWeight="bold" fill={textColor}>{code}</text>
+      <text x={group.cx} y={y2} textAnchor="middle" fontSize={config.fontSize} fontWeight="bold" fill={textColor}>
+        {titleLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : lh}>{line}</tspan>)}
+      </text>
+      {subLines.length > 0 && (
+        <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
+          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
+        </text>
+      )}
+    </g>
+  );
+};
+
+// ─── BUILDER TABLE ────────────────────────────────────────────────────────────
+
+const PairBadge = ({ pair, isSimple }) => {
+  const { bg, fg } = getLabelColors(pair[0], pair[1]);
+  return (
+    <span className="pair-badge" style={{
+      backgroundColor: isSimple ? '#FFFFFF' : bg,
+      color: isSimple ? '#000000' : fg,
+      border: `1.5px solid ${isSimple ? '#000000' : blend(pair[0], pair[1])}`,
+    }}>
+      <i className={manaClasses[pair[0]]} style={{ fontSize: '13px' }} />
+      <i className={manaClasses[pair[1]]} style={{ fontSize: '13px' }} />
+      {pair}
+    </span>
+  );
+};
+
+const BuilderRow = ({ pair, entry, isActive, onChange, onActivate, onDeactivate, isSimple }) => (
+  <tr
+    className={(isActive ? 'is-active ' : '') + (entry.on ? '' : 'is-off')}
+    onMouseEnter={onActivate}
+    onMouseLeave={onDeactivate}
+    onFocus={onActivate}
+    onBlur={onDeactivate}
+  >
+    <td style={{ width: '150px' }}>
+      <PairBadge pair={pair} isSimple={isSimple} />
+      <span className="pair-guild">{GUILD_NAMES[pair]} &middot; {COLOR_NAMES[pair[0]]}/{COLOR_NAMES[pair[1]]}</span>
+    </td>
+    <td>
+      <span className="mlabel">Label</span>
+      <input
+        type="text"
+        value={entry.text}
+        placeholder={`e.g. ${GUILD_NAMES[pair]}`}
+        aria-label={`${pair} label`}
+        onChange={e => onChange(pair, 'text', e.target.value)}
+      />
+    </td>
+    <td>
+      <span className="mlabel">Sub-label (optional)</span>
+      <input
+        type="text"
+        value={entry.sub}
+        placeholder="e.g. Flying | Tempo"
+        aria-label={`${pair} sub-label`}
+        onChange={e => onChange(pair, 'sub', e.target.value)}
+      />
+    </td>
+    <td className="cell-toggle" style={{ width: '80px', textAlign: 'center' }}>
+      <span className="mlabel">Show on wheel</span>
+      <input
+        type="checkbox"
+        checked={entry.on}
+        aria-label={`Show ${pair} on the wheel`}
+        onChange={e => onChange(pair, 'on', e.target.checked)}
+      />
+    </td>
+  </tr>
+);
+
+// ─── PAGE ─────────────────────────────────────────────────────────────────────
+
+const blankLabels = () => {
+  const out = {};
+  ALL_PAIRS.forEach(p => { out[p] = { text: '', sub: '', on: true }; });
+  return out;
+};
+
+const guildLabels = () => {
+  const out = {};
+  ALL_PAIRS.forEach(p => { out[p] = { text: GUILD_NAMES[p], sub: '', on: true }; });
+  return out;
+};
+
+// localStorage may be unavailable (private mode, file:// in some browsers) or hold
+// data from an older shape - never let either break the page, just start blank.
+const loadSaved = () => {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || !parsed.labels) return null;
+    const labels = blankLabels();
+    ALL_PAIRS.forEach(p => {
+      const saved = parsed.labels[p];
+      if (saved && typeof saved === 'object') {
+        labels[p] = {
+          text: typeof saved.text === 'string' ? saved.text : '',
+          sub: typeof saved.sub === 'string' ? saved.sub : '',
+          on: saved.on !== false,
+        };
+      }
+    });
+    return { labels, title: typeof parsed.title === 'string' ? parsed.title : '' };
+  } catch (e) {
+    return null;
+  }
+};
+
+function CustomColorWheel() {
+  const saved = useRef(loadSaved()).current;
+  const [labels, setLabels] = useState(() => (saved ? saved.labels : blankLabels()));
+  const [wheelTitle, setWheelTitle] = useState(() => (saved ? saved.title : ''));
+  const [activePair, setActivePair] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const [isSimple, setIsSimple] = useState(false);
+  const [textSize, setTextSize] = useState(1.0);
+  const [config, setConfig] = useState(() => getConfig(1.0));
+  const [mobile, setMobile] = useState(() => isMobile());
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => { setConfig(getConfig(textSize)); setMobile(isMobile()); };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [textSize]);
+
+  useEffect(() => { setConfig(getConfig(textSize)); }, [textSize]);
+
+  // Autosave. Failures here are silent on purpose: a full quota or a browser that
+  // blocks storage must not stop the user typing.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ labels, title: wheelTitle }));
+    } catch (e) { /* storage unavailable - keep going */ }
+  }, [labels, wheelTitle]);
+
+  const handleChange = useCallback((pair, field, value) => {
+    setLabels(prev => ({ ...prev, [pair]: { ...prev[pair], [field]: value } }));
+  }, []);
+
+  const handleClear = () => {
+    if (window.confirm('Clear all ten labels and the wheel title?')) {
+      setLabels(blankLabels());
+      setWheelTitle('');
+    }
+  };
+
+  // Only the pairs switched on get a label box, so the de-overlap solver packs the
+  // visible ones without reserving space for hidden boxes. The edges below are drawn
+  // from ALL_PAIRS regardless, so the wheel skeleton is always complete.
+  const wheelLabels = {};
+  const visibleLabels = {};
+  ALL_PAIRS.forEach(p => {
+    wheelLabels[p] = toWheelEntry(labels[p]);
+    if (labels[p].on) visibleLabels[p] = wheelLabels[p];
+  });
+  const labelPositions = computeLabelPositions(config, visibleLabels, ALL_PAIRS);
+  const allEdges = getEdgeList(Object.fromEntries(ALL_PAIRS.map(p => [p, true])));
+
+  const activeColors = activePair ? [activePair[0], activePair[1]] : (hoveredNode ? [hoveredNode] : []);
+
+  // The wheel title sits inside the SVG (not above it in HTML) so it is carried
+  // into the PNG export for free. Compared with the published wheels' viewBox the top
+  // is raised ~34 units to make room for that title, and the bottom trimmed by a
+  // similar amount - with no colour/archetype sections underneath, the original
+  // bottom padding left an obvious empty band above the builder table.
+  const viewBox = mobile ? "160 106 380 424" : "120 66 460 490";
+  const titleY = mobile ? 128 : 96;
+  const titleSize = mobile ? 18 : 24;
+
+  // Clicking Download while a row is hovered or focused would otherwise bake that
+  // row's gold highlight - and every other pair's 0.15 dimming - into the PNG. Drop
+  // the highlight first and let React commit the neutral wheel; the effect below then
+  // serialises what is on screen. (useEffect runs after the DOM is updated, so by then
+  // every opacity/stroke attribute is back to its resting value.)
+  const [exportRequest, setExportRequest] = useState(0);
+
+  const requestExport = () => {
+    setActivePair(null);
+    setHoveredNode(null);
+    setExportRequest(n => n + 1);
+  };
+
+  const exportPng = () => {
+    const svgEl = svgRef.current;
+    if (!svgEl) return;
+    const clone = svgEl.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    // Mana symbols are an icon font inside a foreignObject. Canvas rasterisation of an
+    // SVG-as-image does not load external fonts, so they would come out as blank boxes -
+    // swap each one for a plain SVG letter before serialising.
+    Array.prototype.forEach.call(clone.querySelectorAll('foreignObject'), fo => {
+      const pip = fo.getAttribute('data-pip');
+      const x = parseFloat(fo.getAttribute('x')) + parseFloat(fo.getAttribute('width')) / 2;
+      const y = parseFloat(fo.getAttribute('y')) + parseFloat(fo.getAttribute('height')) / 2;
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', x);
+      t.setAttribute('y', y);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dominant-baseline', 'central');
+      t.setAttribute('font-size', '26');
+      t.setAttribute('font-weight', 'bold');
+      t.setAttribute('font-family', SVG_FONT_STACK);
+      t.setAttribute('fill', fo.getAttribute('data-pip-fill') || '#000000');
+      t.textContent = pip || '';
+      fo.parentNode.replaceChild(t, fo);
+    });
+
+    const [vx, vy, vw, vh] = viewBox.split(' ').map(Number);
+    const scale = 2;
+    const outW = Math.round(vw * scale), outH = Math.round(vh * scale);
+    clone.setAttribute('width', outW);
+    clone.setAttribute('height', outH);
+
+    const xml = new XMLSerializer().serializeToString(clone);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = outW;
+      canvas.height = outH;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, outW, outH);
+      ctx.drawImage(img, 0, 0, outW, outH);
+      canvas.toBlob(blob => {
+        if (!blob) { window.alert('Sorry - your browser could not produce the PNG.'); return; }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const slug = (wheelTitle || 'custom-color-wheel').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        a.download = (slug || 'custom-color-wheel') + '.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    };
+    img.onerror = () => window.alert('Sorry - your browser could not render the wheel to an image.');
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+  };
+
+  useEffect(() => {
+    if (exportRequest > 0) exportPng();
+  }, [exportRequest]);
+
+  return (
+    <div className="main-container" style={{
+      minHeight: '100vh', backgroundColor: '#FFFFFF', padding: '24px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+    }}>
+      {/* Shared site header - image + credits + cross-links (matches other MTG project pages) */}
+      <header className="site-header">
+        <div className="header-content">
+          <h1>Custom Color Wheel Builder <span>v1.0.0 &middot; 2026-08-07 14:54 UTC</span></h1>
+          <p className="subtitle">A blank draft-archetype wheel. Type your own label for each colour pair in the table below and the graphic updates as you type.</p>
+          <div className="data-info">
+            <strong>Mana symbols:</strong> <a href="https://mana.andrewgioia.com/" target="_blank" rel="noopener noreferrer">Mana font by Andrew Gioia</a> <span className="sep">&middot;</span> Nothing you type leaves your browser
+            <div className="row">
+              Also see:{' '}
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html" target="_blank" rel="noopener noreferrer">Multi-Set Color Wheel</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener noreferrer">SOS Under/Overrated</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener noreferrer">17 Lands Quiz</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html" target="_blank" rel="noopener noreferrer">Budget Deckbuilder</a> <span className="sep">|</span>
+              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/" target="_blank" rel="noopener noreferrer">All projects</a>
+            </div>
+            <div className="row">
+              Have feedback or found a bug? Email <a href="mailto:toskicologist@protonmail.com">toskicologist@protonmail.com</a>. Follow me on <a href="https://bsky.app/profile/toskicologist.bsky.social" target="_blank" rel="noopener noreferrer">Bluesky</a> or <a href="https://www.reddit.com/user/Toskicologist/submitted/" target="_blank" rel="noopener noreferrer">Reddit</a>.
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
+          <input type="checkbox" checked={isSimple} onChange={e => setIsSimple(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+          B&amp;W
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
+          Text Size:
+          <input type="range" min="0.5" max="2.0" step="0.1" value={textSize} onChange={e => setTextSize(parseFloat(e.target.value))} style={{ width: '80px', cursor: 'pointer' }} />
+          <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>{Math.round(textSize*100)}%</span>
+        </label>
+        <button className="btn btn-primary" onClick={requestExport}>Download PNG</button>
+      </div>
+
+      {/* The wheel */}
+      <svg
+        ref={svgRef}
+        className="color-wheel-svg"
+        viewBox={viewBox}
+        style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
+      >
+        {/* Inline so the serialised copy the PNG exporter builds keeps the same typeface. */}
+        <style>{`text { font-family: ${SVG_FONT_STACK}; }`}</style>
+        {wheelTitle && (
+          <text x={config.cx} y={titleY} textAnchor="middle" fontSize={titleSize} fontWeight="bold" fill="#111827">
+            {wheelTitle}
+          </text>
+        )}
+        {allEdges.map((edge, i) => {
+          const pairCode = edge.u + edge.v;
+          const isHighlighted = activePair === pairCode;
+          const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
+          return <EdgeLine key={`edge-${i}`} edge={edge} isHighlighted={isHighlighted} isDimmed={isDimmed}
+                   isOn={labels[pairCode].on} isSimple={isSimple} config={config} />;
+        })}
+        {labelPositions.map((group, i) => {
+          const pairCode = group.u + group.v;
+          const isHighlighted = activePair === pairCode;
+          const isDimmed = activeColors.length > 0 && !activeColors.includes(group.u) && !activeColors.includes(group.v);
+          return <LabelBox key={`label-${pairCode}`} group={group} isHighlighted={isHighlighted} isDimmed={isDimmed}
+                   onHover={() => setActivePair(pairCode)} onLeave={() => setActivePair(null)}
+                   isSimple={isSimple} config={config} labels={wheelLabels} />;
+        })}
+        {colorOrder.map((color, index) => {
+          const isHighlighted = hoveredNode === color || activeColors.includes(color);
+          const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
+          return <ColorNode key={`node-${color}`} color={color} index={index}
+                   isHighlighted={isHighlighted} isDimmed={isDimmed}
+                   onHover={() => setHoveredNode(color)} onLeave={() => setHoveredNode(null)}
+                   isSimple={isSimple} config={config} />;
+        })}
+      </svg>
+
+      {/* Builder */}
+      <div className="builder" style={{ marginTop: '28px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: '18px' }}>
+          <label style={{ flex: '1 1 260px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '.04em', color: '#6B7280', fontWeight: 600 }}>
+            Wheel title (optional)
+            <input
+              type="text"
+              value={wheelTitle}
+              placeholder="e.g. My Cube - Draft Archetypes"
+              onChange={e => setWheelTitle(e.target.value)}
+              style={{ display: 'block', width: '100%', marginTop: '5px', padding: '8px 10px', fontSize: '15px',
+                fontFamily: 'inherit', border: '1px solid #D1D5DB', borderRadius: '6px', color: '#111827',
+                textTransform: 'none', letterSpacing: 'normal', fontWeight: 400 }}
+            />
+          </label>
+          <button className="btn btn-secondary" onClick={() => setLabels(guildLabels())}>Fill with guild names</button>
+          <button className="btn btn-secondary" onClick={handleClear}>Clear all</button>
+        </div>
+
+        <table className="builder-table">
+          <thead>
+            <tr>
+              <th>Colour pair</th>
+              <th>Label</th>
+              <th>Sub-label (optional)</th>
+              <th style={{ textAlign: 'center' }}>On wheel</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ALL_PAIRS.map(pair => (
+              <BuilderRow
+                key={pair}
+                pair={pair}
+                entry={labels[pair]}
+                isActive={activePair === pair}
+                isSimple={isSimple}
+                onChange={handleChange}
+                onActivate={() => setActivePair(pair)}
+                onDeactivate={() => setActivePair(null)}
+              />
+            ))}
+          </tbody>
+        </table>
+
+        <p style={{ fontSize: '12.5px', color: '#9CA3AF', marginTop: '14px', lineHeight: 1.6 }}>
+          Type a <strong>|</strong> to split a label over two lines &mdash; <em>Flying | Tempo</em> stacks the way the
+          published wheels do, and keeps long names from stretching the box.
+          Untick <em>On wheel</em> to hide a pair (useful for sets with only five archetypes); its edge stays on the
+          wheel, greyed out. Your labels are saved in this browser only &mdash; nothing is uploaded.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<CustomColorWheel />);
+  </script>
+</body>
+</html>
