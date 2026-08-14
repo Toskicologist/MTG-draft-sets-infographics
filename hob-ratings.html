@@ -104,6 +104,11 @@
             .cards-grid {
                 grid-template-columns: 1fr;
             }
+
+            .card-image-cell {
+                width: calc(100vw - 40px);
+                max-width: 100%;
+            }
         }
 
         @media (min-width: 481px) and (max-width: 768px) {
@@ -407,14 +412,16 @@
         }
 
         .card-image-cell {
-            width: 60px;
-            height: 84px;
+            width: calc(50vw - 60px);
+            height: auto;
+            aspect-ratio: 2.5 / 3.5;
             display: flex;
             align-items: center;
             justify-content: center;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 4px;
             overflow: hidden;
+            max-width: 300px;
         }
 
         .card-image-cell img {
@@ -426,6 +433,46 @@
 
         .card-image-cell img.show {
             display: block;
+        }
+
+        .toc {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .toc h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #3dd5f3;
+            font-size: 1.1em;
+        }
+
+        .toc ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .toc li a {
+            color: #4CAF50;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .toc li a:hover {
+            background: rgba(76, 175, 80, 0.2);
+            color: #6FD86F;
         }
 
         .rarity-badge {
@@ -579,15 +626,30 @@
     <h1>HOB Card Ratings Analysis</h1>
     <p style="text-align: center; margin-bottom: 30px; color: #aaa; font-size: 0.95em;">Top 5 and Bottom 5 cards by rarity (sorted by Games in Hand Winrate)</p>
 
+    <div class="toc">
+        <h3>📑 Table of Contents</h3>
+        <ul>
+            <li><a href="#common-section">Common</a></li>
+            <li><a href="#uncommon-section">Uncommon</a></li>
+            <li><a href="#rare-section">Rare</a></li>
+            <li><a href="#mythic-section">Mythic</a></li>
+            <li><a href="#traps-section">Traps</a></li>
+            <li><a href="#anti-traps-section">Anti-Traps</a></li>
+            <li><a href="#gap-analysis-section">Gap Analysis</a></li>
+            <li><a href="#scatter-plot-section">Scatter Plot</a></li>
+            <li><a href="#all-cards-section">All Cards</a></li>
+        </ul>
+    </div>
+
     <div id="container"></div>
 
-    <div class="chart-section">
+    <div class="chart-section" id="scatter-plot-section">
         <h2>📊 Scatter Plot: ALSA vs GIH WR</h2>
         <p style="text-align: center; color: #aaa; margin-bottom: 20px;">Hover over dots to see card details</p>
         <div id="scatter-plot"></div>
     </div>
 
-    <div class="table-section">
+    <div class="table-section" id="all-cards-section">
         <h2>📋 All Cards</h2>
         <div class="table-controls">
             <div class="table-control">
@@ -1110,6 +1172,8 @@
 
             const rarityDiv = document.createElement('div');
             rarityDiv.className = 'rarity-container';
+            const rarityIdMap = { 'C': 'common-section', 'U': 'uncommon-section', 'R': 'rare-section', 'M': 'mythic-section' };
+            rarityDiv.id = rarityIdMap[rarity];
 
             const titleDiv = document.createElement('div');
             titleDiv.className = 'rarity-title';
@@ -1161,6 +1225,7 @@
 
             const trapsDiv = document.createElement('div');
             trapsDiv.className = 'special-section';
+            trapsDiv.id = 'traps-section';
 
             const title = document.createElement('h2');
             title.textContent = '⚠️ Traps';
@@ -1189,6 +1254,7 @@
 
             const antiTrapsDiv = document.createElement('div');
             antiTrapsDiv.className = 'special-section';
+            antiTrapsDiv.id = 'anti-traps-section';
 
             const title = document.createElement('h2');
             title.textContent = '✨ Anti-Traps';
@@ -1217,6 +1283,7 @@
 
             const gapDiv = document.createElement('div');
             gapDiv.className = 'special-section';
+            gapDiv.id = 'gap-analysis-section';
 
             const title = document.createElement('h2');
             title.textContent = '📊 Gap Analysis';
