@@ -1,3 +1,5 @@
+# This file is synced to the Pages repo as .github/workflows/tcg-prices.yml by
+# scripts/sync-to-github-pages.ps1. Edit it here, never in the mirror.
 # Publishes the deckbuilder's data to the orphan `price-data` branch (single
 # force-pushed commit, no main-history growth), fetched by the page via
 # jsDelivr.  Two cadences, because they change at very different rates:
@@ -50,15 +52,54 @@ jobs:
             [ -s "$D/cards-index.json" ] && echo "HAVE_INDEX=1" >> "$GITHUB_ENV" || true
           fi
 
+          # How old is the index we just carried forward?
+          #
+          # Added 2026-08-07. The monthly rebuild is scheduled on day 01, but a
+          # scheduled GitHub Actions run can be delayed or dropped, and nothing
+          # noticed when that happened: on 2026-08-07 the live index was still
+          # the one built on 2026-07-01, five weeks stale. The only symptom was
+          # cards printed since then quietly falling back to live Scryfall
+          # lookups on the page - slower, and this project has a history of
+          # being rate-limited (429) by exactly that.
+          #
+          # A missed run should heal itself rather than wait for a human to
+          # notice, so age is checked here and used as a second rebuild trigger
+          # below. Failing loudly would be the lesser fix: it would still leave
+          # the index stale until someone acted.
+          AGE=""
+          if [ -s "$D/cards-index.json" ]; then
+            IDX_AT=$(jq -r '.generatedAt // empty' "$D/cards-index.json" 2>/dev/null || true)
+            if [ -n "$IDX_AT" ]; then
+              IDX_S=$(date -u -d "$IDX_AT" +%s 2>/dev/null || true)
+              if [ -n "$IDX_S" ]; then
+                AGE=$(( ( $(date -u +%s) - IDX_S ) / 86400 ))
+                echo "INDEX_AGE_DAYS=$AGE" >> "$GITHUB_ENV"
+              fi
+            fi
+          fi
+          echo "Carried index built: ${IDX_AT:-unknown} (age: ${AGE:-unknown} days)"
+
       - name: Decide whether to rebuild the index
         run: |
           DOM=$(date -u +%d)
+          STALE_AFTER_DAYS=35          # a month plus slack, so day-01 normally wins
+          AGE="${INDEX_AGE_DAYS:-}"
+
+          STALE=""
+          if [ -n "$AGE" ] && [ "$AGE" -ge "$STALE_AFTER_DAYS" ]; then STALE=1; fi
+
           if [ "${{ github.event.inputs.rebuild_index }}" = "true" ] \
-             || [ "$DOM" = "01" ] || [ -z "${HAVE_INDEX:-}" ]; then
+             || [ "$DOM" = "01" ] || [ -z "${HAVE_INDEX:-}" ] || [ -n "$STALE" ]; then
             echo "REBUILD_INDEX=1" >> "$GITHUB_ENV"
-            echo "Index WILL be rebuilt (dispatch=$([ "${{ github.event.inputs.rebuild_index }}" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none})"
+            echo "Index WILL be rebuilt (dispatch=$([ "${{ github.event.inputs.rebuild_index }}" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none}, age=${AGE:-unknown}d)"
+            if [ -n "$STALE" ]; then
+              # Surfaced as a run annotation, not just a log line: reaching this
+              # branch means the day-01 rebuild did not happen, and that is worth
+              # seeing in the Actions list rather than only inside the log.
+              echo "::warning::Card index was ${AGE} days old (limit ${STALE_AFTER_DAYS}) - the scheduled day-01 rebuild appears to have been missed. Rebuilding now."
+            fi
           else
-            echo "Index carried forward (prices-only run)"
+            echo "Index carried forward (prices-only run, age ${AGE:-unknown}d)"
           fi
 
       - name: Build (prices always; index monthly / on demand)
