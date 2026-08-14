@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOB Card Ratings - Top & Bottom 5 by Rarity</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #3dd5f3 0%, #2196f3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .rarity-container {
+            margin-bottom: 60px;
+        }
+
+        .rarity-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #444;
+        }
+
+        .rarity-symbol {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .rarity-c { background-color: #999; color: #333; }
+        .rarity-u { background-color: #4a90e2; color: white; }
+        .rarity-r { background-color: #f4b942; color: #333; }
+        .rarity-m { background-color: #a335ee; color: white; }
+
+        .rarity-title h2 {
+            flex: 1;
+            font-size: 1.8em;
+            color: #fff;
+        }
+
+        .sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .section h3 {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .section h3.top {
+            color: #4CAF50;
+        }
+
+        .section h3.bottom {
+            color: #f44336;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 2.5 / 3.5;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-image.loading::after {
+            content: 'Loading...';
+            position: absolute;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+        }
+
+        .card-info {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .card-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-wr {
+            font-size: 0.85em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .card-gap-info {
+            font-size: 0.75em;
+            color: #aaa;
+            margin-top: 3px;
+        }
+
+        .section {
+            min-height: 400px;
+        }
+
+        .special-section {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 3px solid #f44336;
+        }
+
+        .special-section h2 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #f44336;
+        }
+
+        .special-section .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 40px;
+            font-size: 0.95em;
+        }
+
+        .anti-traps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .gap-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        .gap-category h3 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .gap-category.underrated h3 {
+            color: #4CAF50;
+            border-bottom: 2px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .gap-category.overrated h3 {
+            color: #f44336;
+            border-bottom: 2px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .chart-section {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 3px solid #3dd5f3;
+        }
+
+        .chart-section h2 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #3dd5f3;
+        }
+
+        #scatter-plot {
+            width: 100%;
+            height: 600px;
+            margin: 30px 0;
+        }
+
+        .card-preview {
+            position: fixed;
+            display: none;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #3dd5f3;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .card-preview img {
+            width: 200px;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .card-preview .card-title {
+            color: #fff;
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9em;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .table-section {
+            margin-top: 60px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .table-section h2 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #3dd5f3;
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .table-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-control input, .table-control select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .table-control input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .table-control label {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .toggle-images {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.on {
+            background: #4CAF50;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.on::after {
+            left: 28px;
+        }
+
+        .cards-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cards-table thead {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .cards-table th {
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            user-select: none;
+            color: #3dd5f3;
+            font-weight: bold;
+            border-bottom: 2px solid rgba(61, 213, 243, 0.3);
+        }
+
+        .cards-table th:hover {
+            background: rgba(61, 213, 243, 0.1);
+        }
+
+        .cards-table th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+        }
+
+        .cards-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cards-table tbody tr:hover {
+            background: rgba(61, 213, 243, 0.1);
+        }
+
+        .card-name-cell {
+            color: #3dd5f3;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .card-name-cell:hover {
+            text-decoration: underline;
+        }
+
+        .card-image-cell {
+            width: 60px;
+            height: 84px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-image-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .card-image-cell img.show {
+            display: block;
+        }
+
+        .rarity-badge {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        .rarity-badge.c { background: #999; color: #333; }
+        .rarity-badge.u { background: #4a90e2; color: white; }
+        .rarity-badge.r { background: #f4b942; color: #333; }
+        .rarity-badge.m { background: #a335ee; color: white; }
+
+        .oracle-text-row {
+            display: none;
+        }
+
+        .oracle-text-row.show {
+            display: table-row;
+        }
+
+        .oracle-text-cell {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #ccc;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .sections {
+                grid-template-columns: 1fr;
+            }
+            .gap-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .rarity-title h2 {
+                font-size: 1.3em;
+            }
+
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+  <script data-goatcounter="https://toskicologist.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+  </head>
+<body>
+    <h1>HOB Card Ratings Analysis</h1>
+    <p style="text-align: center; margin-bottom: 30px; color: #aaa; font-size: 0.95em;">Top 5 and Bottom 5 cards by rarity (sorted by Games in Hand Winrate)</p>
+
+    <div id="container"></div>
+
+    <div class="chart-section">
+        <h2>📊 Scatter Plot: ALSA vs GIH WR</h2>
+        <p style="text-align: center; color: #aaa; margin-bottom: 20px;">Hover over dots to see card details</p>
+        <div id="scatter-plot"></div>
+    </div>
+
+    <div class="table-section">
+        <h2>📋 All Cards</h2>
+        <div class="table-controls">
+            <div class="table-control">
+                <input type="text" id="search-input" placeholder="Search by name...">
+            </div>
+            <div class="table-control">
+                <select id="rarity-filter">
+                    <option value="">All Rarities</option>
+                    <option value="C">Common</option>
+                    <option value="U">Uncommon</option>
+                    <option value="R">Rare</option>
+                    <option value="M">Mythic</option>
+                </select>
+            </div>
+            <div class="table-control toggle-images">
+                <label for="image-toggle">Show images:</label>
+                <div class="toggle-switch" id="image-toggle"></div>
+            </div>
+            <div class="table-control toggle-images">
+                <label for="oracle-toggle">Full oracle text:</label>
+                <div class="toggle-switch" id="oracle-toggle"></div>
+            </div>
+        </div>
+        <table class="cards-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Image</th>
+                    <th class="sortable">Name</th>
+                    <th class="sortable">Rarity</th>
+                    <th class="sortable">Color</th>
+                    <th class="sortable">ALSA</th>
+                    <th class="sortable">GIH WR</th>
+                </tr>
+            </thead>
+            <tbody id="cards-tbody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-preview" id="card-preview">
+        <img id="preview-image" src="" alt="Card preview">
+        <div class="card-title" id="preview-title"></div>
+    </div>
+
+    <script>
+        // Build top 10 and bottom 10 from allCards (defined later in script)
+        function buildRarityData() {
+            const result = {};
+            for (const rarity of ["C", "U", "R", "M"]) {
+                const cards = allCards.filter(c => c.rarity === rarity).sort((a, b) => b.gih_wr - a.gih_wr);
+                result[rarity] = {
+                    top_10: cards.slice(0, 10),
+                    bottom_10: cards.slice(-10).reverse()
+                };
+            }
+            return result;
+        }
+
+        let data = {};
+
+        const averages = {
+            "C": 54.71,
+            "U": 55.89,
+            "R": 56.11,
+            "M": 57.97
+        };
+
+        const cuCombinedAvg = 55.30;
+        const rmCombinedAvg = 57.04;
+
+        const traps = [
+            {"name": "Roll-Roll-Roll-Roll", "gih_wr": 41.3},
+            {"name": "Thranduil, the Elvenking", "gih_wr": 44.5},
+            {"name": "Desert Were-Worm", "gih_wr": 46.8},
+            {"name": "Bilbo's Gambit", "gih_wr": 48.8},
+            {"name": "Sting, Bilbo's Sword", "gih_wr": 49.3},
+            {"name": "Riddles in the Dark", "gih_wr": 51.1},
+            {"name": "Radagast of Rhosgobel", "gih_wr": 51.1},
+            {"name": "Inside Information", "gih_wr": 51.2},
+            {"name": "Gigantic Big Bear", "gih_wr": 51.5},
+            {"name": "Balin, Loremaster", "gih_wr": 51.5},
+            {"name": "Orcrist, Goblin-cleaver", "gih_wr": 51.5},
+            {"name": "Part in Friendship", "gih_wr": 51.6},
+            {"name": "My Precious", "gih_wr": 51.6},
+            {"name": "Belladonna Took", "gih_wr": 52.0},
+            {"name": "The Lord of the Eagles", "gih_wr": 52.8},
+            {"name": "Cantankerous Keepers", "gih_wr": 52.8},
+            {"name": "Elrond, Moon-Reader", "gih_wr": 52.9},
+            {"name": "Desolation of Smaug", "gih_wr": 53.0},
+            {"name": "Along the Crooked Way", "gih_wr": 53.1},
+            {"name": "Azog, Moria's Ruin", "gih_wr": 53.6},
+            {"name": "Bard, King of Dale", "gih_wr": 53.9},
+            {"name": "Bolg's Company", "gih_wr": 54.5},
+            {"name": "The Master of Lake-town", "gih_wr": 54.7},
+            {"name": "The Notary Hobbits", "gih_wr": 55.2}
+        ];
+
+        const antiTraps = [
+            {"name": "Celebrate the Mountain-king", "gih_wr": 62.5},
+            {"name": "Desolation Prowler", "gih_wr": 62.4},
+            {"name": "Bothersome Noisemaker", "gih_wr": 62.4},
+            {"name": "The Mountain-king's Return", "gih_wr": 61.1},
+            {"name": "Crude Bent Blade", "gih_wr": 60.9},
+            {"name": "Stone by Sunlight", "gih_wr": 60.3},
+            {"name": "Burn, Burn, Tree and Fern", "gih_wr": 60.0},
+            {"name": "Mirkwood Pathmaker", "gih_wr": 59.8},
+            {"name": "Bilbo, Luckwearer", "gih_wr": 59.7},
+            {"name": "Gandalf, Spark Starter", "gih_wr": 59.6},
+            {"name": "Pinecone Strike", "gih_wr": 59.5},
+            {"name": "Gollum, Silent Slinker", "gih_wr": 59.5},
+            {"name": "Down, Down to Goblin-town", "gih_wr": 59.5},
+            {"name": "Nighthowl Pursuer", "gih_wr": 59.4},
+            {"name": "Misty Mountains Raider", "gih_wr": 58.8},
+            {"name": "Nasty Little Rabbit", "gih_wr": 58.8},
+            {"name": "Bard the Bowman", "gih_wr": 58.5},
+            {"name": "Iron Hills Blacksmith", "gih_wr": 58.5},
+            {"name": "Long Lake Nuisance", "gih_wr": 58.2},
+            {"name": "Patient Instructor", "gih_wr": 58.2},
+            {"name": "Thranduil, Sindarin Liege", "gih_wr": 58.2},
+            {"name": "Master's Councillors", "gih_wr": 58.1},
+            {"name": "Plunder the Trollshaws", "gih_wr": 58.0},
+            {"name": "Bilbo's Deadly Slice", "gih_wr": 58.0},
+            {"name": "Lakeshore Apothecary", "gih_wr": 57.9},
+            {"name": "Ravening Warg", "gih_wr": 57.9},
+            {"name": "Goblin Plate Mail", "gih_wr": 57.6},
+            {"name": "Bilbo Baggins, Burglar", "gih_wr": 57.6},
+            {"name": "Dori, Bearer of Friends", "gih_wr": 57.6},
+            {"name": "Stir Up Trouble", "gih_wr": 57.2},
+            {"name": "Gollum the Abandoned", "gih_wr": 57.1},
+            {"name": "Dwarven Mauler", "gih_wr": 57.1},
+            {"name": "Glóin the Mighty", "gih_wr": 57.1}
+        ];
+
+        const underrated = [
+            {"name": "Gollum, Silent Slinker", "gih_wr": 59.5, "alsa": 5.42, "gih_wr_z": 0.96, "alsa_z": 0.56},
+            {"name": "Long Lake Nuisance", "gih_wr": 58.2, "alsa": 6.57, "gih_wr_z": 0.63, "alsa_z": 1.21},
+            {"name": "Patient Instructor", "gih_wr": 58.2, "alsa": 6.0, "gih_wr_z": 0.63, "alsa_z": 0.89},
+            {"name": "Master's Councillors", "gih_wr": 58.1, "alsa": 5.3, "gih_wr_z": 0.61, "alsa_z": 0.49},
+            {"name": "Plunder the Trollshaws", "gih_wr": 58.0, "alsa": 5.93, "gih_wr_z": 0.58, "alsa_z": 0.85},
+            {"name": "Lakeshore Apothecary", "gih_wr": 57.9, "alsa": 6.12, "gih_wr_z": 0.56, "alsa_z": 0.96},
+            {"name": "Ravening Warg", "gih_wr": 57.9, "alsa": 5.03, "gih_wr_z": 0.56, "alsa_z": 0.34},
+            {"name": "Dori, Bearer of Friends", "gih_wr": 57.6, "alsa": 5.16, "gih_wr_z": 0.48, "alsa_z": 0.41},
+            {"name": "Bilbo Baggins, Burglar", "gih_wr": 57.6, "alsa": 5.13, "gih_wr_z": 0.48, "alsa_z": 0.39},
+            {"name": "Dwarven Mauler", "gih_wr": 57.1, "alsa": 4.64, "gih_wr_z": 0.36, "alsa_z": 0.11}
+        ];
+
+        const overrated = [
+            {"name": "Thranduil, the Elvenking", "gih_wr": 44.5, "alsa": 4.08, "gih_wr_z": -2.8, "alsa_z": -0.2},
+            {"name": "Desert Were-Worm", "gih_wr": 46.8, "alsa": 3.46, "gih_wr_z": -2.22, "alsa_z": -0.56},
+            {"name": "Sting, Bilbo's Sword", "gih_wr": 49.3, "alsa": 2.82, "gih_wr_z": -1.59, "alsa_z": -0.92},
+            {"name": "Radagast of Rhosgobel", "gih_wr": 51.1, "alsa": 2.37, "gih_wr_z": -1.14, "alsa_z": -1.18},
+            {"name": "Riddles in the Dark", "gih_wr": 51.1, "alsa": 4.09, "gih_wr_z": -1.14, "alsa_z": -0.2},
+            {"name": "Wilderland Scrounger", "gih_wr": 51.1, "alsa": 4.39, "gih_wr_z": -1.14, "alsa_z": -0.03},
+            {"name": "Inside Information", "gih_wr": 51.2, "alsa": 2.63, "gih_wr_z": -1.12, "alsa_z": -1.03},
+            {"name": "Orcrist, Goblin-cleaver", "gih_wr": 51.5, "alsa": 1.56, "gih_wr_z": -1.04, "alsa_z": -1.64},
+            {"name": "Gigantic Big Bear", "gih_wr": 51.5, "alsa": 2.57, "gih_wr_z": -1.04, "alsa_z": -1.06},
+            {"name": "Balin, Loremaster", "gih_wr": 51.5, "alsa": 3.28, "gih_wr_z": -1.04, "alsa_z": -0.66}
+        ];
+
+        const rarityNames = {
+            "C": "Common",
+            "U": "Uncommon",
+            "R": "Rare",
+            "M": "Mythic"
+        };
+
+        const rarityOrder = ["C", "U", "R", "M"];
+
+        const allCards = [{"name":"Fíli the Pathfinder","rarity":"R","color":"W","alsa":1.96,"gih_wr":66.5},{"name":"An Unexpected Party","rarity":"R","color":"W","alsa":1.79,"gih_wr":65.8},{"name":"Gollum, Riddle Master","rarity":"M","color":"B","alsa":1.56,"gih_wr":64.4},{"name":"Chief Warg's Company","rarity":"R","color":"BG","alsa":1.87,"gih_wr":64.1},{"name":"Smaug the Magnificent","rarity":"M","color":"R","alsa":1.34,"gih_wr":63.8},{"name":"Bard's Company","rarity":"R","color":"WU","alsa":2.6,"gih_wr":63.7},{"name":"Kíli the Resourceful","rarity":"R","color":"W","alsa":2.41,"gih_wr":63.3},{"name":"Dáin Ironfoot","rarity":"R","color":"R","alsa":2.03,"gih_wr":63.2},{"name":"Thorin, Mountain-king","rarity":"M","color":"R","alsa":1.78,"gih_wr":63.0},{"name":"Beorn the Fierce","rarity":"M","color":"G","alsa":1.52,"gih_wr":62.9},{"name":"Celebrate the Mountain-king","rarity":"U","color":"W","alsa":2.77,"gih_wr":62.5},{"name":"Desolation Prowler","rarity":"U","color":"B","alsa":3.1,"gih_wr":62.4},{"name":"Bothersome Noisemaker","rarity":"U","color":"R","alsa":3.23,"gih_wr":62.4},{"name":"Dáin's Company","rarity":"R","color":"WR","alsa":2.95,"gih_wr":62.3},{"name":"Great Gilded Boat","rarity":"R","color":"U","alsa":2.57,"gih_wr":61.9},{"name":"The Mountain-king's Return","rarity":"U","color":"W","alsa":3.47,"gih_wr":61.1},{"name":"Crude Bent Blade","rarity":"C","color":"B","alsa":3.99,"gih_wr":60.9},{"name":"Thranduil's Company","rarity":"R","color":"UG","alsa":2.53,"gih_wr":60.9},{"name":"Bejeweled Warg","rarity":"R","color":"G","alsa":2.02,"gih_wr":60.8},{"name":"Head of the Hunt","rarity":"R","color":"B","alsa":1.68,"gih_wr":60.8},{"name":"Rhovanion Rampager","rarity":"R","color":"B","alsa":1.81,"gih_wr":60.7},{"name":"Stone by Sunlight","rarity":"U","color":"W","alsa":3.25,"gih_wr":60.3},{"name":"Burn, Burn, Tree and Fern","rarity":"U","color":"R","alsa":2.93,"gih_wr":60.0},{"name":"The Sackville-Bagginses","rarity":"R","color":"B","alsa":2.51,"gih_wr":60.0},{"name":"Mirkwood Pathmaker","rarity":"U","color":"G","alsa":3.4,"gih_wr":59.8},{"name":"Bilbo, Luckwearer","rarity":"U","color":"U","alsa":3.65,"gih_wr":59.7},{"name":"Gandalf, Spark Starter","rarity":"U","color":"R","alsa":4.39,"gih_wr":59.6},{"name":"Pinecone Strike","rarity":"C","color":"R","alsa":3.41,"gih_wr":59.5},{"name":"Gollum, Silent Slinker","rarity":"C","color":"B","alsa":5.42,"gih_wr":59.5},{"name":"Down, Down to Goblin-town","rarity":"U","color":"B","alsa":3.48,"gih_wr":59.5},{"name":"Nighthowl Pursuer","rarity":"U","color":"B","alsa":4.26,"gih_wr":59.4},{"name":"The Arkenstone","rarity":"M","color":"","alsa":1.12,"gih_wr":59.2},{"name":"Settle the Wreckage","rarity":"R","color":"W","alsa":2.27,"gih_wr":59.2},{"name":"Dwalin, Weaponmaster","rarity":"R","color":"WR","alsa":2.47,"gih_wr":59.2},{"name":"The Eagles Are Coming!","rarity":"R","color":"W","alsa":2.03,"gih_wr":59.2},{"name":"Tom, Bert, and William","rarity":"R","color":"BG","alsa":2.24,"gih_wr":59.1},{"name":"The Queen of Dale","rarity":"M","color":"W","alsa":2.03,"gih_wr":59.0},{"name":"Stone-Giant of High Pass","rarity":"R","color":"R","alsa":2.44,"gih_wr":59.0},{"name":"Misty Mountains Raider","rarity":"U","color":"R","alsa":3.61,"gih_wr":58.8},{"name":"Nasty Little Rabbit","rarity":"U","color":"G","alsa":3.87,"gih_wr":58.8},{"name":"Bard the Bowman","rarity":"U","color":"WU","alsa":4.39,"gih_wr":58.5},{"name":"Iron Hills Blacksmith","rarity":"U","color":"W","alsa":3.39,"gih_wr":58.5},{"name":"Dancing from Dark to Dawn","rarity":"M","color":"G","alsa":1.62,"gih_wr":58.3},{"name":"Long Lake Nuisance","rarity":"C","color":"U","alsa":6.57,"gih_wr":58.2},{"name":"Patient Instructor","rarity":"C","color":"WU","alsa":6.0,"gih_wr":58.2},{"name":"Thranduil, Sindarin Liege","rarity":"U","color":"UG","alsa":3.19,"gih_wr":58.2},{"name":"Master's Councillors","rarity":"U","color":"U","alsa":5.3,"gih_wr":58.1},{"name":"Plunder the Trollshaws","rarity":"C","color":"U","alsa":5.93,"gih_wr":58.0},{"name":"Bilbo's Deadly Slice","rarity":"C","color":"B","alsa":3.01,"gih_wr":58.0},{"name":"Lakeshore Apothecary","rarity":"C","color":"U","alsa":6.12,"gih_wr":57.9},{"name":"Ravening Warg","rarity":"C","color":"B","alsa":5.03,"gih_wr":57.9},{"name":"Goblin Plate Mail","rarity":"C","color":"BR","alsa":4.37,"gih_wr":57.6},{"name":"Bilbo Baggins, Burglar","rarity":"C","color":"U","alsa":5.13,"gih_wr":57.6},{"name":"Dori, Bearer of Friends","rarity":"C","color":"R","alsa":5.16,"gih_wr":57.6},{"name":"The Misty Mountains Cold","rarity":"R","color":"R","alsa":2.51,"gih_wr":57.4},{"name":"The Lonely Mountain","rarity":"R","color":"","alsa":3.01,"gih_wr":57.3},{"name":"Bilbo, Thief in the Night","rarity":"M","color":"U","alsa":2.31,"gih_wr":57.2},{"name":"Stir Up Trouble","rarity":"C","color":"B","alsa":4.39,"gih_wr":57.2},{"name":"Gollum the Abandoned","rarity":"U","color":"B","alsa":4.57,"gih_wr":57.1},{"name":"Dwarven Mauler","rarity":"U","color":"R","alsa":4.64,"gih_wr":57.1},{"name":"Glóin the Mighty","rarity":"U","color":"R","alsa":3.98,"gih_wr":57.1},{"name":"Dreaded Bat-Cloud","rarity":"U","color":"B","alsa":3.96,"gih_wr":56.9},{"name":"Stony-Voiced Goblins","rarity":"C","color":"B","alsa":5.18,"gih_wr":56.9},{"name":"Roads Go Ever, Ever On","rarity":"R","color":"W","alsa":3.06,"gih_wr":56.9},{"name":"Large Bear","rarity":"U","color":"BG","alsa":2.95,"gih_wr":56.7},{"name":"Gundabad Opportunist","rarity":"C","color":"R","alsa":6.27,"gih_wr":56.7},{"name":"Great Ugly-Looking Goblin","rarity":"U","color":"B","alsa":3.6,"gih_wr":56.7},{"name":"Duskwatch Hunter","rarity":"C","color":"BG","alsa":5.37,"gih_wr":56.5},{"name":"Rage into the Valley","rarity":"C","color":"B","alsa":5.07,"gih_wr":56.4},{"name":"The Great Goblin","rarity":"R","color":"BR","alsa":2.03,"gih_wr":56.4},{"name":"Gandalf, Goblins' Bane","rarity":"M","color":"R","alsa":1.91,"gih_wr":56.3},{"name":"Gnashing of Teeth","rarity":"U","color":"B","alsa":2.79,"gih_wr":56.3},{"name":"Goblin-town","rarity":"C","color":"","alsa":6.08,"gih_wr":56.3},{"name":"Quarrel","rarity":"C","color":"G","alsa":4.53,"gih_wr":56.3},{"name":"Attercop","rarity":"C","color":"G","alsa":5.58,"gih_wr":55.9},{"name":"Down in the Valley","rarity":"R","color":"G","alsa":2.96,"gih_wr":55.9},{"name":"Magnificent End","rarity":"C","color":"W","alsa":4.76,"gih_wr":55.9},{"name":"Bolg of the North","rarity":"U","color":"BR","alsa":3.8,"gih_wr":55.9},{"name":"Front Porch Sentries","rarity":"C","color":"B","alsa":6.06,"gih_wr":55.8},{"name":"Hobbit Hole","rarity":"C","color":"","alsa":5.42,"gih_wr":55.8},{"name":"Most Decrepit Old Bird","rarity":"R","color":"U","alsa":4.07,"gih_wr":55.7},{"name":"Tidings of War","rarity":"C","color":"R","alsa":5.91,"gih_wr":55.6},{"name":"Smaug, Wicked Worm","rarity":"R","color":"BR","alsa":1.99,"gih_wr":55.6},{"name":"Lake-town","rarity":"C","color":"","alsa":7.04,"gih_wr":55.6},{"name":"Bofur, Reliable Guardian","rarity":"U","color":"W","alsa":4.18,"gih_wr":55.6},{"name":"Dwarven Mattock","rarity":"U","color":"","alsa":5.14,"gih_wr":55.5},{"name":"Smaug, the Great Calamity","rarity":"C","color":"R","alsa":5.16,"gih_wr":55.5},{"name":"Eagle's Rescue","rarity":"U","color":"WU","alsa":4.99,"gih_wr":55.5},{"name":"Uneasy Partings","rarity":"C","color":"U","alsa":6.52,"gih_wr":55.4},{"name":"Elven Passage","rarity":"R","color":"","alsa":3.94,"gih_wr":55.3},{"name":"Mirkwood","rarity":"C","color":"","alsa":6.17,"gih_wr":55.3},{"name":"The Notary Hobbits","rarity":"R","color":"G","alsa":4.65,"gih_wr":55.2},{"name":"Thorin Oakenshield","rarity":"U","color":"WR","alsa":4.36,"gih_wr":55.1},{"name":"Gathering of Darkness","rarity":"U","color":"B","alsa":3.97,"gih_wr":55.1},{"name":"Enchanted River's Grasp","rarity":"C","color":"U","alsa":5.03,"gih_wr":55.1},{"name":"Troll Negotiations","rarity":"U","color":"G","alsa":3.83,"gih_wr":55.0},{"name":"Fearsome Goblin Pair","rarity":"U","color":"BR","alsa":3.57,"gih_wr":55.0},{"name":"Lake-town Toymaker","rarity":"U","color":"W","alsa":6.01,"gih_wr":55.0},{"name":"Dwarven Provisioner","rarity":"C","color":"W","alsa":6.33,"gih_wr":55.0},{"name":"Beorn's Hospitality","rarity":"U","color":"G","alsa":3.93,"gih_wr":55.0},{"name":"Ordinary Bear","rarity":"C","color":"G","alsa":6.88,"gih_wr":54.9},{"name":"Óin the Brave","rarity":"C","color":"R","alsa":6.18,"gih_wr":54.9},{"name":"Bombur, Gentle Dreamer","rarity":"U","color":"R","alsa":5.04,"gih_wr":54.8},{"name":"Ragged Short Spear","rarity":"C","color":"R","alsa":6.24,"gih_wr":54.7},{"name":"Woodland Weavemaster","rarity":"U","color":"G","alsa":5.02,"gih_wr":54.7},{"name":"The Master of Lake-town","rarity":"R","color":"B","alsa":2.88,"gih_wr":54.7},{"name":"Wargling","rarity":"C","color":"G","alsa":6.54,"gih_wr":54.6},{"name":"Ori, Keeper of Songs","rarity":"C","color":"W","alsa":6.73,"gih_wr":54.5},{"name":"Bolg's Company","rarity":"R","color":"BR","alsa":3.6,"gih_wr":54.5},{"name":"Thrór's Map","rarity":"U","color":"","alsa":4.42,"gih_wr":54.5},{"name":"Esgaroth Garrison","rarity":"C","color":"W","alsa":7.58,"gih_wr":54.5},{"name":"Dáin, Lord of the Iron Hills","rarity":"U","color":"W","alsa":4.03,"gih_wr":54.4},{"name":"Goblin-town Flunkies","rarity":"C","color":"R","alsa":5.96,"gih_wr":54.3},{"name":"Mirkwood Nurturer","rarity":"C","color":"UG","alsa":5.96,"gih_wr":54.3},{"name":"Iron Hills","rarity":"C","color":"","alsa":6.51,"gih_wr":54.2},{"name":"Nori, Teller of Tales","rarity":"C","color":"WR","alsa":5.78,"gih_wr":54.0},{"name":"Snowslope Hunter","rarity":"U","color":"R","alsa":4.91,"gih_wr":54.0},{"name":"Bifur, Melodic Rider","rarity":"U","color":"WR","alsa":4.2,"gih_wr":54.0},{"name":"Troop of Ponies","rarity":"U","color":"","alsa":4.61,"gih_wr":53.9},{"name":"Warg Tactics","rarity":"C","color":"G","alsa":6.72,"gih_wr":53.9},{"name":"Bard, King of Dale","rarity":"M","color":"WU","alsa":2.36,"gih_wr":53.9},{"name":"Sound the Trumpets","rarity":"U","color":"U","alsa":6.16,"gih_wr":53.8},{"name":"Reverent Howl","rarity":"C","color":"B","alsa":6.27,"gih_wr":53.7},{"name":"Confusticate and Bebother","rarity":"C","color":"U","alsa":6.72,"gih_wr":53.6},{"name":"Azog, Moria's Ruin","rarity":"R","color":"B","alsa":2.34,"gih_wr":53.6},{"name":"Great Fierce Bee","rarity":"C","color":"B","alsa":6.78,"gih_wr":53.5},{"name":"Dwarven Shortsword","rarity":"C","color":"W","alsa":5.98,"gih_wr":53.4},{"name":"The Chief Warg","rarity":"U","color":"BG","alsa":3.72,"gih_wr":53.4},{"name":"Old Fat Spider","rarity":"U","color":"G","alsa":4.58,"gih_wr":53.3},{"name":"Boughside Wanderers","rarity":"C","color":"G","alsa":6.65,"gih_wr":53.2},{"name":"Gandalf, Wandering Wizard","rarity":"C","color":"U","alsa":7.72,"gih_wr":53.2},{"name":"Wood Elves","rarity":"C","color":"G","alsa":5.55,"gih_wr":53.2},{"name":"Along the Crooked Way","rarity":"R","color":"B","alsa":3.08,"gih_wr":53.1},{"name":"Old Fat Spider Can't See Me","rarity":"U","color":"U","alsa":5.21,"gih_wr":53.0},{"name":"Desolation of Smaug","rarity":"R","color":"R","alsa":3.8,"gih_wr":53.0},{"name":"Galion, Elvenking's Butler","rarity":"U","color":"G","alsa":5.09,"gih_wr":52.9},{"name":"Well-Worn Spatula","rarity":"C","color":"","alsa":7.27,"gih_wr":52.9},{"name":"Elrond, Moon-Reader","rarity":"M","color":"U","alsa":2.42,"gih_wr":52.9},{"name":"Smaug's Fury","rarity":"C","color":"R","alsa":7.42,"gih_wr":52.8},{"name":"The Lord of the Eagles","rarity":"R","color":"U","alsa":3.49,"gih_wr":52.8},{"name":"Cantankerous Keepers","rarity":"R","color":"G","alsa":3.96,"gih_wr":52.8},{"name":"Iron Hills Stalwart","rarity":"C","color":"R","alsa":7.0,"gih_wr":52.7},{"name":"Velvetwing Butterflies","rarity":"C","color":"W","alsa":6.66,"gih_wr":52.7},{"name":"Old Thrush","rarity":"C","color":"","alsa":6.94,"gih_wr":52.7},{"name":"Eagle of the Great Shelf","rarity":"U","color":"W","alsa":5.54,"gih_wr":52.6},{"name":"Elvenking's Halls","rarity":"C","color":"","alsa":6.9,"gih_wr":52.5},{"name":"Guardian of the Halls","rarity":"C","color":"G","alsa":6.39,"gih_wr":52.4},{"name":"Elvenking's H...","rarity":"C","color":"U","alsa":7.81,"gih_wr":52.4},{"name":"Silvan Reveler","rarity":"U","color":"UG","alsa":4.42,"gih_wr":52.3},{"name":"Thranduil's Decree","rarity":"U","color":"U","alsa":6.18,"gih_wr":52.3},{"name":"Ravenhill Flock","rarity":"U","color":"U","alsa":5.22,"gih_wr":52.2},{"name":"Lake-town Lookout","rarity":"C","color":"W","alsa":7.16,"gih_wr":52.1},{"name":"Belladonna Took","rarity":"R","color":"W","alsa":2.93,"gih_wr":52.0},{"name":"Long-Bodied Grey Dog","rarity":"C","color":"","alsa":6.92,"gih_wr":52.0},{"name":"Lake-town Mariners","rarity":"U","color":"U","alsa":6.08,"gih_wr":52.0},{"name":"Vow to Erebor","rarity":"C","color":"W","alsa":7.65,"gih_wr":51.8},{"name":"Part in Friendship","rarity":"R","color":"G","alsa":3.62,"gih_wr":51.6},{"name":"My Precious","rarity":"R","color":"","alsa":1.94,"gih_wr":51.6},{"name":"Gigantic Big Bear","rarity":"R","color":"G","alsa":2.57,"gih_wr":51.5},{"name":"Balin, Loremaster","rarity":"R","color":"R","alsa":3.28,"gih_wr":51.5},{"name":"Orcrist, Goblin-cleaver","rarity":"M","color":"","alsa":1.56,"gih_wr":51.5},{"name":"Inside Information","rarity":"M","color":"B","alsa":2.63,"gih_wr":51.2},{"name":"Riddles in the Dark","rarity":"R","color":"U","alsa":4.09,"gih_wr":51.1},{"name":"Radagast of Rhosgobel","rarity":"R","color":"G","alsa":2.37,"gih_wr":51.1},{"name":"Wilderland Scrounger","rarity":"U","color":"G","alsa":4.39,"gih_wr":51.1},{"name":"Moment of Glory","rarity":"C","color":"W","alsa":7.42,"gih_wr":50.8},{"name":"Beorn, Reluctant Host","rarity":"C","color":"G","alsa":6.38,"gih_wr":50.5},{"name":"Little Bear","rarity":"C","color":"G","alsa":6.88,"gih_wr":50.2},{"name":"The Black Arrow","rarity":"U","color":"","alsa":5.18,"gih_wr":50.1},{"name":"Sting, Bilbo's Sword","rarity":"R","color":"","alsa":2.82,"gih_wr":49.3},{"name":"Mirkwood Meditator","rarity":"C","color":"U","alsa":8.46,"gih_wr":49.2},{"name":"Giant's Boulder","rarity":"C","color":"","alsa":7.1,"gih_wr":49.1},{"name":"Bilbo's Gambit","rarity":"R","color":"W","alsa":4.72,"gih_wr":48.8},{"name":"Thorin's Last Stand","rarity":"C","color":"W","alsa":7.58,"gih_wr":48.6},{"name":"Key to the Side-Door","rarity":"U","color":"","alsa":6.8,"gih_wr":48.3},{"name":"Elven Raft-Steerer","rarity":"U","color":"U","alsa":6.01,"gih_wr":48.0},{"name":"Desert Were-Worm","rarity":"R","color":"R","alsa":3.46,"gih_wr":46.8},{"name":"Thranduil, the Elvenking","rarity":"R","color":"UBG","alsa":4.08,"gih_wr":44.5},{"name":"Roll-Roll-Roll-Roll","rarity":"R","color":"U","alsa":4.7,"gih_wr":41.3}];
+
+        // Build top 10 and bottom 10 from allCards
+        data = buildRarityData();
+
+        async function fetchCardImage(cardName) {
+            try {
+                const response = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=hob`);
+                if (!response.ok) {
+                    return null;
+                }
+                const cardData = await response.json();
+                return cardData.image_uris?.normal || cardData.card_faces?.[0]?.image_uris?.normal || null;
+            } catch (error) {
+                console.error(`Error fetching ${cardName}:`, error);
+                return null;
+            }
+        }
+
+        async function fetchCardOracleText(cardName) {
+            try {
+                const response = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=hob`);
+                if (!response.ok) {
+                    return null;
+                }
+                const cardData = await response.json();
+                if (cardData.card_faces) {
+                    return cardData.card_faces.map(f => f.oracle_text || '').join(' // ');
+                }
+                return cardData.oracle_text || null;
+            } catch (error) {
+                console.error(`Error fetching oracle text for ${cardName}:`, error);
+                return null;
+            }
+        }
+
+        function createCardElement(card, showGap = false) {
+            const div = document.createElement('div');
+            div.className = 'card';
+
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'card-image loading';
+
+            const img = document.createElement('img');
+            img.alt = card.name;
+            imageDiv.appendChild(img);
+
+            fetchCardImage(card.name).then(imageUrl => {
+                if (imageUrl) {
+                    img.src = imageUrl;
+                    imageDiv.classList.remove('loading');
+                } else {
+                    imageDiv.innerHTML = `<div style="color: #999; text-align: center; padding: 20px;"><p>${card.name}</p><p style="font-size: 0.8em;">Image not found</p></div>`;
+                }
+            });
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'card-info';
+
+            if (showGap) {
+                infoDiv.innerHTML = `
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-wr">${card.gih_wr}% GIH WR</div>
+                    <div class="card-gap-info">Picked: ${card.alsa} | WR z: ${card.gih_wr_z} | Pick z: ${card.alsa_z}</div>
+                `;
+            } else {
+                infoDiv.innerHTML = `
+                    <div class="card-name">${card.name}</div>
+                    <div class="card-wr">${card.gih_wr}% GIH WR</div>
+                `;
+            }
+
+            div.appendChild(imageDiv);
+            div.appendChild(infoDiv);
+            return div;
+        }
+
+        let currentSort = { column: null, ascending: true };
+        let showImages = false;
+        let showOracleText = false;
+        let filteredCards = [...allCards];
+
+        function renderScatterPlot() {
+            const rarityColors = {
+                'C': '#999',
+                'U': '#4a90e2',
+                'R': '#f4b942',
+                'M': '#a335ee'
+            };
+
+            const traces = {};
+            rarityOrder.forEach(rarity => {
+                traces[rarity] = {
+                    x: [],
+                    y: [],
+                    text: [],
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: rarityNames[rarity],
+                    marker: {
+                        size: 8,
+                        color: rarityColors[rarity],
+                        opacity: 0.7,
+                        line: { color: 'white', width: 1 }
+                    },
+                    hovertemplate: '<b>%{text}</b><br>ALSA: %{x:.2f}<br>GIH WR: %{y:.1f}%<extra></extra>'
+                };
+            });
+
+            allCards.forEach(card => {
+                traces[card.rarity].x.push(card.alsa);
+                traces[card.rarity].y.push(card.gih_wr);
+                traces[card.rarity].text.push(card.name);
+            });
+
+            const data = rarityOrder.map(r => traces[r]);
+            const layout = {
+                title: '',
+                xaxis: { title: 'ALSA (lower is better)', zeroline: false, gridcolor: '#444' },
+                yaxis: { title: 'GIH WR %', zeroline: false, gridcolor: '#444' },
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(30, 30, 46, 0.5)',
+                paper_bgcolor: 'rgba(30, 30, 46, 0)',
+                font: { color: '#e0e0e0', family: 'Segoe UI, Tahoma, Geneva, Verdana' },
+                margin: { l: 80, r: 40, t: 40, b: 80 },
+                showlegend: true,
+                legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(0, 0, 0, 0.5)', bordercolor: '#444', borderwidth: 1 }
+            };
+
+            Plotly.newPlot('scatter-plot', data, layout, { responsive: true, displayModeBar: false });
+
+            document.getElementById('scatter-plot').on('plotly_hover', function(data) {
+                const point = data.points[0];
+                const cardName = point.text;
+                const preview = document.getElementById('card-preview');
+                preview.style.display = 'block';
+                preview.style.left = (event.pageX + 10) + 'px';
+                preview.style.top = (event.pageY + 10) + 'px';
+
+                fetchCardImage(cardName).then(url => {
+                    if (url) {
+                        document.getElementById('preview-image').src = url;
+                        document.getElementById('preview-title').textContent = cardName;
+                    }
+                });
+            });
+
+            document.getElementById('scatter-plot').on('plotly_unhover', function() {
+                document.getElementById('card-preview').style.display = 'none';
+            });
+        }
+
+        function updateTableDisplay() {
+            const tbody = document.getElementById('cards-tbody');
+            tbody.innerHTML = '';
+
+            filteredCards.forEach(card => {
+                const row = document.createElement('tr');
+
+                // Image cell
+                const imgCell = document.createElement('td');
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'card-image-cell';
+                const img = document.createElement('img');
+                img.alt = card.name;
+                if (showImages) {
+                    img.classList.add('show');
+                }
+                imgContainer.appendChild(img);
+                imgCell.appendChild(imgContainer);
+                row.appendChild(imgCell);
+
+                fetchCardImage(card.name).then(url => {
+                    if (url) {
+                        img.src = url;
+                    }
+                });
+
+                // Name with Scryfall link
+                const nameCell = document.createElement('td');
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = 'card-name-cell';
+                link.textContent = card.name;
+                link.onmouseover = (e) => {
+                    const preview = document.getElementById('card-preview');
+                    preview.style.display = 'block';
+                    preview.style.left = (e.pageX + 10) + 'px';
+                    preview.style.top = (e.pageY + 10) + 'px';
+                    fetchCardImage(card.name).then(url => {
+                        if (url) {
+                            document.getElementById('preview-image').src = url;
+                            document.getElementById('preview-title').textContent = card.name;
+                        }
+                    });
+                };
+                link.onmouseout = () => {
+                    document.getElementById('card-preview').style.display = 'none';
+                };
+                link.onclick = (e) => e.preventDefault();
+                nameCell.appendChild(link);
+                row.appendChild(nameCell);
+
+                // Rarity
+                const rarityCell = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = `rarity-badge ${card.rarity.toLowerCase()}`;
+                badge.textContent = card.rarity;
+                rarityCell.appendChild(badge);
+                row.appendChild(rarityCell);
+
+                // Color
+                const colorCell = document.createElement('td');
+                colorCell.textContent = card.color || '—';
+                row.appendChild(colorCell);
+
+                // ALSA
+                const alsaCell = document.createElement('td');
+                alsaCell.textContent = card.alsa.toFixed(2);
+                row.appendChild(alsaCell);
+
+                // GIH WR
+                const wrCell = document.createElement('td');
+                wrCell.textContent = card.gih_wr.toFixed(1) + '%';
+                row.appendChild(wrCell);
+
+                tbody.appendChild(row);
+
+                // Oracle text row
+                const oracleRow = document.createElement('tr');
+                oracleRow.className = 'oracle-text-row';
+                if (showOracleText) {
+                    oracleRow.classList.add('show');
+                }
+                const oracleCell = document.createElement('td');
+                oracleCell.className = 'oracle-text-cell';
+                oracleCell.colSpan = 6;
+                oracleCell.textContent = 'Loading...';
+                oracleRow.appendChild(oracleCell);
+                tbody.appendChild(oracleRow);
+
+                fetchCardOracleText(card.name).then(oracleText => {
+                    oracleCell.textContent = oracleText || '(No oracle text)';
+                });
+            });
+        }
+
+        function filterAndSortTable() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const rarityFilter = document.getElementById('rarity-filter').value;
+
+            filteredCards = allCards.filter(card => {
+                const matchesSearch = card.name.toLowerCase().includes(searchTerm);
+                const matchesRarity = !rarityFilter || card.rarity === rarityFilter;
+                return matchesSearch && matchesRarity;
+            });
+
+            // Apply sort
+            if (currentSort.column) {
+                filteredCards.sort((a, b) => {
+                    let aVal, bVal;
+                    if (currentSort.column === 'name') {
+                        aVal = a.name.toLowerCase();
+                        bVal = b.name.toLowerCase();
+                    } else {
+                        aVal = a[currentSort.column];
+                        bVal = b[currentSort.column];
+                    }
+
+                    if (aVal < bVal) return currentSort.ascending ? -1 : 1;
+                    if (aVal > bVal) return currentSort.ascending ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            updateTableDisplay();
+        }
+
+        function initTableControls() {
+            document.getElementById('search-input').addEventListener('input', filterAndSortTable);
+            document.getElementById('rarity-filter').addEventListener('change', filterAndSortTable);
+
+            const imageToggle = document.getElementById('image-toggle');
+            imageToggle.addEventListener('click', () => {
+                showImages = !showImages;
+                imageToggle.classList.toggle('on');
+                document.querySelectorAll('.card-image-cell img').forEach(img => {
+                    img.classList.toggle('show');
+                });
+            });
+
+            const oracleToggle = document.getElementById('oracle-toggle');
+            oracleToggle.addEventListener('click', () => {
+                showOracleText = !showOracleText;
+                oracleToggle.classList.toggle('on');
+                document.querySelectorAll('.oracle-text-row').forEach(row => {
+                    row.classList.toggle('show');
+                });
+            });
+
+            document.querySelectorAll('.cards-table th.sortable').forEach((th, idx) => {
+                th.addEventListener('click', () => {
+                    const columns = ['name', 'rarity', 'color', 'alsa', 'gih_wr'];
+                    const column = columns[idx];
+
+                    if (currentSort.column === column) {
+                        currentSort.ascending = !currentSort.ascending;
+                    } else {
+                        currentSort.column = column;
+                        currentSort.ascending = true;
+                    }
+
+                    filterAndSortTable();
+                });
+            });
+
+            filterAndSortTable();
+        }
+
+        function renderRarity(rarity) {
+            const container = document.getElementById('container');
+            const rarityData = data[rarity];
+
+            const rarityDiv = document.createElement('div');
+            rarityDiv.className = 'rarity-container';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'rarity-title';
+            titleDiv.innerHTML = `
+                <div class="rarity-symbol rarity-${rarity.toLowerCase()}">${rarity}</div>
+                <h2>${rarityNames[rarity]}</h2>
+            `;
+            rarityDiv.appendChild(titleDiv);
+
+            const sectionsDiv = document.createElement('div');
+            sectionsDiv.className = 'sections';
+
+            // Top 10 section
+            const topDiv = document.createElement('div');
+            topDiv.className = 'section';
+            const topTitle = document.createElement('h3');
+            topTitle.className = 'top';
+            topTitle.textContent = '⭐ Top 10 Performers';
+            topDiv.appendChild(topTitle);
+            const topGrid = document.createElement('div');
+            topGrid.className = 'cards-grid';
+            rarityData.top_10.forEach(card => {
+                topGrid.appendChild(createCardElement(card));
+            });
+            topDiv.appendChild(topGrid);
+            sectionsDiv.appendChild(topDiv);
+
+            // Bottom 10 section
+            const bottomDiv = document.createElement('div');
+            bottomDiv.className = 'section';
+            const bottomTitle = document.createElement('h3');
+            bottomTitle.className = 'bottom';
+            bottomTitle.textContent = '📉 Bottom 10 Performers';
+            bottomDiv.appendChild(bottomTitle);
+            const bottomGrid = document.createElement('div');
+            bottomGrid.className = 'cards-grid';
+            rarityData.bottom_10.forEach(card => {
+                bottomGrid.appendChild(createCardElement(card));
+            });
+            bottomDiv.appendChild(bottomGrid);
+            sectionsDiv.appendChild(bottomDiv);
+
+            rarityDiv.appendChild(sectionsDiv);
+            container.appendChild(rarityDiv);
+        }
+
+        function renderTraps() {
+            const container = document.getElementById('container');
+
+            const trapsDiv = document.createElement('div');
+            trapsDiv.className = 'special-section';
+
+            const title = document.createElement('h2');
+            title.textContent = '⚠️ Traps';
+            trapsDiv.appendChild(title);
+
+            const intro = document.createElement('div');
+            intro.className = 'subtitle';
+            intro.innerHTML = `
+                <p>Rares and Mythics with GIH WR below the Common/Uncommon average (${cuCombinedAvg.toFixed(2)}%)</p>
+                <p>${traps.length} cards qualify as trap picks</p>
+            `;
+            trapsDiv.appendChild(intro);
+
+            const grid = document.createElement('div');
+            grid.className = 'anti-traps-grid';
+            traps.forEach(card => {
+                grid.appendChild(createCardElement(card));
+            });
+
+            trapsDiv.appendChild(grid);
+            container.appendChild(trapsDiv);
+        }
+
+        function renderAntiTraps() {
+            const container = document.getElementById('container');
+
+            const antiTrapsDiv = document.createElement('div');
+            antiTrapsDiv.className = 'special-section';
+
+            const title = document.createElement('h2');
+            title.textContent = '✨ Anti-Traps';
+            antiTrapsDiv.appendChild(title);
+
+            const intro = document.createElement('div');
+            intro.className = 'subtitle';
+            intro.innerHTML = `
+                <p>Commons and Uncommons with higher GIH WR than the Rare/Mythic average (${rmCombinedAvg.toFixed(2)}%)</p>
+                <p>${antiTraps.length} cards qualify</p>
+            `;
+            antiTrapsDiv.appendChild(intro);
+
+            const grid = document.createElement('div');
+            grid.className = 'anti-traps-grid';
+            antiTraps.forEach(card => {
+                grid.appendChild(createCardElement(card));
+            });
+
+            antiTrapsDiv.appendChild(grid);
+            container.appendChild(antiTrapsDiv);
+        }
+
+        function renderGapAnalysis() {
+            const container = document.getElementById('container');
+
+            const gapDiv = document.createElement('div');
+            gapDiv.className = 'special-section';
+
+            const title = document.createElement('h2');
+            title.textContent = '📊 Gap Analysis';
+            gapDiv.appendChild(title);
+
+            const intro = document.createElement('div');
+            intro.className = 'subtitle';
+            intro.innerHTML = `
+                <p>Z-score outliers: cards where performance and pick position diverge significantly from the norm</p>
+                <p><strong>Underrated:</strong> Above-average performance (positive GIH WR z-score) picked late (positive ALSA z-score) — the format undervalues them</p>
+                <p><strong>Overrated:</strong> Below-average performance (negative GIH WR z-score) picked early (negative ALSA z-score) — the format overvalues them</p>
+            `;
+            gapDiv.appendChild(intro);
+
+            const sections = document.createElement('div');
+            sections.className = 'gap-sections';
+
+            // Underrated
+            const underratedDiv = document.createElement('div');
+            underratedDiv.className = 'gap-category underrated';
+            const underratedTitle = document.createElement('h3');
+            underratedTitle.textContent = `⬆️ Underrated (${underrated.length})`;
+            underratedDiv.appendChild(underratedTitle);
+
+            const underratedGrid = document.createElement('div');
+            underratedGrid.className = 'cards-grid';
+            underrated.forEach(card => {
+                underratedGrid.appendChild(createCardElement(card, true));
+            });
+            underratedDiv.appendChild(underratedGrid);
+            sections.appendChild(underratedDiv);
+
+            // Overrated
+            if (overrated.length > 0) {
+                const overratedDiv = document.createElement('div');
+                overratedDiv.className = 'gap-category overrated';
+                const overratedTitle = document.createElement('h3');
+                overratedTitle.textContent = `⬇️ Overrated (${overrated.length})`;
+                overratedDiv.appendChild(overratedTitle);
+
+                const overratedGrid = document.createElement('div');
+                overratedGrid.className = 'cards-grid';
+                overrated.forEach(card => {
+                    overratedGrid.appendChild(createCardElement(card, true));
+                });
+                overratedDiv.appendChild(overratedGrid);
+                sections.appendChild(overratedDiv);
+            } else {
+                const overratedDiv = document.createElement('div');
+                overratedDiv.className = 'gap-category overrated';
+                const overratedTitle = document.createElement('h3');
+                overratedTitle.textContent = '⬇️ Overrated';
+                overratedDiv.appendChild(overratedTitle);
+                const noData = document.createElement('p');
+                noData.textContent = 'No cards found - all cards have GIH WR > ALSA!';
+                noData.style.color = '#aaa';
+                overratedDiv.appendChild(noData);
+                sections.appendChild(overratedDiv);
+            }
+
+            gapDiv.appendChild(sections);
+            container.appendChild(gapDiv);
+        }
+
+        // Render all rarities in order
+        rarityOrder.forEach(rarity => {
+            renderRarity(rarity);
+        });
+
+        // Render special sections
+        renderTraps();
+        renderAntiTraps();
+        renderGapAnalysis();
+
+        // Render scatter plot and table
+        renderScatterPlot();
+        initTableControls();
+    </script>
+</body>
+</html>
