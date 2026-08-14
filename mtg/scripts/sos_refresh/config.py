@@ -64,6 +64,9 @@ if _IS_CI:
     # embedded in the quiz HTML, so ongoing GIH-WR refreshes still work.
     MSH_SCRYFALL_REFERENCE_JSON = _THIS_REPO_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"
 
+    # HOB (The Hobbit) quiz refresh — same quiz-only shape as MSH.
+    HOB_SCRYFALL_REFERENCE_JSON = _THIS_REPO_ROOT / "mtg" / "shared-data" / "data" / "hob" / "hob-scryfall-full.json"
+
     # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
     # anchors as the card quiz; refreshed as an extra quiz target when present.
     PACK_BETA_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "pack-beta.html"
@@ -104,6 +107,9 @@ else:
     # MSH quiz refresh: local Scryfall snapshot supplies card types for the quiz.
     MSH_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"
 
+    # HOB (The Hobbit) quiz refresh — same quiz-only shape as MSH.
+    HOB_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "hob" / "hob-scryfall-full.json"
+
     # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
     # anchors as the card quiz; refreshed as an extra quiz target when present.
     PACK_BETA_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "pack-beta.html"
@@ -133,6 +139,13 @@ MSH_FORMAT = "PremierDraft"
 MSH_START_DATE = "2026-06-24"  # MSH Premier Draft opened at digital release
 MSH_CSV_GLOB = "MSH card-ratings-*.csv"
 
+# HOB (The Hobbit) — quiz auto-refresh. Paper release 2026-08-14, Arena/MTGO
+# 2026-08-11, so Premier Draft data starts on the digital release date.
+HOB_EXPANSION = "HOB"
+HOB_FORMAT = "PremierDraft"
+HOB_START_DATE = "2026-08-11"  # HOB Premier Draft opened at digital release
+HOB_CSV_GLOB = "HOB card-ratings-*.csv"
+
 # Per-set refresh descriptors. The quiz_updater and the fetch/orchestrator layers
 # read these so the same code path serves any set: pick the descriptor by set code.
 # Note: SOS keeps its dedicated multi-consumer orchestrator (refresh_sos_17lands.py);
@@ -153,6 +166,14 @@ SET_REFRESH = {
         "csv_glob": MSH_CSV_GLOB,
         "scryfall_reference": MSH_SCRYFALL_REFERENCE_JSON,
         "types_mapping": None,  # no MSH types-mapping.json; Scryfall snapshot + embedded types cover it
+    },
+    "HOB": {
+        "expansion": HOB_EXPANSION,
+        "format": HOB_FORMAT,
+        "start_date": HOB_START_DATE,
+        "csv_glob": HOB_CSV_GLOB,
+        "scryfall_reference": HOB_SCRYFALL_REFERENCE_JSON,
+        "types_mapping": None,  # no HOB types-mapping.json; Scryfall snapshot + embedded types cover it
     },
 }
 

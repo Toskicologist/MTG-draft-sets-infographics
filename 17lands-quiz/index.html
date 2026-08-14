@@ -1412,10 +1412,8 @@
   Card images from Scryfall API.
 
   CHANGELOG:
-  v4.9.64 (2026-08-16 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-16 T0616.csv (289 cards).
-  v4.9.63 (2026-08-16 UTC): DATA: Refresh SOS to SOS card-ratings-2026-08-16 T0616.csv (327 cards).
-  v4.9.62 (2026-08-15 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-15 T0615.csv (289 cards).
-  v4.9.61 (2026-08-15 UTC): DATA: Refresh SOS to SOS card-ratings-2026-08-15 T0615.csv (327 cards).
+  v4.9.62 (2026-08-14 UTC): DATA: Refresh HOB to HOB card-ratings-2026-08-14 T2338.csv (179 cards).
+  v4.9.61 (2026-08-14 UTC): SET: Add HOB (The Hobbit) from 17Lands Premier Draft; NEW badge and default set moved from MSH to HOB.
   v4.9.60 (2026-08-14 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-14 T0701.csv (289 cards).
   v4.9.59 (2026-08-14 UTC): DATA: Refresh SOS to SOS card-ratings-2026-08-14 T0701.csv (327 cards).
   v4.9.58 (2026-08-13 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-13 T0705.csv (289 cards).
@@ -5507,7 +5505,189 @@ const MSH_CARDS = [
   {name: "World War Hulk", color: "G", type: "Enchantment — Saga", rarity: "R", gihWr: 52.8, alsa: 2.86, img: "9032f05b-5c21-4996-90c1-268dc6dffbaa", set: "MSH"},
   {name: "Yellowjacket, Heartless Marauder", color: "B", type: "Legendary Creature — Human Rogue Villain", rarity: "U", gihWr: 55.3, alsa: 4.46, img: "d8f91212-2ff5-4024-8f14-86bb5c4a9754", set: "MSH"}
 ];
+const HOB_CARDS = [
+  {name: "Along the Crooked Way", color: "B", type: "Enchantment", rarity: "R", gihWr: 53.1, alsa: 3.08, img: "3696d65c-fffd-4685-bb2d-e8769bf476e3", set: "HOB"},
+  {name: "An Unexpected Party", color: "W", type: "Enchantment // Sorcery — Adventure", rarity: "R", gihWr: 65.8, alsa: 1.79, img: "3aa29fe8-1687-486f-b4df-c04977869ab1", set: "HOB"},
+  {name: "Attercop", color: "G", type: "Creature — Spider", rarity: "C", gihWr: 55.9, alsa: 5.58, img: "81263d5d-e402-4813-9458-161112da27ab", set: "HOB"},
+  {name: "Azog, Moria's Ruin", color: "B", type: "Legendary Creature — Goblin Soldier", rarity: "R", gihWr: 53.6, alsa: 2.34, img: "135da718-affc-46ba-be57-c12c23b54dad", set: "HOB"},
+  {name: "Balin, Loremaster", color: "R", type: "Legendary Creature — Dwarf Bard", rarity: "R", gihWr: 51.5, alsa: 3.28, img: "42d7ca7b-c983-40fd-ad57-59f6972bb375", set: "HOB"},
+  {name: "Bard the Bowman", color: "WU", type: "Legendary Creature — Human Archer", rarity: "U", gihWr: 58.5, alsa: 4.39, img: "0b84e232-428c-424a-848c-ef95debc6e50", set: "HOB"},
+  {name: "Bard's Company", color: "WU", type: "Creature — Human Citizen", rarity: "R", gihWr: 63.7, alsa: 2.60, img: "d14aa2ff-7bbd-47a6-8e36-481e56302a62", set: "HOB"},
+  {name: "Bard, King of Dale", color: "WU", type: "Legendary Creature — Human Noble Archer", rarity: "M", gihWr: 53.9, alsa: 2.36, img: "c05c2aa6-29c7-40f8-872e-91099b9225c4", set: "HOB"},
+  {name: "Bejeweled Warg", color: "G", type: "Creature — Wolf", rarity: "R", gihWr: 60.8, alsa: 2.02, img: "e95eba5c-e0d6-46b4-a0be-8e373b2185ea", set: "HOB"},
+  {name: "Belladonna Took", color: "W", type: "Legendary Creature — Halfling Citizen", rarity: "R", gihWr: 52, alsa: 2.93, img: "88f0c189-c9ed-4ea3-ae62-3d8ac6c7fecf", set: "HOB"},
+  {name: "Beorn the Fierce", color: "G", type: "Legendary Creature — Bear Shapeshifter Warrior", rarity: "M", gihWr: 62.9, alsa: 1.52, img: "367d5f8b-77ee-47f7-bc71-972d62c280a9", set: "HOB"},
+  {name: "Beorn's Hospitality", color: "G", type: "Enchantment", rarity: "U", gihWr: 55, alsa: 3.93, img: "153ca57e-30f0-4ad7-ae9d-c55cbf0fd4c9", set: "HOB"},
+  {name: "Beorn, Reluctant Host", color: "G", type: "Legendary Creature — Human Bear Shapeshifter // Sorcery — Adventure", rarity: "C", gihWr: 50.5, alsa: 6.38, img: "804589b7-3ef9-473d-97cc-c61a2d41f70d", set: "HOB"},
+  {name: "Bifur, Melodic Rider", color: "WR", type: "Legendary Creature — Dwarf Bard", rarity: "U", gihWr: 54, alsa: 4.20, img: "ee88cc80-8fbf-451c-b2b8-09158426c26a", set: "HOB"},
+  {name: "Bilbo Baggins, Burglar", color: "U", type: "Legendary Creature — Halfling Rogue // Sorcery — Adventure", rarity: "C", gihWr: 57.6, alsa: 5.13, img: "6a109b3e-9f5b-4625-abb7-6b992c10530b", set: "HOB"},
+  {name: "Bilbo's Deadly Slice", color: "B", type: "Instant", rarity: "C", gihWr: 58, alsa: 3.01, img: "17892c93-b9b2-4720-933b-998ed0200492", set: "HOB"},
+  {name: "Bilbo's Gambit", color: "W", type: "Instant", rarity: "R", gihWr: 48.8, alsa: 4.72, img: "45ad01f0-cda8-4931-82bb-cb4949e56ae9", set: "HOB"},
+  {name: "Bilbo, Luckwearer", color: "U", type: "Legendary Creature — Halfling Rogue // Sorcery — Adventure", rarity: "U", gihWr: 59.7, alsa: 3.65, img: "8bff0aa6-16d9-4c83-b598-ef00a3b33d2c", set: "HOB"},
+  {name: "Bilbo, Thief in the Night", color: "U", type: "Legendary Creature — Halfling Rogue", rarity: "M", gihWr: 57.2, alsa: 2.31, img: "484c7f83-8339-4ae1-8350-68ce1f7d05a3", set: "HOB"},
+  {name: "Bofur, Reliable Guardian", color: "W", type: "Legendary Creature — Dwarf Scout // Instant — Adventure", rarity: "U", gihWr: 55.6, alsa: 4.18, img: "6b8e6435-7de4-41d5-bc7d-8e24c11897d0", set: "HOB"},
+  {name: "Bolg of the North", color: "BR", type: "Legendary Creature — Goblin Soldier", rarity: "U", gihWr: 55.9, alsa: 3.80, img: "7b2d2a7f-88e0-45a9-8579-a6736bcd66eb", set: "HOB"},
+  {name: "Bolg's Company", color: "BR", type: "Creature — Goblin Soldier", rarity: "R", gihWr: 54.5, alsa: 3.60, img: "ea3f5644-f7e3-40de-ada5-cea2e9113cfb", set: "HOB"},
+  {name: "Bombur, Gentle Dreamer", color: "R", type: "Legendary Creature — Dwarf Bard", rarity: "U", gihWr: 54.8, alsa: 5.04, img: "63c317e7-432c-4817-8db4-3670a1d84be3", set: "HOB"},
+  {name: "Bothersome Noisemaker", color: "R", type: "Creature — Goblin Bard", rarity: "U", gihWr: 62.4, alsa: 3.23, img: "cb25b11a-6bf5-4a9a-b60f-d4dcac3816d6", set: "HOB"},
+  {name: "Boughside Wanderers", color: "G", type: "Creature — Elf Scout", rarity: "C", gihWr: 53.2, alsa: 6.65, img: "71bec005-2925-4944-be16-2cc5eb30f5d6", set: "HOB"},
+  {name: "Burn, Burn, Tree and Fern", color: "R", type: "Enchantment — Saga", rarity: "U", gihWr: 60, alsa: 2.93, img: "fceb1a2d-121e-49ad-acf2-1bb5aebec116", set: "HOB"},
+  {name: "Cantankerous Keepers", color: "G", type: "Creature — Elf Soldier", rarity: "R", gihWr: 52.8, alsa: 3.96, img: "fae46a70-a6d3-4584-859d-6c7425fb1508", set: "HOB"},
+  {name: "Celebrate the Mountain-king", color: "W", type: "Enchantment", rarity: "U", gihWr: 62.5, alsa: 2.77, img: "42fbd61d-e1a6-465d-b1a3-f5ee0869d3af", set: "HOB"},
+  {name: "Chief Warg's Company", color: "BG", type: "Creature — Wolf", rarity: "R", gihWr: 64.1, alsa: 1.87, img: "bbc634af-63d2-444a-8123-85f16fe3e364", set: "HOB"},
+  {name: "Confusticate and Bebother", color: "U", type: "Instant", rarity: "C", gihWr: 53.6, alsa: 6.72, img: "9de48690-e5ae-495a-addf-305f1db7ec21", set: "HOB"},
+  {name: "Crude Bent Blade", color: "B", type: "Artifact — Equipment", rarity: "C", gihWr: 60.9, alsa: 3.99, img: "fa8fd3c4-bd00-485d-80b1-2b67f5786fce", set: "HOB"},
+  {name: "Dancing from Dark to Dawn", color: "G", type: "Enchantment", rarity: "M", gihWr: 58.3, alsa: 1.62, img: "550cd0b6-ca61-4db7-9d20-0b68c48066f9", set: "HOB"},
+  {name: "Desert Were-Worm", color: "R", type: "Creature — Dragon Wurm", rarity: "R", gihWr: 46.8, alsa: 3.46, img: "fc12c22a-11ff-4fb0-bc42-dd8490b8efb7", set: "HOB"},
+  {name: "Desolation Prowler", color: "B", type: "Creature — Wolf", rarity: "U", gihWr: 62.4, alsa: 3.10, img: "63c87009-ff1b-44b9-88b1-e26219094c67", set: "HOB"},
+  {name: "Desolation of Smaug", color: "R", type: "Sorcery", rarity: "R", gihWr: 53, alsa: 3.80, img: "2462358b-52c8-49b2-8d97-d65a9188f8f7", set: "HOB"},
+  {name: "Dori, Bearer of Friends", color: "R", type: "Legendary Creature — Dwarf Warrior", rarity: "C", gihWr: 57.6, alsa: 5.16, img: "d2f60ad0-c887-4585-85f8-afcf72fb80d0", set: "HOB"},
+  {name: "Down in the Valley", color: "G", type: "Enchantment — Saga", rarity: "R", gihWr: 55.9, alsa: 2.96, img: "c8aa5179-475b-4cc8-b21e-205b475eb4cf", set: "HOB"},
+  {name: "Down, Down to Goblin-town", color: "B", type: "Enchantment — Saga", rarity: "U", gihWr: 59.5, alsa: 3.48, img: "b72e193c-e030-4936-9b79-c636eff750e1", set: "HOB"},
+  {name: "Dreaded Bat-Cloud", color: "B", type: "Creature — Bat", rarity: "U", gihWr: 56.9, alsa: 3.96, img: "67d52db5-597e-46d5-af39-c3a2de107d30", set: "HOB"},
+  {name: "Duskwatch Hunter", color: "BG", type: "Creature — Wolf", rarity: "C", gihWr: 56.5, alsa: 5.37, img: "3685c783-d837-4466-a960-ab3098db64c3", set: "HOB"},
+  {name: "Dwalin, Weaponmaster", color: "WR", type: "Legendary Creature — Dwarf Warrior", rarity: "R", gihWr: 59.2, alsa: 2.47, img: "196d9287-a37d-4b27-a83b-a5489a54f081", set: "HOB"},
+  {name: "Dwarven Mattock", color: "", type: "Artifact — Equipment", rarity: "U", gihWr: 55.5, alsa: 5.14, img: "92c6f09d-b525-4e8c-a87c-a74df9dc3b1e", set: "HOB"},
+  {name: "Dwarven Mauler", color: "R", type: "Creature — Dwarf Warrior", rarity: "U", gihWr: 57.1, alsa: 4.64, img: "bd0f0415-43af-4f5d-8999-853c5d42780d", set: "HOB"},
+  {name: "Dwarven Provisioner", color: "W", type: "Creature — Dwarf Citizen", rarity: "C", gihWr: 55, alsa: 6.33, img: "1f9a61a1-454e-4d5b-a6dd-1a79fe9dedf3", set: "HOB"},
+  {name: "Dwarven Shortsword", color: "W", type: "Artifact — Equipment", rarity: "C", gihWr: 53.4, alsa: 5.98, img: "f2341cf3-4d2c-4a4f-9aea-8834104a8910", set: "HOB"},
+  {name: "Dáin Ironfoot", color: "R", type: "Legendary Creature — Dwarf Warrior", rarity: "R", gihWr: 63.2, alsa: 2.03, img: "7112e460-9160-4535-ad94-93f1f4ac04cf", set: "HOB"},
+  {name: "Dáin's Company", color: "WR", type: "Creature — Dwarf Warrior", rarity: "R", gihWr: 62.3, alsa: 2.95, img: "36db4405-8589-481f-b627-f26087488337", set: "HOB"},
+  {name: "Dáin, Lord of the Iron Hills", color: "W", type: "Legendary Creature — Dwarf Noble", rarity: "U", gihWr: 54.4, alsa: 4.03, img: "99d27749-d16c-45e9-accc-6a01351c17f9", set: "HOB"},
+  {name: "Eagle of the Great Shelf", color: "W", type: "Creature — Bird Soldier", rarity: "U", gihWr: 52.6, alsa: 5.54, img: "3feca644-5f65-4477-bbc8-d505cec6f3a5", set: "HOB"},
+  {name: "Eagle's Rescue", color: "WU", type: "Enchantment — Aura", rarity: "U", gihWr: 55.5, alsa: 4.99, img: "12c8f2cc-ac9d-4cf6-9025-efe366b4e07f", set: "HOB"},
+  {name: "Elrond, Moon-Reader", color: "U", type: "Legendary Creature — Elf Noble", rarity: "M", gihWr: 52.9, alsa: 2.42, img: "fbcb310c-be73-46f8-8e65-8632454ccc6e", set: "HOB"},
+  {name: "Elven Passage", color: "", type: "Land", rarity: "R", gihWr: 55.3, alsa: 3.94, img: "dd1fd2ab-2565-4798-a832-fc849df82f74", set: "HOB"},
+  {name: "Elven Raft-Steerer", color: "U", type: "Creature — Elf Pilot", rarity: "U", gihWr: 48, alsa: 6.01, img: "c141695c-c108-41d5-85cb-1f7485d9d533", set: "HOB"},
+  {name: "Elvenking's Halls", color: "", type: "Land", rarity: "C", gihWr: 52.5, alsa: 6.90, img: "cd477096-41b1-4907-9cb3-852cb22c9ba2", set: "HOB"},
+  {name: "Elvenking's Harper", color: "U", type: "Creature — Elf Bard", rarity: "C", gihWr: 52.4, alsa: 7.81, img: "9c50656d-c74a-4e90-9ef7-afa237682516", set: "HOB"},
+  {name: "Enchanted River's Grasp", color: "U", type: "Enchantment — Aura", rarity: "C", gihWr: 55.1, alsa: 5.03, img: "ad40a4b9-9fab-49c1-8e9f-6e0776966833", set: "HOB"},
+  {name: "Esgaroth Garrison", color: "W", type: "Creature — Human Soldier", rarity: "C", gihWr: 54.5, alsa: 7.58, img: "573f67b0-6ce8-4857-a703-4a5728640736", set: "HOB"},
+  {name: "Fearsome Goblin Pair", color: "BR", type: "Creature — Goblin Soldier", rarity: "U", gihWr: 55, alsa: 3.57, img: "2efe2dc7-3eaa-47f6-b1ae-f974c4a8ae79", set: "HOB"},
+  {name: "Front Porch Sentries", color: "B", type: "Creature — Goblin Soldier", rarity: "C", gihWr: 55.8, alsa: 6.06, img: "07bfc803-e11b-47ab-9f25-0ace7e174200", set: "HOB"},
+  {name: "Fíli the Pathfinder", color: "W", type: "Legendary Creature — Dwarf Scout", rarity: "R", gihWr: 66.5, alsa: 1.96, img: "b02142f3-5e55-40dc-a02c-9113fb7d763c", set: "HOB"},
+  {name: "Galion, Elvenking's Butler", color: "G", type: "Legendary Creature — Elf Advisor", rarity: "U", gihWr: 52.9, alsa: 5.09, img: "985bd676-58c4-42c7-a570-1b413e9aa94c", set: "HOB"},
+  {name: "Gandalf, Goblins' Bane", color: "R", type: "Legendary Creature — Avatar Wizard // Sorcery — Adventure", rarity: "M", gihWr: 56.3, alsa: 1.91, img: "9b0d29a1-7da9-4fb3-8536-8ff8d8acae0b", set: "HOB"},
+  {name: "Gandalf, Spark Starter", color: "R", type: "Legendary Creature — Avatar Wizard", rarity: "U", gihWr: 59.6, alsa: 4.39, img: "7c5c6f1c-35cf-4172-b5a1-b73222b0723b", set: "HOB"},
+  {name: "Gandalf, Wandering Wizard", color: "U", type: "Legendary Creature — Avatar Wizard", rarity: "C", gihWr: 53.2, alsa: 7.72, img: "1f8403a2-849c-4a59-b0ed-c8803995028d", set: "HOB"},
+  {name: "Gathering of Darkness", color: "B", type: "Sorcery", rarity: "U", gihWr: 55.1, alsa: 3.97, img: "2ce066be-e5ad-4b93-8245-1b5018990d03", set: "HOB"},
+  {name: "Giant's Boulder", color: "", type: "Artifact", rarity: "C", gihWr: 49.1, alsa: 7.10, img: "ce254758-c928-4b43-a952-13fac1845668", set: "HOB"},
+  {name: "Gigantic Big Bear", color: "G", type: "Creature — Bear", rarity: "R", gihWr: 51.5, alsa: 2.57, img: "7d6ece3d-8e7a-41ad-974f-3c9748de4825", set: "HOB"},
+  {name: "Glóin the Mighty", color: "R", type: "Legendary Creature — Dwarf Warrior // Sorcery — Adventure", rarity: "U", gihWr: 57.1, alsa: 3.98, img: "5793b8eb-2fc5-454d-8fa2-20346fef167a", set: "HOB"},
+  {name: "Gnashing of Teeth", color: "B", type: "Sorcery", rarity: "U", gihWr: 56.3, alsa: 2.79, img: "5d485d70-c7b9-40a4-9089-5e7f1c2b9213", set: "HOB"},
+  {name: "Goblin Plate Mail", color: "BR", type: "Artifact — Equipment", rarity: "C", gihWr: 57.6, alsa: 4.37, img: "cb982607-da37-4894-91a5-cf6307d4d703", set: "HOB"},
+  {name: "Goblin-town", color: "", type: "Land", rarity: "C", gihWr: 56.3, alsa: 6.08, img: "d76df9d0-56cf-4351-a5e8-e6ae6fc791d1", set: "HOB"},
+  {name: "Goblin-town Flunkies", color: "R", type: "Creature — Goblin Soldier", rarity: "C", gihWr: 54.3, alsa: 5.96, img: "ccff7382-8609-494c-aeee-cd1436456dd0", set: "HOB"},
+  {name: "Gollum the Abandoned", color: "B", type: "Legendary Creature — Halfling Horror", rarity: "U", gihWr: 57.1, alsa: 4.57, img: "50d91ef3-6f5d-4255-8d47-be731b5dad30", set: "HOB"},
+  {name: "Gollum, Riddle Master", color: "B", type: "Legendary Creature — Halfling Horror", rarity: "M", gihWr: 64.4, alsa: 1.56, img: "bbdc7e37-c65a-497a-92b7-a30a6e369c71", set: "HOB"},
+  {name: "Gollum, Silent Slinker", color: "B", type: "Legendary Creature — Halfling Horror // Sorcery — Adventure", rarity: "C", gihWr: 59.5, alsa: 5.42, img: "6cfaa182-3fec-4907-8814-b4d29c33cec3", set: "HOB"},
+  {name: "Great Fierce Bee", color: "B", type: "Creature — Insect", rarity: "C", gihWr: 53.5, alsa: 6.78, img: "9d9ef88f-d208-4788-9553-cd672b3be1fe", set: "HOB"},
+  {name: "Great Gilded Boat", color: "U", type: "Artifact — Vehicle", rarity: "R", gihWr: 61.9, alsa: 2.57, img: "b2fb3995-5b43-4776-88b2-346d353edee0", set: "HOB"},
+  {name: "Great Ugly-Looking Goblin", color: "B", type: "Creature — Goblin Soldier // Sorcery — Adventure", rarity: "U", gihWr: 56.7, alsa: 3.60, img: "c87f6004-e1cf-42b2-9647-322bc4939339", set: "HOB"},
+  {name: "Guardian of the Halls", color: "G", type: "Creature — Elf Soldier", rarity: "C", gihWr: 52.4, alsa: 6.39, img: "4265caec-8c28-44cd-8e6b-90b5af926d3c", set: "HOB"},
+  {name: "Gundabad Opportunist", color: "R", type: "Creature — Goblin Rogue", rarity: "C", gihWr: 56.7, alsa: 6.27, img: "bc4a60b8-a5bb-4dbf-8d48-95caf757eac3", set: "HOB"},
+  {name: "Head of the Hunt", color: "B", type: "Creature — Wolf", rarity: "R", gihWr: 60.8, alsa: 1.68, img: "3ffe34d4-72f4-4562-a948-8909b9321e59", set: "HOB"},
+  {name: "Hobbit Hole", color: "", type: "Land", rarity: "C", gihWr: 55.8, alsa: 5.42, img: "0365c439-30bf-4d32-a791-166751bdb996", set: "HOB"},
+  {name: "Inside Information", color: "B", type: "Sorcery", rarity: "M", gihWr: 51.2, alsa: 2.63, img: "9763bd56-fa4b-4907-ad15-c3f040c5fc0a", set: "HOB"},
+  {name: "Iron Hills", color: "", type: "Land", rarity: "C", gihWr: 54.2, alsa: 6.51, img: "78045c43-5cbe-48ff-837d-e7c6baac2937", set: "HOB"},
+  {name: "Iron Hills Blacksmith", color: "W", type: "Creature — Dwarf Artificer", rarity: "U", gihWr: 58.5, alsa: 3.39, img: "370e09c2-36c5-4662-8350-1db798afad3e", set: "HOB"},
+  {name: "Iron Hills Stalwart", color: "R", type: "Creature — Dwarf Warrior", rarity: "C", gihWr: 52.7, alsa: 7.00, img: "46daa9ac-0ac7-4df9-b9d2-e03ab5b56c72", set: "HOB"},
+  {name: "Key to the Side-Door", color: "", type: "Artifact", rarity: "U", gihWr: 48.3, alsa: 6.80, img: "898c14a2-d897-4341-83ed-eee666df9648", set: "HOB"},
+  {name: "Kíli the Resourceful", color: "W", type: "Legendary Creature — Dwarf Scout", rarity: "R", gihWr: 63.3, alsa: 2.41, img: "1805532f-6d99-47d0-9529-5f5831a7fdc8", set: "HOB"},
+  {name: "Lake-town", color: "", type: "Land", rarity: "C", gihWr: 55.6, alsa: 7.04, img: "2fbd0584-81a7-4c47-8af1-1c8635899a97", set: "HOB"},
+  {name: "Lake-town Lookout", color: "W", type: "Creature — Human Scout", rarity: "C", gihWr: 52.1, alsa: 7.16, img: "178c4cf6-6b11-40e4-9673-c560d6818a6b", set: "HOB"},
+  {name: "Lake-town Mariners", color: "U", type: "Creature — Human Citizen // Instant — Adventure", rarity: "U", gihWr: 52, alsa: 6.08, img: "4202a678-a5f4-47f9-9c18-e88ab9ad20a4", set: "HOB"},
+  {name: "Lake-town Toymaker", color: "W", type: "Creature — Human Artificer", rarity: "U", gihWr: 55, alsa: 6.01, img: "67304269-c595-4cf0-8dbf-fcb2e9e01fe2", set: "HOB"},
+  {name: "Lakeshore Apothecary", color: "U", type: "Creature — Human Cleric", rarity: "C", gihWr: 57.9, alsa: 6.12, img: "abfbb255-a39b-4df5-bfb6-5298584e89f0", set: "HOB"},
+  {name: "Large Bear", color: "BG", type: "Creature — Bear", rarity: "U", gihWr: 56.7, alsa: 2.95, img: "50202288-f433-4b56-8f60-349bda7b4f6b", set: "HOB"},
+  {name: "Little Bear", color: "G", type: "Creature — Bear", rarity: "C", gihWr: 50.2, alsa: 6.88, img: "8a50858a-33b5-4c45-9c31-5956ae5a33a6", set: "HOB"},
+  {name: "Long Lake Nuisance", color: "U", type: "Creature — Bird", rarity: "C", gihWr: 58.2, alsa: 6.57, img: "cd5af94d-6321-4834-8e5f-e5d0261b3ef3", set: "HOB"},
+  {name: "Long-Bodied Grey Dog", color: "", type: "Creature — Dog", rarity: "C", gihWr: 52, alsa: 6.92, img: "d1a1e520-1fe2-4529-8afb-c187bb80da3c", set: "HOB"},
+  {name: "Magnificent End", color: "W", type: "Instant", rarity: "C", gihWr: 55.9, alsa: 4.76, img: "430c8916-1167-400b-9cad-d301f59d5e5d", set: "HOB"},
+  {name: "Master's Councillors", color: "U", type: "Creature — Human Advisor", rarity: "U", gihWr: 58.1, alsa: 5.30, img: "addcefdd-e012-4adf-9052-e60376a8d2d3", set: "HOB"},
+  {name: "Mirkwood", color: "", type: "Land", rarity: "C", gihWr: 55.3, alsa: 6.17, img: "612cf954-f86c-4629-99df-4874d56fded3", set: "HOB"},
+  {name: "Mirkwood Meditator", color: "U", type: "Creature — Elf Druid", rarity: "C", gihWr: 49.2, alsa: 8.46, img: "ad7ed4e6-3fe2-40f1-909b-a03b2a3c941a", set: "HOB"},
+  {name: "Mirkwood Nurturer", color: "UG", type: "Creature — Elf Ranger", rarity: "C", gihWr: 54.3, alsa: 5.96, img: "704b45e4-566e-40f6-a33a-9151018b44e5", set: "HOB"},
+  {name: "Mirkwood Pathmaker", color: "G", type: "Creature — Elf Ranger", rarity: "U", gihWr: 59.8, alsa: 3.40, img: "50fbedc0-bc66-4ffb-87f6-a2df69995091", set: "HOB"},
+  {name: "Misty Mountains Raider", color: "R", type: "Creature — Goblin Soldier", rarity: "U", gihWr: 58.8, alsa: 3.61, img: "6dff14cd-b60b-48f4-9d9f-c9019b55df4c", set: "HOB"},
+  {name: "Moment of Glory", color: "W", type: "Sorcery", rarity: "C", gihWr: 50.8, alsa: 7.42, img: "0a6a6ff0-b1cd-4b06-bd31-612690094e0e", set: "HOB"},
+  {name: "Most Decrepit Old Bird", color: "U", type: "Creature — Bird // Sorcery — Adventure", rarity: "R", gihWr: 55.7, alsa: 4.07, img: "2d838feb-89f2-4cdb-a5ab-ec880f28d873", set: "HOB"},
+  {name: "My Precious", color: "", type: "Legendary Artifact — Equipment // Instant — Adventure", rarity: "R", gihWr: 51.6, alsa: 1.94, img: "15ae4d50-be2f-412c-bb6b-b0a06b60474a", set: "HOB"},
+  {name: "Nasty Little Rabbit", color: "G", type: "Creature — Rabbit", rarity: "U", gihWr: 58.8, alsa: 3.87, img: "96bc7d25-2828-478a-8fe5-a1f4ede8c9c0", set: "HOB"},
+  {name: "Nighthowl Pursuer", color: "B", type: "Creature — Wolf", rarity: "U", gihWr: 59.4, alsa: 4.26, img: "d3cbe830-7e95-4019-89c4-cfb36bcf00f8", set: "HOB"},
+  {name: "Nori, Teller of Tales", color: "WR", type: "Legendary Creature — Dwarf Bard", rarity: "C", gihWr: 54, alsa: 5.78, img: "b05adb48-980c-49a0-9ce6-7c7f3f20715d", set: "HOB"},
+  {name: "Old Fat Spider", color: "G", type: "Creature — Spider", rarity: "U", gihWr: 53.3, alsa: 4.58, img: "e0c0f842-40fe-4776-a988-a35216bcfd47", set: "HOB"},
+  {name: "Old Fat Spider Can't See Me", color: "U", type: "Enchantment — Saga", rarity: "U", gihWr: 53, alsa: 5.21, img: "4a865cea-f947-4736-8ace-ba478fceeb22", set: "HOB"},
+  {name: "Old Thrush", color: "", type: "Creature — Bird", rarity: "C", gihWr: 52.7, alsa: 6.94, img: "3ad02b56-13ec-46ef-92bd-ae078b8bb517", set: "HOB"},
+  {name: "Orcrist, Goblin-cleaver", color: "", type: "Legendary Artifact — Equipment", rarity: "M", gihWr: 51.5, alsa: 1.56, img: "f54f1c1d-6a22-43e9-a842-0a1ae25b323c", set: "HOB"},
+  {name: "Ordinary Bear", color: "G", type: "Creature — Bear", rarity: "C", gihWr: 54.9, alsa: 6.88, img: "0feb9817-56e1-465a-851c-b2fe202aa8ae", set: "HOB"},
+  {name: "Ori, Keeper of Songs", color: "W", type: "Legendary Creature — Dwarf Bard", rarity: "C", gihWr: 54.5, alsa: 6.73, img: "c5727af5-a487-4b16-8278-81c3c928c417", set: "HOB"},
+  {name: "Part in Friendship", color: "G", type: "Enchantment", rarity: "R", gihWr: 51.6, alsa: 3.62, img: "b4ff1eac-6d97-40ab-9b7c-c2fdca0917d9", set: "HOB"},
+  {name: "Patient Instructor", color: "WU", type: "Creature — Human Citizen", rarity: "C", gihWr: 58.2, alsa: 6.00, img: "e4800508-8bb9-41bb-8712-b55fba7a80a5", set: "HOB"},
+  {name: "Pinecone Strike", color: "R", type: "Instant", rarity: "C", gihWr: 59.5, alsa: 3.41, img: "ea174cea-40e5-424e-9734-e39aae6c6b17", set: "HOB"},
+  {name: "Plunder the Trollshaws", color: "U", type: "Instant", rarity: "C", gihWr: 58, alsa: 5.93, img: "afb73190-b9bd-4744-a011-a37cd9c0148d", set: "HOB"},
+  {name: "Quarrel", color: "G", type: "Instant", rarity: "C", gihWr: 56.3, alsa: 4.53, img: "5900a0b4-aa89-4019-94c9-7e9ea3b4792e", set: "HOB"},
+  {name: "Radagast of Rhosgobel", color: "G", type: "Legendary Creature — Avatar Wizard", rarity: "R", gihWr: 51.1, alsa: 2.37, img: "5741bbad-a6e4-45e0-b827-73f48c9975bf", set: "HOB"},
+  {name: "Rage into the Valley", color: "B", type: "Sorcery", rarity: "C", gihWr: 56.4, alsa: 5.07, img: "8651958c-3b94-47a9-a751-faf8f6236a42", set: "HOB"},
+  {name: "Ragged Short Spear", color: "R", type: "Artifact — Equipment", rarity: "C", gihWr: 54.7, alsa: 6.24, img: "7bf81a8b-52ad-49f5-a3d4-22613cad3a3d", set: "HOB"},
+  {name: "Ravenhill Flock", color: "U", type: "Creature — Bird", rarity: "U", gihWr: 52.2, alsa: 5.22, img: "acbb4d32-2771-469e-a6de-0df15155cc62", set: "HOB"},
+  {name: "Ravening Warg", color: "B", type: "Creature — Wolf", rarity: "C", gihWr: 57.9, alsa: 5.03, img: "ea7b5052-b343-466d-879e-2a211657ef0a", set: "HOB"},
+  {name: "Reverent Howl", color: "B", type: "Instant", rarity: "C", gihWr: 53.7, alsa: 6.27, img: "16765eb2-d497-4cd6-b683-20eac2f10bbf", set: "HOB"},
+  {name: "Rhovanion Rampager", color: "B", type: "Creature — Wolf", rarity: "R", gihWr: 60.7, alsa: 1.81, img: "5ee45a5e-3650-47b3-8d31-6b1de9e27a14", set: "HOB"},
+  {name: "Riddles in the Dark", color: "U", type: "Instant", rarity: "R", gihWr: 51.1, alsa: 4.09, img: "a6129286-7437-4ba4-be55-586a22cd67ca", set: "HOB"},
+  {name: "Roads Go Ever, Ever On", color: "W", type: "Enchantment — Saga", rarity: "R", gihWr: 56.9, alsa: 3.06, img: "b3c1ebd6-967f-4b8c-8f1f-442ce8c1da24", set: "HOB"},
+  {name: "Roll-Roll-Roll-Roll", color: "U", type: "Enchantment — Saga", rarity: "R", gihWr: 41.3, alsa: 4.70, img: "a2e4099e-86bd-461f-87fa-7f7850ae7eec", set: "HOB"},
+  {name: "Settle the Wreckage", color: "W", type: "Instant", rarity: "R", gihWr: 59.2, alsa: 2.27, img: "31a7a5e2-4cb8-48fc-8351-18344b4a7560", set: "HOB"},
+  {name: "Silvan Reveler", color: "UG", type: "Creature — Elf Citizen", rarity: "U", gihWr: 52.3, alsa: 4.42, img: "c71b74fb-fb0c-4953-b536-7a3f283c6918", set: "HOB"},
+  {name: "Smaug the Magnificent", color: "R", type: "Legendary Creature — Dragon", rarity: "M", gihWr: 63.8, alsa: 1.34, img: "6a5d8fad-2ffd-4645-8c49-907999b6cecf", set: "HOB"},
+  {name: "Smaug's Fury", color: "R", type: "Instant", rarity: "C", gihWr: 52.8, alsa: 7.42, img: "a16f203a-785e-4c78-9410-fb9f8a0ffa01", set: "HOB"},
+  {name: "Smaug, Wicked Worm", color: "BR", type: "Legendary Creature — Dragon", rarity: "R", gihWr: 55.6, alsa: 1.99, img: "19cc91f0-e724-41ac-b6d8-9a293bd63b42", set: "HOB"},
+  {name: "Smaug, the Great Calamity", color: "R", type: "Legendary Creature — Dragon // Sorcery — Adventure", rarity: "C", gihWr: 55.5, alsa: 5.16, img: "419ca9e5-8413-4378-a4ef-eda5a1024218", set: "HOB"},
+  {name: "Snowslope Hunter", color: "R", type: "Creature — Goblin Ranger", rarity: "U", gihWr: 54, alsa: 4.91, img: "47666099-ffb2-4d07-a801-70524dba0837", set: "HOB"},
+  {name: "Sound the Trumpets", color: "U", type: "Instant", rarity: "U", gihWr: 53.8, alsa: 6.16, img: "dd32a1dd-3541-4572-a717-1deabc14b827", set: "HOB"},
+  {name: "Sting, Bilbo's Sword", color: "", type: "Legendary Artifact — Equipment", rarity: "R", gihWr: 49.3, alsa: 2.82, img: "d6a8d698-c454-42c4-ad4e-9a7625d5569f", set: "HOB"},
+  {name: "Stir Up Trouble", color: "B", type: "Sorcery", rarity: "C", gihWr: 57.2, alsa: 4.39, img: "fd145e3a-c889-4390-accb-863dbcc845ce", set: "HOB"},
+  {name: "Stone by Sunlight", color: "W", type: "Instant", rarity: "U", gihWr: 60.3, alsa: 3.25, img: "c5752731-253c-4b41-bdd8-94c26d715206", set: "HOB"},
+  {name: "Stone-Giant of High Pass", color: "R", type: "Creature — Giant", rarity: "R", gihWr: 59, alsa: 2.44, img: "5f4f4683-ffd2-447a-932b-276f7fa17cca", set: "HOB"},
+  {name: "Stony-Voiced Goblins", color: "B", type: "Creature — Goblin Bard", rarity: "C", gihWr: 56.9, alsa: 5.18, img: "6fcc3699-b475-4612-884d-81bd4f21e9c1", set: "HOB"},
+  {name: "The Arkenstone", color: "", type: "Legendary Artifact // Sorcery — Adventure", rarity: "M", gihWr: 59.2, alsa: 1.12, img: "a56a88ba-fcfa-4b56-bdae-a080b297b871", set: "HOB"},
+  {name: "The Black Arrow", color: "", type: "Legendary Artifact — Equipment", rarity: "U", gihWr: 50.1, alsa: 5.18, img: "ab181190-d53d-4972-8cd5-8e54b45f2276", set: "HOB"},
+  {name: "The Chief Warg", color: "BG", type: "Legendary Creature — Wolf", rarity: "U", gihWr: 53.4, alsa: 3.72, img: "c397a298-bf7f-49d7-a26a-206ccf9e8120", set: "HOB"},
+  {name: "The Eagles Are Coming!", color: "W", type: "Instant", rarity: "R", gihWr: 59.2, alsa: 2.03, img: "0bda1b62-47fc-42c2-a841-ccad8ea0db48", set: "HOB"},
+  {name: "The Great Goblin", color: "BR", type: "Legendary Creature — Goblin Noble", rarity: "R", gihWr: 56.4, alsa: 2.03, img: "78d8f53e-537d-4eaa-99e3-cac57fa53d22", set: "HOB"},
+  {name: "The Lonely Mountain", color: "", type: "Land — Mountain", rarity: "R", gihWr: 57.3, alsa: 3.01, img: "b39ebc4d-a01a-4401-ab3a-bf6142c93b47", set: "HOB"},
+  {name: "The Lord of the Eagles", color: "U", type: "Legendary Creature — Bird Noble", rarity: "R", gihWr: 52.8, alsa: 3.49, img: "fa0554fc-9448-4ae2-8712-4f4f7af3c7b4", set: "HOB"},
+  {name: "The Master of Lake-town", color: "B", type: "Legendary Creature — Human Advisor", rarity: "R", gihWr: 54.7, alsa: 2.88, img: "3788ada6-34a9-41af-a31c-2d090550e503", set: "HOB"},
+  {name: "The Misty Mountains Cold", color: "R", type: "Enchantment — Saga", rarity: "R", gihWr: 57.4, alsa: 2.51, img: "3d5f35ff-4146-4844-9da5-031461cc8c05", set: "HOB"},
+  {name: "The Mountain-king's Return", color: "W", type: "Enchantment — Saga", rarity: "U", gihWr: 61.1, alsa: 3.47, img: "68f4893d-e9a5-4f89-ade3-9ab78a834ad5", set: "HOB"},
+  {name: "The Notary Hobbits", color: "G", type: "Legendary Creature — Halfling Advisor", rarity: "R", gihWr: 55.2, alsa: 4.65, img: "d876315f-b269-4254-a517-905c6e927462", set: "HOB"},
+  {name: "The Queen of Dale", color: "W", type: "Legendary Creature — Human Noble", rarity: "M", gihWr: 59, alsa: 2.03, img: "c977fb5f-4436-41d0-af68-93b6d05897e5", set: "HOB"},
+  {name: "The Sackville-Bagginses", color: "B", type: "Legendary Creature — Halfling Citizen", rarity: "R", gihWr: 60, alsa: 2.51, img: "ed87b471-79f9-45ec-9188-69e970f6121e", set: "HOB"},
+  {name: "Thorin Oakenshield", color: "WR", type: "Legendary Creature — Dwarf Noble", rarity: "U", gihWr: 55.1, alsa: 4.36, img: "c7e18609-d1ed-4829-be11-f2ce2cfcbc49", set: "HOB"},
+  {name: "Thorin's Last Stand", color: "W", type: "Instant", rarity: "C", gihWr: 48.6, alsa: 7.58, img: "127367b6-9cfe-4516-9bfd-5b951468a25c", set: "HOB"},
+  {name: "Thorin, Mountain-king", color: "R", type: "Legendary Creature — Dwarf Noble", rarity: "M", gihWr: 63, alsa: 1.78, img: "117347af-0dd7-4350-901d-8c8a81387e22", set: "HOB"},
+  {name: "Thranduil's Company", color: "UG", type: "Creature — Elf Soldier", rarity: "R", gihWr: 60.9, alsa: 2.53, img: "abdb9d4e-e6ca-409b-b589-0cf71724340b", set: "HOB"},
+  {name: "Thranduil's Decree", color: "U", type: "Instant", rarity: "U", gihWr: 52.3, alsa: 6.18, img: "e4ded4c1-0e3e-47c5-8fdc-e7c187f68b12", set: "HOB"},
+  {name: "Thranduil, Sindarin Liege", color: "UG", type: "Legendary Creature — Elf Noble // Sorcery — Adventure", rarity: "U", gihWr: 58.2, alsa: 3.19, img: "481870ee-d1f7-421b-86e1-570ea933bbbc", set: "HOB"},
+  {name: "Thranduil, the Elvenking", color: "UBG", type: "Legendary Creature — Elf Noble", rarity: "R", gihWr: 44.5, alsa: 4.08, img: "fe2fe8fa-3b99-44c1-bab9-922e5c864952", set: "HOB"},
+  {name: "Thrór's Map", color: "", type: "Legendary Artifact", rarity: "U", gihWr: 54.5, alsa: 4.42, img: "ad0dba36-d056-4bc1-987a-391da26ad267", set: "HOB"},
+  {name: "Tidings of War", color: "R", type: "Sorcery", rarity: "C", gihWr: 55.6, alsa: 5.91, img: "38c16a0a-375e-48cb-9720-dbbc08c603ae", set: "HOB"},
+  {name: "Tom, Bert, and William", color: "BG", type: "Legendary Creature — Troll", rarity: "R", gihWr: 59.1, alsa: 2.24, img: "211a9764-3c60-46ba-bb53-e6692640ec8f", set: "HOB"},
+  {name: "Troll Negotiations", color: "G", type: "Sorcery", rarity: "U", gihWr: 55, alsa: 3.83, img: "ca0f7bf4-b8a2-4ec4-ad7e-b639de9fa76a", set: "HOB"},
+  {name: "Troop of Ponies", color: "", type: "Creature — Horse", rarity: "U", gihWr: 53.9, alsa: 4.61, img: "0b4b1c59-bcec-4779-9e27-0e6f9feb4e11", set: "HOB"},
+  {name: "Uneasy Partings", color: "U", type: "Instant", rarity: "C", gihWr: 55.4, alsa: 6.52, img: "e49866d4-966a-40f9-b08d-18e5af6d726b", set: "HOB"},
+  {name: "Velvetwing Butterflies", color: "W", type: "Creature — Insect // Instant — Adventure", rarity: "C", gihWr: 52.7, alsa: 6.66, img: "5cc0f994-5048-4898-926e-b56cbc97e0ca", set: "HOB"},
+  {name: "Vow to Erebor", color: "W", type: "Instant", rarity: "C", gihWr: 51.8, alsa: 7.65, img: "8d4f3eb5-fedf-45d6-8bd8-aacbe0ce33b2", set: "HOB"},
+  {name: "Warg Tactics", color: "G", type: "Instant", rarity: "C", gihWr: 53.9, alsa: 6.72, img: "b06d9cee-bb0f-4fe7-ab2a-b55d36461aec", set: "HOB"},
+  {name: "Wargling", color: "G", type: "Creature — Wolf", rarity: "C", gihWr: 54.6, alsa: 6.54, img: "1ccbf823-846f-4f09-9c67-1deebb5d1d92", set: "HOB"},
+  {name: "Well-Worn Spatula", color: "", type: "Artifact — Equipment", rarity: "C", gihWr: 52.9, alsa: 7.27, img: "659b687f-4068-496f-81b2-7b606bf07ec1", set: "HOB"},
+  {name: "Wilderland Scrounger", color: "G", type: "Creature — Wolf", rarity: "U", gihWr: 51.1, alsa: 4.39, img: "63078f42-f404-4c61-86be-45d934393b0a", set: "HOB"},
+  {name: "Wood Elves", color: "G", type: "Creature — Elf Scout", rarity: "C", gihWr: 53.2, alsa: 5.55, img: "2476e42b-b209-4207-8ed9-cb668f89b218", set: "HOB"},
+  {name: "Woodland Weavemaster", color: "G", type: "Creature — Elf Druid", rarity: "U", gihWr: 54.7, alsa: 5.02, img: "fe2b4bcf-56de-44d3-83af-aeb27f82c25e", set: "HOB"},
+  {name: "Óin the Brave", color: "R", type: "Legendary Creature — Dwarf Warrior", rarity: "C", gihWr: 54.9, alsa: 6.18, img: "9984b9ef-e81c-48f4-aa33-0504171a2d3c", set: "HOB"}
+];
 const SET_ICONS = {
+  HOB: {viewBox: '0 0 686 879', path: 'M273.8 21.1c-2.3 1.3-2.3 6.6 0 10 .9 1.4 7.6 9.5 14.7 18 12.6 14.9 15.5 18.6 27 33.5l5.5 7.1v100.8l-5.9 10.6c-14.1 25.3-48.5 74.9-71 102.2-4.5 5.6-9.4 11.9-10.7 14l-2.5 3.8 2.2 3.6c1.3 2 5 7.3 8.3 11.8 3.4 4.5 7.9 10.7 10.1 13.9 2.2 3.1 6.3 8.8 9 12.6 2.8 3.7 7.5 10.4 10.5 14.6 3 4.3 6.7 9.1 8.3 10.7 1.5 1.6 3.2 3.7 3.7 4.7 1 1.9 2.1 17.3 4 53.5.5 10.4 1.7 28.9 2.5 41s2.2 33 3 46.5c.9 13.5 2.2 34.6 3 47s2.1 32.8 3 45.5c.8 12.6 1.9 29.5 2.5 37.5s1.7 26.2 2.5 40.5 2.2 36.5 3 49.2l1.4 23.3 10 15.2c5.4 8.4 12.4 19.1 15.4 23.8 7.2 11 8.6 13 9.5 13 .8 0 14.1-20.1 28.3-42.5l6.6-10.4.7-19.8c.3-10.9 1.1-29.9 1.6-42.3.6-12.4 1.7-43.4 2.5-69s1.7-51 2-56.5 1.5-34.3 2.5-64c1.1-29.7 2.2-57.8 2.5-62.5s1-21.8 1.6-38l1.1-29.5 3-4c1.6-2.2 7-9.7 12.1-16.6s11-15.2 13.2-18.3c2.2-3.2 5.8-8.3 8.1-11.4 2.2-3.1 6.6-9.3 9.7-13.7s5.7-8.7 5.7-9.6c0-1.9-4.2-7.8-11.9-17-11.5-13.7-42.4-55.8-49.6-67.6-1.1-1.8-6.1-9.7-11.2-17.5-5-7.9-10.7-17.3-12.7-20.9l-3.6-6.6V90.2l6.3-8c3.4-4.4 14.4-18 24.5-30.2 19.2-23.2 21.3-26.7 17.7-30.3-1.5-1.6-7.1-1.7-64.8-1.7-41.1.1-63.8.4-64.9 1.1m70.5 234.7c3.2 4.2 10 13.3 15 20.2 5.1 6.9 13 17.7 17.7 24s8.9 12.1 9.4 12.9c.5.9.1 3.2-1.2 6.5-1.1 2.8-6.4 17.5-11.8 32.6-5.3 15.1-12.2 34.2-15.1 42.5-3 8.2-8.6 24-12.4 35-3.9 10.9-7.2 20.1-7.4 20.4-.9.8-1.5-.6-5.9-13-2.5-6.8-6.1-16.9-8.1-22.4-4.5-12.2-17.4-48.2-22.5-62.5-9.7-27.1-13-36.8-13-37.9 0-.7 1.5-3.2 3.3-5.6 20.6-27.7 31.6-42.6 37.6-50.8 3.9-5.3 7.5-9.7 7.9-9.6.4 0 3.3 3.5 6.5 7.7 M333.8 297.3c-1.3 1.8-5.1 7.1-8.5 11.7-3.5 4.6-6.3 8.9-6.3 9.6 0 .6.7 3.1 1.6 5.5s4.7 13.4 8.5 24.4 7.4 20.4 7.8 20.8c1.4 1.4 1.7.8 11.6-26.8 2.4-6.6 5.3-14.7 6.6-18.1l2.2-6.1-3.1-4.4c-7.9-11.1-14.9-19.4-16.4-19.7-1-.2-2.6 1-4 3.1M395 205.6c.1 2.4 17.8 28.4 36.8 53.9 13.1 17.5 23.8 31.3 37 47.3 5.6 6.8 10.2 12.7 10.2 13.1s-4.3 6.5-9.6 13.7c-9.9 13.5-13.4 18.5-13.4 19.5 0 .4 4.3 2.7 9.5 5.2 11 5.3 31.3 17.4 43 25.6 17.9 12.5 43.2 32.6 48.9 39 1.1 1.1 3 2.1 4.4 2.1 6.1 0 33.5-25 43.1-39.4 10.1-14.9 12.6-23.1 11.9-38.8-.5-9.7-1.1-12.9-4.3-22.3-2.1-6.1-4.3-11.7-5-12.5s-2.2-3.3-3.4-5.5c-8.5-16-30.6-38.2-48.9-49.3-3-1.8-6.9-4.3-8.6-5.6s-4.7-3.1-6.6-4.1c-1.9-.9-9.1-4.5-16-7.9-17.9-9-33.5-14.7-66-24-21.4-6.1-63.1-12.7-63-10M271.9 206.5c-.3.2-5.6.9-11.9 1.5s-16 2-21.5 3.1c-9.1 1.9-15.3 3.6-41.5 11.6-46.6 14.3-88 41.4-109.3 71.4-13 18.4-20.1 44.1-16.8 60.8 3.4 17.2 18.1 37.9 38.8 54.6 15.4 12.4 14.1 12.1 22.1 4.3 24.8-24.1 67.4-53.3 83.8-57.4 5.4-1.4 4.7-2.8-11.9-25.6l-7.8-10.7 12.3-15.2c17.9-22.1 37.7-48 50.5-65.9 9.2-13 21.3-31.2 21.3-32.2 0-.8-7.3-1.2-8.1-.3 M43.3 358.2c-1.7 2.2-5.3 19.8-6.8 33.8-2.2 19.1-2.2 75.8 0 89.5 3.1 20.3 9.6 35 24 54.5 12.7 17.2 13.7 18.3 29 33.5 16.6 16.7 40.8 36.4 60 49 10 6.6 31.2 17.8 42.6 22.6 11.2 4.7 37.7 13.5 49.6 16.4 11.4 2.8 30.3 4.9 31.7 3.5.5-.5.2-10.5-.7-23.7-.9-12.5-1.9-27.8-2.2-33.8-.3-6.1-1-15.5-1.5-21-.6-5.5-1.7-21.6-2.5-35.7s-1.8-29.1-2.1-33.2l-.7-7.4-12.6-3.2c-31.8-7.9-64.9-19.1-87.6-29.5-12.2-5.7-37.7-20-50-28.1C78.9 422.6 53.8 392.6 47 366c-1.2-4.7-2.3-8.6-2.4-8.8-.2-.1-.8.3-1.3 1M640.6 371.1c-.9 2.9-1.6 5.8-1.6 6.5s-2.1 5.3-4.6 10.1c-12.5 23.7-30.7 42.8-58.2 60.7-11.2 7.4-56.7 30.4-73.1 37-24.8 10-50 17.4-79 23.2-7.4 1.5-9.5 2.3-10.2 3.9-.4 1.1-1.5 25.4-2.4 54s-2 62.3-2.6 74.9c-.5 12.6-.7 23.1-.5 23.4.7.7 19.7-2.5 35.9-6 16.1-3.4 33-9.6 62.3-22.6 37.1-16.5 61.9-33.6 91.4-63.2 17.3-17.3 36.7-44.4 43.1-60.1 7.3-17.9 8.9-31.1 9.1-75.4.2-34.3-.7-47.8-4.1-61.8-2.5-10.4-3.5-11.3-5.5-4.6M227.7 388c-14 7.1-27.4 15.2-37.7 22.7-12.2 8.9-26.1 20.6-25.7 21.7.4 1.6 25.1 13.6 39.7 19.4 21.2 8.4 55.4 19.2 56.7 17.8.5-.5-2.4-56.8-3.2-62.1-.5-2.8-15.5-24.7-17.3-25.2-.4-.1-6 2.4-12.5 5.7M432.3 385.2c-1.1 1.3-4.8 6.2-8.2 11l-6.2 8.6-1.4 34.3c-.8 18.9-1.1 34.7-.6 35.2 1.5 1.5 32.1-6.3 53.6-13.5 16.8-5.7 49.6-19.8 52.5-22.5 1.7-1.6-35.2-28.1-55.5-39.8-10.6-6.2-29.3-15.5-31.1-15.5-.6 0-2 1-3.1 2.2'},
   MSH: {viewBox: '0 0 1112 1600', path: 'M711 81.9c-6 2.7-509.5 238.2-528.6 247.3-2.2 1-5 9-3.3 9.6.5.2.9 217.2.9 568.8V1476h767l-.2-574.3-.3-574.2-22.2-.3-22.3-.2V225h-2.4c-1.9 0-61.7 8.7-72.3 10.5l-3.3.6V152l-2.7.6c-3.4.7-45.2 12-76.8 20.7l-23 6.4-.5-50.3c-.3-27.6-.7-50.5-1-50.7-.3-.3-4.3 1.2-9 3.2m-6.2 61.3-.3 41.2L492 243.2c-116.9 32.3-212.9 58.7-213.3 58.5-.8-.2 424.1-199.6 425.6-199.7.4 0 .6 18.5.5 41.2m103.7 94.6c-.2.3-50.1 7.8-110.7 16.8-60.7 8.9-174.8 25.7-253.6 37.4-78.9 11.6-143.8 21-144.4 20.8s113.7-32.1 253.8-70.8l254.9-70.5.3 32.9c.1 18.1 0 33.1-.3 33.4m78.5 46.7V327l-286.2-.1c-157.5-.1-285.2-.4-283.8-.6 3.6-.6 567.2-84.1 568.8-84.2.9-.1 1.2 9 1.2 42.4m-589.3 29.1c-.3.3-1.2.4-1.9.1-.8-.3-.5-.6.6-.6 1.1-.1 1.7.2 1.3.5M932 901.5V1461H195V344.1l4.8-.6c2.6-.3 5.4-.8 6.2-.9.8-.2 164.5-.4 363.8-.5L932 342z M286.7 464.7c-.4.3-.7 203.7-.7 452V1368h138v-286.2c0-157.4.2-285.9.5-285.7.4.5 17.7 96.8 76.5 427.4 13.8 77 25.2 141 25.5 142.3l.5 2.2h33.6c25.9 0 33.6-.3 33.9-1.2.2-.7 21.4-128.4 47-283.8 25.6-155.3 46.8-282.6 47-282.9.3-.2.5 127.4.5 283.7V1368h151V464H647.2l-1 4.7c-.5 2.7-21.2 110.4-45.8 239.5C575.7 837.4 555.3 943 555 943s-20.7-105.6-45.4-234.8c-24.6-129.1-45.3-236.8-45.8-239.5l-1-4.7h-87.7c-48.3 0-88.1.3-88.4.7'},
   ECL: {viewBox: '0 0 31 32', path: 'M3.702 11.269c0.87-0.526 1.889-0.801 2.906-0.784 1.153 0.011 2.296 0.401 3.217 1.093 1.158 0.859 1.957 2.186 2.161 3.614 0.047 0.355 0.086 0.718 0.033 1.075-0.172-0.859-0.565-1.674-1.15-2.328-0.815-0.929-1.984-1.532-3.209-1.679-0.847-0.095-1.74-0.006-2.502 0.398-1.529 0.8-2.416 2.649-2.105 4.343 0.13 0.723 0.531 1.39 1.104 1.847 0.336 0.276 0.725 0.481 1.135 0.626 0.009 0 0.028 0 0.037 0-0.114-0.087-0.202-0.201-0.297-0.308-0.467-0.561-0.844-1.217-0.985-1.939-0.165-0.844 0.062-1.739 0.548-2.44 0.347-0.501 0.847-0.91 1.436-1.087 0.376-0.118 0.776-0.116 1.164-0.084 0.708 0.058 1.407 0.323 1.942 0.795 0.642 0.555 1.031 1.362 1.163 2.192 0.209 1.301-0.17 2.698-1.055 3.682-0.458 0.509-1.045 0.909-1.697 1.124-1.347 0.284-2.793-0.006-3.952-0.742-1.207-0.758-2.1-1.998-2.426-3.386-0.278-1.157-0.168-2.404 0.313-3.493 0.456-1.042 1.243-1.933 2.218-2.518zM29.645 15.981c-0.001 0.501-0.058 1-0.118 1.498-0.231 2.045-0.972 4.028-2.128 5.73-1.105 1.632-2.589 3.005-4.304 3.977-0.898 0.512-1.86 0.904-2.85 1.197-0.691 0.205-1.403 0.333-2.118 0.41-0.155 0.014-0.311 0.028-0.467 0.040-0.252 0.017-0.506 0.027-0.762 0.029-0.099-0.001-0.199-0.005-0.298-0.012 0.2-1.058 0.875-1.976 1.716-2.624 0.593-0.461 1.268-0.807 1.968-1.069 0.527-0.203 1.079-0.329 1.607-0.53 1.202-0.447 2.344-1.072 3.336-1.888 1.138-0.937 2.061-2.164 2.529-3.57 0.443-1.513 0.495-3.134 0.2-4.681-0.249-1.286-0.764-2.517-1.49-3.606-0.351-0.524-0.74-1.026-1.194-1.466-0.286-0.284-0.597-0.54-0.911-0.792-0.838-0.712-1.396-1.719-1.655-2.78-0.107-0.439-0.164-0.89-0.178-1.342 1.281 0.648 2.456 1.504 3.459 2.532 0.805 0.831 1.515 1.761 2.050 2.789 0.309 0.578 0.562 1.184 0.803 1.792 0.237 0.566 0.393 1.161 0.524 1.759 0.169 0.79 0.263 1.595 0.278 2.402 0.001 0.035 0.002 0.070 0.002 0.104 0 0.033 0.001 0.066 0.001 0.1zM16.863 3.141c0.275 0.002 0.548 0.012 0.819 0.031 0.171 0.013 0.342 0.029 0.512 0.048 1.216 0.137 2.409 0.458 3.537 0.933-0.185 0.788-0.122 1.621 0.114 2.391 0.363 1.179 1.099 2.207 1.952 3.083 0.804 0.773 1.444 1.708 1.921 2.715 0.608 1.288 0.902 2.731 0.787 4.154-0.058 0.752-0.224 1.494-0.478 2.204-0.127 0.35-0.263 0.699-0.46 1.016-0.534 0.885-1.239 1.66-2.025 2.328-1.109 0.94-2.405 1.648-3.775 2.129-1.061 0.392-2.067 0.979-2.856 1.796-0.394 0.415-0.722 0.901-0.913 1.443-0.159 0.443-0.218 0.92-0.184 1.39-1.608-0.125-3.195-0.547-4.646-1.253-2.189-1.054-4.061-2.748-5.334-4.816 0.817 0.767 1.773 1.387 2.81 1.814 1.312 0.542 2.751 0.771 4.167 0.666 1.387-0.097 2.75-0.519 3.952-1.219 1.844-1.066 3.299-2.787 4.035-4.786 0.55-1.478 0.709-3.098 0.458-4.655-0.207-1.283-0.691-2.519-1.406-3.604 0.246-0.733 0.357-1.521 0.247-2.291-0.129-0.944-0.599-1.835-1.3-2.48-0.425-0.369-0.911-0.669-1.292-1.087-0.525-0.557-1.041-1.169-1.265-1.916 0.207-0.020 0.414-0.030 0.621-0.032zM10.958 4.551c1.38-0.705 2.889-1.15 4.428-1.321 0.043 0.708 0.427 1.342 0.882 1.866 0.304 0.355 0.655 0.666 1.011 0.969 0.983 0.865 1.521 2.19 1.46 3.493-1.545-1.592-3.676-2.606-5.892-2.766-1.427-0.111-2.88 0.116-4.202 0.663-1.038 0.428-1.996 1.048-2.812 1.817 1.234-2.004 3.026-3.659 5.126-4.722z'},
   TMT: {viewBox: '0 0 32 32', path: 'M15.516 18.493h-0.005c-0.233 0-0.777 0.001-1.034-0.013-1.337-0.075-1.636-0.077-3.054-0.334-1.026-0.186-2.898-0.883-3.257-1.012 0.004-0.667 0.111-1.333 0.324-1.966 0.166-0.48 0.41-0.938 0.75-1.317 0.057-0.187 0.032-0.385 0.073-0.574 0.117-1.167 0.333-2.348 0.849-3.413 0.015 0.002 0.045 0.008 0.060 0.010 2.238 1.592 5.443 2.814 8.745 2.879 3.151 0.063 6.021-1.158 7.559-1.939 0.021-0.010 0.039-0.019 0.054-0.028 0.524-0.268 1.012-0.604 1.5-0.931 0.175 0.376 0.342 0.758 0.448 1.159 0.027 0.044 0.025 0.096 0.032 0.145 0.053 0.085 0.054 0.19 0.075 0.286 0.14 0.483 0.192 0.991 0.262 1.488 0.032 0.131 0.002 0.27 0.047 0.4 0 0.171 0.051 0.336 0.044 0.507 0.201 0.187 0.341 0.428 0.479 0.663 0.373 0.688 0.539 1.469 0.601 2.242 0.001 0.13 0.010 0.259 0.001 0.389-0.326 0.133-1.662 0.634-2.545 0.84-0.807 0.188-1.628 0.332-2.452 0.415-0.444 0.047-1.457 0.1-1.517 0.104-0.294-0.002-0.588 0.012-0.881-0.003-0.31-0.144-0.63-0.269-0.953-0.379-0.168-0.050-0.338-0.092-0.505-0.145-0.265-0.052-0.528-0.119-0.797-0.153-0.643-0.103-1.3-0.090-1.951-0.073-0.254 0.020-0.505 0.061-0.759 0.077-0.012 0.006-0.036 0.018-0.049 0.024-0.167 0.015-0.329 0.065-0.494 0.089-0.142 0.043-0.288 0.078-0.434 0.106-0.136 0.067-0.29 0.094-0.433 0.144-0.178 0.076-0.361 0.139-0.537 0.219-0.084 0.026-0.155 0.094-0.247 0.094zM25.728 12.675c-0.086 0.022-0.156 0.078-0.23 0.123-0.863 0.523-1.692 1.108-2.443 1.782-0.183 0.192-0.402 0.347-0.568 0.556-0.332 0.35-0.656 0.717-0.883 1.146-0.050 0.097-0.136 0.297-0.136 0.297s1.942 0.453 3.643-0.041c0.602-0.175 1.302-0.484 1.706-0.794 0.026-0.22-0.009-0.664-0.078-0.987-0.16-0.742-0.699-1.621-1.012-2.081zM15.816 15.181c-0.944-0.983-2.061-1.785-3.228-2.483-0.019-0.006-0.057-0.018-0.076-0.023-0.119 0.223-0.281 0.423-0.395 0.65-0.19 0.317-0.327 0.662-0.472 1-0.040 0.183-0.119 0.355-0.15 0.54-0.056 0.299-0.124 0.615-0.036 0.913 0.034 0.016 0.067 0.034 0.099 0.054 0.348 0.242 1.437 0.799 2.62 0.894 1.441 0.116 2.594-0.149 2.594-0.149s-0.092-0.221-0.144-0.33c-0.214-0.395-0.519-0.73-0.812-1.066zM3.241 15.37c-0.708-0.241-1.38-0.591-1.981-1.037 0.243-0.298 0.516-0.568 0.793-0.835 0.536-0.476 1.157-0.863 1.838-1.093 0.328-0.115 0.671-0.184 1.016-0.225 0.224-0.005 0.449-0.001 0.674-0.002 0.325 0.395 0.737 0.733 1.227 0.897 0.071 0.036 0.157 0.028 0.222 0.076l0.12 0.001c-0.019-0.069-0.091-0.092-0.141-0.132-0.469-0.371-0.86-0.863-1.050-1.434-0.062-0.111-0.079-0.24-0.125-0.356-0.149-0.578-0.202-1.177-0.179-1.772 0.040-0.2 0.010-0.407 0.054-0.606-0.001-0.136 0.052-0.265 0.043-0.401-0.002-0.266 0.002-0.533-0.003-0.799-0.066-0.117-0.005-0.261-0.056-0.385-0.042-0.348-0.146-0.685-0.236-1.023-0.141-0.328-0.26-0.677-0.475-0.968 0.844 0.159 1.647 0.559 2.259 1.166 0.662 0.623 1.139 1.432 1.413 2.295 0.036 0.070 0.056 0.145 0.071 0.222 0.119 0.361 0.182 0.739 0.242 1.114 0.002 0.083 0.019 0.173-0.024 0.249-0.059 0.141-0.078 0.298-0.148 0.431-0.014 0.098-0.028 0.199-0.071 0.289-0.030 0.157-0.058 0.32-0.110 0.469-0.041 0.326-0.110 0.649-0.150 0.976-0.051 0.325-0.070 0.655-0.119 0.981-0.282 0.356-0.493 0.762-0.667 1.18-0.069 0.197-0.136 0.394-0.197 0.594-0.267 0.089-0.854 0.3-1.596 0.421-0.036 0.005-0.073 0.011-0.109 0.017-0.338 0.013-0.676 0.023-1.014 0.005-0.423-0.042-1.083-0.176-1.519-0.315zM8.017 18.084c1.575 0.664 3.257 1.103 4.968 1.185 0.47 0.004 0.942 0.019 1.411-0.031-0.393 0.34-0.756 0.717-1.047 1.15 1.085-0.825 2.391-1.33 3.727-1.565 0.91-0.172 1.842-0.216 2.767-0.166 1.309 0.087 2.619 0.373 3.802 0.955 0.439 0.219 0.865 0.471 1.249 0.777-0.28-0.44-0.651-0.812-1.045-1.151 2.182 0.185 4.378-0.307 6.382-1.155 0.312 0.427 0.502 0.932 0.645 1.438 0.254 0.958 0.278 1.991-0.023 2.941-0.192 0.602-0.544 1.154-1.022 1.569-0.83 0.719-1.849 1.187-2.896 1.493-0.299 0.083-0.602 0.154-0.909 0.202 0.637-0.674 1.085-1.532 1.233-2.45-0.517 1.071-1.377 1.957-2.391 2.571-1.212 0.758-2.613 1.152-4.013 1.381-2.026 0.314-4.126 0.046-6.034-0.69-1.028-0.382-1.983-0.979-2.741-1.776-0.418-0.436-0.78-0.926-1.070-1.456 0.033 0.483 0.209 0.948 0.428 1.377 0.194 0.376 0.452 0.714 0.725 1.036-0.763-0.138-1.51-0.374-2.211-0.707-0.567-0.269-1.112-0.597-1.579-1.020-0.819-0.723-1.198-1.843-1.186-2.916-0.025-0.856 0.165-1.716 0.532-2.488 0.085-0.176 0.179-0.348 0.298-0.502zM16.376 5.017c1.078-0.288 2.2-0.426 3.316-0.36 1.434 0.089 2.854 0.456 4.144 1.091 1.514 0.741 2.823 1.9 3.726 3.325-2.246 1.594-4.949 2.509-7.689 2.717-0.745 0.068-1.494 0.023-2.235-0.071-1.86-0.245-3.693-0.779-5.353-1.66-0.554-0.294-1.087-0.626-1.601-0.985 0.592-0.922 1.345-1.742 2.224-2.398 1.031-0.776 2.223-1.325 3.468-1.658z'},
@@ -5523,10 +5703,18 @@ const SET_ICONS = {
 };
 
 const SET_CONFIG = {
+  HOB: {
+    name: 'HOB (The Hobbit)',
+    shortName: 'HOB',
+    isNew: true,
+    data: HOB_CARDS,
+    ratingsLink: 'https://www.17lands.com/card_data?expansion=HOB&format=PremierDraft',
+    dataDate: '2026-08-14 UTC',
+    dataTimestamp: '2026-08-14 UTC'
+  },
   MSH: {
     name: 'MSH (Marvel Super Heroes)',
     shortName: 'MSH',
-    isNew: true,
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
     dataDate: '2026-08-16 UTC',
@@ -5624,8 +5812,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.9.64';
-const LAST_UPDATE = '2026-08-16 UTC';
+const QUIZ_VERSION = '4.9.62';
+const LAST_UPDATE = '2026-08-14 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -5634,7 +5822,7 @@ const IS_LOCAL = window.location.protocol === 'file:';
 const IS_BETA = window.location.pathname.includes('quiz-beta');
 
 // Set selector display order: newest sets first, then the rest in SET_CONFIG order
-const SET_SELECTOR_ORDER = ['MSH', 'SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'MSH' && code !== 'SOS')];
+const SET_SELECTOR_ORDER = ['HOB', 'MSH', 'SOS', ...Object.keys(SET_CONFIG).filter(code => code !== 'HOB' && code !== 'MSH' && code !== 'SOS')];
 
 // ============================================
 // SPA HASH ROUTING: #SET[/grading][/alsa]
@@ -6514,6 +6702,7 @@ const buildCombinedGrid = (gridGradingAdj, gridComparison) => {
 
 // Scryfall set codes to search for each quiz set (priority order)
 const SCRYFALL_SET_CODES = {
+  HOB: ['hob', 'spg'],
   MSH: ['msh', 'spg'],
   ECL: ['ecl', 'spg'],
   TMT: ['tmt', 'spg'],
@@ -7465,7 +7654,7 @@ const GIHQuiz = () => {
   const [currentSetCode, setCurrentSetCode] = React.useState(() => {
     if (INITIAL_HASH.set) return INITIAL_HASH.set;
     const saved = safeStorage.getItem(STORAGE_KEYS.SET);
-    return (saved && SET_CONFIG[saved]) ? saved : 'MSH';
+    return (saved && SET_CONFIG[saved]) ? saved : 'HOB';
   });
   const currentSetConfig = SET_CONFIG[currentSetCode];
   const activeCardData = currentSetConfig.data;
