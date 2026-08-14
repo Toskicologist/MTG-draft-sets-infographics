@@ -469,6 +469,10 @@
         async src="//gc.zgo.at/count.js"></script>
   </head>
 <body>
+    <div style="text-align: center; margin-bottom: 20px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 4px; font-size: 0.85em; color: #999;">
+        <span id="page-version">v1.1</span> | Last updated: <span id="last-modified">2026-08-14</span>
+    </div>
+
     <h1>HOB Card Ratings Analysis</h1>
     <p style="text-align: center; margin-bottom: 30px; color: #aaa; font-size: 0.95em;">Top 5 and Bottom 5 cards by rarity (sorted by Games in Hand Winrate)</p>
 
@@ -668,19 +672,30 @@
             }
         }
 
-        async function fetchCardOracleText(cardName) {
+        async function fetchCardDetails(cardName) {
             try {
                 const response = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&set=hob`);
                 if (!response.ok) {
                     return null;
                 }
                 const cardData = await response.json();
+                let oracleText = '';
                 if (cardData.card_faces) {
-                    return cardData.card_faces.map(f => f.oracle_text || '').join(' // ');
+                    oracleText = cardData.card_faces.map(f => f.oracle_text || '').join(' // ');
+                } else {
+                    oracleText = cardData.oracle_text || '';
                 }
-                return cardData.oracle_text || null;
+                const power = cardData.power || cardData.card_faces?.[0]?.power;
+                const toughness = cardData.toughness || cardData.card_faces?.[0]?.toughness;
+                return {
+                    mana_cost: cardData.mana_cost || '',
+                    type_line: cardData.type_line || cardData.card_faces?.[0]?.type_line || '',
+                    oracle_text: oracleText,
+                    power: power,
+                    toughness: toughness
+                };
             } catch (error) {
-                console.error(`Error fetching oracle text for ${cardName}:`, error);
+                console.error(`Error fetching details for ${cardName}:`, error);
                 return null;
             }
         }
@@ -886,12 +901,30 @@
                 const oracleCell = document.createElement('td');
                 oracleCell.className = 'oracle-text-cell';
                 oracleCell.colSpan = 6;
-                oracleCell.textContent = 'Loading...';
+                oracleCell.innerHTML = '<div style="color: #666;">Loading...</div>';
                 oracleRow.appendChild(oracleCell);
                 tbody.appendChild(oracleRow);
 
-                fetchCardOracleText(card.name).then(oracleText => {
-                    oracleCell.textContent = oracleText || '(No oracle text)';
+                fetchCardDetails(card.name).then(details => {
+                    if (!details) {
+                        oracleCell.innerHTML = '<div style="color: #999;">(No details available)</div>';
+                        return;
+                    }
+                    let html = '';
+                    if (details.mana_cost) {
+                        html += `<div style="margin-bottom: 6px;"><span style="font-weight: bold; color: #f4b942;">Mana Cost:</span> ${details.mana_cost}</div>`;
+                    }
+                    if (details.type_line) {
+                        html += `<div style="margin-bottom: 6px;"><span style="font-weight: bold; color: #3dd5f3;">Type:</span> ${details.type_line}`;
+                        if (details.power && details.toughness) {
+                            html += ` <span style="color: #4CAF50;"><strong>${details.power}/${details.toughness}</strong></span>`;
+                        }
+                        html += '</div>';
+                    }
+                    if (details.oracle_text) {
+                        html += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.1);">${details.oracle_text}</div>`;
+                    }
+                    oracleCell.innerHTML = html || '<div style="color: #999;">(No text)</div>';
                 });
             });
         }
