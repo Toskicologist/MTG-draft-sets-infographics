@@ -54,9 +54,11 @@ from sos_refresh import config, csv_loader, fetch_17lands, quiz_updater
 
 SET_CODE = "HOB"
 # Refuse to apply if the card count would collapse — guards against a bad/empty
-# fetch. 179 of 188 cards cleared the GIH threshold on 2026-08-14; the floor is
-# set below that because a young set's count moves as cards cross ~500 games.
-MIN_EXPECTED_CARDS = 150
+# fetch. 179 of 188 cards cleared the GIH threshold on 2026-08-14. 17Lands'
+# ALL_TIME counts only grow (a card past ~500 GIH stays past it), so this floor
+# sits just under today's count. Do NOT set it to 150: quiz_updater's own
+# 150-card guard raises during the dry-run first, which would make it dead code.
+MIN_EXPECTED_CARDS = 165
 
 
 def _resolve_new_csv(csv_arg: str | None) -> Path:

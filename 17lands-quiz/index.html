@@ -1412,6 +1412,7 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.9.63 (2026-08-15 UTC): FIX: Type filter now reads the FRONT face of split/adventure/DFC cards. Removes the bogus 'Enchantment // Sorcery' and 'Legendary Artifact // Sorcery' options on HOB, and stops adventure creatures answering the Sorcery/Instant filters (SOS Sorcery 108 -> 80, Instant 80 -> 72; HOB Sorcery 21 -> 9, Instant 23 -> 19; MSH Artifact 42 -> 41).
   v4.9.62 (2026-08-14 UTC): DATA: Refresh HOB to HOB card-ratings-2026-08-14 T2338.csv (179 cards).
   v4.9.61 (2026-08-14 UTC): SET: Add HOB (The Hobbit) from 17Lands Premier Draft; NEW badge and default set moved from MSH to HOB.
   v4.9.60 (2026-08-14 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-14 T0701.csv (289 cards).
@@ -5812,8 +5813,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.9.62';
-const LAST_UPDATE = '2026-08-14 UTC';
+const QUIZ_VERSION = '4.9.63';
+const LAST_UPDATE = '2026-08-15 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
@@ -7859,12 +7860,17 @@ const GIHQuiz = () => {
 
     if (typeFilters.length > 0) {
       filtered = filtered.filter(c => {
+        // FRONT face only. Split/adventure/DFC cards carry a combined
+        // "Front — Sub // Back — Sub" type line, and matching the whole string
+        // made every adventure creature answer the Sorcery/Instant filters too.
+        // typeOptions is built from the front face as well, so the two agree.
+        const frontType = c.type ? c.type.split(' // ')[0] : '';
         return typeFilters.some(tf =>
-          c.type && (c.type.startsWith(tf) ||
-          c.type.includes(`— ${tf}`) ||
-          c.type.endsWith(` ${tf}`) ||
-          c.type.includes(` ${tf} `) ||
-          c.type.includes(` ${tf}`))
+          frontType && (frontType.startsWith(tf) ||
+          frontType.includes(`— ${tf}`) ||
+          frontType.endsWith(` ${tf}`) ||
+          frontType.includes(` ${tf} `) ||
+          frontType.includes(` ${tf}`))
         );
       });
     }
@@ -8491,7 +8497,7 @@ Play at: ${baseUrl}#${currentSetCode}`,
               onClear={() => clearFilter(setRarityFilters)}
             />
             {(() => {
-              const typeOptions = [...new Set(activeCardData.filter(c => c.type).map(c => c.type.split(' — ')[0].trim()))].sort().map(t => ({value: t, label: t}));
+              const typeOptions = [...new Set(activeCardData.filter(c => c.type).map(c => c.type.split(' // ')[0].split(' — ')[0].trim()))].sort().map(t => ({value: t, label: t}));
               return (
                 <MultiSelectFilter
                   label="Type"
