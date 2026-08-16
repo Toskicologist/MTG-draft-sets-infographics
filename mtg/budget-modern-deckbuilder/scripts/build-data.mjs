@@ -16,8 +16,11 @@
  *       i = a Scryfall card id  -> image via API redirect
  *   data-meta.json    { generatedAt, counts, sizes }      (banner + freshness)
  *
- * Scryfall `default_cards` is a single ~514 MB JSON array; we stream it with
- * a dependency-free, string/escape-aware brace scanner (bounded RAM).
+ * Scryfall `default_cards` is served as a gzipped JSONL file (~74 MB gz, ~514 MB
+ * raw); we gunzip and stream it through a dependency-free, string/escape-aware
+ * brace scanner (bounded RAM). The scanner treats any depth-0 character that is
+ * not `{` as a separator, so it handles JSONL newlines and the old JSON-array
+ * commas identically.
  *
  * Usage:
  *   node scripts/build-data.mjs                 # prices + index (download bulk)
@@ -31,10 +34,17 @@
  *
  * v1.2.0: Front-face aliases are now materialized after the scan, so a real card
  * with the same name as a split-card front can never be merged into the split entry.
+ * v1.3.0: Scryfall dropped `download_uri`/`size` from /bulk-data (2026-08-14) in
+ * favour of `jsonl_download_uri`/`compressed_size`; read those, gunzip the stream.
+ * v1.4.0: prices and index are now refreshed by two independent workflows, so
+ * data-meta.json is merged into rather than rewritten - each run touches only
+ * the fields it rebuilt.
  */
 import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { createGunzip } from "node:zlib";
+import { Readable } from "node:stream";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = join(ROOT, "data");
@@ -168,11 +178,30 @@ async function buildIndex() {
   } else {
     const bd = (await getJSON("https://api.scryfall.com/bulk-data")).data
       .find(b => b.type === "default_cards");
-    console.error(`[index] downloading default_cards (~${(bd.size/1048576).toFixed(0)} MB)…`);
-    const r = await fetch(bd.download_uri, { headers: { "User-Agent": "budget-modern-deckbuilder/2" } });
+    // Fail loudly rather than with a bare "Failed to parse URL from undefined":
+    // this endpoint's shape has changed under us before (see below).
+    if (!bd) throw new Error("Scryfall /bulk-data has no default_cards entry");
+    // On 2026-08-14 Scryfall dropped the uncompressed `download_uri`/`size` pair
+    // and now publishes only `jsonl_download_uri`/`compressed_size` (gzipped
+    // JSONL). The daily Action failed for two days on the resulting undefined
+    // URL. Prefer the JSONL, keep the old field as a fallback in case a mirror
+    // or a future response still carries it.
+    const url = bd.jsonl_download_uri || bd.download_uri;
+    if (!url) throw new Error("Scryfall default_cards has no download URL: " + JSON.stringify(Object.keys(bd)));
+    const gz = url.endsWith(".gz");
+    const mb = bd.compressed_size ?? bd.size;
+    console.error(`[index] downloading default_cards (~${mb ? (mb/1048576).toFixed(0) : "?"} MB${gz ? " gz" : ""})…`);
+    const r = await fetch(url, { headers: { "User-Agent": "budget-modern-deckbuilder/2" } });
     if (!r.ok || !r.body) throw new Error("bulk download HTTP " + r.status);
     const dec = new TextDecoder();
-    for await (const chunk of r.body) split(dec.decode(chunk, { stream: true }));
+    // Served as Content-Type: application/gzip (a gzip *file*, not a transfer
+    // encoding), so fetch does not decompress it for us.
+    if (gz) {
+      const gun = Readable.fromWeb(r.body).pipe(createGunzip());
+      for await (const chunk of gun) split(dec.decode(chunk, { stream: true }));
+    } else {
+      for await (const chunk of r.body) split(dec.decode(chunk, { stream: true }));
+    }
   }
   // Materialize aliases after the scan: for each front-face name, if no real
   // card claimed it, point it at the split card's entry.
@@ -195,9 +224,17 @@ async function readJSON(p){ try { return JSON.parse(await readFile(p, "utf8")); 
                  present (first run), it is built regardless.            */
 async function main() {
   await mkdir(DATA, { recursive: true });
-  const now = new Date().toISOString();          // price build time
+  const now = new Date().toISOString();
   const idxPath = join(DATA, "cards-index.json");
-  const meta = { generatedAt: now, fmt: FMT };
+  const metaPath = join(DATA, "data-meta.json");
+
+  // data-meta.json is SHARED by two independent workflows (tcg-prices.yml and
+  // cards-index.yml), so start from whatever the other one last wrote and
+  // overwrite only the fields this run actually rebuilt. Writing it from
+  // scratch would let an index-only run stamp `generatedAt` - the price time
+  // the page's "last updated" banner reads - with a moment when no price was
+  // fetched, i.e. present stale prices as fresh.
+  const meta = { ...(await readJSON(metaPath) || {}), fmt: FMT };
 
   if (!has("--no-prices")) {
     const { prices, foil } = await buildPrices();
@@ -205,6 +242,7 @@ async function main() {
       source: "tcgcsv.com TCGplayer cat 1, Mid USD; prices=Normal (non-foil), foil=Foil",
       prices, foil };
     await writeFile(join(DATA, "tcg-prices.json"), JSON.stringify(out));
+    meta.generatedAt = now;                       // price build time (banner stamp)
     meta.priceCount = Object.keys(prices).length;
     meta.foilCount = Object.keys(foil).length;
     meta.pricesBytes = Buffer.byteLength(JSON.stringify(out));
@@ -227,7 +265,13 @@ async function main() {
     meta.indexBytes = Buffer.byteLength(JSON.stringify(idx));
   }
 
-  await writeFile(join(DATA, "data-meta.json"), JSON.stringify(meta));
+  // Only reachable on a never-yet-priced repo (index-only run, no branch to
+  // restore from). Say so rather than back-filling a price timestamp we do not
+  // have; the daily price workflow fills it in within a day.
+  if (!meta.generatedAt)
+    console.error("[meta] WARNING: no price timestamp yet (no prior data-meta.json and this run skipped prices)");
+
+  await writeFile(metaPath, JSON.stringify(meta));
   console.error(`[meta] ${JSON.stringify({
     priceGeneratedAt: meta.generatedAt, indexGeneratedAt: meta.indexGeneratedAt,
     cardCount: meta.cardCount, priceCount: meta.priceCount,
