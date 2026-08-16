@@ -1,0 +1,235 @@
+# This file is synced to the Pages repo as .github/workflows/cards-index.yml by
+# scripts/sync-to-github-pages.ps1. Edit it here, never in the mirror.
+#
+# CARD INDEX ONLY. Prices are refreshed by its sibling workflow, tcg-prices.yml
+# (source: deploy/tcg-prices.github-workflow.yml). Split out on 2026-08-16 -
+# see that file's header for why.
+#
+# cards-index.json maps card name -> printings / legalities, built from
+# Scryfall's `default_cards` bulk file (~74 MB gzipped JSONL). It only changes
+# on set releases and B&R announcements, so it is rebuilt MONTHLY (day 01) or
+# when the carried copy has gone stale. Every other day this workflow is a
+# ~20 s no-op that checks the age and exits.
+#
+# Runs at 03:30 UTC, ~17 h away from the price refresh. Both workflows restore
+# all three data files from the orphan `price-data` branch, rebuild only their
+# own, and force-push all three back, so they must never overlap: they share
+# the `price-data` concurrency group.
+#
+# A card missing from the index is NOT an error on the page - it falls back to
+# a live Scryfall lookup for that one card. What a stale index actually costs
+# is (a) those fallbacks are slow and have historically drawn 429s, (b) a
+# cheaper printing released since the last build is invisible, so the cheapest
+# price shown can be too high, and (c) legality flips since the last build are
+# not reflected. Hence the staleness heal below.
+#
+# Failure policy: the 03:30 run is the primary; if it fails or never fires, the
+# 04:30 slot retries. Only a failing RETRY raises an alert issue.
+
+name: Refresh cards-index
+
+on:
+  schedule:
+    - cron: "30 3 * * *"       # primary: daily age check; rebuilds on day 01 / when stale
+    - cron: "30 4 * * *"       # retry:   only acts if the 03:30 slot did not succeed
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Rebuild now regardless of age (do this after a B&R or a set release)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write              # force-push the price-data branch
+  actions: read                # the retry gate reads this workflow's own run history
+  issues: write                # open/close the alert issue
+
+concurrency:
+  group: price-data            # SHARED with tcg-prices.yml - both write the branch
+  cancel-in-progress: false
+
+env:
+  RETRY_CRON: "30 4 * * *"
+  ALERT_TITLE: "[price-data] Scryfall card index refresh is failing"
+  STALE_AFTER_DAYS: "35"       # a month plus slack, so the day-01 rebuild normally wins
+
+jobs:
+  # See tcg-prices.yml for why this gates on "did a run SUCCEED today" rather
+  # than "did the last run fail".
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          if [ "$SCHEDULE" != "$RETRY_CRON" ]; then
+            echo "Primary slot (or manual dispatch) - running."
+            echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          TODAY=$(date -u +%Y-%m-%d)
+          OK=$(gh api "repos/$REPO/actions/workflows/cards-index.yml/runs?per_page=30" \
+                 --jq "[.workflow_runs[]
+                        | select(.id != $RUN_ID)
+                        | select(.created_at | startswith(\"$TODAY\"))
+                        | select(.conclusion == \"success\")] | length")
+          if [ "$OK" -gt 0 ]; then
+            echo "A run already succeeded today ($OK) - retry not needed."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No successful index run yet today - retrying the 03:30 slot."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  refresh:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Restore current data from price-data branch
+        run: |
+          set -e
+          D=mtg/budget-modern-deckbuilder/data
+          mkdir -p "$D"
+          if git fetch --depth 1 origin price-data 2>/dev/null; then
+            for f in cards-index.json tcg-prices.json data-meta.json; do
+              git show "FETCH_HEAD:$f" > "$D/$f" 2>/dev/null || true
+            done
+            [ -s "$D/cards-index.json" ] && echo "HAVE_INDEX=1" >> "$GITHUB_ENV" || true
+          fi
+
+          # How old is the index we just carried forward?
+          #
+          # Added 2026-08-07. The monthly rebuild is scheduled on day 01, but a
+          # scheduled GitHub Actions run can be delayed or dropped, and nothing
+          # noticed when that happened: on 2026-08-07 the live index was still
+          # the one built on 2026-07-01, five weeks stale. A missed run should
+          # heal itself rather than wait for a human to notice, so age is
+          # checked here and used as a second rebuild trigger below.
+          AGE=""
+          if [ -s "$D/cards-index.json" ]; then
+            IDX_AT=$(jq -r '.generatedAt // empty' "$D/cards-index.json" 2>/dev/null || true)
+            if [ -n "$IDX_AT" ]; then
+              IDX_S=$(date -u -d "$IDX_AT" +%s 2>/dev/null || true)
+              if [ -n "$IDX_S" ]; then
+                AGE=$(( ( $(date -u +%s) - IDX_S ) / 86400 ))
+                echo "INDEX_AGE_DAYS=$AGE" >> "$GITHUB_ENV"
+              fi
+            fi
+          fi
+          echo "Carried index built: ${IDX_AT:-unknown} (age: ${AGE:-unknown} days)"
+
+      - name: Decide whether to rebuild
+        run: |
+          DOM=$(date -u +%d)
+          AGE="${INDEX_AGE_DAYS:-}"
+
+          STALE=""
+          if [ -n "$AGE" ] && [ "$AGE" -ge "$STALE_AFTER_DAYS" ]; then STALE=1; fi
+
+          if [ "${{ github.event.inputs.force }}" = "true" ] \
+             || [ "$DOM" = "01" ] || [ -z "${HAVE_INDEX:-}" ] || [ -n "$STALE" ]; then
+            echo "REBUILD=1" >> "$GITHUB_ENV"
+            echo "Index WILL be rebuilt (force=$([ "${{ github.event.inputs.force }}" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none}, age=${AGE:-unknown}d)"
+            if [ -n "$STALE" ]; then
+              # Surfaced as a run annotation, not just a log line: reaching this
+              # branch means the day-01 rebuild did not happen, and that is worth
+              # seeing in the Actions list rather than only inside the log.
+              echo "::warning::Card index was ${AGE} days old (limit ${STALE_AFTER_DAYS}) - the scheduled day-01 rebuild appears to have been missed. Rebuilding now."
+            fi
+          else
+            echo "Index is ${AGE:-unknown} days old and it is day $DOM - nothing to do."
+          fi
+
+      - name: Build the index
+        if: env.REBUILD
+        run: node mtg/budget-modern-deckbuilder/scripts/build-data.mjs --no-prices
+
+      # Prices and data-meta.json are the copies restored from the branch,
+      # republished untouched alongside the new index - the branch head is one
+      # orphan commit that must always carry all three files.
+      - name: Publish to orphan price-data branch (single force-pushed commit)
+        if: env.REBUILD
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          SRC="$PWD/mtg/budget-modern-deckbuilder/data"
+          WORK="$(mktemp -d)"
+          cp "$SRC/tcg-prices.json" "$SRC/cards-index.json" "$SRC/data-meta.json" "$WORK/"
+          cd "$WORK"
+          git init -q
+          git checkout -q -b price-data
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "price-data $(date -u +%Y-%m-%dT%H:%MZ) (index rebuilt)"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" price-data
+
+      - name: Purge jsDelivr edge cache
+        if: env.REBUILD
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          for f in tcg-prices.json cards-index.json data-meta.json; do
+            curl -sS "https://purge.jsdelivr.net/gh/${REPO}@price-data/${f}" >/dev/null || true
+          done
+          echo "purge requested"
+
+      # --- alerting ----------------------------------------------------
+      - name: Alert - refresh failed twice
+        if: failure() && github.event.schedule == '30 4 * * *'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          URL="${{ github.server_url }}/$REPO/actions/runs/${{ github.run_id }}"
+          # Exact title match rather than `--search`: the title contains
+          # characters GitHub's search syntax reads as operators.
+          NUM=$(gh issue list --repo "$REPO" --state open --limit 100 --json number,title \
+                  --jq ".[] | select(.title == \"$ALERT_TITLE\") | .number" | head -n1)
+          BODY=$(cat <<EOF
+          The Scryfall card-index refresh failed at **both** the 03:30 and 04:30 UTC slots on $(date -u +%Y-%m-%d).
+
+          Failed retry run: $URL
+
+          Prices are unaffected - they are a separate workflow. The page keeps using the last good index; cards missing from it fall back to a live Scryfall lookup, which is slower and can draw 429s, and a cheaper printing released since that index was built will not be picked up.
+
+          This issue closes itself on the next successful run.
+          EOF
+          )
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --repo "$REPO" --body "$BODY"
+            echo "Commented on existing alert issue #$NUM"
+          else
+            gh issue create --repo "$REPO" --title "$ALERT_TITLE" --body "$BODY"
+          fi
+
+      - name: Close the alert issue after a good run
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          NUM=$(gh issue list --repo "$REPO" --state open --limit 100 --json number,title \
+                  --jq ".[] | select(.title == \"$ALERT_TITLE\") | .number" | head -n1)
+          if [ -n "$NUM" ]; then
+            gh issue close "$NUM" --repo "$REPO" \
+              --comment "Recovered: card index refreshed successfully in ${{ github.server_url }}/$REPO/actions/runs/${{ github.run_id }}."
+            echo "Closed alert issue #$NUM"
+          fi
