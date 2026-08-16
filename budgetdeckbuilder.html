@@ -9,9 +9,49 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.13.0)
+  MTG Budget Deckbuilder (v3.15.0)
 
   Changelog:
+  v3.15.0 (2026-08-16T14:30:32Z) - Promoted from beta v3.15.0-beta.1. Brings
+                        the v3.14.0 hardening/behaviour batch with it. The
+                        headline change: the page now notices new price data.
+                        - CDN cache keys are now the data's own build times
+                          (`generatedAt` for prices, `indexGeneratedAt` for the
+                          card index) instead of a per-UTC-day `?d=` key. The
+                          old key rolled at 00:00 UTC while the data lands at
+                          ~20:30 UTC, so anyone who had loaded the page earlier
+                          that day kept being served the PREVIOUS snapshot out
+                          of browser cache (jsDelivr sends max-age=604800) for
+                          the 2-3.5 h in between, reload included. Keying the
+                          two big files separately also means a price-only day
+                          no longer re-downloads the ~3.3 MB index, and an
+                          index-only day no longer re-downloads the ~2 MB price
+                          map.
+                        - A newer snapshot is picked up automatically: the
+                          ~250 B meta file is polled every 5 min while the tab
+                          is visible, and immediately when the tab regains
+                          focus. Previously loadCdn memoised with no expiry and
+                          the banner ran once at startup, so a tab left open
+                          served its original snapshot indefinitely. The swap
+                          tags itself "just refreshed" rather than moving the
+                          totals silently, is skipped while a Scryfall resolve
+                          loop is running, and clears Scryfall-resolved cards
+                          so one total can never mix two snapshots.
+                        - From v3.14.0-beta.2: deck-name auto-fill no longer
+                          refights a deliberate clear; sorting a column rebuilds
+                          the prebuilt .txt/.csv exports so an export matches
+                          the on-screen order; opening a v2 share link blanks
+                          the example deck and reports a decode failure instead
+                          of silently leaving the example on screen.
+                        - From v3.14.0-beta.1 (hardening): escapeHtml also
+                          escapes single quotes (image URLs sit inside
+                          url('...') in style attributes); the hover popup
+                          builds its <img> via DOM rather than innerHTML; CSV
+                          cells starting with = + - @ get a leading apostrophe
+                          (formula-injection guard); the sort comparator returns
+                          0 for equal values (two unpriced rows were NaN); and
+                          "Copy share link" uses the shared reflectShareUrl()
+                          helper.
   v3.13.0 (2026-06-09T22:47:06Z) - Promoted from beta v3.13.0-beta.2. Shorter
                         share links + two fixes:
                         - Share links encode EACH card as the shortest of its
@@ -879,7 +919,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.13.0 &middot; 2026-06-09 22:47 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.15.0 &middot; 2026-08-16 14:30 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1143,25 +1183,61 @@ function extractDeckName(raw){
                     (prices = non-foil "Normal" Mid; foil = "Foil" Mid. `foil`
                     is additive — may be absent on older snapshots, handled.)
    cards-index.json { fmt:[...], cards:{ name: {p:[[id,set,cn]], l, i} } }
-   data-meta.json   { generatedAt, fmt, counts }
-   Per-UTC-day query key => fresh each day, cached within the day.        */
+   data-meta.json   { generatedAt, indexGeneratedAt, fmt, counts }
+
+   CACHE KEYS ARE THE DATA'S OWN BUILD TIMES, not the calendar date.
+
+   This replaced a per-UTC-day `?d=` key. That key rolled at 00:00 UTC, but the
+   price Action publishes at ~20:30 UTC - so anyone who had loaded the page
+   earlier the same UTC day went on being served the PREVIOUS snapshot out of
+   browser cache (jsDelivr sends max-age=604800, seven days) for the two-to-
+   three-and-a-half hours in between, reload or no reload.
+
+   Shifting that roll to ~22:30 UTC was considered and rejected: publish time
+   drifts by up to an hour, and the retry slot can land later still, so a fixed
+   roll can cache the OLD snapshot under the NEW key and then hold it for a
+   further ~24 h - strictly worse than the bug it fixes. A key derived from the
+   data itself has no such window at any publish time.
+
+   Keying the two big files separately is also a bandwidth win now that prices
+   and the card index are rebuilt by independent workflows: a price-only day
+   does not re-download the ~3.3 MB index, and an index-only day does not
+   re-download the ~2 MB price map.                                        */
 const CDN = "https://cdn.jsdelivr.net/gh/Toskicologist/MTG-draft-sets-infographics@price-data";
 const LEGWORD = { l:"legal", n:"not_legal", b:"banned", r:"restricted", "-":null };
-const utcDay = () => new Date().toISOString().slice(0,10);
-let _cdn = null; // { prices, index, meta }
-async function loadCdn(){
-  if (_cdn) return _cdn;
-  const d = "?d=" + utcDay();
-  const grab = async f => {
-    const r = await fetch(`${CDN}/${f}${d}`);
+
+// data-meta.json is ~250 bytes, so it is cheap to keep current: a per-MINUTE
+// key means at most one origin fetch a minute while still letting repeat calls
+// inside that minute come from cache for free.
+const metaKey = () => "?t=" + Math.floor(Date.now() / 60000);
+async function fetchMeta(){
+  const r = await fetch(`${CDN}/data-meta.json${metaKey()}`);
+  if (!r.ok) throw new Error(`data-meta.json HTTP ${r.status}`);
+  return r.json();
+}
+
+// Fetch a COMPLETE snapshot without touching _cdn, so the refresh check below
+// can build the replacement before committing to it (a failed fetch then
+// leaves the page on the snapshot it already has, rather than on nothing).
+async function fetchCdn(meta){
+  meta = meta || await fetchMeta();
+  const grab = async (f, v) => {
+    const r = await fetch(`${CDN}/${f}?v=${encodeURIComponent(v || "0")}`);
     if (!r.ok) throw new Error(`${f} HTTP ${r.status}`);
     return r.json();
   };
-  const [prices, index, meta] = await Promise.all([
-    grab("tcg-prices.json"), grab("cards-index.json"), grab("data-meta.json"),
+  const [prices, index] = await Promise.all([
+    grab("tcg-prices.json",  meta.generatedAt),
+    grab("cards-index.json", meta.indexGeneratedAt),
   ]);
   if (!prices || !prices.prices || !index || !index.cards) throw new Error("CDN data malformed");
-  _cdn = { prices: prices.prices, foil: prices.foil || null, index, meta };
+  return { prices: prices.prices, foil: prices.foil || null, index, meta };
+}
+
+let _cdn = null; // { prices, index, meta }
+async function loadCdn(){
+  if (_cdn) return _cdn;
+  _cdn = await fetchCdn();
   return _cdn;
 }
 // Beta item 2: NO automatic in-memory typo correction. Correction happens
@@ -1334,6 +1410,7 @@ function scheduleRecompute(){ clearTimeout(_liveTimer); _liveTimer = setTimeout(
 // that text changes (budget / format / option changes don't count).
 let _sharedDeckSig = null;
 let _urlDeckSig = null;   // deck the address-bar #d= link represents (null = none)
+let _nameAutoFilled = null;  // last auto-filled deck title (never re-offer the same one)
 const _deckSig = () => $("decklist").value + "\u0000" + $("sideboard").value;
 
 async function recompute(){
@@ -1348,18 +1425,27 @@ async function recompute(){
     history.replaceState(null, "", location.pathname + location.search);
     _urlDeckSig = null;
   }
-  // Try to extract deck name from pasted list if deckname field is empty
+  // Auto-fill the deck name from a pasted list's title line — but only ONCE
+  // per extracted title: if the user clears the field, it stays cleared until
+  // the list carries a DIFFERENT title (don't fight a deliberate clear).
   const deckNameEl = $("deckname");
   if (!deckNameEl.value.trim()){
     const extracted = extractDeckName($("decklist").value);
-    if (extracted) deckNameEl.value = extracted;
+    if (extracted && extracted !== _nameAutoFilled){
+      deckNameEl.value = extracted;
+      _nameAutoFilled = extracted;
+    }
   }
   let cdn;
+  if (_pendingShareDeck) $("status").textContent = "Decoding shared deck…";
   try { cdn = await ensureCdn(); }
   catch(e){
-    $("status").innerHTML = "Couldn't load the daily TCG Mid data (" +
-      escapeHtml(String(e.message||e)) + "). It's served from a CDN — check " +
-      "your connection, then edit the list to retry.";
+    const msg = escapeHtml(String(e.message||e));
+    $("status").innerHTML = _pendingShareDeck
+      ? "This is a shared-deck link, but the daily card data needed to decode " +
+        "it couldn't be loaded (" + msg + "). Check your connection and reload the page."
+      : "Couldn't load the daily TCG Mid data (" + msg + "). It's served from a CDN — " +
+        "check your connection, then edit the list to retry.";
     return;
   }
   // Reconstruct a compact (v2) shared deck now that the index is available
@@ -1552,6 +1638,7 @@ function sortRows(rows, col, direction){
     if (typeof aVal === "string"){
       return dir * aVal.localeCompare(bVal);
     } else {
+      if (aVal === bVal) return 0;             // two unpriced rows are both Infinity
       return dir * (aVal - bVal);
     }
   });
@@ -2436,6 +2523,11 @@ document.addEventListener("click", e => {
         const html = renderTable(title, sec, board);
         const container = board === "main" ? $("mainTable") : $("sideTable");
         if (container) container.innerHTML = html;
+        // renderTable just sorted sec.rows in place — rebuild the prebuilt
+        // exports so a .txt/.csv exported now matches the on-screen order.
+        const shareUrl = buildShareLink();
+        lastReport = buildReport(LAST, shareUrl);
+        lastCsv = buildCsv(LAST, shareUrl);
       }
     }
     return;
@@ -2471,7 +2563,10 @@ document.addEventListener("submit", e => {
     const a = e.target.closest && e.target.closest("[data-img]");
     if (!a) return;
     cur = a.getAttribute("data-img");
-    tip.innerHTML = `<img alt="" src="${cur}">`;
+    tip.textContent = "";                      // build via DOM, not innerHTML
+    const im = document.createElement("img");
+    im.alt = ""; im.src = cur;
+    tip.appendChild(im);
     tip.style.display = "block"; move(e);
   });
   document.addEventListener("mousemove", e => { if (tip.style.display==="block") move(e); });
@@ -2480,7 +2575,7 @@ document.addEventListener("submit", e => {
   });
 })();
 
-function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ---- spelling-correction notice + decklist rewrite ------------------
    A correction is shown immediately and the totals/tables already use the
@@ -2606,6 +2701,7 @@ function buildReport(L, shareUrl){
 
 function csvEsc(v){
   v = (v == null) ? "" : String(v);
+  if (/^[=+\-@]/.test(v)) v = "'" + v;         // Excel/Sheets formula-injection guard
   return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
 }
 function buildCsv(L, shareUrl){
@@ -2740,12 +2836,15 @@ function ago(d){
   if (s < 172800)return Math.round(s/3600) + " h ago";
   return Math.round(s/86400) + " days ago";
 }
-async function showLastUpdated(){
+// `meta` is passed in when the caller already has one (the refresh check), so
+// the banner always describes the snapshot the totals were actually computed
+// from. Called with no argument it fetches its own.
+// `justUpdated` tags the moment a newer snapshot was swapped in, so the numbers
+// changing under the reader is announced rather than silent.
+async function showLastUpdated(meta, justUpdated){
   const box = $("updated"), txt = $("updatedText");
   try{
-    const r = await fetch(`${CDN}/data-meta.json?d=${utcDay()}`);
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    const meta = await r.json();
+    if (!meta) meta = await fetchMeta();
     const d = new Date(meta.generatedAt);
     const stale = (Date.now() - d.getTime()) > 36*3600*1000; // refreshed daily
     box.classList.toggle("stale", stale);
@@ -2756,6 +2855,7 @@ async function showLastUpdated(){
       " <span class='dim'>· " + (meta.priceCount||0).toLocaleString() +
       " priced products · " + (meta.cardCount||0).toLocaleString() +
       " cards indexed · via TCGcsv + Scryfall</span>" +
+      (justUpdated ? " <span class='tag muted'>just refreshed</span>" : "") +
       (stale ? " <span class='tag warn'>data &gt;36 h old</span>" : "");
   }catch(e){
     box.classList.add("err");
@@ -2866,7 +2966,12 @@ function loadShared(){
   if (st.pd) _sharedPriceDate = st.pd;
   if (st.x && typeof st.x === "object") _sharedExport = st.x;
   // v1 links (no `v`): d/s were plain decklist text, already restored above.
-  if (v2) _pendingShareDeck = { d: st.d || "", s: st.s || "" };
+  if (v2){
+    _pendingShareDeck = { d: st.d || "", s: st.s || "" };
+    // Blank the example deck so a CDN failure can't present it as if it were
+    // the shared deck; recompute reconstructs the real list once the index loads.
+    $("decklist").value = ""; $("sideboard").value = "";
+  }
   else _urlDeckSig = _deckSig();   // v1 deck restored now; the #d= link matches it
 }
 // ---- v2 compact-link decode: tokens -> decklist text (needs the index) ------
@@ -2973,9 +3078,8 @@ function maybeShowShareNote(cdn){
     `prices have since updated to <b>${fmt(now)}</b>, so the totals you see may differ from when it was shared.`);
 }
 $("shareBtn").addEventListener("click", async () => {
-  const url = buildShareLink();
-  history.replaceState(null, "", url);       // reflect it in the address bar
-  _urlDeckSig = _deckSig();                   // ...and remember which deck it is
+  reflectShareUrl();                          // address bar + record which deck it is
+  const url = location.href;
   try {
     await navigator.clipboard.writeText(url);
     $("status").textContent = "Share link copied to clipboard.";
@@ -2984,10 +3088,57 @@ $("shareBtn").addEventListener("click", async () => {
   }
 });
 
+/* ---- pick up a newer snapshot without a reload ----------------------
+   The page used to fetch the CDN exactly once per load and never re-check:
+   `loadCdn` memoises into `_cdn` with no expiry, and the banner ran once at
+   startup. A tab left open therefore served the snapshot it started with
+   indefinitely - for days, if it was left open for days.
+
+   So poll the tiny meta file and swap the snapshot when its build time moves.
+   The visibilitychange hook is the one that matters in practice: the common
+   case is a tab opened before the ~20:30 UTC publish and returned to after it.
+   Interval work is skipped while the tab is hidden - a background tab has no
+   reader to serve, and browsers throttle its timers anyway.               */
+const REFRESH_EVERY_MS = 5 * 60 * 1000;
+let _refreshTimer = null, _refreshing = false;
+
+async function checkForNewerData(){
+  // Never swap the price map out from under a running Scryfall resolve loop:
+  // it prices each card against _cdn as it goes, so a mid-flight swap would
+  // mix two snapshots inside one total. It re-checks on the next tick.
+  if (_refreshing || !_cdn || RESOLVING) return;
+  _refreshing = true;
+  try{
+    const meta = await fetchMeta();
+    if (meta.generatedAt === _cdn.meta.generatedAt &&
+        meta.indexGeneratedAt === _cdn.meta.indexGeneratedAt) return;
+
+    const next = await fetchCdn(meta);      // build it fully before committing
+    _cdn = next;
+    _cdnPrefetch = null;
+    // Cards resolved via Scryfall were priced against the PREVIOUS snapshot.
+    // Drop them rather than let two vintages share one total: recompute puts
+    // them back on the pending list and the Resolve button returns.
+    _resolved.clear();
+    await showLastUpdated(meta, true);
+    await recompute();
+  }catch(e){
+    // Offline, or a CDN blip. Keep the snapshot we have - it is real data with
+    // an honest timestamp on the banner - and try again on the next tick.
+  }finally{ _refreshing = false; }
+}
+
+function startRefreshWatch(){
+  clearInterval(_refreshTimer);
+  _refreshTimer = setInterval(() => { if (!document.hidden) checkForNewerData(); }, REFRESH_EVERY_MS);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForNewerData(); });
+}
+
 loadShared();                                // shared state before first render
 syncPresetChk();                             // reflect preset state (incl. shared budgets)
 showLastUpdated();
 recompute();
+startRefreshWatch();
 </script>
 </body>
 </html>
