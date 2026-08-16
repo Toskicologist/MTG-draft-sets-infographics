@@ -9,9 +9,36 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.14.0-beta.2)  [BETA — sandbox; main is v3.13.0]
+  MTG Budget Deckbuilder (v3.15.0-beta.1)  [BETA — sandbox; main is v3.15.0]
+  Promoted to main as v3.15.0 on 2026-08-16T14:30:32Z; beta and main are level.
 
   Changelog:
+  v3.15.0-beta.1 (2026-08-16T12:09:31Z) - The page now notices new price data.
+                        Two related fixes; neither changes a single displayed
+                        figure, only WHICH snapshot is on screen.
+                        - CDN cache keys are now the data's own build times
+                          (`generatedAt` for prices, `indexGeneratedAt` for the
+                          index) instead of a per-UTC-day `?d=` key. The old key
+                          rolled at 00:00 UTC while the data lands at ~20:30
+                          UTC, so anyone who had loaded the page earlier that
+                          day kept being served the previous snapshot from
+                          browser cache (jsDelivr sets max-age=604800) for the
+                          2-3.5 h in between, even across a reload. Keying the
+                          two big files separately also means a price-only day
+                          no longer re-downloads the ~3.3 MB card index, and an
+                          index-only day no longer re-downloads the ~2 MB price
+                          map.
+                        - A newer snapshot is now picked up automatically: the
+                          ~250 B meta file is polled every 5 min while the tab
+                          is visible, and immediately when the tab regains
+                          focus. Previously `loadCdn` memoised with no expiry
+                          and the banner ran once at startup, so a tab left
+                          open served its original snapshot indefinitely. The
+                          banner tags the moment it swaps ("just refreshed")
+                          rather than changing the totals silently, will not
+                          swap mid Scryfall-resolve, and clears Scryfall-
+                          resolved cards on swap so one total can never mix two
+                          snapshots.
   v3.14.0-beta.2 (2026-06-10T20:51:08Z) - Three behavioural fixes (from code review):
                         - Deck-name auto-fill no longer refights a deliberate
                           clear: a pasted list's title line is offered ONCE; if
@@ -952,7 +979,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.14.0-beta.2 &middot; 2026-06-10 20:51 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.15.0-beta.1 &middot; 2026-08-16 12:09 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1216,25 +1243,61 @@ function extractDeckName(raw){
                     (prices = non-foil "Normal" Mid; foil = "Foil" Mid. `foil`
                     is additive — may be absent on older snapshots, handled.)
    cards-index.json { fmt:[...], cards:{ name: {p:[[id,set,cn]], l, i} } }
-   data-meta.json   { generatedAt, fmt, counts }
-   Per-UTC-day query key => fresh each day, cached within the day.        */
+   data-meta.json   { generatedAt, indexGeneratedAt, fmt, counts }
+
+   CACHE KEYS ARE THE DATA'S OWN BUILD TIMES, not the calendar date.
+
+   This replaced a per-UTC-day `?d=` key. That key rolled at 00:00 UTC, but the
+   price Action publishes at ~20:30 UTC - so anyone who had loaded the page
+   earlier the same UTC day went on being served the PREVIOUS snapshot out of
+   browser cache (jsDelivr sends max-age=604800, seven days) for the two-to-
+   three-and-a-half hours in between, reload or no reload.
+
+   Shifting that roll to ~22:30 UTC was considered and rejected: publish time
+   drifts by up to an hour, and the retry slot can land later still, so a fixed
+   roll can cache the OLD snapshot under the NEW key and then hold it for a
+   further ~24 h - strictly worse than the bug it fixes. A key derived from the
+   data itself has no such window at any publish time.
+
+   Keying the two big files separately is also a bandwidth win now that prices
+   and the card index are rebuilt by independent workflows: a price-only day
+   does not re-download the ~3.3 MB index, and an index-only day does not
+   re-download the ~2 MB price map.                                        */
 const CDN = "https://cdn.jsdelivr.net/gh/Toskicologist/MTG-draft-sets-infographics@price-data";
 const LEGWORD = { l:"legal", n:"not_legal", b:"banned", r:"restricted", "-":null };
-const utcDay = () => new Date().toISOString().slice(0,10);
-let _cdn = null; // { prices, index, meta }
-async function loadCdn(){
-  if (_cdn) return _cdn;
-  const d = "?d=" + utcDay();
-  const grab = async f => {
-    const r = await fetch(`${CDN}/${f}${d}`);
+
+// data-meta.json is ~250 bytes, so it is cheap to keep current: a per-MINUTE
+// key means at most one origin fetch a minute while still letting repeat calls
+// inside that minute come from cache for free.
+const metaKey = () => "?t=" + Math.floor(Date.now() / 60000);
+async function fetchMeta(){
+  const r = await fetch(`${CDN}/data-meta.json${metaKey()}`);
+  if (!r.ok) throw new Error(`data-meta.json HTTP ${r.status}`);
+  return r.json();
+}
+
+// Fetch a COMPLETE snapshot without touching _cdn, so the refresh check below
+// can build the replacement before committing to it (a failed fetch then
+// leaves the page on the snapshot it already has, rather than on nothing).
+async function fetchCdn(meta){
+  meta = meta || await fetchMeta();
+  const grab = async (f, v) => {
+    const r = await fetch(`${CDN}/${f}?v=${encodeURIComponent(v || "0")}`);
     if (!r.ok) throw new Error(`${f} HTTP ${r.status}`);
     return r.json();
   };
-  const [prices, index, meta] = await Promise.all([
-    grab("tcg-prices.json"), grab("cards-index.json"), grab("data-meta.json"),
+  const [prices, index] = await Promise.all([
+    grab("tcg-prices.json",  meta.generatedAt),
+    grab("cards-index.json", meta.indexGeneratedAt),
   ]);
   if (!prices || !prices.prices || !index || !index.cards) throw new Error("CDN data malformed");
-  _cdn = { prices: prices.prices, foil: prices.foil || null, index, meta };
+  return { prices: prices.prices, foil: prices.foil || null, index, meta };
+}
+
+let _cdn = null; // { prices, index, meta }
+async function loadCdn(){
+  if (_cdn) return _cdn;
+  _cdn = await fetchCdn();
   return _cdn;
 }
 // Beta item 2: NO automatic in-memory typo correction. Correction happens
@@ -2833,12 +2896,15 @@ function ago(d){
   if (s < 172800)return Math.round(s/3600) + " h ago";
   return Math.round(s/86400) + " days ago";
 }
-async function showLastUpdated(){
+// `meta` is passed in when the caller already has one (the refresh check), so
+// the banner always describes the snapshot the totals were actually computed
+// from. Called with no argument it fetches its own.
+// `justUpdated` tags the moment a newer snapshot was swapped in, so the numbers
+// changing under the reader is announced rather than silent.
+async function showLastUpdated(meta, justUpdated){
   const box = $("updated"), txt = $("updatedText");
   try{
-    const r = await fetch(`${CDN}/data-meta.json?d=${utcDay()}`);
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    const meta = await r.json();
+    if (!meta) meta = await fetchMeta();
     const d = new Date(meta.generatedAt);
     const stale = (Date.now() - d.getTime()) > 36*3600*1000; // refreshed daily
     box.classList.toggle("stale", stale);
@@ -2849,6 +2915,7 @@ async function showLastUpdated(){
       " <span class='dim'>· " + (meta.priceCount||0).toLocaleString() +
       " priced products · " + (meta.cardCount||0).toLocaleString() +
       " cards indexed · via TCGcsv + Scryfall</span>" +
+      (justUpdated ? " <span class='tag muted'>just refreshed</span>" : "") +
       (stale ? " <span class='tag warn'>data &gt;36 h old</span>" : "");
   }catch(e){
     box.classList.add("err");
@@ -3081,10 +3148,57 @@ $("shareBtn").addEventListener("click", async () => {
   }
 });
 
+/* ---- pick up a newer snapshot without a reload ----------------------
+   The page used to fetch the CDN exactly once per load and never re-check:
+   `loadCdn` memoises into `_cdn` with no expiry, and the banner ran once at
+   startup. A tab left open therefore served the snapshot it started with
+   indefinitely - for days, if it was left open for days.
+
+   So poll the tiny meta file and swap the snapshot when its build time moves.
+   The visibilitychange hook is the one that matters in practice: the common
+   case is a tab opened before the ~20:30 UTC publish and returned to after it.
+   Interval work is skipped while the tab is hidden - a background tab has no
+   reader to serve, and browsers throttle its timers anyway.               */
+const REFRESH_EVERY_MS = 5 * 60 * 1000;
+let _refreshTimer = null, _refreshing = false;
+
+async function checkForNewerData(){
+  // Never swap the price map out from under a running Scryfall resolve loop:
+  // it prices each card against _cdn as it goes, so a mid-flight swap would
+  // mix two snapshots inside one total. It re-checks on the next tick.
+  if (_refreshing || !_cdn || RESOLVING) return;
+  _refreshing = true;
+  try{
+    const meta = await fetchMeta();
+    if (meta.generatedAt === _cdn.meta.generatedAt &&
+        meta.indexGeneratedAt === _cdn.meta.indexGeneratedAt) return;
+
+    const next = await fetchCdn(meta);      // build it fully before committing
+    _cdn = next;
+    _cdnPrefetch = null;
+    // Cards resolved via Scryfall were priced against the PREVIOUS snapshot.
+    // Drop them rather than let two vintages share one total: recompute puts
+    // them back on the pending list and the Resolve button returns.
+    _resolved.clear();
+    await showLastUpdated(meta, true);
+    await recompute();
+  }catch(e){
+    // Offline, or a CDN blip. Keep the snapshot we have - it is real data with
+    // an honest timestamp on the banner - and try again on the next tick.
+  }finally{ _refreshing = false; }
+}
+
+function startRefreshWatch(){
+  clearInterval(_refreshTimer);
+  _refreshTimer = setInterval(() => { if (!document.hidden) checkForNewerData(); }, REFRESH_EVERY_MS);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForNewerData(); });
+}
+
 loadShared();                                // shared state before first render
 syncPresetChk();                             // reflect preset state (incl. shared budgets)
 showLastUpdated();
 recompute();
+startRefreshWatch();
 </script>
 </body>
 </html>
