@@ -688,6 +688,8 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.5.0-beta.67 (2026-08-24 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-24 T0629.csv (334 cards).
+  v1.5.0-beta.66 (2026-08-24 UTC): DATA: Refresh SOS to SOS card-ratings-2026-08-24 T0629.csv (341 cards).
   v1.5.0-beta.65 (2026-08-23 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-23 T0617.csv (334 cards).
   v1.5.0-beta.64 (2026-08-23 UTC): DATA: Refresh SOS to SOS card-ratings-2026-08-23 T0617.csv (341 cards).
   v1.5.0-beta.63 (2026-08-22 UTC): DATA: Refresh MSH to MSH card-ratings-2026-08-22 T0616.csv (334 cards).
@@ -769,8 +771,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.5.0-beta.65';
-const LAST_UPDATE = '2026-08-23 UTC';
+const QUIZ_VERSION = '1.5.0-beta.67';
+const LAST_UPDATE = '2026-08-24 UTC';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
@@ -4826,8 +4828,8 @@ const SET_CONFIG = {
     isNew: true,
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
-    dataDate: '2026-08-23 UTC',
-    dataTimestamp: '2026-08-23 UTC'
+    dataDate: '2026-08-24 UTC',
+    dataTimestamp: '2026-08-24 UTC'
   },
   ECL: {
     name: 'ECL (Etchings of Cryptic Lore)',
@@ -4915,8 +4917,8 @@ const SET_CONFIG = {
     shortName: 'SOS',
     data: SOS_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft',
-    dataDate: '2026-08-23 UTC',
-    dataTimestamp: '2026-08-23 UTC'
+    dataDate: '2026-08-24 UTC',
+    dataTimestamp: '2026-08-24 UTC'
   }
 };
 
