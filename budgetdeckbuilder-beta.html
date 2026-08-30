@@ -9,10 +9,82 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.15.0-beta.1)  [BETA — sandbox; main is v3.15.0]
-  Promoted to main as v3.15.0 on 2026-08-16T14:30:32Z; beta and main are level.
+  MTG Budget Deckbuilder (v3.17.0-beta.1)  [BETA — sandbox; main is v3.15.0]
+  UNPROMOTED: v3.16.0-beta.1 + v3.17.0-beta.1 are beta-only. Main is still
+  v3.15.0 (2026-08-16) - promote when the parsing changes have been used in
+  anger. v3.17.0-beta.1 SUPERSEDES the v3.16.0-beta.1 quantity rule.
 
   Changelog:
+  v3.17.0-beta.1 (2026-08-30T18:40:08Z) - Quantity is now optional, and the deck
+                        name comes from where exports actually put it.
+                        - A QUANTITY-LESS LINE IS ONE COPY, unconditionally:
+                          "lightning bolt" == "1 Lightning Bolt". This replaces
+                          v3.16.0-beta.1's rule (qty-less only counted when the
+                          line carried a mana cost). Moxfield / Archidekt /
+                          Scryfall all read a bare name as one copy; MTGA and
+                          decklist.gg require the number, so accepting both is
+                          the superset.
+                        - "Lightning Bolt x4" (trailing quantity) also parses.
+                          Leading "4 Bolt" / "4x Bolt" / "4 x Bolt" unchanged.
+                        - MTGA "About" BLOCK understood: `sectionHeader` gained a
+                          third result, "meta", for "About" and "Name <deck>".
+                          Those lines are neither cards nor board switches - with
+                          quantity optional, "Name Boros Burn" would otherwise
+                          have priced as a card. Every caller now skips a truthy
+                          sectionHeader, `tokenizeBoard` (share links) included.
+                        - DECK NAME is read only from the two carriers real
+                          exports use: MTGA's "About"/"Name <deck>" block, and a
+                          comment line above the list ("// Boros Burn"). The old
+                          "first non-card line is the title" guess is GONE - with
+                          quantity optional it would have eaten the first card of
+                          a bare list. A stray title line now prices as an
+                          unknown card, which is at least visible. (Moxfield,
+                          Archidekt, MTGGoldfish and MTGO put no name in the text
+                          at all; Moxfield has a standing feature request for it.)
+                        - Header set extended per the MTGA import spec and
+                          decklist.gg's parser: "Commanders", "EDH", "About".
+                        - Trailing junk (`[Category{top}]`, `*F*`, `(SET) 123`,
+                          mana cost) is now peeled in a LOOP until nothing more
+                          comes off. One fixed pass was order-dependent, so
+                          Archidekt's "1x Sol Ring (c21) 263 [Ramp{top}]" kept
+                          its set/collector number in the name.
+                        - "60 cards" / "Total: 15 cards" no longer parse as a
+                          card (they used to give 60x "cards").
+                        - Tests: 123 cases in `_scratch/deckparse.test.mjs`.
+
+  v3.16.0-beta.1 (2026-08-30T18:21:46Z) - Decklist parsing: two more input shapes.
+                        - SECTION HEADERS are now recognised through decoration
+                          and comment markers, via one shared `sectionHeader()`:
+                          "// Sideboard", "#sideboard", "--- Sideboard ---",
+                          "=== SIDEBOARD ===", "Sideboard (15)", "Sideboard: 15
+                          cards", "SB", "Side Board" - and the same tolerance for
+                          the main-deck headers (Deck / Main deck / Mainboard /
+                          Commander / Companion). The header test now runs BEFORE
+                          the comment skip, which is what makes "// Sideboard"
+                          work; anything else starting // or # is still ignored.
+                          Every place that walked the text by hand (parseDecklist,
+                          parseSideboardBox, extractDeckName, _walkDeck,
+                          _sideBoxStrip, editDeck's side-box loop, addCard's
+                          insert point, rewriteList) now shares that one function,
+                          so the table edits and the text can't disagree about
+                          where the sideboard starts.
+                        - TRAILING MANA COSTS are stripped from the card name:
+                          "4 Lightning Bolt {R}", "4 Lightning Bolt - {R}",
+                          "Cryptic Command {1}{U}{U}{U}" (- : | // em/en dash
+                          all accepted as the separator). Stripped BEFORE the
+                          "A/B -> A // B" split-card rule so hybrid pips like
+                          {G/W} can't be mistaken for a split card.
+                        - A line with NO quantity counts as 1, but ONLY when it
+                          carries such a mana cost - that marker is what keeps
+                          deck titles and prose out of the list. A bare
+                          "Lightning Bolt" is still not a card line.
+                        - `_setQty` inserts a quantity on a qty-less line, so
+                          +/- on "lightning bolt {r}" writes "2 lightning bolt
+                          {r}" instead of silently doing nothing.
+                        - 89 parser cases in `_scratch/deckparse.test.mjs`
+                          (headers, costs, MTGA/MTGO/SB: regressions, board
+                          routing, +/- edits through a commented header).
+
   v3.15.0-beta.1 (2026-08-16T12:09:31Z) - The page now notices new price data.
                         Two related fixes; neither changes a single displayed
                         figure, only WHICH snapshot is on screen.
@@ -979,7 +1051,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.15.0-beta.1 &middot; 2026-08-16 12:09 UTC &middot; BETA</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.17.0-beta.1 &middot; 2026-08-30 18:40 UTC &middot; BETA</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -1039,7 +1111,7 @@ Sideboard
 4 Temple of Triumph
 4 Thraben Inspector
 4 Voldaren Epicure</textarea>
-      <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>. The boards split on a line reading <em>Sideboard</em> or an <code>SB:</code> prefix &mdash; paste a full export as-is. <code>//</code> / <code>#</code> lines ignored.</p>
+      <p class="sub" style="margin:8px 0 0">Supports <code>4 Card</code>, <code>4x Card</code>, MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code>, and a name with no quantity at all &mdash; <code>Lightning Bolt</code>, <code>Lightning Bolt {R}</code>, <code>Lightning Bolt - {R}</code>, <code>Lightning Bolt x4</code>. The boards split on a line reading <em>Sideboard</em> &mdash; commented out (<code>// Sideboard</code>), decorated (<code>--- Sideboard ---</code>) or with a count (<code>Sideboard (15)</code>) all count &mdash; or on an <code>SB:</code> prefix. Paste a full export as-is; other <code>//</code> / <code>#</code> lines ignored. The deck name is read from MTGA's <code>About</code> / <code>Name &hellip;</code> block or from a comment above the list (<code>// Boros Burn</code>) &mdash; a bare title line now reads as a card.</p>
 
       <label for="sideboard" style="margin-top:16px">Sideboard <span style="text-transform:none;letter-spacing:0">(optional &mdash; only if your list has no <em>Sideboard</em> marker)</span></label>
       <textarea id="sideboard" spellcheck="false" placeholder="3 Smash to Smithereens
@@ -1052,7 +1124,7 @@ Sideboard
 2 Urabrask's Forge
 1 Wear // Tear
 1 Path to Exile</textarea>
-      <p class="sub" style="margin:8px 0 0">Anything here is added to the sideboard total. Leave empty if your decklist above already contains a <em>Sideboard</em> / <code>SB:</code> section.</p>
+      <p class="sub" style="margin:8px 0 0">Anything here is added to the sideboard total. Leave empty if your decklist above already contains a <em>Sideboard</em> / <code>// Sideboard</code> / <code>SB:</code> section.</p>
     </div>
 
     <div class="panel">
@@ -1169,23 +1241,74 @@ function setExportsEnabled(on){
 }
 
 /* ---- decklist parsing ---------------------------------------------- */
-// One "<qty> <name>" line -> {qty,name}, or null. Strips MTGA/MTGO cruft.
-function parseCardLine(line){
-  const m = line.match(/^(\d+)\s*[xX]?\s+(.+?)\s*$/);
-  if (!m) return null;
-  const qty = parseInt(m[1],10);
-  const name = m[2]
-    .replace(/\s+\*[A-Za-z]\*\s*$/,"")                  // trailing *F* foil marker
-    .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+\S+)?\s*$/,"")  // (SET) 123
-    .replace(/\s*\[[^\]]*\]\s*$/,"")                     // [tags]
-    .replace(/\s*\/+\s*/g, " // ")                       // DFC/split: "A / B" or "A/B" -> canonical "A // B"
+// A trailing mana cost: "{R}", "{1}{U}{U}", "{W/U}{G}", optionally introduced by
+// a dash / colon / pipe ("Lightning Bolt - {R}"). Used both to strip the cost off
+// a name and to recognise a QUANTITY-LESS line as a card line.
+const MANA_TAIL = /\s*(?:\/\/|[-\u2013\u2014:|])?\s*\{[^{}\s]{1,6}\}(?:\s*(?:\/\/|[-\u2013\u2014:|])?\s*\{[^{}\s]{1,6}\})*\s*$/;
+// Section headers, tolerantly: "Sideboard", "// Sideboard", "--- SIDEBOARD ---",
+// "Sideboard: 15 cards", "Sideboard (15)", "SB", "Side Board", "Deck", "Mainboard".
+// -> "main" | "side" | "meta" | null. "meta" = a line that is neither a card nor
+// a board switch: MTGA's About block ("About" / "Name <deck name>"). Since a
+// quantity-less line is now a card, EVERY caller must skip a truthy result -
+// otherwise "Name Boros Burn" would price as a card.
+// Header set follows the MTGA import spec + the common site exports.
+function sectionHeader(line){
+  const bare = (line||"").trim()
+    .replace(/^[\s/#*=_~>|\u2013\u2014-]+/, "")    // leading //, #, ---, ===, >, |, *
+    .replace(/[\s*=_~|\u2013\u2014-]+$/, "")       // trailing ---, ===, |, *
     .trim();
+  if (!bare) return null;
+  // No card is called "About", and none starts with "Name " ("Nameless
+  // Inversion" has no space there), so these two are safe as bare-line rules.
+  if (/^about:?$/i.test(bare) || /^name\s+\S/i.test(bare)) return "meta";
+  const t = bare
+    .replace(/\s*[:\u2013\u2014-]?\s*[([]?\s*\d+\s*[)\]]?\s*(?:cards?)?$/i, "")  // "(15)" / ": 15 cards"
+    .replace(/[\s:.\u2013\u2014-]+$/, "")
+    .trim();
+  if (!t) return null;
+  if (/^(side\s?board|sb)$/i.test(t)) return "side";
+  if (/^(deck|main|main\s?deck|maindeck|main\s?board|mainboard|commanders?|edh|companion)$/i.test(t))
+    return "main";
+  return null;
+}
+// One card line -> {qty,name}, or null. Strips MTGA/MTGO cruft. Quantity may be
+// leading ("4 Bolt", "4x Bolt", "4 x Bolt"), trailing ("Bolt x4"), or ABSENT -
+// a bare "Lightning Bolt" is one copy, same as Moxfield/Archidekt/Scryfall
+// treat it. Callers must therefore test sectionHeader() FIRST: with no quantity
+// required, a header line would otherwise parse as a card.
+function parseCardLine(line){
+  const t = (line||"").trim();
+  if (/^\d+\s*cards?$/i.test(t)) return null;         // "60 cards" = export furniture
+  let qty = null, name = null;
+  let m = t.match(/^(\d+)\s*[xX]?\s+(.+?)\s*$/);      // 4 Bolt / 4x Bolt / 4 x Bolt
+  if (m){ qty = parseInt(m[1],10); name = m[2]; }
+  else if ((m = t.match(/^(.+?)\s+[xX](\d+)$/))){       // Bolt x4
+    qty = parseInt(m[2],10); name = m[1];
+  } else if (/[A-Za-z]/.test(t) && !/\b\d+\s*cards?$/i.test(t)){
+    qty = 1; name = t;                                  // bare name = one copy
+  }                                                     // ("60 cards" = furniture)
+  if (name == null) return null;
+  // Trailing junk, peeled until nothing more comes off - the markers arrive in
+  // any order ("(c21) 263 [Ramp{top}]" from Archidekt, "(2X2) 117 *F*" from
+  // Moxfield), so one fixed pass would leave whichever is now last in place.
+  let prev;
+  do {
+    prev = name;
+    name = name
+      .replace(/\s*\[[^\]]*\]\s*$/,"")                   // [tags] / [Category{top}]
+      .replace(/\s+\*[A-Za-z]\*\s*$/,"")                  // *F* foil marker
+      .replace(/\s+\([A-Za-z0-9]{2,6}\)(\s+\S+)?\s*$/,"")  // (SET) 123
+      .replace(MANA_TAIL,"")                               // "{1}{R}" / "- {R}"
+      .trim();
+  } while (name !== prev);
+  name = name.replace(/\s*\/+\s*/g, " // ").trim();       // "A / B" or "A/B" -> "A // B"
   if (!name || !qty) return null;
   return { qty, name };
 }
 function addTo(map, name, qty){ map.set(name, (map.get(name)||0) + qty); }
 
-// Main paste box: split ONLY on an explicit "Sideboard" header or an "SB:"
+// Main paste box: split ONLY on an explicit "Sideboard" header (bare, commented
+// out, decorated or carrying a count - see sectionHeader) or an "SB:"
 // line prefix (no blank-line guessing — blank lines are ignored). Standard
 // exports all carry one of these markers, so paste-and-go still works.
 function parseDecklist(raw){
@@ -1193,9 +1316,13 @@ function parseDecklist(raw){
   let board = main;
   for (let rawLine of (raw||"").split(/\r?\n/)){
     let line = rawLine.trim();
-    if (!line || /^(\/\/|#)/.test(line)) continue;
-    if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(line)) { board = main; continue; }
-    if (/^(sideboard)\s*:?\s*$/i.test(line)) { board = side; continue; }
+    if (!line) continue;
+    const hdr = sectionHeader(line);        // tested BEFORE the comment skip, so a
+    if (hdr){                               // "// Sideboard" counts. "meta" = MTGA
+      if (hdr !== "meta") board = hdr === "side" ? side : main;   // About/Name: skip,
+      continue;                                                   // don't switch board
+    }
+    if (/^(\/\/|#)/.test(line)) continue;
     let sb = false;
     if (/^sb:\s*/i.test(line)){ sb = true; line = line.replace(/^sb:\s*/i,""); }
     const c = parseCardLine(line);
@@ -1209,31 +1336,30 @@ function parseSideboardBox(raw){
   const side = new Map();
   for (const rawLine of (raw||"").split(/\r?\n/)){
     const line = rawLine.trim();
-    if (!line || /^(\/\/|#)/.test(line) || /^(sideboard)\s*:?\s*$/i.test(line)) continue;
+    if (!line || /^(\/\/|#)/.test(line) || sectionHeader(line)) continue;
     const c = parseCardLine(line.replace(/^sb:\s*/i,""));
     if (c) addTo(side, c.name, c.qty);
   }
   return side;
 }
 
-// Extract deck name from pasted list (if present in standard export formats).
-// Looks for a title line before the first card: a non-empty, non-card line at the start.
-// Skips headers like "Deck:", "Sideboard:", and comment lines.
+// Deck name from a pasted list. Only the two carriers real exports actually use:
+//   1. MTGA's About block   ->  "About" / "Name Boros Burn"
+//   2. a comment line above the list  ->  "// Boros Burn" / "# Boros Burn"
+// Most sites (Moxfield, Archidekt, MTGGoldfish, MTGO) put NO name in the text at
+// all. A bare title line is deliberately NOT guessed at any more: since a
+// quantity-less line is a card, guessing would eat the first card of a bare
+// list. An unrecognised title just prices as an unknown card, which is visible.
 function extractDeckName(raw){
-  const lines = (raw||"").split(/\r?\n/);
-  for (const rawLine of lines){
+  for (const rawLine of (raw||"").split(/\r?\n/)){
     const line = rawLine.trim();
-    // Skip empty lines and comments
-    if (!line || /^(\/\/|#)/.test(line)) continue;
-    // Skip known headers
-    if (/^(deck|maindeck|main deck|sideboard|commander|companion|sb:)\s*:?\s*$/i.test(line)) continue;
-    // If this line isn't a card, it might be a deck name
-    if (!parseCardLine(line)) {
-      // Trim to reasonable length and return
-      return line.slice(0, 80).trim();
-    }
-    // First real line was a card, so no name found
-    return "";
+    if (!line) continue;
+    const nm = line.replace(/^[\s/#*=_~>|-]+/, "").match(/^name\s+(.+)$/i);
+    if (nm) return nm[1].trim().slice(0, 80);          // MTGA About block
+    if (sectionHeader(line) || /^sb:\s*$/i.test(line)) continue;
+    const cm = line.match(/^(?:\/\/+|#+)\s*(\S.*)$/);   // "// Boros Burn"
+    if (cm) return cm[1].trim().slice(0, 80);
+    return "";                                          // a card line: no title
   }
   return "";
 }
@@ -2469,7 +2595,10 @@ window.addEventListener("resize", () => {
    ignored basics untouched) then recompute, so the table is always exactly
    what the text says — they can never disagree.                          */
 function _setQty(raw, q){
-  return raw.replace(/^(\s*)(sb:\s*)?(\d+)/i, (m,a,b) => (a||"") + (b||"") + q);
+  if (/^\s*(sb:\s*)?\d/i.test(raw))
+    return raw.replace(/^(\s*)(sb:\s*)?(\d+)/i, (m,a,b) => (a||"") + (b||"") + q);
+  // quantity-less line ("Lightning Bolt {R}") -> insert one
+  return raw.replace(/^(\s*)(sb:\s*)?/i, (m,a,b) => (a||"") + (b||"") + q + " ");
 }
 // Walk decklist text with parseDecklist's board rules; onCard returns
 // "keep" | "remove" | newRawLine.
@@ -2479,10 +2608,10 @@ function _walkDeck(text, onCard){
   for (const raw of (text||"").split(/\r?\n/)){
     const t = raw.trim();
     let handled = false;
-    if (t && !/^(\/\/|#)/.test(t)){
-      if (/^(deck|maindeck|main deck|commander|companion)\s*:?\s*$/i.test(t)) cur = "main";
-      else if (/^(sideboard)\s*:?\s*$/i.test(t)) cur = "side";
-      else {
+    const hdr = t ? sectionHeader(t) : null;
+    if (hdr){ if (hdr !== "meta") cur = hdr; }
+    else if (t && !/^(\/\/|#)/.test(t)){
+      {
         const sb = /^sb:\s*/i.test(t);
         const c = parseCardLine(sb ? t.replace(/^sb:\s*/i,"") : t);
         if (c){
@@ -2499,7 +2628,7 @@ function _walkDeck(text, onCard){
 function _sideBoxStrip(text, N){              // remove a name from the side box
   return (text||"").split(/\r?\n/).filter(l => {
     const t = l.trim();
-    if (!t || /^(\/\/|#)/.test(t) || /^sideboard\s*:?\s*$/i.test(t)) return true;
+    if (!t || /^(\/\/|#)/.test(t) || sectionHeader(t)) return true;
     const c = parseCardLine(t.replace(/^sb:\s*/i,""));
     return !(c && norm(c.name) === N);
   }).join("\n");
@@ -2529,7 +2658,7 @@ function editDeck(board, name, op){
       const lines = sEl.value.split(/\r?\n/);
       for (let i = 0; i < lines.length; i++){
         const t = lines[i].trim();
-        if (!t || /^(\/\/|#)/.test(t) || /^sideboard\s*:?\s*$/i.test(t)) continue;
+        if (!t || /^(\/\/|#)/.test(t) || sectionHeader(t)) continue;
         const c = parseCardLine(t.replace(/^sb:\s*/i,""));
         if (c && norm(c.name) === N){
           const q = c.qty + d;
@@ -2552,7 +2681,7 @@ function addCard(board, text){
     sEl.value = (v ? v + "\n" : "") + line;
   } else {
     const dEl = $("decklist"), lines = dEl.value.split(/\r?\n/);
-    let idx = lines.findIndex(l => /^(sideboard)\s*:?\s*$/i.test(l.trim()));
+    let idx = lines.findIndex(l => sectionHeader(l.trim()) === "side");
     if (idx < 0) idx = lines.length;
     lines.splice(idx, 0, line);
     dEl.value = lines.join("\n");
@@ -2665,9 +2794,7 @@ function showFixNote(corrections){
 function rewriteList(raw, map){
   return (raw || "").split(/\r?\n/).map(line => {
     const t = line.trim();
-    if (!t || /^(\/\/|#)/.test(t) ||
-        /^(deck|maindeck|main deck|commander|companion|sideboard)\s*:?\s*$/i.test(t))
-      return line;
+    if (!t || sectionHeader(t) || /^(\/\/|#)/.test(t)) return line;
     const sb = t.match(/^sb:\s*/i);
     const body = sb ? t.slice(sb[0].length) : t;
     const c = parseCardLine(body);
@@ -2964,7 +3091,9 @@ function shareCardInfo(){
 // names never start with # or *, so the * / # sigils are unambiguous on decode.)
 function tokenizeBoard(text, info){
   return String(text||"").split(/\r?\n/).map(rawLine => {
-    const c = parseCardLine(rawLine.trim());
+    const t = rawLine.trim();
+    if (!t || sectionHeader(t) || /^(\/\/|#)/.test(t)) return rawLine;  // headers/meta
+    const c = parseCardLine(t);                                        // verbatim
     if (!c) return rawLine;
     let best = `${c.qty} ${c.name}`;
     const inf = info[norm(c.name)];
