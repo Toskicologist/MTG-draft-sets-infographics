@@ -2,9 +2,14 @@
 
 Operates in two modes, auto-detected from where the script lives:
 
-  LOCAL mode  - script is inside C:\\Users\\Johnw\\ClaudeProjects\\.
+  LOCAL mode  - script is inside the ClaudeProjects source tree.
                 ClaudeProjects is the source-of-truth; sync-to-github-pages.ps1
-                copies the result into a separate MTG-GitHub-Pages folder.
+                copies the result into a separate MTG-GitHub-Pages folder,
+                which lives beside ClaudeProjects (override with the
+                MTG_GITHUB_PAGES_ROOT environment variable).
+
+Never hard-code a user-profile path in this file: it is published verbatim to
+the public repo, and the folder name after Users\\ is the local username.
 
   CI mode     - script is inside the public MTG-GitHub-Pages repo (e.g. when
                 a GitHub Action runs `python mtg/scripts/refresh_sos_17lands.py`).
@@ -72,8 +77,14 @@ if _IS_CI:
     PACK_BETA_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "pack-beta.html"
 else:
     # ----- LOCAL mode: ClaudeProjects + MTG-GitHub-Pages as separate folders -----
-    CLAUDE_PROJECTS_ROOT = Path(r"c:\Users\Johnw\ClaudeProjects")
-    GITHUB_PAGES_ROOT = Path(r"c:\Users\Johnw\MTG-GitHub-Pages")
+    # Both roots are derived, never spelled out (see the module docstring).
+    # _THIS_REPO_ROOT is ClaudeProjects itself; the Pages mirror is its
+    # sibling folder unless MTG_GITHUB_PAGES_ROOT says otherwise.
+    CLAUDE_PROJECTS_ROOT = _THIS_REPO_ROOT
+    GITHUB_PAGES_ROOT = Path(os.environ.get(
+        'MTG_GITHUB_PAGES_ROOT',
+        str(_THIS_REPO_ROOT.parent / "MTG-GitHub-Pages"),
+    ))
 
     # Shared 17Lands data folder (CSVs live here)
     LANDS_EXPORTS_DIR = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "17lands exports"
