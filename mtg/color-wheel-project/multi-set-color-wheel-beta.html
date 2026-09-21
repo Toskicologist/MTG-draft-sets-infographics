@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel (beta)</title>
   <meta property="og:title" content="MTG Draft Archetypes — Multi-Set Color Wheel (beta)">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, Marvel Super Heroes, and The Hobbit.">
-  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed.">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel-beta.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes — Multi-Set Color Wheel (beta)">
-  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, Marvel Super Heroes, and The Hobbit.">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed.">
   <!-- GoatCounter PATTERN A: count the #hash so each set view (#hob, #msh, …) is its own dashboard path.
        The public count.js snippet is auto-injected at push time, just before the closing head tag; this
        inline config must run first, and does. NOTE: do NOT write the closing-head string literally in this
@@ -174,9 +174,14 @@
  *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *   - The Hobbit (HOB) - v1.0.0 - Aug 2026
- *   - Reality Fracture (FRA) - v1.0.0-beta.1 - Oct 2026
+ *   - Reality Fracture (FRA) - v1.0.0 - Oct 2026
  *
  * CHANGELOG:
+ * 1.7.0-beta.9 (2026-09-21, 16:40 UTC) - [Claude Opus 5]
+ *   - Promotion prep: banner loses the SOS and ECL Under/Overrated links; og/twitter preview is
+ *     the new fra-color-wheel-preview.png (FRA wheel, rendered from this build) and the
+ *     description lists all seven sets, newest first; FRA set version 1.0.0.
+ *
  * 1.7.0-beta.8 (2026-09-21, 14:19 UTC) - [Claude Opus 5]
  *   - Wheel labels: the second sub line was drawn 7px below the first under an 11px font, so
  *     two-line subs ("Life gain" / "+1/+1 counters") overlapped. Pitch is now one font-size
@@ -977,7 +982,7 @@ const SET_DATA = {
       { name: "Sagas", description: "Eight Sagas in the spoiled set. Sagas are one of the three permanent types that turn on storied, alongside artifacts and legendaries.", source: "Scryfall set data (2026-07-31)", sourceUrl: "https://scryfall.com/sets/hob", scryfallQuery: "https://scryfall.com/search?q=set%3Ahob+t%3Asaga&unique=cards&as=grid&order=rarity", scryfallLabel: "t:saga" },
     ]
   },
-  // Reality Fracture - added 2026-09-18 (Card Image Gallery day), v1.0.0-beta.1.
+  // Reality Fracture - added 2026-09-18 (Card Image Gallery day); v1.0.0 promoted 2026-09-21.
   // Data source: shared-data/data/fra/fra-scryfall-full.json (281 cards, 192/194 main set).
   // Ten supported archetypes at two weights: the five allied pairs are the Hexhaven schools
   // (primary), the five enemy pairs are the planeswalker archetypes (secondary) - per the
@@ -988,7 +993,7 @@ const SET_DATA = {
     name: 'Reality Fracture',
     shortName: 'FRA',
     releaseDate: 'October 2, 2026',
-    version: '1.0.0-beta.1',
+    version: '1.0.0',
     scryfallCodes: ['fra'],
     primaryArchetypes: ['WU', 'UB', 'BR', 'RG', 'GW'],
     primaryLabel: '5 Hexhaven school archetypes (allied pairs) + 5 planeswalker archetypes (enemy pairs)',
@@ -1795,13 +1800,11 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.0-beta.8 &middot; 2026-09-21 14:19 UTC &middot; BETA</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.0-beta.9 &middot; 2026-09-21 16:40 UTC &middot; BETA</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
               Also see:{' '}
-              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener noreferrer">SOS Under/Overrated</a> <span className="sep">|</span>
-              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener noreferrer">ECL Under/Overrated</a> <span className="sep">|</span>
               <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener noreferrer">17 Lands Quiz</a> <span className="sep">|</span>
               <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> <span className="sep">|</span>
               <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html" target="_blank" rel="noopener noreferrer">Budget Deckbuilder</a> <span className="sep">|</span>

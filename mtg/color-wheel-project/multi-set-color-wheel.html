@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel</title>
   <meta property="og:title" content="MTG Draft Archetypes — Multi-Set Color Wheel">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, Marvel Super Heroes, and The Hobbit.">
-  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed.">
+  <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/msh-color-wheel-preview-v2.png">
+  <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes — Multi-Set Color Wheel">
-  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Lorwyn Eclipsed, Foundations, TMT, Secrets of Strixhaven, Marvel Super Heroes, and The Hobbit.">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed.">
   <!-- GoatCounter PATTERN A: count the #hash so each set view (#hob, #msh, …) is its own dashboard path.
        The public count.js snippet is auto-injected at push time, just before the closing head tag; this
        inline config must run first, and does. NOTE: do NOT write the closing-head string literally in this
@@ -165,7 +165,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.6.1
+ * 1.7.0
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -174,8 +174,30 @@
  *   - Secrets of Strixhaven (SOS) - v1.0.2 - Apr 2026
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *   - The Hobbit (HOB) - v1.0.0 - Aug 2026
+ *   - Reality Fracture (FRA) - v1.0.0 - Oct 2026
  *
  * CHANGELOG:
+ * 1.7.0 (2026-09-21, 16:40 UTC) - [Claude Opus 5] - PROMOTED FROM BETA (1.7.0-beta.1 .. beta.9, 2026-09-18 .. 09-21)
+ *   - Reality Fracture (FRA, releases 2026-10-02) added as the seventh set and the default view.
+ *     Ten archetypes at two weights: the five Hexhaven schools (allied pairs, nine dedicated
+ *     cards each) as primary and the five planeswalker pairs (enemy pairs) as secondary, drawn
+ *     at full strength on the wheel and in the boxes via new set fields secondaryLabel /
+ *     secondaryDescription and a shared ArchetypeBox component. Sets without those fields
+ *     render exactly as before.
+ *   - Every FRA box is built from the 2026-09-19 Scryfall snapshot (285 cards): archetype
+ *     Cards: lists hold every card whose colour identity is exactly the pair, by rarity then
+ *     collector number; colour boxes carry the core theme from the WotC design article plus
+ *     the mono-colour tagger cycles; theme buttons run Scryfall oracle-tag queries checked
+ *     against the API; school boxes show the shared school spell; set mechanics (Empower
+ *     Jace, Prepared, Echoed Pairs) show their reminder text in a quotation box.
+ *   - Generic: linkifyCards renders blank lines as paragraph gaps and bold labels as block
+ *     labels; colour boxes accept themeSearches and a source line; CardLink resolves back
+ *     faces via cards/search; wheel sub-label lines are one font-size apart (were overlapping);
+ *     banner drops the SOS/ECL Under/Overrated links; new og/twitter preview image.
+ *   - Sources: WotC Prerelease Guide (the "New to this set?" link), Release Notes, Mechanics
+ *     and design articles, Collecting article, Planeswalker's Guide, Card Image Gallery,
+ *     Draftsim, Scryfall.
+ *
  * 1.6.1 (2026-08-07, 15:20 UTC) - [Claude Opus 5]
  *   - FIX: three HOB top-card names were missing the possessive "s" - "Bilbo' Deadly Slice",
  *     "Enchanted River' Grasp" and "Bilbo, Luckwearer // Burglar' Plot". The beta.13 generator
@@ -858,10 +880,66 @@ const SET_DATA = {
       { name: "Adventure", keyword: "adventure", description: "Returning with no rules changes. The card has two castable halves: an instant or sorcery Adventure, which exiles on resolution, and a permanent you may then cast from exile. 17 Adventure cards in the spoiled set so far - a strong signal for two-for-one value across all five archetypes.", source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Ahob+is%3Aadventure&unique=cards&as=grid&order=rarity", scryfallLabel: "is:adventure" },
       { name: "Sagas", description: "Eight Sagas in the spoiled set. Sagas are one of the three permanent types that turn on storied, alongside artifacts and legendaries.", source: "Scryfall set data (2026-07-31)", sourceUrl: "https://scryfall.com/sets/hob", scryfallQuery: "https://scryfall.com/search?q=set%3Ahob+t%3Asaga&unique=cards&as=grid&order=rarity", scryfallLabel: "t:saga" },
     ]
+  },
+  // Reality Fracture - added 2026-09-18 (Card Image Gallery day); v1.0.0 promoted 2026-09-21.
+  // Data source: shared-data/data/fra/fra-scryfall-full.json (281 cards, 192/194 main set).
+  // Ten supported archetypes at two weights: the five allied pairs are the Hexhaven schools
+  // (primary), the five enemy pairs are the planeswalker archetypes (secondary) - per the
+  // WotC design article, confirmed by the card skeleton in FRA_PLAN.md. Every reminder text
+  // and school-spell text below is verbatim oracle text from the snapshot.
+  FRA: {
+    key: 'FRA',
+    name: 'Reality Fracture',
+    shortName: 'FRA',
+    releaseDate: 'October 2, 2026',
+    version: '1.0.0',
+    scryfallCodes: ['fra'],
+    primaryArchetypes: ['WU', 'UB', 'BR', 'RG', 'GW'],
+    primaryLabel: '5 Hexhaven school archetypes (allied pairs) + 5 planeswalker archetypes (enemy pairs)',
+    primaryDescription: "Reality Fracture supports all ten colour pairs, but not equally. The five allied pairs are the Hexhaven schools, each with nine dedicated cards: an elder sphinx mythic, a gold rare, a gold uncommon, a Charm, three prepared creatures that all cast the same school spell, a reprinted slow land and a common Annex dual.",
+    secondaryLabel: 'Planeswalker Archetypes (enemy pairs)',
+    secondaryDescription: "The five enemy pairs are themed on the Lorwyn Five - Ajani, Jace, Liliana, Chandra and Garruk - and their Echoverse counterparts. Real archetypes, but three to five cards deep against the schools' nine.",
+    accentColor: '#0E7490',
+    colorDescriptions: {
+      W: { name: "White", description: "Core theme: +1/+1 counters. It is the foundation of two pairs - Vigorbloom (GW, life gain) and Ajani's Army (RW, aggro).\nCards:\n\u2022 Hexhaven Battalion\n\u2022 Ajani Resolute\n\u2022 Liliana the Faultless\n\u2022 Way of the Healer\n\u2022 Way of the Mentor", cards: ["Hexhaven Battalion", "Ajani Resolute", "Liliana the Faultless", "Way of the Healer", "Way of the Mentor"], themeSearches: [{ label: "+1/+1 counters", url: "https://scryfall.com/search?q=set%3Afra+c%3Dw+o%3A%22%2B1%2F%2B1+counter%22&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design" },
+      U: { name: "Blue", description: "Core theme: Empower Jace. It is the foundation of two pairs - Fatehold (WU, surveil) and Jace's Mastery (GU).\nCards:\n\u2022 Undulating Witness\n\u2022 Chandra, Chill of Compliance\n\u2022 Jace, Reality Sculptor\n\u2022 Way of the Cryomancer\n\u2022 Way of the Mind Sculptor", cards: ["Undulating Witness", "Chandra, Chill of Compliance", "Jace, Reality Sculptor", "Way of the Cryomancer", "Way of the Mind Sculptor"], themeSearches: [{ label: "Jace", url: "https://scryfall.com/search?q=set%3Afra+c%3Du+o%3Ajace&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design" },
+      B: { name: "Black", description: "Core theme: the graveyard. It is the foundation of two pairs - Theorix (UB, threshold) and Liliana's Attrition (WB).\nCards:\n\u2022 Apex Witchstalker\n\u2022 Garruk, Veiled Butcher\n\u2022 Liliana the Repentant\n\u2022 Way of the Deathbringer\n\u2022 Way of the Necromancer", cards: ["Apex Witchstalker", "Garruk, Veiled Butcher", "Liliana the Repentant", "Way of the Deathbringer", "Way of the Necromancer"], themeSearches: [{ label: "Graveyard", url: "https://scryfall.com/search?q=set%3Afra+c%3Db+o%3Agraveyard&unique=cards&as=grid&order=name" }, { label: "Dies", url: "https://scryfall.com/search?q=set%3Afra+c%3Db+o%3Adies&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design" },
+      R: { name: "Red", description: "Core theme: prowess. It is the foundation of two pairs - Stingerquill (BR, face burn) and Chandra's Prowess (UR, spellslinger).\nCards:\n\u2022 Awaken the Inferno\n\u2022 Ajani Unrelenting\n\u2022 Chandra, Torch of Defiance\n\u2022 Way of the Pyromancer\n\u2022 Way of the Warlord", cards: ["Awaken the Inferno", "Ajani Unrelenting", "Chandra, Torch of Defiance", "Way of the Pyromancer", "Way of the Warlord"], themeSearches: [{ label: "Noncreature synergy", url: "https://scryfall.com/search?q=set%3Afra+c%3Dr+otag%3Asynergy-noncreature&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design" },
+      G: { name: "Green", description: "Core theme: going big. It is the foundation of two pairs - Konstrari (RG, ramp) and Garruk's Bestiary (BG, midrange).\nCards:\n\u2022 Vinelasher Adept\n\u2022 Garruk, Curse Breaker\n\u2022 Way of the Paradox\n\u2022 Way of the Wildspeaker", cards: ["Vinelasher Adept", "Garruk, Curse Breaker", "Way of the Paradox", "Way of the Wildspeaker"], themeSearches: [{ label: "Power > 3", url: "https://scryfall.com/search?q=set%3Afra+c%3Dg+power%3E3&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design" }
+    },
+    labels: {
+      WU: { text: "Fatehold", sub: "Surveil\nTempo", details: "The school of foresight. All three Fatehold prepared creatures cast Peer Review - a 2/2 Cadet plus Surveil 1. The payoffs trigger whenever you scry or surveil.\nCards:\nCommon: Semester Foreseer // Peer Review; Fatehold Chronologist // Peer Review.\nUncommon: Desperate Futurescribe; Fatehold Charm; Prudent Fateseer // Peer Review.\nRare: Proctor of Potential.\nMythic: Denzilore Fatehold.\nLand: Deserted Beach; Fatehold Annex.", cards: ["Prudent Fateseer // Peer Review", "Denzilore Fatehold", "Proctor of Potential", "Fatehold Charm", "Prudent Fateseer", "Peer Review", "Fatehold Chronologist // Peer Review", "Fatehold Chronologist", "Desperate Futurescribe", "Fatehold Annex", "Semester Foreseer // Peer Review", "Deserted Beach"], themeSearches: [{ label: "Surveil", url: "https://scryfall.com/search?q=set%3Afra+keyword%3Asurveil&unique=cards&as=grid&order=name" }, { label: "Scry/surveil payoffs", url: "https://scryfall.com/search?q=set%3Afra+%28otag%3Asynergy-scry+OR+otag%3Asynergy-surveil%29&unique=cards&as=grid&order=name" }, { label: "Prepared (WU)", url: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare+id%3Awu&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/", mechanicDef: "Peer Review - {2}{W/U} sorcery, the school spell on every Fatehold prepared creature: \"Create a 2/2 colorless Wizard Soldier creature token named Cadet. Surveil 1.\"" },
+      UB: { text: "Theorix", sub: "Self-mill\nThreshold", details: "The graveyard is a resource to count on. Omit Variables, the shared school spell, mills three. The payoffs are threshold - seven or more cards in your graveyard.\nCards:\nCommon: Void Extrapolator // Omit Variables; Theorix Metamage // Omit Variables.\nUncommon: Paradox Shaper // Omit Variables; Recursive Recruitment; Theorix Charm.\nRare: Null Summoner.\nMythic: Uldaros Theorix.\nLand: Shipwreck Marsh; Theorix Annex.", cards: ["Paradox Shaper // Omit Variables", "Uldaros Theorix", "Null Summoner", "Theorix Charm", "Recursive Recruitment", "Void Extrapolator", "Theorix Metamage", "Omit Variables", "Theorix Metamage // Omit Variables", "Theorix Annex", "Void Extrapolator // Omit Variables", "Shipwreck Marsh"], themeSearches: [{ label: "Self-mill", url: "https://scryfall.com/search?q=set%3Afra+otag%3Amill-self+-otag%3Asurveil&unique=cards&as=grid&order=name" }, { label: "Threshold", url: "https://scryfall.com/search?q=set%3Afra+o%3Athreshold&unique=cards&as=grid&order=name" }, { label: "Prepared (UB)", url: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare+id%3Aub&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/", mechanicDef: "Omit Variables - {U/B} sorcery, the school spell: \"Mill three cards.\" Threshold - \"as long as there are seven or more cards in your graveyard.\"" },
+      BR: { text: "Stingerquill", sub: "Face damage\nProwess", details: "Add insult to injury. Vicious Verse, the shared school spell, deals 1 damage to target opponent. The payoffs check whether an opponent was dealt noncombat damage this turn.\nCards:\nCommon: Hallway Heckler // Vicious Verse; Whiplash Wordsmith // Vicious Verse.\nUncommon: Grim Repriser; Stingerquill Charm; Stingerquill Voxmancer // Vicious Verse.\nRare: Stinging Vitriol.\nMythic: Ingris Stingerquill.\nLand: Haunted Ridge; Stingerquill Annex.", cards: ["Stingerquill Voxmancer // Vicious Verse", "Ingris Stingerquill", "Stinging Vitriol", "Stingerquill Charm", "Whiplash Wordsmith", "Grim Repriser", "Vicious Verse", "Whiplash Wordsmith // Vicious Verse", "Stingerquill Annex", "Hallway Heckler // Vicious Verse", "Haunted Ridge"], themeSearches: [{ label: "Burn", url: "https://scryfall.com/search?q=set%3Afra+%28otag%3Aburn-player+OR+otag%3Asynergy-burn+OR+otag%3Aburn%29&unique=cards&as=grid&order=name" }, { label: "Prowess", url: "https://scryfall.com/search?q=set%3Afra+keyword%3Aprowess&unique=cards&as=grid&order=name" }, { label: "Prepared (BR)", url: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare+id%3Abr&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/", mechanicDef: "Vicious Verse - {B/R} sorcery, the school spell: \"Vicious Verse deals 1 damage to target opponent.\"" },
+      RG: { text: "Konstrari", sub: "Heartwood\nRamp", details: "The art of building big. Soul Tether, the shared school spell, creates a Heartwood token - a red and green artifact that taps for {R} or {G}. Every Konstrari card either makes more or spends the mana.\nCards:\nCommon: Konstrari Improviser // Soul Tether.\nUncommon: Heartwood Crafter // Soul Tether; Craftwork Crusher; Konstrari Charm; Woodwork Prodigy // Soul Tether.\nRare: Tenured Tethermage.\nMythic: Aerid Konstrari.\nLand: Konstrari Annex; Rockfall Vale.", cards: ["Woodwork Prodigy // Soul Tether", "Aerid Konstrari", "Tenured Tethermage", "Konstrari Charm", "Craftwork Crusher", "Soul Tether", "Konstrari Improviser // Soul Tether", "Konstrari Improviser", "Konstrari Annex", "Heartwood Crafter // Soul Tether", "Rockfall Vale"], themeSearches: [{ label: "Heartwood", url: "https://scryfall.com/search?q=set%3Afra+o%3Aheartwood&unique=cards&as=grid&order=name" }, { label: "Artifact synergy", url: "https://scryfall.com/search?q=set%3Afra+otag%3Asynergy-artifact&unique=cards&as=grid&order=name" }, { label: "Prepared (RG)", url: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare+id%3Arg&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/", mechanicDef: "Soul Tether - {2}{R/G} sorcery, the school spell: \"Create a Heartwood token. (It's a red and green artifact with “{T}: Add {R} or {G}.”)\"" },
+      GW: { text: "Vigorbloom", sub: "Life gain\n+1/+1 counters", details: "Harsh medicine. Seed Suture, the shared school spell, puts a +1/+1 counter on a creature and gains you 1 life. Both halves pay off.\nCards:\nCommon: Blossom-Blessed Angel // Seed Suture; Emergency Phytomedic // Seed Suture.\nUncommon: Bloombrute; Vigorbloom Charm; Vigorbloom Vanguard // Seed Suture.\nRare: Solarium Sentry.\nMythic: Kwia Vigorbloom.\nLand: Overgrown Farmland; Vigorbloom Annex.", cards: ["Vigorbloom Vanguard // Seed Suture", "Kwia Vigorbloom", "Bloombrute", "Vigorbloom Charm", "Vigorbloom Vanguard", "Solarium Sentry", "Seed Suture", "Emergency Phytomedic // Seed Suture", "Emergency Phytomedic", "Vigorbloom Annex", "Blossom-Blessed Angel // Seed Suture", "Overgrown Farmland"], themeSearches: [{ label: "Life gain", url: "https://scryfall.com/search?q=set%3Afra+otag%3Alifegain&unique=cards&as=grid&order=name" }, { label: "+1/+1 counters", url: "https://scryfall.com/search?q=set%3Afra+o%3A%22%2B1%2F%2B1+counter%22&unique=cards&as=grid&order=name" }, { label: "Prepared (GW)", url: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare+id%3Agw&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/", mechanicDef: "Seed Suture - {G/W} sorcery, the school spell: \"Put a +1/+1 counter on target creature. You gain 1 life.\"" },
+      WB: { text: "Liliana", sub: "Attrition\nSacrifice", details: "The WB planeswalker archetype grinds.\nCards:\nCommon: Blessed Ghoul.\nUncommon: Twisted Fates; Edgar, Ancient Bloodlord.\nRare: Vindictive Triumph.\nLand: Meticulous Commons.", cards: ["Twisted Fates", "Edgar, Ancient Bloodlord", "Blessed Ghoul", "Vindictive Triumph", "Meticulous Commons"], themeSearches: [{ label: "Sacrifice", url: "https://scryfall.com/search?q=set%3Afra+o%3Asacrifice&unique=cards&as=grid&order=name" }, { label: "Graveyard recursion", url: "https://scryfall.com/search?q=set%3Afra+o%3A%22from+your+graveyard%22&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
+      UR: { text: "Chandra", sub: "Spellslinger\nProwess", details: "The UR planeswalker archetype casts spells.\nCards:\nCommon: Twinned Vision.\nUncommon: Clash of Elements; Saheeli, Jewel of Avishkar.\nRare: Frostbite Pyromental.\nLand: Innovative Commons.", cards: ["Clash of Elements", "Saheeli, Jewel of Avishkar", "Twinned Vision", "Frostbite Pyromental", "Innovative Commons"], themeSearches: [{ label: "Noncreature synergy", url: "https://scryfall.com/search?q=set%3Afra+otag%3Asynergy-noncreature&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
+      BG: { text: "Garruk", sub: "Midrange\nDeathtouch", details: "The BG planeswalker archetype plays big creatures that are hard to block.\nCards:\nCommon: Ferocity of the Hunt.\nUncommon: Primal Witchstalker; Hapatra, the Desert Fang.\nRare: Vraska, the Cutting Glare.\nLand: Formidable Commons.", cards: ["Primal Witchstalker", "Hapatra, the Desert Fang", "Ferocity of the Hunt", "Vraska, the Cutting Glare", "Formidable Commons"], themeSearches: [{ label: "Deathtouch / trample / menace", url: "https://scryfall.com/search?q=set%3Afra+%28o%3Adeathtouch+OR+o%3Atrample+OR+o%3Amenace%29&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
+      RW: { text: "Ajani", sub: "Aggro\n+1/+1 counters", details: "The RW planeswalker archetype attacks with creatures carrying +1/+1 counters.\nCards:\nCommon: Charge the Sanctum.\nUncommon: Warrior's Blades; Mabel, Valley Hero.\nRare: Solitary Cell.\nLand: Dedicated Commons.", cards: ["Warrior's Blades", "Mabel, Valley Hero", "Charge the Sanctum", "Solitary Cell", "Dedicated Commons"], themeSearches: [{ label: "+1/+1 counters", url: "https://scryfall.com/search?q=set%3Afra+o%3A%22%2B1%2F%2B1+counter%22&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
+      GU: { text: "Jace", sub: "Empower Jace\nPlaneswalkers", details: "The GU planeswalker archetype is the Jace deck.\nCards:\nCommon: Tam's Resistance.\nUncommon: Mind Meanderer; Kiora of Salt and Sand.\nRare: Entrust the Spark.\nMythic: Avatar of Burgeoning Echoes.\nLand: Transformative Commons.", cards: ["Mind Meanderer", "Kiora of Salt and Sand", "Tam's Resistance", "Avatar of Burgeoning Echoes", "Entrust the Spark", "Transformative Commons"], themeSearches: [{ label: "Jace", url: "https://scryfall.com/search?q=set%3Afra+%28t%3Ajace+OR+o%3Ajace%29&unique=cards&as=grid&order=name" }, { label: "Planeswalker synergy", url: "https://scryfall.com/search?q=set%3Afra+otag%3Asynergy-planeswalker&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
+    },
+    resourceLinks: [
+      { label: "Reality Fracture Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/reality-fracture-prerelease-guide", desc: "Official Prerelease Guide - the ten archetypes' official names, one-line descriptions and key commons and uncommons", official: true },
+      { label: "Reality Fracture Release Notes", url: "https://magic.wizards.com/en/news/feature/reality-fracture-release-notes", desc: "Official release notes - rulings for Empower Jace, Prepared, Heartwood and card-specific clarifications", official: false },
+      { label: "Reality Fracture Mechanics", url: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", desc: "Official Wizards of the Coast mechanics article (Empower Jace, Prepared, Heartwood tokens)", official: false },
+      { label: "Enter the Echoverse with Reality Fracture Design", url: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", desc: "Official design article - names the ten draft archetypes (five Hexhaven schools + five planeswalker pairs) and gives each colour's core theme, the source for the colour boxes above", official: false },
+      { label: "Planeswalker's Guide to Reality Fracture", url: "https://magic.wizards.com/en/news/magic-story/planeswalkers-guide-to-reality-fracture", desc: "Official world guide - Hexhaven, its five schools and their elder sphinxes", official: false },
+      { label: "Collecting Reality Fracture", url: "https://magic.wizards.com/en/news/feature/collecting-reality-fracture", desc: "Official product breakdown - Play Booster contents, the 86-card Echoed Pairs bonus sheet, set size", official: false },
+      { label: "Reality Fracture Card Image Gallery", url: "https://magic.wizards.com/en/products/reality-fracture/card-image-gallery", desc: "Official full card gallery, complete from 2026-09-18", official: false },
+      { label: "Exploring All 10 Reality Fracture Limited Archetypes", url: "https://draftsim.com/mtg-fra-draft-archetypes/", desc: "Draftsim's archetype-by-archetype breakdown with signpost cards" },
+      { label: "Reality Fracture Cards, Mechanics, and Set Information", url: "https://draftsim.com/mtg-reality-fracture/", desc: "Draftsim's set hub - dates, products, mechanics summary" },
+      { label: "Reality Fracture on Scryfall", url: "https://scryfall.com/sets/fra", desc: "Full card gallery and search - the data source behind this page" },
+    ],
+    setMechanics: [
+      { name: "Empower Jace N", keyword: "empower jace", description: "New, and the set's headline: 35 cards, in every colour and at every rarity.\n\nThe token is a planeswalker, which is what all ten common dual lands check to enter untapped.", reminder: "(Put N loyalty counters on a Jace token you control. If you don't control one, first create a blue Jace planeswalker token with “[\u22121]: Surveil 1” and “[\u22123]: Draw a card.”)", cards: [], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+o%3A%22empower+jace%22&unique=cards&as=grid&order=rarity", scryfallLabel: "o:\"empower jace\"" },
+      { name: "Prepared", keyword: "prepared", description: "Returning from Secrets of Strixhaven with a twist: 21 creatures have a prepare spell, and at common and uncommon the five schools' creatures each cast the SAME school spell (Peer Review, Omit Variables, Vicious Verse, Soul Tether, Seed Suture).", reminder: "(While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)", cards: ["Peer Review", "Omit Variables", "Vicious Verse", "Soul Tether", "Seed Suture"], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare&unique=cards&as=grid&order=rarity", scryfallLabel: "layout:prepare" },
+      { name: "Echoed Pairs", description: "An 86-card bonus sheet numbered inside the set at collector 195-280 (66 uncommon, 14 rare, 6 mythic), every card a legendary, each paired with its Echoverse twin.\n\nThree come in every Play Booster - two of them a matching pair - so they are a full part of the Limited pool.", cards: [], source: "WotC Collecting article", sourceUrl: "https://magic.wizards.com/en/news/feature/collecting-reality-fracture", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+cn%3E%3D195+cn%3C%3D280&unique=cards&as=grid&order=set", scryfallLabel: "cn 195-280" },
+    ]
   }
 };
 
-const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH', 'HOB'];
+const SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH', 'HOB', 'FRA'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -997,7 +1075,7 @@ const getLabelBoxHeight = (labelData, isPrimary, config) => {
   const titleLines = (labelData && labelData.text ? labelData.text : '').split('\n');
   const subLines = labelData && labelData.sub ? labelData.sub.split('\n') : [];
   const textH = lh /*code*/ + lh /*title line 1*/ + (titleLines.length - 1) * lh
-    + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
+    + (subLines.length > 0 ? lh + (subLines.length - 1) * config.fontSize : 0);
   return Math.max(textH + 6, isPrimary ? config.primaryBoxH : config.boxH);
 };
 
@@ -1106,7 +1184,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const titleLines = (labelData.text || '').split('\n');
   const lh = config.fontSize * 1.1;
   const titleExtra = (titleLines.length - 1) * lh; // extra height per wrapped title line
-  const totalTextHeight = lh /*code*/ + lh /*title line 1*/ + titleExtra + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
+  // sub lines are set one font-size apart: tight, but no longer overlapping (was a fixed 7px under an 11px font)
+  const totalTextHeight = lh /*code*/ + lh /*title line 1*/ + titleExtra + (subLines.length > 0 ? lh + (subLines.length - 1) * config.fontSize : 0);
   const startY = group.cy - totalTextHeight / 2;
   const y1 = startY + lh * 0.8, y2 = y1 + lh, y3 = y2 + titleExtra + lh * 0.9;
 
@@ -1142,7 +1221,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
       </text>
       {subLines.length > 0 && (
         <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
-          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
+          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : config.fontSize}>{line}</tspan>)}
         </text>
       )}
     </g>
@@ -1170,8 +1249,18 @@ const CardLink = ({ cardName, setCode, fg }) => {
       setImgSrc(cardLinkImageCache.get(cacheKey));
       return;
     }
+    // Third fallback is deliberate: cards/named?exact= does NOT resolve the BACK
+    // face of a card (FRA's five shared school spells - Peer Review, Omit
+    // Variables, Vicious Verse, Soul Tether, Seed Suture - all 404 there), while
+    // the search endpoint does index face names. Verified against the API
+    // 2026-09-20. Without this the link works but the hover preview is blank.
+    const searchImg = () =>
+      fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(`set:${setCode} "${frontName}"`)}&unique=cards`)
+        .then(r => r.ok ? r.json() : null)
+        .then(j => (j && j.data && j.data.length) ? j.data[0] : null);
+
     fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}&set=${setCode}`)
-      .then(r => r.ok ? r.json() : fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}`).then(r2 => r2.ok ? r2.json() : null))
+      .then(r => r.ok ? r.json() : fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(frontName)}`).then(r2 => r2.ok ? r2.json() : searchImg()))
       .then(card => {
         const url = card && (card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal);
         if (url) {
@@ -1213,9 +1302,10 @@ const CardLink = ({ cardName, setCode, fg }) => {
 
 // Wrap any known card names found in `text` with hover-image CardLinks (matches longest names first)
 // Also handles bold formatting for "Cards:", "Top commons:", "Top uncommons:", and "Top Rares and mythics:" markers
-// Converts \n to <br /> for proper line break rendering
+// Converts \n to <br /> for proper line break rendering; a blank line (\n\n) is a paragraph gap,
+// and a bold label renders as its own block with the same gap above it (none when it opens the text).
 const linkifyCards = (text, cards, setCode, fg) => {
-  if (!text || !cards || cards.length === 0) return text;
+  if (!text) return text;
 
   // Split by newlines to handle bold labels on their own line
   const lines = text.split('\n');
@@ -1228,13 +1318,23 @@ const linkifyCards = (text, cards, setCode, fg) => {
     return line;
   });
 
-  const sorted = [...cards].sort((a, b) => b.length - a.length);
+  const sorted = [...(cards || [])].sort((a, b) => b.length - a.length);
   let segs = [];
+  let hasContent = false;
+  const last = () => segs[segs.length - 1];
 
   processedLines.forEach((lineItem, lineIdx) => {
+    const isLast = lineIdx === processedLines.length - 1;
     if (typeof lineItem === 'object' && lineItem.__bold) {
-      segs.push(lineItem);
-      if (lineIdx < processedLines.length - 1) segs.push({ __br: true });
+      // block element: drop the <br /> (or gap) left by the previous line, it carries its own
+      if (segs.length && (last().__br || last().__para)) segs.pop();
+      segs.push({ ...lineItem, __gap: hasContent });
+      hasContent = true;
+      return;
+    }
+    if (lineItem.trim() === '') {
+      // blank line = paragraph gap; leading blank lines are dropped
+      if (hasContent && !isLast && segs.length && last().__br) { segs.pop(); segs.push({ __para: true }); }
       return;
     }
 
@@ -1253,14 +1353,17 @@ const linkifyCards = (text, cards, setCode, fg) => {
     });
 
     segs.push(...lineSeg);
-    if (lineIdx < processedLines.length - 1) segs.push({ __br: true });
+    hasContent = true;
+    if (!isLast) segs.push({ __br: true });
   });
 
   return segs.map((s, i) => {
     if (typeof s === 'string') {
       return <React.Fragment key={i}>{s}</React.Fragment>;
     } else if (s.__bold) {
-      return <b key={i}>{s.__text}</b>;
+      return <b key={i} style={{ display: 'block', marginTop: s.__gap ? '0.55em' : 0 }}>{s.__text}</b>;
+    } else if (s.__para) {
+      return <span key={i} style={{ display: 'block', height: '0.55em' }} />;
     } else if (s.__br) {
       return <br key={i} />;
     } else {
@@ -1340,6 +1443,34 @@ const ScryfallRow = ({ data, pair, sc, bg, fg, large, center }) => {
   );
 };
 
+// The primary-archetype box markup: solid border, full opacity, bold title, italic sub line,
+// details, SourceLine, ScryfallRow and (when present) a mechanicDef slot. Shared by the primary
+// grid and, for a set whose secondaryLabel marks its secondary pairs as real archetypes (FRA's
+// planeswalker pairs), the secondary grid too.
+const ArchetypeBox = ({ pair, data, sc }) => {
+  const { bg, fg } = getLabelColors(pair[0], pair[1]);
+  return (
+    <div style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
+      border: `2px solid ${blend(pair[0], pair[1])}` }}>
+      <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
+      <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
+      <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
+      {data.sourceText && (
+        <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
+          <SourceLine data={data} fg={fg} />
+        </div>
+      )}
+      <ScryfallRow data={data} pair={pair} sc={sc} bg={bg} fg={fg} />
+      {data.mechanicDef && (
+        <div style={{ fontSize: '0.7rem', marginTop: '10px', padding: '6px 8px', borderRadius: '4px',
+          backgroundColor: 'rgba(255,255,255,0.15)', fontStyle: 'italic', lineHeight: '1.4', opacity: 0.9 }}>
+          {linkifyCards(data.mechanicDef, data.cards, sc, fg)}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHover, onColorLeave, currentSet }) => {
   const sc = scryfallCodes[0];
   const colorMap = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
@@ -1399,7 +1530,23 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
                    textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
                 {color} included
               </a>
+              {/* Optional per-colour themed searches (same shape as a label's themeSearches) */}
+              {(d.themeSearches || []).map((t, i) => (
+                <a key={i} href={t.url} target="_blank" rel="noopener noreferrer"
+                   style={{ display: 'inline-block', padding: '4px 8px', backgroundColor: fg, color: bg,
+                     textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
+                  {t.label}
+                </a>
+              ))}
             </div>
+            {/* Per-colour attribution, when the description makes a sourced claim
+                (FRA's core-theme rows come from the WotC design article). */}
+            {d.sourceUrl && (
+              <div style={{ fontSize: '0.6rem', opacity: 0.8, fontStyle: 'italic', marginTop: '8px', textAlign: 'left' }}>
+                Source: <a href={d.sourceUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ color: fg, textDecoration: 'underline' }}>{d.sourceText}</a>
+              </div>
+            )}
             {topCfg && topCfg.sourceUrl && (
               <div style={{ fontSize: '0.6rem', opacity: 0.8, fontStyle: 'italic', marginTop: '8px', textAlign: 'left' }}>
                 Source: <a href={topCfg.sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -1501,7 +1648,10 @@ function MultiSetColorWheel() {
     setHoveredColor(null);
   }, [currentSetKey]);
 
-  const labelPositions = computeLabelPositions(config, currentSet.labels, currentSet.primaryArchetypes);
+  // On the wheel a set whose secondary pairs are real archetypes (secondaryLabel set - FRA) draws all
+  // ten with the primary treatment: full opacity, bold title, wider box, heavier edge line.
+  const wheelPrimary = currentSet.secondaryLabel ? Object.keys(currentSet.labels) : currentSet.primaryArchetypes;
+  const labelPositions = computeLabelPositions(config, currentSet.labels, wheelPrimary);
   const edges = getEdgeList(currentSet.labels);
 
   const handlePairHover = (pairCode) => {
@@ -1549,13 +1699,11 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.6.1 &middot; 2026-08-07 15:20 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.0 &middot; 2026-09-21 16:40 UTC</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
               Also see:{' '}
-              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html" target="_blank" rel="noopener noreferrer">SOS Under/Overrated</a> <span className="sep">|</span>
-              <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html" target="_blank" rel="noopener noreferrer">ECL Under/Overrated</a> <span className="sep">|</span>
               <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/index.html" target="_blank" rel="noopener noreferrer">17 Lands Quiz</a> <span className="sep">|</span>
               <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/index.html" target="_blank" rel="noopener noreferrer">Card Knowledge Quiz</a> <span className="sep">|</span>
               <a href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html" target="_blank" rel="noopener noreferrer">Budget Deckbuilder</a> <span className="sep">|</span>
@@ -1586,6 +1734,7 @@ function MultiSetColorWheel() {
             SOS: 'https://svgs.scryfall.io/sets/sos.svg',
             MSH: 'https://svgs.scryfall.io/sets/msh.svg',
             HOB: 'https://svgs.scryfall.io/sets/hob.svg',
+            FRA: 'https://svgs.scryfall.io/sets/fra.svg',
           }[key];
           return (
             <button
@@ -1676,7 +1825,7 @@ function MultiSetColorWheel() {
       >
         {edges.map((edge, i) => {
           const pairCode = edge.u + edge.v;
-          const isPrimary = currentSet.primaryArchetypes.includes(pairCode);
+          const isPrimary = wheelPrimary.includes(pairCode);
           const isHighlighted = activePair === pairCode;
           const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
           return <EdgeLine key={`edge-${i}`} edge={edge} isHighlighted={isHighlighted} isDimmed={isDimmed}
@@ -1689,7 +1838,7 @@ function MultiSetColorWheel() {
           return <LabelBox key={`label-${i}`} group={group} isHighlighted={isHighlighted} isDimmed={isDimmed}
                    onHover={() => handlePairHover(pairCode)} onLeave={handlePairLeave} onClick={() => {}}
                    isSimple={isSimple} config={config} labels={currentSet.labels}
-                   primaryArchetypes={currentSet.primaryArchetypes} />;
+                   primaryArchetypes={wheelPrimary} />;
         })}
         {colorOrder.map((color, index) => {
           const isHighlighted = hoveredNode === color || activeColors.includes(color);
@@ -1758,28 +1907,8 @@ function MultiSetColorWheel() {
             <div className="archetype-grid" style={{ display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
               {primaryPairs.map(([pair, data]) => {
-                const { bg, fg } = getLabelColors(pair[0], pair[1]);
                 const sc = currentSet.scryfallCodes[0];
-                return (
-                  <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
-                    border: `2px solid ${blend(pair[0], pair[1])}` }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub && data.sub.replace('\n', ' / ')}</div>
-                    <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(data.details, data.cards, sc, fg)}</div>
-                    {data.sourceText && (
-                      <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                        <SourceLine data={data} fg={fg} />
-                      </div>
-                    )}
-                    <ScryfallRow data={data} pair={pair} sc={sc} bg={bg} fg={fg} />
-                    {data.mechanicDef && (
-                      <div style={{ fontSize: '0.7rem', marginTop: '10px', padding: '6px 8px', borderRadius: '4px',
-                        backgroundColor: 'rgba(255,255,255,0.15)', fontStyle: 'italic', lineHeight: '1.4', opacity: 0.9 }}>
-                        {data.mechanicDef}
-                      </div>
-                    )}
-                  </div>
-                );
+                return <ArchetypeBox key={pair} pair={pair} data={data} sc={sc} />;
               })}
             </div>
 
@@ -1787,14 +1916,24 @@ function MultiSetColorWheel() {
             {secondaryPairs.length > 0 && (
               <div style={{ marginTop: '24px' }}>
                 <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px',
-                  paddingBottom: '8px', borderBottom: '2px solid #9CA3AF' }}>
-                  Off-Arch / Secondary
+                  paddingBottom: '8px', borderBottom: currentSet.secondaryLabel ? `2px solid ${currentSet.accentColor}` : '2px solid #9CA3AF' }}>
+                  {currentSet.secondaryLabel || 'Off-Arch / Secondary'}
                 </h2>
+                {/* A set whose secondary pairs are real archetypes - FRA's planeswalker pairs -
+                    supplies its own paragraph (the default text would call them unsupported) and
+                    renders each box exactly like the primary ones, via ArchetypeBox. */}
+                {currentSet.secondaryDescription && (
+                  <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
+                    {currentSet.secondaryDescription}
+                  </p>
+                )}
+                {!currentSet.secondaryDescription && (
                 <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '8px' }}>
                   These pairs have no dedicated archetype. You will very rarely be playing them, but the set has a decent amount of{' '}
                   <a href={`https://scryfall.com/search?q=%28otag%3Amana-producer+OR+type%3Aland+OR+otag%3Aramp%29+set%3A${currentSet.scryfallCodes[0]}&unique=cards&as=grid&order=edhrec&dir=`} target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', textDecoration: 'underline' }}>color fixing</a>
                   {' '}so 3 color is doable.
                 </p>
+                )}
                 {secondaryHasWedges && (
                   <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
                     The most likely 3 color combinations for this set are the{' '}
@@ -1805,8 +1944,11 @@ function MultiSetColorWheel() {
                 <div className="archetype-grid" style={{ display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
                   {secondaryPairs.map(([pair, data]) => {
-                    const { bg, fg } = getLabelColors(pair[0], pair[1]);
                     const sc = currentSet.scryfallCodes[0];
+                    if (currentSet.secondaryLabel) {
+                      return <ArchetypeBox key={pair} pair={pair} data={data} sc={sc} />;
+                    }
+                    const { bg, fg } = getLabelColors(pair[0], pair[1]);
                     return (
                       <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px',
                         border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
@@ -1848,6 +1990,13 @@ function MultiSetColorWheel() {
                   <div key={i} style={{ backgroundColor: '#78350F', color: '#FEF3C7', padding: '16px', borderRadius: '8px',
                     border: `2px solid #F59E0B` }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px' }}>{mech.name}</div>
+                    {/* Reminder text first, in the same quotation box the school spells use under the archetype boxes */}
+                    {mech.reminder && (
+                      <div style={{ fontSize: '0.7rem', marginBottom: '8px', padding: '6px 8px', borderRadius: '4px',
+                        backgroundColor: 'rgba(255,255,255,0.15)', fontStyle: 'italic', lineHeight: '1.4', opacity: 0.9 }}>
+                        {mech.reminder}
+                      </div>
+                    )}
                     <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{linkifyCards(mech.description, mech.cards, sc, '#FDE68A')}</div>
                     {mech.source && (
                       <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
