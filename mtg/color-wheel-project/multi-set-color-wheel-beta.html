@@ -177,6 +177,12 @@
  *   - Reality Fracture (FRA) - v1.0.0-beta.1 - Oct 2026
  *
  * CHANGELOG:
+ * 1.7.0-beta.8 (2026-09-21, 14:19 UTC) - [Claude Opus 5]
+ *   - Wheel labels: the second sub line was drawn 7px below the first under an 11px font, so
+ *     two-line subs ("Life gain" / "+1/+1 counters") overlapped. Pitch is now one font-size
+ *     (11px desktop, 10px mobile) in the tspan and in both box-height calculations, so the
+ *     de-overlap solver sees the taller box too. All sets, since every set has two-line subs.
+ *
  * 1.7.0-beta.7 (2026-09-21, 13:59 UTC) - [Claude Opus 5]
  *   - Wheel: a set whose secondary pairs are real archetypes (secondaryLabel set - FRA) now draws
  *     all ten labels with the primary treatment (full opacity, bold, wider box, heavier edge).
@@ -1165,7 +1171,7 @@ const getLabelBoxHeight = (labelData, isPrimary, config) => {
   const titleLines = (labelData && labelData.text ? labelData.text : '').split('\n');
   const subLines = labelData && labelData.sub ? labelData.sub.split('\n') : [];
   const textH = lh /*code*/ + lh /*title line 1*/ + (titleLines.length - 1) * lh
-    + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
+    + (subLines.length > 0 ? lh + (subLines.length - 1) * config.fontSize : 0);
   return Math.max(textH + 6, isPrimary ? config.primaryBoxH : config.boxH);
 };
 
@@ -1274,7 +1280,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const titleLines = (labelData.text || '').split('\n');
   const lh = config.fontSize * 1.1;
   const titleExtra = (titleLines.length - 1) * lh; // extra height per wrapped title line
-  const totalTextHeight = lh /*code*/ + lh /*title line 1*/ + titleExtra + (subLines.length > 0 ? lh + (subLines.length - 1) * 7 : 0);
+  // sub lines are set one font-size apart: tight, but no longer overlapping (was a fixed 7px under an 11px font)
+  const totalTextHeight = lh /*code*/ + lh /*title line 1*/ + titleExtra + (subLines.length > 0 ? lh + (subLines.length - 1) * config.fontSize : 0);
   const startY = group.cy - totalTextHeight / 2;
   const y1 = startY + lh * 0.8, y2 = y1 + lh, y3 = y2 + titleExtra + lh * 0.9;
 
@@ -1310,7 +1317,7 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
       </text>
       {subLines.length > 0 && (
         <text x={group.cx} y={y3} textAnchor="middle" fontSize={config.fontSize} fill={textColor} opacity={0.85}>
-          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : 7}>{line}</tspan>)}
+          {subLines.map((line, i) => <tspan key={i} x={group.cx} dy={i === 0 ? 0 : config.fontSize}>{line}</tspan>)}
         </text>
       )}
     </g>
@@ -1788,7 +1795,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.0-beta.7 &middot; 2026-09-21 13:59 UTC &middot; BETA</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.0-beta.8 &middot; 2026-09-21 14:19 UTC &middot; BETA</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
