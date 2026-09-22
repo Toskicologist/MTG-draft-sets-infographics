@@ -35,6 +35,14 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    /* Echoverse: the whole page as a photo negative. On the root element the filter does not
+       become a containing block, so the fixed hover popup and card previews still position. */
+    html { background: #FFFFFF; }
+    html.echoverse { filter: invert(1); }
+    .echo-btn { padding: 12px 28px; border-radius: 999px; border: 3px solid #111827; background: #111827; color: #FFFFFF;
+      font-weight: 800; font-size: 1.15rem; letter-spacing: 0.08em; cursor: pointer; }
+    @media (max-width: 480px) { .echo-btn { font-size: 0.95rem; padding: 10px 18px; letter-spacing: 0.05em; } }
+    .echo-btn:hover { background: #FFFFFF; color: #111827; }
     @media (max-width: 768px) {
       .color-wheel-svg { max-height: none !important; max-width: 100% !important; width: 100% !important; }
       .main-container { padding: 4px !important; }
@@ -165,7 +173,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.7.0
+ * 1.7.1
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -177,6 +185,13 @@
  *   - Reality Fracture (FRA) - v1.0.0 - Oct 2026
  *
  * CHANGELOG:
+ * 1.7.1 (2026-09-22) - [Claude Opus 5] - PROMOTED FROM BETA (1.7.1-beta.1)
+ *   - FRA only: large "ENTER THE ECHOVERSE?" button on its own line under the B&W / Text Size
+ *     controls. The wheel (and the colour boxes) run G R B U W clockwise from the top - the
+ *     mirror image, so every pair keeps its line and label - and the whole page is inverted,
+ *     photo-negative style (filter on <html>). The button then reads "RETURN TO NORMALVERSE?".
+ *     Hidden on other sets, and switching set returns to normal. Not saved in the URL.
+ *
  * 1.7.0 (2026-09-21, 16:40 UTC) - [Claude Opus 5] - PROMOTED FROM BETA (1.7.0-beta.1 .. beta.9, 2026-09-18 .. 09-21)
  *   - Reality Fracture (FRA, releases 2026-10-02) added as the seventh set and the default view.
  *     Ten archetypes at two weights: the five Hexhaven schools (allied pairs, nine dedicated
@@ -960,6 +975,10 @@ const manaClasses = {
 };
 
 const colorOrder = ['W', 'U', 'B', 'R', 'G'];
+// Clockwise order around the wheel from the top. The Echoverse button swaps it for GRBUW (the
+// mirror image, so the same pairs stay neighbours); the main component sets it before each render.
+const ECHO_ORDER = ['G', 'R', 'B', 'U', 'W'];
+let wheelOrder = colorOrder;
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
@@ -1040,8 +1059,8 @@ const getLabelColors = (u, v) => {
 
 const getEdgeList = (labels) => Object.keys(labels).map(pair => ({
   u: pair[0], v: pair[1],
-  uIdx: colorOrder.indexOf(pair[0]),
-  vIdx: colorOrder.indexOf(pair[1]),
+  uIdx: wheelOrder.indexOf(pair[0]),
+  vIdx: wheelOrder.indexOf(pair[1]),
 }));
 
 const getNodePos = (index, config) => {
@@ -1049,7 +1068,7 @@ const getNodePos = (index, config) => {
   return { x: config.cx + config.radius * Math.cos(angle), y: config.cy + config.radius * Math.sin(angle) };
 };
 
-const getNodePositions = (config) => colorOrder.map((_,i) => getNodePos(i, config));
+const getNodePositions = (config) => wheelOrder.map((_,i) => getNodePos(i, config));
 
 const getEdgeGeometry = (uIdx, vIdx, config) => {
   const np = getNodePositions(config);
@@ -1481,7 +1500,7 @@ const ColorGrid = ({ colorDescriptions, scryfallCodes, hoveredColor, onColorHove
       display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
       gap: '12px', marginTop: '24px', width: '100%',
     }}>
-      {colorOrder.map(color => {
+      {wheelOrder.map(color => {
         const d = colorDescriptions[color];
         const exactUrl = `https://scryfall.com/search?q=set%3A${sc}+color%3D${colorMap[color]}`;
         const inclUrl = `https://scryfall.com/search?q=set%3A${sc}+id>%3D${color}`;
@@ -1606,6 +1625,12 @@ function MultiSetColorWheel() {
   const [hoveredColor, setHoveredColor] = useState(null);
   const [isSimple, setIsSimple] = useState(false);
   const [textSize, setTextSize] = useState(1.0);
+  const [echoOn, setEchoverse] = useState(false);
+  // FRA only: the button is hidden on other sets, and switching set drops you back to normal
+  const echoverse = echoOn && currentSetKey === 'FRA';
+  wheelOrder = echoverse ? ECHO_ORDER : colorOrder;
+  useEffect(() => { document.documentElement.classList.toggle('echoverse', echoverse); }, [echoverse]);
+  useEffect(() => { if (currentSetKey !== 'FRA') setEchoverse(false); }, [currentSetKey]);
   const [config, setConfig] = useState(() => getConfig(1.0));
   const pairTimeoutRef = useRef(null);
   const colorTimeoutRef = useRef(null);
@@ -1699,7 +1724,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.0 &middot; 2026-09-21 16:40 UTC</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.1 &middot; 2026-09-22</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
@@ -1816,6 +1841,13 @@ function MultiSetColorWheel() {
           <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>{Math.round(textSize*100)}%</span>
         </label>
       </div>
+      {currentSetKey === 'FRA' && (
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <button className="echo-btn" onClick={() => setEchoverse(e => !e)} aria-pressed={echoverse}>
+            {echoverse ? 'RETURN TO NORMALVERSE?' : 'ENTER THE ECHOVERSE?'}
+          </button>
+        </div>
+      )}
 
       {/* SVG Color Wheel */}
       <svg
@@ -1840,7 +1872,7 @@ function MultiSetColorWheel() {
                    isSimple={isSimple} config={config} labels={currentSet.labels}
                    primaryArchetypes={wheelPrimary} />;
         })}
-        {colorOrder.map((color, index) => {
+        {wheelOrder.map((color, index) => {
           const isHighlighted = hoveredNode === color || activeColors.includes(color);
           const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
           return <ColorNode key={`node-${color}`} color={color} index={index}
