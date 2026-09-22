@@ -39,8 +39,9 @@
        become a containing block, so the fixed hover popup and card previews still position. */
     html { background: #FFFFFF; }
     html.echoverse { filter: invert(1); }
-    .echo-btn { padding: 6px 14px; border-radius: 999px; border: 2px solid #111827; background: #111827; color: #FFFFFF;
-      font-weight: 800; font-size: 0.8rem; letter-spacing: 0.06em; cursor: pointer; }
+    .echo-btn { padding: 12px 28px; border-radius: 999px; border: 3px solid #111827; background: #111827; color: #FFFFFF;
+      font-weight: 800; font-size: 1.15rem; letter-spacing: 0.08em; cursor: pointer; }
+    @media (max-width: 480px) { .echo-btn { font-size: 0.95rem; padding: 10px 18px; letter-spacing: 0.05em; } }
     .echo-btn:hover { background: #FFFFFF; color: #111827; }
     @media (max-width: 768px) {
       .color-wheel-svg { max-height: none !important; max-width: 100% !important; width: 100% !important; }
@@ -185,10 +186,10 @@
  *
  * CHANGELOG:
  * 1.7.1-beta.1 (2026-09-22) - [Claude Opus 5]
- *   - FRA only: "ENTER THE ECHOVERSE" button after the B&W / Text Size controls: the wheel (and the colour
+ *   - FRA only: large "ENTER THE ECHOVERSE?" button on its own line under the B&W / Text Size controls: the wheel (and the colour
  *     boxes) run G R B U W clockwise from the top - the mirror image, so every pair keeps its
  *     line and label - and the whole page is inverted, photo-negative style (filter on <html>).
- *     The button then reads "RETURN TO NORMALVERSE". Hidden on other sets, and switching set
+ *     The button then reads "RETURN TO NORMALVERSE?". Hidden on other sets, and switching set
  *     returns to normal. Not saved in the URL; a reload is normal.
  *
  * 1.7.0-beta.9 (2026-09-21, 16:40 UTC) - [Claude Opus 5]
@@ -1940,12 +1941,14 @@ function MultiSetColorWheel() {
           <input type="range" min="0.5" max="2.0" step="0.1" value={textSize} onChange={e => setTextSize(parseFloat(e.target.value))} style={{ width: '80px', cursor: 'pointer' }} />
           <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>{Math.round(textSize*100)}%</span>
         </label>
-        {currentSetKey === 'FRA' && (
-          <button className="echo-btn" onClick={() => setEchoverse(e => !e)} aria-pressed={echoverse}>
-            {echoverse ? 'RETURN TO NORMALVERSE' : 'ENTER THE ECHOVERSE'}
-          </button>
-        )}
       </div>
+      {currentSetKey === 'FRA' && (
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <button className="echo-btn" onClick={() => setEchoverse(e => !e)} aria-pressed={echoverse}>
+            {echoverse ? 'RETURN TO NORMALVERSE?' : 'ENTER THE ECHOVERSE?'}
+          </button>
+        </div>
+      )}
 
       {/* SVG Color Wheel */}
       <svg
