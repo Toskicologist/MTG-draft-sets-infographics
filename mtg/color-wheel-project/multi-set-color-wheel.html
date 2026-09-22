@@ -173,7 +173,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.7.1
+ * 1.7.2
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -185,6 +185,11 @@
  *   - Reality Fracture (FRA) - v1.0.0 - Oct 2026
  *
  * CHANGELOG:
+ * 1.7.2 (2026-09-22) - [Claude Opus 5]
+ *   - FRA GU box: Tam, the Possibility (rare, #276, Echoed sheet) added to the Rare line and
+ *     cards[], so it renders as a hover link. It is five-colour, so the exact-identity rule
+ *     left it out; added by request as the Tam card of the Jace/planeswalker deck.
+ *
  * 1.7.1 (2026-09-22) - [Claude Opus 5] - PROMOTED FROM BETA (1.7.1-beta.1)
  *   - FRA only: large "ENTER THE ECHOVERSE?" button on its own line under the B&W / Text Size
  *     controls. The wheel (and the colour boxes) run G R B U W clockwise from the top - the
@@ -932,7 +937,7 @@ const SET_DATA = {
       UR: { text: "Chandra", sub: "Spellslinger\nProwess", details: "The UR planeswalker archetype casts spells.\nCards:\nCommon: Twinned Vision.\nUncommon: Clash of Elements; Saheeli, Jewel of Avishkar.\nRare: Frostbite Pyromental.\nLand: Innovative Commons.", cards: ["Clash of Elements", "Saheeli, Jewel of Avishkar", "Twinned Vision", "Frostbite Pyromental", "Innovative Commons"], themeSearches: [{ label: "Noncreature synergy", url: "https://scryfall.com/search?q=set%3Afra+otag%3Asynergy-noncreature&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
       BG: { text: "Garruk", sub: "Midrange\nDeathtouch", details: "The BG planeswalker archetype plays big creatures that are hard to block.\nCards:\nCommon: Ferocity of the Hunt.\nUncommon: Primal Witchstalker; Hapatra, the Desert Fang.\nRare: Vraska, the Cutting Glare.\nLand: Formidable Commons.", cards: ["Primal Witchstalker", "Hapatra, the Desert Fang", "Ferocity of the Hunt", "Vraska, the Cutting Glare", "Formidable Commons"], themeSearches: [{ label: "Deathtouch / trample / menace", url: "https://scryfall.com/search?q=set%3Afra+%28o%3Adeathtouch+OR+o%3Atrample+OR+o%3Amenace%29&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
       RW: { text: "Ajani", sub: "Aggro\n+1/+1 counters", details: "The RW planeswalker archetype attacks with creatures carrying +1/+1 counters.\nCards:\nCommon: Charge the Sanctum.\nUncommon: Warrior's Blades; Mabel, Valley Hero.\nRare: Solitary Cell.\nLand: Dedicated Commons.", cards: ["Warrior's Blades", "Mabel, Valley Hero", "Charge the Sanctum", "Solitary Cell", "Dedicated Commons"], themeSearches: [{ label: "+1/+1 counters", url: "https://scryfall.com/search?q=set%3Afra+o%3A%22%2B1%2F%2B1+counter%22&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
-      GU: { text: "Jace", sub: "Empower Jace\nPlaneswalkers", details: "The GU planeswalker archetype is the Jace deck.\nCards:\nCommon: Tam's Resistance.\nUncommon: Mind Meanderer; Kiora of Salt and Sand.\nRare: Entrust the Spark.\nMythic: Avatar of Burgeoning Echoes.\nLand: Transformative Commons.", cards: ["Mind Meanderer", "Kiora of Salt and Sand", "Tam's Resistance", "Avatar of Burgeoning Echoes", "Entrust the Spark", "Transformative Commons"], themeSearches: [{ label: "Jace", url: "https://scryfall.com/search?q=set%3Afra+%28t%3Ajace+OR+o%3Ajace%29&unique=cards&as=grid&order=name" }, { label: "Planeswalker synergy", url: "https://scryfall.com/search?q=set%3Afra+otag%3Asynergy-planeswalker&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
+      GU: { text: "Jace", sub: "Empower Jace\nPlaneswalkers", details: "The GU planeswalker archetype is the Jace deck.\nCards:\nCommon: Tam's Resistance.\nUncommon: Mind Meanderer; Kiora of Salt and Sand.\nRare: Entrust the Spark; Tam, the Possibility.\nMythic: Avatar of Burgeoning Echoes.\nLand: Transformative Commons.", cards: ["Mind Meanderer", "Kiora of Salt and Sand", "Tam's Resistance", "Avatar of Burgeoning Echoes", "Entrust the Spark", "Tam, the Possibility", "Transformative Commons"], themeSearches: [{ label: "Jace", url: "https://scryfall.com/search?q=set%3Afra+%28t%3Ajace+OR+o%3Ajace%29&unique=cards&as=grid&order=name" }, { label: "Planeswalker synergy", url: "https://scryfall.com/search?q=set%3Afra+otag%3Asynergy-planeswalker&unique=cards&as=grid&order=name" }], sourceText: "WotC Design Article", sourceUrl: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", sourceText2: "Draftsim", sourceUrl2: "https://draftsim.com/mtg-fra-draft-archetypes/" },
     },
     resourceLinks: [
       { label: "Reality Fracture Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/reality-fracture-prerelease-guide", desc: "Official Prerelease Guide - the ten archetypes' official names, one-line descriptions and key commons and uncommons", official: true },
@@ -1724,7 +1729,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.1 &middot; 2026-09-22</span></h1>
+          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.2 &middot; 2026-09-22</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
