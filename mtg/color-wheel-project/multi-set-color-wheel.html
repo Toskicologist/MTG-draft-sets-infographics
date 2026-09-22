@@ -173,7 +173,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.7.2
+ * 1.7.3
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -185,6 +185,10 @@
  *   - Reality Fracture (FRA) - v1.0.0 - Oct 2026
  *
  * CHANGELOG:
+ * 1.7.3 (2026-09-22) - [Claude Opus 5] - PROMOTED FROM BETA (1.7.2-beta.2)
+ *   - Banner title follows the selected set ("FRA Draft Archetypes", "HOB Draft Archetypes", ...)
+ *     instead of "MTG Draft Archetypes", with the version line on its own line below it.
+ *
  * 1.7.2 (2026-09-22) - [Claude Opus 5]
  *   - FRA GU box: Tam, the Possibility (rare, #276, Echoed sheet) added to the Rare line and
  *     cards[], so it renders as a hover link. It is five-colour, so the exact-identity rule
@@ -1729,7 +1733,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>MTG Draft Archetypes <span>Multi-Set Color Wheel &middot; v1.7.2 &middot; 2026-09-22</span></h1>
+          <h1>{currentSet.key} Draft Archetypes<br /><span>Multi-Set Color Wheel &middot; v1.7.3 &middot; 2026-09-22</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
