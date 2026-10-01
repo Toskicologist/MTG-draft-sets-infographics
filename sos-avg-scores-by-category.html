@@ -90,7 +90,7 @@
         Set has 91 commons, 100 uncommons, 60 rares, 20 mythics.
         Weighted average reflects how likely you are to <em>actually open</em> a card of each rarity.
         Commons count ~4.6× more than uncommons per card, and ~10× more than a given rare.
-        <br><strong>College Pools</strong> = both mono colours + dual-colour cards combined (e.g. Silverquill pool = all W + all B + all WB cards).
+        <br><strong>College Pools</strong> = both mono colors + dual-color cards combined (e.g. Silverquill pool = all W + all B + all WB cards).
     </div>
 
     <!-- Tab switcher -->
@@ -106,9 +106,9 @@
             <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div>Uncommons</div>
             <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div>Rares &amp; Mythics</div>
         </div>
-        <div class="section-title">Single Colours</div>
+        <div class="section-title">Single Colors</div>
         <div class="chart-container"><canvas id="chartColors"></canvas></div>
-        <div class="section-title">Colleges <span class="pool-note">(dual-colour cards only)</span></div>
+        <div class="section-title">Colleges <span class="pool-note">(dual-color cards only)</span></div>
         <div class="chart-container"><canvas id="chartPairs"></canvas></div>
         <div class="section-title">College Pools <span class="pool-note">(mono A + mono B + dual AB)</span></div>
         <div class="chart-container"><canvas id="chartPoolRarity"></canvas></div>
@@ -119,7 +119,7 @@
         <div class="section-title">Weighted Average Score</div>
         <div class="chart-row">
             <div class="chart-box">
-                <h3>Single Colours</h3>
+                <h3>Single Colors</h3>
                 <div class="chart-container"><canvas id="chartWColors"></canvas></div>
             </div>
             <div class="chart-box">
@@ -237,7 +237,7 @@ const weightedData = [
 const colorGroups = ['White','Blue','Black','Red','Green'];
 const pairGroups  = ['Silverquill','Prismari','Witherbloom','Lorehold','Quandrix'];
 
-// ── Chart colours ─────────────────────────────────────────────────────────────
+// ── Chart colors ─────────────────────────────────────────────────────────────
 const cC  = 'rgba(148,163,184,0.85)'; const bC  = 'rgba(100,116,139,1)';
 const cU  = 'rgba(59,130,246,0.85)';  const bU  = 'rgba(29,78,216,1)';
 const cRM = 'rgba(245,158,11,0.85)';  const bRM = 'rgba(180,83,9,1)';
@@ -326,7 +326,7 @@ const orderG = [...colorGroups,...pairGroups];
 const orderR = {C:0,U:1,RM:2};
 const wLabel = {C:'6/91 ≈ 0.066', U:'3/100 = 0.030', RM:'~0.012 avg'};
 const rLabel = {C:'Commons', U:'Uncommons', RM:'Rares & Mythics'};
-const catLabel = {Single:'Single colour', College:'College (dual only)', Pool:'College pool'};
+const catLabel = {Single:'Single color', College:'College (dual only)', Pool:'College pool'};
 
 const sorted = [...rarityData].sort((a,b)=>
     catOrder[a.cat]-catOrder[b.cat] ||

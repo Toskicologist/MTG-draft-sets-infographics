@@ -15,7 +15,7 @@
   Changelog:
   v3.17.0-beta.2 (2026-08-31T16:53:45Z) - Deck titles, a deck-name field that keeps
                         up, and an explanatory-text pass.
-                        - DECK TITLE LINE is recognised again, on three
+                        - DECK TITLE LINE is recognized again, on three
                           conditions (`deckTitle`): no leading quantity, a name
                           the card index doesn't know, and a BLANK LINE under
                           it. That is the shape of a hand-written list and
@@ -95,7 +95,7 @@
                         - Tests: 123 cases in `_scratch/deckparse.test.mjs`.
 
   v3.16.0-beta.1 (2026-08-30T18:21:46Z) - Decklist parsing: two more input shapes.
-                        - SECTION HEADERS are now recognised through decoration
+                        - SECTION HEADERS are now recognized through decoration
                           and comment markers, via one shared `sectionHeader()`:
                           "// Sideboard", "#sideboard", "--- Sideboard ---",
                           "=== SIDEBOARD ===", "Sideboard (15)", "Sideboard: 15
@@ -145,7 +145,7 @@
                         - A newer snapshot is now picked up automatically: the
                           ~250 B meta file is polled every 5 min while the tab
                           is visible, and immediately when the tab regains
-                          focus. Previously `loadCdn` memoised with no expiry
+                          focus. Previously `loadCdn` memoized with no expiry
                           and the banner ran once at startup, so a tab left
                           open served its original snapshot indefinitely. The
                           banner tags the moment it swaps ("just refreshed")
@@ -153,7 +153,7 @@
                           swap mid Scryfall-resolve, and clears Scryfall-
                           resolved cards on swap so one total can never mix two
                           snapshots.
-  v3.14.0-beta.2 (2026-06-10T20:51:08Z) - Three behavioural fixes (from code review):
+  v3.14.0-beta.2 (2026-06-10T20:51:08Z) - Three behavioral fixes (from code review):
                         - Deck-name auto-fill no longer refights a deliberate
                           clear: a pasted list's title line is offered ONCE; if
                           the user empties the field it stays empty until a list
@@ -301,7 +301,7 @@
                         - Auto-extract deck name from a pasted list: a non-card
                           line before the first card (as in MTGA/MTGO/Arena
                           exports) auto-fills the (empty) Deck name field.
-                        - All sortable column headers now show a greyed-out arrow
+                        - All sortable column headers now show a grayed-out arrow
                           so the sort affordance is discoverable; the active sort
                           column shows a highlighted arrow (▲ asc / ▼ desc).
   v3.9.0-beta.3 (2026-06-07T12:33:00Z) - Table sorting + deck-name tidy-up:
@@ -330,18 +330,18 @@
                         - The "$1 grid overlay" is now a DASHED BLACK grid (inline
                           SVG, with a faint light halo for legibility) instead of
                           thin white lines.
-                        - NEW colour-coding for the card boxes (treemap tiles +
-                          $1-grid squares), OFF by default: "Colour" dropdown =
-                          Off / Card type / Colour / Rarity, shown as an Outline
+                        - NEW color-coding for the card boxes (treemap tiles +
+                          $1-grid squares), OFF by default: "Color" dropdown =
+                          Off / Card type / Color / Rarity, shown as an Outline
                           or a Tint. A legend appears for the active scheme.
-                          Conventions: Colour = WUBRG pips (multicolour = gold);
-                          Rarity = Magic's symbol colours (common grey, uncommon
+                          Conventions: Color = WUBRG pips (multicolor = gold);
+                          Rarity = Magic's symbol colors (common gray, uncommon
                           silver, rare gold, mythic orange); Type = a chosen
                           distinct palette (no official standard).
   v3.8.0-beta.3 (2026-06-05T23:10:51Z) - $1 grid + equal-width fixes:
                         - $1 grid no longer drops cheap cards: cards under ~$1
                           are now POOLED into "$X other" squares, and the gap to
-                          budget is filled with labelled "$X unspent" squares
+                          budget is filled with labeled "$X unspent" squares
                           (over-budget squares stay red, now with an "over"
                           label). So the whole budget grid is accounted for.
                         - Equal-width arrangement now applies at ALL widths: when
@@ -375,7 +375,7 @@
                         - Option checkboxes are now normal sentence case (not the
                           uppercase field style).
   v3.7.0-beta.6 (2026-06-05T16:30:20Z) - Treemap packing: removed the portrait
-                        BIAS (WIDE_BIAS 0.8 -> 1) so squarify now minimises how
+                        BIAS (WIDE_BIAS 0.8 -> 1) so squarify now minimizes how
                         far each tile is from square with no tall/wide preference
                         — fewer elongated tiles. (Watch for any wide-short tiles
                         returning in very wide boxes; report if so.) Note: this
@@ -399,7 +399,7 @@
   v3.7.0-beta.3 (2026-06-05T11:35:28Z) - Visual view now uses the SAME total
                         width as the rest of the page. Side-by-side: the two
                         boxes + the gap fill the content width (widths ∝ budget),
-                        instead of being shrunk to a height cap and centred with
+                        instead of being shrunk to a height cap and centered with
                         a gap beside the page edge. Height is capped (≤620) WITHOUT
                         shrinking the widths (a very wide window just makes the
                         bigger box run a touch wide, which squarify handles).
@@ -413,13 +413,13 @@
                         -> "mtg/assets/" (old path 404'd above the site root).
                         Auto-update unaffected (absolute CDN/Scryfall URLs).
   v3.7.0-beta.1 (2026-06-05T10:51:16Z) - Five changes:
-                        - Unspent (under-budget) hatch recoloured to LIGHT BLUE
+                        - Unspent (under-budget) hatch recolored to LIGHT BLUE
                           stripes (was white-on-near-black).
                         - "Save as PDF" button (browser print-to-PDF via a
                           dedicated @media print stylesheet that renders the
                           results as a clean black-on-white price report; zero
                           dependencies).
-                        - Exports are now split into two labelled groups:
+                        - Exports are now split into two labeled groups:
                           "Snapshot — prices fixed at export" (.txt/.csv/Copy/
                           PDF) vs "Live share link — prices update when opened".
                         - The share link records the price-data date; opening a
@@ -436,12 +436,12 @@
                         - Treemap header meta: when the full "$X of $Y · $Z
                           OVER/unspent" would clip, it now drops the prefix and
                           shows just the short form ("$Z OVER" / "$Z unspent")
-                          instead of an ellipsised line.
+                          instead of an ellipsized line.
                         - Board table overlap: the responsive grid's lower bound
                           (340px) was SMALLER than a board table's real
                           min-content width (~399px measured), so at medium
                           widths a squeezed table overflowed its column and
-                          overlapped its neighbour. Raised the bound to 430px
+                          overlapped its neighbor. Raised the bound to 430px
                           (min-content + buffer) so the grid wraps to one column
                           before that can happen, and added overflow-x:auto on
                           the table containers as a belt-and-braces for unusually
@@ -451,7 +451,7 @@
                         wrapping to a 2nd line on the narrower board (longer
                         over-budget meta), making that header taller so its box
                         sat lower. Header is now kept to ONE line (nowrap; the
-                        meta ellipsises on a very narrow box), so both headers
+                        meta ellipsizes on a very narrow box), so both headers
                         are equal height and the boxes top-align. Verified
                         in-browser (both box tops equal).
   v3.6.0-beta.4 (2026-06-04T22:12:38Z) - Rework the budget visual language to a
@@ -486,7 +486,7 @@
                           unspent region. Now the shared HEIGHT is chosen so the
                           larger box stays square-ish (≈1.09 aspect); on very
                           wide windows the widths shrink (keeping the ∝-value
-                          ratio) and the row centres, instead of going wide-short.
+                          ratio) and the row centers, instead of going wide-short.
                           Restores the square card-region + L-shaped unspent.
                         - Over-budget red label: amount FIRST, "OVER" the SAME
                           size, on one line where it fits (wraps only if not).
@@ -502,9 +502,9 @@
                           once (batched, incremental); qty +/- / remove / add of
                           a known card re-render purely from cache (zero calls).
                           Removed the "Show visual breakdown" button + note.
-                        - Mana curve / price spread / colours moved ABOVE the
+                        - Mana curve / price spread / colors moved ABOVE the
                           table as compact vertical-bar charts, computed with the
-                          table (price spread instant from CDN; curve/colours
+                          table (price spread instant from CDN; curve/colors
                           fill in when enrich lands).
                         - Treemap: main & sideboard shown SIDE BY SIDE when the
                           window is wide enough (shared height, width ∝ value, so
@@ -518,7 +518,7 @@
                           click = open on Scryfall (same robust set+collector
                           lookup, so split/DFC cards work).
                         - Parser: single-slash DFC/split exports ("Giant Killer /
-                          Chop Down (ELD) 14") are normalised to canonical "//".
+                          Chop Down (ELD) 14") are normalized to canonical "//".
                         - Unresolved cards get an inline "Resolve" button right in
                           the table row (resolves just that card).
                         - Fixed the medium-width table overlap (auto-fit grid that
@@ -544,7 +544,7 @@
                           a sensible minimum width. The leftover is an L-shaped
                           empty region that simply shows the box's hatched
                           "unspent" background (the empty section no longer
-                          needs to be a rectangle); "$X unspent" is centred in
+                          needs to be a rectangle); "$X unspent" is centered in
                           the larger empty strip.
                         - WIDE_BIAS 0.5 -> 0.8 (less aggressive; avoids both
                           wide AND extreme-tall tiles).
@@ -575,7 +575,7 @@
                           so the sideboard is a smaller *similar* box instead
                           of a wide-short strip — far fewer wide-short tiles.
                         - Labels copied from the pauper poster: COST is sized
-                          by tile WIDTH and centred (a big number no longer
+                          by tile WIDTH and centered (a big number no longer
                           forces the name out), and the NAME wraps below and
                           is shrunk-to-fit by measuring scrollHeight
                           (fitTreemapLabels) so it shows whenever there's room.
@@ -655,7 +655,7 @@
                         link) unchanged from beta.1.
   v3.3.0-beta.1 (2026-05-19T15:53:53Z) - BETA sandbox (initial): button-gated
                         spelling; "Show visual breakdown" (card grid + mana /
-                        price / colour charts, one batched Scryfall call);
+                        price / color charts, one batched Scryfall call);
                         self-contained URL share link. NOTE: this build had
                         item 2 mis-scoped as the spelling feature — corrected
                         in beta.2.
@@ -709,7 +709,7 @@
   v2.3.0 (2026-05-18) - Ignore-basic-lands toggle (default on). Format
                         selector (default Modern) — rows not legal in the
                         chosen format are highlighted red. Optional
-                        colour-coded prices (green->red, default on). Card
+                        color-coded prices (green->red, default on). Card
                         names now link to Scryfall with an image hover
                         popup (zero extra API calls — image captured during
                         the pricing fetch). Report carries format + basics.
@@ -785,7 +785,7 @@
   .exporthd{font-size:15px;color:var(--ink);font-weight:700;margin:0 0 6px}
   .printonly{display:none}
   /* Lower bound MUST be >= a board table's min-content width (~399px measured)
-     or a squeezed table overflows its column and overlaps its neighbour. 430 =
+     or a squeezed table overflows its column and overlaps its neighbor. 430 =
      min-content + buffer; below 2×430+gap the grid wraps to one column. */
   .boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(430px,100%),1fr));
     gap:20px;margin:18px 0;align-items:start}
@@ -949,7 +949,7 @@
   .dglabel{position:absolute;display:flex;flex-direction:column;align-items:center;
     justify-content:center;text-align:center;line-height:1.12;color:var(--ink);
     pointer-events:none;z-index:2;text-shadow:0 0 4px #000,0 0 8px #000,1px 1px 2px #000}
-  /* pauper-poster label: cost centred & sized to the tile; WRAPS over lines so
+  /* pauper-poster label: cost centered & sized to the tile; WRAPS over lines so
      a tall/thin tile still gets a readable number. Name wraps below and is
      shrunk-to-fit by JS (fitTreemapLabels). Heavy shadow for any bg. */
   .tmtile .tcost{position:absolute;left:0;width:100%;text-align:center;
@@ -961,7 +961,7 @@
   .tmtile .tnm{color:#fff;font-weight:700;line-height:1.13;text-align:center;
     word-break:break-word;overflow-wrap:break-word;padding:0 3px 2px;max-width:100%;
     text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000,1px 1px 2px #000}
-  /* unspent label, centred in the largest empty strip (no border/bg — the box
+  /* unspent label, centered in the largest empty strip (no border/bg — the box
      hatch shows through as the "empty" region). */
   .tmfree{position:absolute;display:flex;align-items:center;justify-content:center;
     text-align:center;color:var(--ink);pointer-events:none;
@@ -1152,7 +1152,7 @@ Sideboard
 4 Temple of Triumph
 4 Thraben Inspector
 4 Voldaren Epicure</textarea>
-      <p class="sub" style="margin:8px 0 0">Quantities can lead (<code>4 Card</code>, <code>4x Card</code>) or trail (<code>Card x4</code>), and MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code> and a trailing mana cost (<code>Lightning Bolt {R}</code>) are all understood. <strong>A bare card name counts as one copy.</strong> The boards split on a line reading <em>Sideboard</em> however it is written &mdash; <code>// Sideboard</code>, <code>--- Sideboard ---</code>, <code>Sideboard (15)</code> &mdash; or on an <code>SB:</code> prefix, so paste a full export as-is; other <code>//</code> / <code>#</code> lines are ignored. The deck name is taken from a title on the first line (an unrecognised name, no quantity, blank line under it), MTGA's <code>About</code> / <code>Name &hellip;</code> block, or a comment above the list (<code>// Boros Burn</code>).</p>
+      <p class="sub" style="margin:8px 0 0">Quantities can lead (<code>4 Card</code>, <code>4x Card</code>) or trail (<code>Card x4</code>), and MTGA <code>4 Card (SET) 123</code>, MTGO <code>SB:</code> and a trailing mana cost (<code>Lightning Bolt {R}</code>) are all understood. <strong>A bare card name counts as one copy.</strong> The boards split on a line reading <em>Sideboard</em> however it is written &mdash; <code>// Sideboard</code>, <code>--- Sideboard ---</code>, <code>Sideboard (15)</code> &mdash; or on an <code>SB:</code> prefix, so paste a full export as-is; other <code>//</code> / <code>#</code> lines are ignored. The deck name is taken from a title on the first line (an unrecognized name, no quantity, blank line under it), MTGA's <code>About</code> / <code>Name &hellip;</code> block, or a comment above the list (<code>// Boros Burn</code>).</p>
 
       <label for="sideboard" style="margin-top:16px">Sideboard <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
       <textarea id="sideboard" spellcheck="false" placeholder="3 Smash to Smithereens
@@ -1208,7 +1208,7 @@ Sideboard
         <label class="cbx"><input type="checkbox" id="ignoreBasics" checked> Basic lands cost $0</label>
       </div>
       <div class="field">
-        <label class="cbx"><input type="checkbox" id="colorCost" checked> Colour-code prices (green&rarr;red)</label>
+        <label class="cbx"><input type="checkbox" id="colorCost" checked> Color-code prices (green&rarr;red)</label>
       </div>
       <p class="sub" style="margin:2px 0 10px">Totals update automatically as you edit.</p>
       <button class="ghost" id="resolveBtn" style="display:none;width:100%;margin-bottom:10px">Resolve cards not in the daily index via Scryfall</button>
@@ -1284,7 +1284,7 @@ function setExportsEnabled(on){
 /* ---- decklist parsing ---------------------------------------------- */
 // A trailing mana cost: "{R}", "{1}{U}{U}", "{W/U}{G}", optionally introduced by
 // a dash / colon / pipe ("Lightning Bolt - {R}"). Used both to strip the cost off
-// a name and to recognise a QUANTITY-LESS line as a card line.
+// a name and to recognize a QUANTITY-LESS line as a card line.
 const MANA_TAIL = /\s*(?:\/\/|[-\u2013\u2014:|])?\s*\{[^{}\s]{1,6}\}(?:\s*(?:\/\/|[-\u2013\u2014:|])?\s*\{[^{}\s]{1,6}\})*\s*$/;
 // Section headers, tolerantly: "Sideboard", "// Sideboard", "--- SIDEBOARD ---",
 // "Sideboard: 15 cards", "Sideboard (15)", "SB", "Side Board", "Deck", "Mainboard".
@@ -1348,9 +1348,9 @@ function parseCardLine(line){
 }
 function addTo(map, name, qty){ map.set(name, (map.get(name)||0) + qty); }
 
-// Is this a card we can recognise? The daily index is the authority (it carries
+// Is this a card we can recognize? The daily index is the authority (it carries
 // every printed card, not just the chosen format), plus anything resolved via
-// Scryfall this session. Used ONLY by deckTitle - being unrecognised is what
+// Scryfall this session. Used ONLY by deckTitle - being unrecognized is what
 // separates a deck title from a card. Safe before the index loads: everything
 // reads as unknown, and nothing parses until ensureCdn() has resolved.
 function isKnownCard(name){
@@ -1360,7 +1360,7 @@ function isKnownCard(name){
   return !!(_cdn && _cdn.index && _cdn.index.cards[n]);
 }
 // The first line of a paste is a DECK TITLE rather than a card when all three
-// hold: no leading quantity, a name we don't recognise, and a BLANK LINE under
+// hold: no leading quantity, a name we don't recognize, and a BLANK LINE under
 // it. That is the shape of a hand-written list ("Boros Burn", blank, cards);
 // an export's first line is a header, a card, or MTGA's "About". Returns the
 // trimmed line, or null. parseDecklist / _walkDeck / tokenizeBoard skip it,
@@ -1419,7 +1419,7 @@ function parseSideboardBox(raw){
 }
 
 // Deck name from a pasted list, in priority order:
-//   1. a title line       ->  see deckTitle() (unrecognised, unnumbered, blank
+//   1. a title line       ->  see deckTitle() (unrecognized, unnumbered, blank
 //                             line under it)
 //   2. MTGA's About block ->  "About" / "Name Boros Burn"
 //   3. a comment above the list  ->  "// Boros Burn" / "# Boros Burn"
@@ -2022,14 +2022,14 @@ function render(main, side, priceMap, meta, cheapest){
      - paste a list / a name resolves   -> ONE batched, incremental fetch;
      - qty +/- / remove / add-known     -> NO fetch (re-render from cache).
    /cards/collection is <=75 ids/call; results are merged into _scCache and
-   reused across qty edits. cmc + colours + images all come from there.    */
+   reused across qty edits. cmc + colors + images all come from there.    */
 let _vbRows = null;                      // current rows (qty/price + cached card obj)
 let _vbLayout = "treemap";               // "grid" | "treemap" | "dollargrid"
 let _vbFill = "art";                     // treemap fill: "cover" | "contain" | "art" (Art only = default)
 let _vbArrange = "eqwidth";              // side-by-side boxes: "eqwidth" (height∝budget, default) | "eqheight" (width∝budget)
 let _vbGridOverlay = false;              // treemap: draw a $1-square grid over the image
-let _vbCode = "off";                     // colour-code card boxes: "off" | "type" | "color" | "rarity"
-let _vbCodeMode = "outline";             // "outline" (coloured border) | "tint" (coloured wash)
+let _vbCode = "off";                     // color-code card boxes: "off" | "type" | "color" | "rarity"
+let _vbCodeMode = "outline";             // "outline" (colored border) | "tint" (colored wash)
 const _scCache = new Map();              // persistent Scryfall objs: _scKey / name / front-face alias -> card
 let _enrichTimer = null;
 // Rows for the visual/charts, rebuilt from LAST (qty/price) every render with
@@ -2068,7 +2068,7 @@ async function enrich(){
   try {
     const map = await scryfallCollection(idents);
     for (const [k, v] of map) _scCache.set(k, v); // merge: _scKey + name + front-face alias keys
-    renderVisualAll();                            // redraw with images + curve/colours
+    renderVisualAll();                            // redraw with images + curve/colors
   } catch(e){ /* keep prior visual; charts already drawn from whatever's cached */ }
 }
 // beta.2: takes a list of identifier objects (mix of {set, collector_number}
@@ -2122,9 +2122,9 @@ function vColors(c){
 }
 const VCOL = { W:["#f5e7b2","White"], U:["#7fb4e6","Blue"], B:["#9a8aa6","Black"],
   R:["#e2806a","Red"], G:["#7fc08a","Green"], C:["#b9c0d6","Colorless"] };
-/* ---- colour-coding card boxes (off by default) ----------------------
-   Conventions: COLOUR = the WUBRG pip palette (multicolour = gold); RARITY =
-   Magic's set-symbol colours (common black/grey, uncommon silver, rare gold,
+/* ---- color-coding card boxes (off by default) ----------------------
+   Conventions: COLOR = the WUBRG pip palette (multicolor = gold); RARITY =
+   Magic's set-symbol colors (common black/gray, uncommon silver, rare gold,
    mythic orange). TYPE has no official palette — a sensible distinct set.   */
 const TYPE_COL = { Land:["#c19a6b","Land"], Creature:["#79b558","Creature"],
   Planeswalker:["#c46bd0","Planeswalker"], Battle:["#e8843c","Battle"],
@@ -2133,7 +2133,7 @@ const TYPE_COL = { Land:["#c19a6b","Land"], Creature:["#79b558","Creature"],
 const TYPE_ORDER = ["Land","Creature","Planeswalker","Battle","Instant","Sorcery","Enchantment","Artifact"];
 const RARITY_COL = { common:["#8a8a8a","Common"], uncommon:["#c2ccd6","Uncommon"],
   rare:["#f0c93b","Rare"], mythic:["#e8602c","Mythic"] };
-const MULTI_COL = "#d4af37";             // multicolour
+const MULTI_COL = "#d4af37";             // multicolor
 function vTypeColor(c){
   const t = (c && c.type_line) || "";
   for (const k of TYPE_ORDER) if (t.includes(k)) return TYPE_COL[k][0];
@@ -2157,7 +2157,7 @@ function _hexA(hex, a){
   const n = parseInt(m[1], 16);
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
 }
-// Inline style to colour a card box per the active scheme ("" when off / no data).
+// Inline style to color a card box per the active scheme ("" when off / no data).
 function codeStyle(c){
   const col = codeColorOf(c);
   if (!col) return "";
@@ -2171,7 +2171,7 @@ function codeLegend(){
   let items;
   if (_vbCode === "type") items = TYPE_ORDER.map(k => TYPE_COL[k]);
   else if (_vbCode === "rarity") items = [RARITY_COL.common, RARITY_COL.uncommon, RARITY_COL.rare, RARITY_COL.mythic];
-  else items = [VCOL.W, VCOL.U, VCOL.B, VCOL.R, VCOL.G, [MULTI_COL,"Multicolour"], VCOL.C];
+  else items = [VCOL.W, VCOL.U, VCOL.B, VCOL.R, VCOL.G, [MULTI_COL,"Multicolor"], VCOL.C];
   return `<div class="codeleg">` + items.map(([col, name]) =>
     `<span class="pip"><span class="sw" style="background:${col}"></span>${escapeHtml(name)}</span>`).join("") + `</div>`;
 }
@@ -2190,7 +2190,7 @@ function squarify(items, rect){
   const vertical = rect.w <= rect.h;
   const side = vertical ? rect.h : rect.w, other = vertical ? rect.w : rect.h;
   // NEUTRAL badness (WIDE_BIAS = 1): no portrait/landscape preference — purely
-  // minimise how far each tile is from square. The old <1 bias preferred TALL
+  // minimize how far each tile is from square. The old <1 bias preferred TALL
   // tiles (to match card shape), which is part of what let a small tile stretch
   // into a near-invisible column; neutral packs the squarest tiles it can.
   const WIDE_BIAS = 1;
@@ -2238,7 +2238,7 @@ function budgetTiles(cards, budget){
 // The box is the BUDGET (width × budgetHeight = budget area, constant size):
 //  - UNDER budget: cards fill a SQUARE-ish region (area ∝ spend) anchored
 //    top-left; the leftover L-shape is empty = unspent (the box's hatched bg
-//    shows through; "$X unspent" centred in the larger empty strip).
+//    shows through; "$X unspent" centered in the larger empty strip).
 //  - OVER budget: the budget box fills with cards and the SPEND overflows BELOW
 //    it — the box grows downward to spentHeight, the cards squarify into the
 //    full width × spentHeight (square-or-taller, so tiles stay legible), a
@@ -2293,7 +2293,7 @@ function treemapBox(boardRows, budget, width, budgetHeight){
     const costStr = r.lineT != null ? money(r.lineT) : "";
     const len = Math.max(2, costStr.length);
     const costF = clamp(Math.floor(Math.min((w - 6) / (len * 0.62), h * 0.4)), 5, 46);
-    const costCY = h * 0.40;                          // cost centre Y
+    const costCY = h * 0.40;                          // cost center Y
     const nameTop = costCY + costF / 2 + 3;
     const nameH = h - nameTop - 1;
     const nameF = clamp(Math.round(Math.min(w * 0.17, h * 0.14)), 7, 18);
@@ -2311,7 +2311,7 @@ function treemapBox(boardRows, budget, width, budgetHeight){
     return `<a class="${cls}"${href} style="${pos};${bg}${codeStyle(r.c)}" title="${title}"${dataImg}>${costHtml}${nameHtml}</a>`;
   }).join("");
 
-  // Unspent label, centred in the larger empty strip. The empty L-shape itself
+  // Unspent label, centered in the larger empty strip. The empty L-shape itself
   // is just the box's hatched background showing through (no rectangle drawn).
   if (emptyRect && bt.free > 0 && emptyRect.w > 8 && emptyRect.h > 8){
     const pos = `left:${emptyRect.x.toFixed(1)}px;top:${emptyRect.y.toFixed(1)}px;` +
@@ -2516,7 +2516,7 @@ function buildDollarGridHTML(rows){
         html += `<div class="dgunspent" style="${pos}"></div>`;
       }
     }
-    // centred labels over the "other" and "unspent" runs of squares
+    // centered labels over the "other" and "unspent" runs of squares
     const runBox = (a, b) => {
       if (b <= a) return null;
       let mnC = 1e9, mxC = -1e9, mnR = 1e9, mxR = -1e9;
@@ -2552,7 +2552,7 @@ function vcol(label, val, max){
     `<span class="cl">${escapeHtml(label)}</span></div>`;
 }
 // Compact charts above the table. Price spread reads CDN unit prices (instant);
-// mana curve + colours need the Scryfall card objects and fill in once enrich()
+// mana curve + colors need the Scryfall card objects and fill in once enrich()
 // lands. All recompute live with qty / list edits (no Scryfall just to redraw).
 function renderCharts(rows){
   const el = $("charts"); if (!el) return;
@@ -2575,7 +2575,7 @@ function renderCharts(rows){
     `<div class="chartstrip">` +
       `<div class="vchart"><h4>Mana curve · non-land</h4><div class="cols">${curveCols}</div></div>` +
       `<div class="vchart"><h4>Price spread · by copies</h4><div class="cols">${priceCols}</div></div>` +
-      `<div class="vchart"><h4>Colours · by copies</h4><div class="pie">${pie || '<span class="pip">&mdash;</span>'}</div></div>` +
+      `<div class="vchart"><h4>Colors · by copies</h4><div class="pie">${pie || '<span class="pip">&mdash;</span>'}</div></div>` +
     `</div>`;
 }
 function renderVisual(rows){
@@ -2612,10 +2612,10 @@ function renderVisual(rows){
         `<option value="contain"${_vbFill==="contain"?" selected":""}>Whole card</option>` +
         `<option value="art"${_vbFill==="art"?" selected":""}>Art only</option>` +
       `</select></label>` +
-      `<label id="vCodeWrap"${usesBoxes?"":' style="display:none"'}>Colour <select id="vCode">` +
+      `<label id="vCodeWrap"${usesBoxes?"":' style="display:none"'}>Color <select id="vCode">` +
         `<option value="off"${_vbCode==="off"?" selected":""}>Off</option>` +
         `<option value="type"${_vbCode==="type"?" selected":""}>Card type</option>` +
-        `<option value="color"${_vbCode==="color"?" selected":""}>Colour</option>` +
+        `<option value="color"${_vbCode==="color"?" selected":""}>Color</option>` +
         `<option value="rarity"${_vbCode==="rarity"?" selected":""}>Rarity</option>` +
       `</select></label>` +
       `<label id="vCodeModeWrap"${(usesBoxes && _vbCode!=="off")?"":' style="display:none"'}>as <select id="vCodeMode">` +
@@ -2875,7 +2875,7 @@ function showFixNote(corrections){
 }
 // Rewrite a textarea's value, swapping any line whose parsed card name was
 // corrected to the corrected name (qty + SB: prefix preserved; other lines
-// untouched verbatim). Only corrected lines are normalised.
+// untouched verbatim). Only corrected lines are normalized.
 function rewriteList(raw, map){
   return (raw || "").split(/\r?\n/).map(line => {
     const t = line.trim();
@@ -3156,7 +3156,7 @@ function b64urlDecode(s){
 }
 let _sharedPriceDate = null;               // price-data date stamped into a shared link
 let _sharedExport = null;                  // {t,mt,sd,bm,bs} snapshot from a shared link
-let _pendingShareDeck = null;              // v2 tokenised {d,s} awaiting index-based reconstruction
+let _pendingShareDeck = null;              // v2 tokenized {d,s} awaiting index-based reconstruction
 
 // norm(name) -> {set,cn,tid} for the cheapest printing of each resolved card in
 // the current results — used to compact the share link (v2).
@@ -3235,7 +3235,7 @@ function loadShared(){
   const v2 = st.v === 2;
   for (const [k, id] of Object.entries(SHARE_KEYS)){
     if (!(k in st)) continue;
-    if (v2 && (k === "d" || k === "s")) continue;   // tokenised — reconstruct after the index loads
+    if (v2 && (k === "d" || k === "s")) continue;   // tokenized — reconstruct after the index loads
     const el = $(id);
     if (el.type === "checkbox") el.checked = !!st[k];
     else el.value = st[k];
@@ -3277,7 +3277,7 @@ function titleCaseName(s){
   let firstOfFace = true;
   return String(s).split(/(\s+)/).map(tok => {
     if (/^\s*$/.test(tok)) return tok;
-    if (tok === "//"){ firstOfFace = true; return tok; }   // capitalise the first word of each DFC face
+    if (tok === "//"){ firstOfFace = true; return tok; }   // capitalize the first word of each DFC face
     const lower = tok.toLowerCase();
     const out = (!firstOfFace && _SHARE_SMALL.has(lower)) ? lower
               : tok.charAt(0).toUpperCase() + tok.slice(1);
@@ -3367,7 +3367,7 @@ $("shareBtn").addEventListener("click", async () => {
 
 /* ---- pick up a newer snapshot without a reload ----------------------
    The page used to fetch the CDN exactly once per load and never re-check:
-   `loadCdn` memoises into `_cdn` with no expiry, and the banner ran once at
+   `loadCdn` memoizes into `_cdn` with no expiry, and the banner ran once at
    startup. A tab left open therefore served the snapshot it started with
    indefinitely - for days, if it was left open for days.
 

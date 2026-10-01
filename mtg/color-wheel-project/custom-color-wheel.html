@@ -174,10 +174,10 @@
  * 1.0.0
  *
  * A blank version of the multi-set color wheel: no set data, no archetype write-ups,
- * no Scryfall lookups. The wheel skeleton (5 colour nodes, 10 pair edges, 10 label
+ * no Scryfall lookups. The wheel skeleton (5 color nodes, 10 pair edges, 10 label
  * boxes) renders empty, and the user types their own label into a table below it.
  *
- * The geometry, colour maths and SVG components are ported verbatim from
+ * The geometry, color math and SVG components are ported verbatim from
  * multi-set-color-wheel.html v1.5.0 so a custom wheel looks identical to the
  * published ones. Only the data source differs: React state fed by text inputs
  * instead of a hard-coded SET_DATA object.
@@ -201,7 +201,7 @@
  *   - Download PNG: clears any hover highlight first (otherwise the highlighted pair's
  *     gold outline and every other pair's dimming get baked into the image), clones the
  *     live SVG, swaps each mana-font foreignObject for a plain SVG letter (icon fonts do
- *     not survive canvas rasterisation), and renders at 2x on a white background.
+ *     not survive canvas rasterization), and renders at 2x on a white background.
  *   - Work autosaves to localStorage; "Guild names" prefills all ten, "Clear all"
  *     empties them.
  */
@@ -232,7 +232,7 @@ const colorOrder = ['W', 'U', 'B', 'R', 'G'];
 // (see FDN in multi-set-color-wheel.html): five allied pairs, then five enemy.
 const ALL_PAIRS = ['WU', 'UB', 'BR', 'RG', 'GW', 'WB', 'UR', 'BG', 'RW', 'GU'];
 
-// Shown as a greyed hint beside each pair, and used by the "Guild names" prefill.
+// Shown as a grayed hint beside each pair, and used by the "Guild names" prefill.
 const GUILD_NAMES = {
   WU: 'Azorius', UB: 'Dimir', BR: 'Rakdos', RG: 'Gruul', GW: 'Selesnya',
   WB: 'Orzhov', UR: 'Izzet', BG: 'Golgari', RW: 'Boros', GU: 'Simic',
@@ -669,7 +669,7 @@ function CustomColorWheel() {
   // The wheel title sits inside the SVG (not above it in HTML) so it is carried
   // into the PNG export for free. Compared with the published wheels' viewBox the top
   // is raised ~34 units to make room for that title, and the bottom trimmed by a
-  // similar amount - with no colour/archetype sections underneath, the original
+  // similar amount - with no color/archetype sections underneath, the original
   // bottom padding left an obvious empty band above the builder table.
   const viewBox = mobile ? "160 106 380 424" : "120 66 460 490";
   const titleY = mobile ? 128 : 96;
@@ -678,7 +678,7 @@ function CustomColorWheel() {
   // Clicking Download while a row is hovered or focused would otherwise bake that
   // row's gold highlight - and every other pair's 0.15 dimming - into the PNG. Drop
   // the highlight first and let React commit the neutral wheel; the effect below then
-  // serialises what is on screen. (useEffect runs after the DOM is updated, so by then
+  // serializes what is on screen. (useEffect runs after the DOM is updated, so by then
   // every opacity/stroke attribute is back to its resting value.)
   const [exportRequest, setExportRequest] = useState(0);
 
@@ -694,9 +694,9 @@ function CustomColorWheel() {
     const clone = svgEl.cloneNode(true);
     clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-    // Mana symbols are an icon font inside a foreignObject. Canvas rasterisation of an
+    // Mana symbols are an icon font inside a foreignObject. Canvas rasterization of an
     // SVG-as-image does not load external fonts, so they would come out as blank boxes -
-    // swap each one for a plain SVG letter before serialising.
+    // swap each one for a plain SVG letter before serializing.
     Array.prototype.forEach.call(clone.querySelectorAll('foreignObject'), fo => {
       const pip = fo.getAttribute('data-pip');
       const x = parseFloat(fo.getAttribute('x')) + parseFloat(fo.getAttribute('width')) / 2;
@@ -761,7 +761,7 @@ function CustomColorWheel() {
       <header className="site-header">
         <div className="header-content">
           <h1>Custom Color Wheel Builder <span>v1.0.0 &middot; 2026-08-07 14:54 UTC</span></h1>
-          <p className="subtitle">A blank draft-archetype wheel. Type your own label for each colour pair in the table below and the graphic updates as you type.</p>
+          <p className="subtitle">A blank draft-archetype wheel. Type your own label for each color pair in the table below and the graphic updates as you type.</p>
           <div className="data-info">
             <strong>Mana symbols:</strong> <a href="https://mana.andrewgioia.com/" target="_blank" rel="noopener noreferrer">Mana font by Andrew Gioia</a> <span className="sep">&middot;</span> Nothing you type leaves your browser
             <div className="row">
@@ -801,7 +801,7 @@ function CustomColorWheel() {
         viewBox={viewBox}
         style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
       >
-        {/* Inline so the serialised copy the PNG exporter builds keeps the same typeface. */}
+        {/* Inline so the serialized copy the PNG exporter builds keeps the same typeface. */}
         <style>{`text { font-family: ${SVG_FONT_STACK}; }`}</style>
         {wheelTitle && (
           <text x={config.cx} y={titleY} textAnchor="middle" fontSize={titleSize} fontWeight="bold" fill="#111827">
@@ -855,7 +855,7 @@ function CustomColorWheel() {
         <table className="builder-table">
           <thead>
             <tr>
-              <th>Colour pair</th>
+              <th>Color pair</th>
               <th>Label</th>
               <th>Sub-label (optional)</th>
               <th style={{ textAlign: 'center' }}>On wheel</th>
@@ -881,7 +881,7 @@ function CustomColorWheel() {
           Type a <strong>|</strong> to split a label over two lines &mdash; <em>Flying | Tempo</em> stacks the way the
           published wheels do, and keeps long names from stretching the box.
           Untick <em>On wheel</em> to hide a pair (useful for sets with only five archetypes); its edge stays on the
-          wheel, greyed out. Your labels are saved in this browser only &mdash; nothing is uploaded.
+          wheel, grayed out. Your labels are saved in this browser only &mdash; nothing is uploaded.
         </p>
       </div>
     </div>

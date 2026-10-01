@@ -29,7 +29,7 @@ def _pop_stats(cards: list[dict]) -> tuple[float, float]:
     """Return population mean and SD of GIH WR for a list of card dicts.
 
     GIH WR values may be expressed as percentage strings ("57.3%") or floats.
-    Normalises to float percentages (0–100 scale).
+    Normalizes to float percentages (0–100 scale).
     """
     values = [_wr_float(c["gih_wr"]) for c in cards]
     if not values:

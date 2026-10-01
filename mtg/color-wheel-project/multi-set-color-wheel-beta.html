@@ -242,30 +242,30 @@
  *     from retail boosters or not a real archetype set: MAT, DBL, CLU, ACR, JMP/J22/J25, MB2,
  *     the List, playtest/Unknown Event, and Arena-only sets.
  *   - Grouped by release year with a jump row (scrolls; the URL stays #all).
- *   - Three-colour sets use the wedge frame: STX (colleges on the enemy edges, the five wedges
- *     on the allied edges, per MaRo), SNC (families on the enemy edges), 2X2 (ten three-colour
+ *   - Three-color sets use the wedge frame: STX (colleges on the enemy edges, the five wedges
+ *     on the allied edges, per MaRo), SNC (families on the enemy edges), 2X2 (ten three-color
  *     archetypes: shards on enemy edges, wedges on allied edges), 2XM (Esper / Jund clusters),
  *     TSR (Naya Slivers). "N pairs + M three-color" drops the pairs part when it is zero.
  *   - Hover data: 17Lands top cards for the 17 sets 17Lands covers (none for CMR CLB UNF MH2
  *     2XM TSR 2X2 DMR CMM RVR INR - 17Lands lists no formats for them); oracle-tag searches for all.
  *   - AUTO_WHEELS moved out of the Babel script into a JSON block (#auto-wheels-data), read with
- *     JSON.parse: at ~440 KB Babel warned it was deoptimising, and data never needed compiling.
+ *     JSON.parse: at ~440 KB Babel warned it was deoptimizing, and data never needed compiling.
  *     build-auto-wheels.py writes either form (main still has the old markers until promotion).
  *
  * 1.8.0-beta.3 (2026-09-26) - [Claude Opus 5.5]
- *   - Colour nodes on full-page sets now open a pop-up on hover, in the single-set view and in
- *     the All sets view: the same content as that colour's box in the grid (top cards or
+ *   - Color nodes on full-page sets now open a pop-up on hover, in the single-set view and in
+ *     the All sets view: the same content as that color's box in the grid (top cards or
  *     description, Scryfall buttons, sources), in InfoPanel's place and style. New shared
  *     ColorBoxBody renders both the grid box and the pop-up, so they cannot drift apart; the grid
  *     renders as before. Same 800 ms grace as the pair pop-up; the newest hover wins, so a pair
- *     pop-up and a colour pop-up never show together; the colour stays lit while its pop-up is open.
+ *     pop-up and a color pop-up never show together; the color stays lit while its pop-up is open.
  *
  * 1.8.0-beta.2 (2026-09-24) - [Claude Opus 5.5]
  *   - All sets: ECL sorted last ('January 2026' is not a parseable date) - releaseDate is now
  *     'January 23, 2026'. Wheels three across (two under 1000px, one on a phone).
  *   - Label hover pop-up in the All sets view: the full InfoPanel for sets with a full page,
  *     the label enlarged (LabelPanel) for wheel-only sets. Same 800 ms grace as the set view.
- *   - Wedge labels: any label with wedgeThird gets a frame in that third colour (dashed in B&W).
+ *   - Wedge labels: any label with wedgeThird gets a frame in that third color (dashed in B&W).
  *     TDM's five clans sit on the allied edges, which have no pair archetype: GW Abzan (WBG),
  *     WU Jeskai (WUR), UB Sultai (UBG), BR Mardu (WBR), RG Temur (URG).
  *
@@ -290,11 +290,11 @@
  *
  * 1.7.2-beta.1 (2026-09-22) - [Claude Opus 5]
  *   - FRA GU box: Tam, the Possibility (rare, #276, Echoed sheet) added to the Rare line and
- *     cards[], so it renders as a hover link. It is five-colour, so the exact-identity rule
+ *     cards[], so it renders as a hover link. It is five-color, so the exact-identity rule
  *     left it out; added by request as the Tam card of the Jace/planeswalker deck.
  *
  * 1.7.1-beta.1 (2026-09-22) - [Claude Opus 5]
- *   - FRA only: large "ENTER THE ECHOVERSE?" button on its own line under the B&W / Text Size controls: the wheel (and the colour
+ *   - FRA only: large "ENTER THE ECHOVERSE?" button on its own line under the B&W / Text Size controls: the wheel (and the color
  *     boxes) run G R B U W clockwise from the top - the mirror image, so every pair keeps its
  *     line and label - and the whole page is inverted, photo-negative style (filter on <html>).
  *     The button then reads "RETURN TO NORMALVERSE?". Hidden on other sets, and switching set
@@ -315,7 +315,7 @@
  *   - Wheel: a set whose secondary pairs are real archetypes (secondaryLabel set - FRA) now draws
  *     all ten labels with the primary treatment (full opacity, bold, wider box, heavier edge).
  *     The primary/secondary split of the boxes below the wheel is unchanged.
- *   - FRA archetype Cards: lists now hold EVERY card whose colour identity is exactly the pair
+ *   - FRA archetype Cards: lists now hold EVERY card whose color identity is exactly the pair
  *     (nine per school, five or six per planeswalker pair), by rarity then collector number,
  *     lands on a Land line. That adds the third prepared common of each school, the reprinted
  *     slow lands and the Echoed-sheet cards; the "(mythic, not part of a cycle)" note is gone.
@@ -338,22 +338,22 @@
  *   - Enemy-pair Cards: lists: the "Echoed signpost:" line is gone; those uncommon legends now sit
  *     on the Uncommon line after the main-set signpost, and Vraska's "(Echoed sheet)" note is
  *     dropped. Rarity lines only: Common / Uncommon / Rare / (Mythic) / Land.
- *   - Colour boxes: the "Cycles:" section is now "Cards:" - a bullet per card, no cycle labels.
+ *   - Color boxes: the "Cycles:" section is now "Cards:" - a bullet per card, no cycle labels.
  *   - Cut the "Draft a school first..." sentence from primaryDescription and the "Each has a
  *     hybrid common..." sentence from secondaryDescription.
  *
  * 1.7.0-beta.5 (2026-09-20, 16:48 UTC) - [Claude Opus 5]
- *   - FRA colour boxes cut to the core-theme sentence and the two pairs it founds; the
- *     mono-colour evidence paragraph and the "also plays in" paragraph are gone. In their
- *     place each box lists that colour's mono-colour CYCLE cards from the Scryfall Tagger
+ *   - FRA color boxes cut to the core-theme sentence and the two pairs it founds; the
+ *     mono-color evidence paragraph and the "also plays in" paragraph are gone. In their
+ *     place each box lists that color's mono-color CYCLE cards from the Scryfall Tagger
  *     (cycle-fra-landcycler, cycle-fra-lorwyn-five, cycle-fra-way-of-the), every name a
- *     hover link. Tam, the Possibility (five-colour, the tenth lorwyn-five card) fits no
- *     colour box and is not listed.
- *   - Colour boxes gain themed Scryfall buttons via a new optional colorDescriptions[X]
+ *     hover link. Tam, the Possibility (five-color, the tenth lorwyn-five card) fits no
+ *     color box and is not listed.
+ *   - Color boxes gain themed Scryfall buttons via a new optional colorDescriptions[X]
  *     .themeSearches (same shape as a label's): W +1/+1 counters (13 cards), U Jace (9),
  *     B Graveyard (11) + Dies (3), R Noncreature synergy (otag, 6), G Power > 3 (8). All
  *     seven queries run against the API 2026-09-20.
- *   - Every archetype box's Cards: section rebuilt from the tagger's two-colour cycles
+ *   - Every archetype box's Cards: section rebuilt from the tagger's two-color cycles
  *     (c-hybrid, u-hybrid, draft-signpost, charm, r-two-color, elder-sphinx, annex,
  *     commons, wedge-pair), one line per rarity in a fixed order: Common / Uncommon /
  *     Rare / Mythic / Echoed signpost / Land. Existing prose untouched. The only card that
@@ -369,8 +369,8 @@
  * 1.7.0-beta.4 (2026-09-20, 13:16 UTC) - [Claude Opus 5]
  *   - FRA box text broken into paragraphs. The FRA boxes run 2-4x the length of any other
  *     set's (avg 581 chars vs 150-240) and rendered as one block. Every FRA box now follows a
- *     fixed section order with a gap between sections: colour boxes = core theme + the two
- *     pairs it founds / mono-colour evidence cards / the two pairs it only visits; school
+ *     fixed section order with a gap between sections: color boxes = core theme + the two
+ *     pairs it founds / mono-color evidence cards / the two pairs it only visits; school
  *     boxes = lead + school spell / payoffs / other key cards / Cards:; planeswalker boxes =
  *     lead / main-set cards / Echoed Pairs signpost / Cards:; mechanics = what it is /
  *     reminder text / example cards. Two sentences were re-cut to land on the boundaries
@@ -378,7 +378,7 @@
  *   - linkifyCards: a blank line (\n\n) now renders as a 0.55em paragraph gap instead of a
  *     full empty line, and a bold label (Cards:, Top commons: ...) is its own block with the
  *     same gap above it. Leading blank lines are dropped, which removes the empty first line
- *     MSH's "\nTop commons:" colour boxes have always rendered. Other sets otherwise unchanged.
+ *     MSH's "\nTop commons:" color boxes have always rendered. Other sets otherwise unchanged.
  *
  * 1.7.0-beta.3 (2026-09-20, 12:49 UTC) - [Claude Opus 5]
  *   - FRA school boxes: Scryfall button rows made consistent. Every school now shows exactly
@@ -398,12 +398,12 @@
  *     no rare. Found by the new oracle-tag survey (fra-project/research/ORACLE_TAGS_*.md).
  *
  * 1.7.0-beta.2 (2026-09-20, 12:38 UTC) - [Claude Opus 5]
- *   - FRA colour boxes rewritten around the per-colour CORE THEME table from the WotC design
- *     article: every colour has one theme that founds exactly two of its four pairs - its
+ *   - FRA color boxes rewritten around the per-color CORE THEME table from the WotC design
+ *     article: every color has one theme that founds exactly two of its four pairs - its
  *     Hexhaven pair and its planeswalker pair (W +1/+1 counters -> GW + RW, U Empower Jace ->
  *     WU + GU, B graveyard -> UB + WB, R prowess -> BR + UR, G going big -> RG + BG). Each box
  *     now names the two pairs it founds and the two it only visits, with our own main-set
- *     counts and two linked cards. New per-colour sourceText/sourceUrl renders an attribution
+ *     counts and two linked cards. New per-color sourceText/sourceUrl renders an attribution
  *     line in the box (generic; no other set sets it).
  *   - All card names in every box are now links. linkifyCards only matches names present in
  *     cards[], so 15 mentions were plain text - including every school-spell name and five
@@ -459,14 +459,14 @@
  *
  * 1.5.0-beta.14 (2026-08-07, 15:12 UTC) - [Claude Opus 5]
  *   - Added a "Make your own!" button between the set tab bar and the set title, linking to
- *     the custom colour wheel builder (custom-color-wheel.html on Pages). Deliberately
+ *     the custom color wheel builder (custom-color-wheel.html on Pages). Deliberately
  *     OUTLINED rather than filled: the active set tab is the filled pill in the bar right
  *     above it, so a filled CTA there would read as an eleventh set tab. It picks up the
  *     current set's accentColor through a --accent custom property, so it re-tints as you
  *     switch sets, and fills in on hover/focus-visible (keyboard users get the same cue).
  *
  * 1.5.0-beta.13 (2026-08-07, 15:03 UTC) - [Claude Opus 5]
- *   - HOB colour boxes now list Draftsim's top uncommons and top commons per colour (3 each,
+ *   - HOB color boxes now list Draftsim's top uncommons and top commons per color (3 each,
  *     best first) in place of the prose description, with hover-image CardLinks and a
  *     "Source: Draftsim" credit at the bottom of each box. All 30 names were checked against
  *     Scryfall's /cards/collection endpoint before being written in: 30/30 resolved in
@@ -524,11 +524,11 @@
  *     then themeSearches) and keeps the off-arch rule that wedge boxes drop the exact-identity
  *     search. WEDGE_COLORS hoisted out of the off-arch map callback to module scope.
  *   - The diagram popup now matches the boxes' format: a "Scryfall:" caption line, then
- *     buttons labelled with just the query. Its two buttons lose the redundant word
+ *     buttons labeled with just the query. Its two buttons lose the redundant word
  *     ("Scryfall W&U" -> "W&U"). Popup buttons keep their larger padding/font for tap targets.
  *   - Off-arch boxes gained themeSearches support too. No set has that data today, so no
  *     visible change - but the row can no longer go missing in one place and not another.
- *   - Not touched, both already in this format: the single-colour boxes (ColorGrid keeps its
+ *   - Not touched, both already in this format: the single-color boxes (ColorGrid keeps its
  *     friendlier "W only" / "W included" labels) and the Set-Wide Mechanics boxes.
  *
  * 1.5.0-beta.9 (2026-08-07, 10:07 UTC) - [Claude Sonnet 5]
@@ -550,7 +550,7 @@
  *     `normal` image's native ~488px, so no upscale blur). Radius bumped 8px -> 14px to match.
  *   - HOB's five unsupported pairs (UB, RG, GW, WB, UR) no longer render a box on the SVG
  *     wheel at all - previously they showed a small blank box with just the pair code
- *     (e.g. "UB"). New LabelBox behaviour is gated on the `unsupported` flag, which only
+ *     (e.g. "UB"). New LabelBox behavior is gated on the `unsupported` flag, which only
  *     HOB's blank entries carry, so every other set's wheel is pixel-identical to before.
  *     The conditional return is placed AFTER the component's hooks (not as an early return
  *     before them), because the same keyed LabelBox instance is reused across a set switch -
@@ -580,21 +580,21 @@
  *   - 17lands data confirmed still unavailable (expected ~2026-08-28, per plan).
  *
  * 1.5.0-beta.6 (2026-08-01, 15:38 UTC) - [Claude Opus 5]
- *   - Off-Arch section: the "most likely 3 colour combinations are the wedges" paragraph
+ *   - Off-Arch section: the "most likely 3 color combinations are the wedges" paragraph
  *     is now conditional on the set actually framing its off-archetype pairs as wedges
  *     (secondaryHasWedges). It does not apply to HOB, whose unsupported pairs are simply
  *     blank, so it is hidden there. SOS still shows it - its off-college labels ARE
  *     wedges ("Jeskai (WUR) Wedge"), so deleting the line outright would have broken SOS.
  *   - HOB set-wide mechanics trimmed from 6 to 3. Counted every card carrying each
- *     mechanic in the Scryfall snapshot and bucketed by colour identity:
+ *     mechanic in the Scryfall snapshot and bucketed by color identity:
  *       Storied  9 cards - W 4, R 3, WR 2   -> entirely within RW, which lists it already
  *       Recruit 10 cards - W 5, U 3, WU 2   -> entirely within WU, which lists it already
  *       Amass   14 cards - B 7, R 4, BR 3   -> entirely within BR, which lists it already
  *     Those three are removed as duplicates of their archetype's own mechanic entry.
  *     Nothing is lost: the verbatim reminder text survives in each archetype's
  *     mechanicDef, and the Scryfall queries survive in each archetype's themeSearches.
- *     KEPT: Adventure (17 cards) and Sagas (8) are spread across all five colours, and
- *     Hone counters (2) sits in RW's colours but is NOT any archetype's listed mechanic.
+ *     KEPT: Adventure (17 cards) and Sagas (8) are spread across all five colors, and
+ *     Hone counters (2) sits in RW's colors but is NOT any archetype's listed mechanic.
  *
  * 1.5.0-beta.5 (2026-08-01, 13:19 UTC) - [Claude Opus 5]
  *   - Offline / CDN failure is now visible instead of silent. Opening this page with no
@@ -829,8 +829,8 @@ const HOB_TOP_CARDS = {
   },
 };
 
-// Which sets show a top-cards list in their colour boxes INSTEAD of the prose description,
-// and how. Adding a set here is the whole change - the colour box reads this, and nothing
+// Which sets show a top-cards list in their color boxes INSTEAD of the prose description,
+// and how. Adding a set here is the whole change - the color box reads this, and nothing
 // is special-cased by set key any more.
 //   rows    - rarity buckets to show, in display order, with their labels
 //   layout  - 'inline'  packs names comma-separated after the label (SOS)
@@ -1053,7 +1053,7 @@ const SET_DATA = {
   //
   // HOB supports only FIVE draft archetypes. Confirmed two independent ways:
   // Draftsim names five, and the Scryfall snapshot has gold cards in exactly
-  // five colour pairs (WU, BR, BG, RW, GU) and ZERO in the other five. The
+  // five color pairs (WU, BR, BG, RW, GU) and ZERO in the other five. The
   // unsupported pairs (UB, RG, GW, WB, UR) are kept as blank entries so the
   // 10-position wheel geometry is preserved.
   //
@@ -1069,7 +1069,7 @@ const SET_DATA = {
     scryfallCodes: ['hob'],
     primaryArchetypes: ['WU', 'BR', 'BG', 'RW', 'GU'],
     primaryLabel: 'Only 5 archetypes supported',
-    primaryDescription: "The Hobbit is a smaller set that supports just five two-colour archetypes rather than the usual ten. The remaining five pairs (UB, RG, GW, WB, UR) have no gold cards at all and no signpost uncommons, so they are shown blank. Each supported pair gets a signpost uncommon, a common creature, a dual land, and a \"Company\" rare.",
+    primaryDescription: "The Hobbit is a smaller set that supports just five two-color archetypes rather than the usual ten. The remaining five pairs (UB, RG, GW, WB, UR) have no gold cards at all and no signpost uncommons, so they are shown blank. Each supported pair gets a signpost uncommon, a common creature, a dual land, and a \"Company\" rare.",
     accentColor: '#2E7D32',
     colorDescriptions: {
       W: { name: "White", description: "Humans and Dwarves. Feeds Draw Two (WU) with recruit tokens and Storied (RW) with legendary Dwarves and Sagas. White supplies the 1/1 Human Soldier go-wide bodies that recruit generates." },
@@ -1091,7 +1091,7 @@ const SET_DATA = {
       GU: { text: "Landfall", sub: "Elves\nRamp", details: "Every land drop matters. Elves ramp and fix while landfall triggers accumulate; Thranduil's Adventure half rallies the Elves before the creature ever hits the battlefield.\nCards: Silvan Reveler; Thranduil, Sindarin Liege; Thranduil's Company; Mirkwood Nurturer.", cards: ["Silvan Reveler", "Thranduil, Sindarin Liege", "Thranduil's Company", "Mirkwood Nurturer"], themeSearches: [{ label: "Elves", url: "https://scryfall.com/search?q=set%3Ahob+t%3Aelf&unique=cards&as=grid&order=name" }], sourceText: "Draftsim", sourceUrl: "https://draftsim.com/mtg-hob-draft-archetypes/", mechanic: "landfall", mechanicDef: "Landfall — a returning ability word triggering whenever a land enters the battlefield under your control." },
     },
     resourceLinks: [
-      { label: "The Hobbit Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/the-hobbit-prerelease-guide", desc: "Official Wizards of the Coast archetype guide - confirms five two-colour archetypes and their signpost uncommons", official: true },
+      { label: "The Hobbit Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/the-hobbit-prerelease-guide", desc: "Official Wizards of the Coast archetype guide - confirms five two-color archetypes and their signpost uncommons", official: true },
       { label: "The Hobbit Mechanics", url: "https://magic.wizards.com/en/news/feature/the-hobbit-mechanics", desc: "Official Wizards of the Coast mechanics breakdown (storied, recruit, hone counters, amass, Adventure)", official: false },
       { label: "The Hobbit Release Notes", url: "https://magic.wizards.com/en/news/feature/the-hobbit-release-notes", desc: "Official Wizards of the Coast release notes - card-specific rulings and interaction clarifications", official: false },
       { label: "Exploring All Five of The Hobbit's Limited Archetypes", url: "https://draftsim.com/mtg-hob-draft-archetypes/", desc: "Draftsim's archetype-by-archetype breakdown with signpost uncommons" },
@@ -1120,7 +1120,7 @@ const SET_DATA = {
     scryfallCodes: ['fra'],
     primaryArchetypes: ['WU', 'UB', 'BR', 'RG', 'GW'],
     primaryLabel: '5 Hexhaven school archetypes (allied pairs) + 5 planeswalker archetypes (enemy pairs)',
-    primaryDescription: "Reality Fracture supports all ten colour pairs, but not equally. The five allied pairs are the Hexhaven schools, each with nine dedicated cards: an elder sphinx mythic, a gold rare, a gold uncommon, a Charm, three prepared creatures that all cast the same school spell, a reprinted slow land and a common Annex dual.",
+    primaryDescription: "Reality Fracture supports all ten color pairs, but not equally. The five allied pairs are the Hexhaven schools, each with nine dedicated cards: an elder sphinx mythic, a gold rare, a gold uncommon, a Charm, three prepared creatures that all cast the same school spell, a reprinted slow land and a common Annex dual.",
     secondaryLabel: 'Planeswalker Archetypes (enemy pairs)',
     secondaryDescription: "The five enemy pairs are themed on the Lorwyn Five - Ajani, Jace, Liliana, Chandra and Garruk - and their Echoverse counterparts. Real archetypes, but three to five cards deep against the schools' nine.",
     accentColor: '#0E7490',
@@ -1147,7 +1147,7 @@ const SET_DATA = {
       { label: "Reality Fracture Prerelease Guide", url: "https://magic.wizards.com/en/news/feature/reality-fracture-prerelease-guide", desc: "Official Prerelease Guide - the ten archetypes' official names, one-line descriptions and key commons and uncommons", official: true },
       { label: "Reality Fracture Release Notes", url: "https://magic.wizards.com/en/news/feature/reality-fracture-release-notes", desc: "Official release notes - rulings for Empower Jace, Prepared, Heartwood and card-specific clarifications", official: false },
       { label: "Reality Fracture Mechanics", url: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", desc: "Official Wizards of the Coast mechanics article (Empower Jace, Prepared, Heartwood tokens)", official: false },
-      { label: "Enter the Echoverse with Reality Fracture Design", url: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", desc: "Official design article - names the ten draft archetypes (five Hexhaven schools + five planeswalker pairs) and gives each colour's core theme, the source for the colour boxes above", official: false },
+      { label: "Enter the Echoverse with Reality Fracture Design", url: "https://magic.wizards.com/en/news/feature/enter-the-echoverse-with-reality-fracture-design", desc: "Official design article - names the ten draft archetypes (five Hexhaven schools + five planeswalker pairs) and gives each color's core theme, the source for the color boxes above", official: false },
       { label: "Planeswalker's Guide to Reality Fracture", url: "https://magic.wizards.com/en/news/magic-story/planeswalkers-guide-to-reality-fracture", desc: "Official world guide - Hexhaven, its five schools and their elder sphinxes", official: false },
       { label: "Collecting Reality Fracture", url: "https://magic.wizards.com/en/news/feature/collecting-reality-fracture", desc: "Official product breakdown - Play Booster contents, the 86-card Echoed Pairs bonus sheet, set size", official: false },
       { label: "Reality Fracture Card Image Gallery", url: "https://magic.wizards.com/en/products/reality-fracture/card-image-gallery", desc: "Official full card gallery, complete from 2026-09-18", official: false },
@@ -1156,7 +1156,7 @@ const SET_DATA = {
       { label: "Reality Fracture on Scryfall", url: "https://scryfall.com/sets/fra", desc: "Full card gallery and search - the data source behind this page" },
     ],
     setMechanics: [
-      { name: "Empower Jace N", keyword: "empower jace", description: "New, and the set's headline: 35 cards, in every colour and at every rarity.\n\nThe token is a planeswalker, which is what all ten common dual lands check to enter untapped.", reminder: "(Put N loyalty counters on a Jace token you control. If you don't control one, first create a blue Jace planeswalker token with “[\u22121]: Surveil 1” and “[\u22123]: Draw a card.”)", cards: [], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+o%3A%22empower+jace%22&unique=cards&as=grid&order=rarity", scryfallLabel: "o:\"empower jace\"" },
+      { name: "Empower Jace N", keyword: "empower jace", description: "New, and the set's headline: 35 cards, in every color and at every rarity.\n\nThe token is a planeswalker, which is what all ten common dual lands check to enter untapped.", reminder: "(Put N loyalty counters on a Jace token you control. If you don't control one, first create a blue Jace planeswalker token with “[\u22121]: Surveil 1” and “[\u22123]: Draw a card.”)", cards: [], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+o%3A%22empower+jace%22&unique=cards&as=grid&order=rarity", scryfallLabel: "o:\"empower jace\"" },
       { name: "Prepared", keyword: "prepared", description: "Returning from Secrets of Strixhaven with a twist: 21 creatures have a prepare spell, and at common and uncommon the five schools' creatures each cast the SAME school spell (Peer Review, Omit Variables, Vicious Verse, Soul Tether, Seed Suture).", reminder: "(While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)", cards: ["Peer Review", "Omit Variables", "Vicious Verse", "Soul Tether", "Seed Suture"], source: "WotC Mechanics", sourceUrl: "https://magic.wizards.com/en/news/feature/reality-fracture-mechanics", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+layout%3Aprepare&unique=cards&as=grid&order=rarity", scryfallLabel: "layout:prepare" },
       { name: "Echoed Pairs", description: "An 86-card bonus sheet numbered inside the set at collector 195-280 (66 uncommon, 14 rare, 6 mythic), every card a legendary, each paired with its Echoverse twin.\n\nThree come in every Play Booster - two of them a matching pair - so they are a full part of the Limited pool.", cards: [], source: "WotC Collecting article", sourceUrl: "https://magic.wizards.com/en/news/feature/collecting-reality-fracture", scryfallQuery: "https://scryfall.com/search?q=set%3Afra+cn%3E%3D195+cn%3C%3D280&unique=cards&as=grid&order=set", scryfallLabel: "cn 195-280" },
     ]
@@ -1195,7 +1195,7 @@ const manaClasses = {
 
 const colorOrder = ['W', 'U', 'B', 'R', 'G'];
 // Clockwise order around the wheel from the top. The Echoverse button swaps it for GRBUW (the
-// mirror image, so the same pairs stay neighbours); the main component sets it before each render.
+// mirror image, so the same pairs stay neighbors); the main component sets it before each render.
 const ECHO_ORDER = ['G', 'R', 'B', 'U', 'W'];
 let wheelOrder = colorOrder;
 
@@ -1418,8 +1418,8 @@ const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, onClick, i
   const boxStroke = isSimple ? '#000000' : blend(group.u, group.v);
   const textColor = isSimple ? '#000000' : fg;
   const isPrimary = primaryArchetypes.includes(code);
-  // A wedge label (e.g. TDM's Abzan on the GW edge) is framed in its third colour, so it reads
-  // as three colours and never as the pair's own two-colour archetype.
+  // A wedge label (e.g. TDM's Abzan on the GW edge) is framed in its third color, so it reads
+  // as three colors and never as the pair's own two-color archetype.
   const wedgeFrame = labelData.wedgeThird ? (isSimple ? '#FFFFFF' : baseHex[labelData.wedgeThird]) : null;
 
   const titleLines = (labelData.text || '').split('\n');
@@ -1643,8 +1643,8 @@ const SourceLine = ({ data, fg }) => {
 
 const WEDGE_COLORS = { Jeskai: 'W\u222AU\u222AR', Sultai: 'U\u222AB\u222AG', Mardu: 'B\u222AR\u222AW', Temur: 'R\u222AG\u222AU', Abzan: 'G\u222AW\u222AB' };
 
-// The one and only Scryfall button row for a colour pair: a "Scryfall:" caption then one
-// button per search, each labelled with the query itself.
+// The one and only Scryfall button row for a color pair: a "Scryfall:" caption then one
+// button per search, each labeled with the query itself.
 //
 // This used to be four hand-copied blocks (InfoPanel, the all-10 grid, the primary-archetype
 // grid, the off-arch grid), which is exactly how HOB's themeSearches ended up visible in the
@@ -1655,7 +1655,7 @@ const WEDGE_COLORS = { Jeskai: 'W\u222AU\u222AR', Sultai: 'U\u222AB\u222AG', Mar
 const ScryfallRow = ({ data, pair, sc, bg, fg, large, center }) => {
   const btns = [];
   // Off-arch wedge boxes deliberately drop the exact-identity search: for a pair with no
-  // archetype, "cards that are exactly these two colours" is a near-empty result.
+  // archetype, "cards that are exactly these two colors" is a near-empty result.
   if (!data.wedge) {
     btns.push({ label: `${pair[0]}&${pair[1]}`, url: `https://scryfall.com/search?q=set%3A${sc}+id%3D${pair}` });
   }
@@ -1718,8 +1718,8 @@ const ArchetypeBox = ({ pair, data, sc }) => {
   );
 };
 
-// Everything inside one colour's box: mana symbol, name, top cards or description, Scryfall
-// buttons, sources. Shared by the colour grid under the wheel and the colour-node pop-up
+// Everything inside one color's box: mana symbol, name, top cards or description, Scryfall
+// buttons, sources. Shared by the color grid under the wheel and the color-node pop-up
 // (ColorInfoPanel), so the two always say the same thing. `large` = the pop-up's roomier
 // text and a wrapping row of buttons instead of the grid's stacked column.
 const ColorBoxBody = ({ color, set, large }) => {
@@ -1737,7 +1737,7 @@ const ColorBoxBody = ({ color, set, large }) => {
   const btns = [
     { label: `${color} only`, url: exactUrl },
     { label: `${color} included`, url: inclUrl },
-    // Optional per-colour themed searches (same shape as a label's themeSearches)
+    // Optional per-color themed searches (same shape as a label's themeSearches)
     ...(d.themeSearches || []),
   ];
   const small = large ? '0.72rem' : '0.6rem';
@@ -1776,7 +1776,7 @@ const ColorBoxBody = ({ color, set, large }) => {
           <a key={i} href={b.url} target="_blank" rel="noopener noreferrer" style={btnStyle}>{b.label}</a>
         ))}
       </div>
-      {/* Per-colour attribution, when the description makes a sourced claim
+      {/* Per-color attribution, when the description makes a sourced claim
           (FRA's core-theme rows come from the WotC design article). */}
       {d.sourceUrl && (
         <div style={{ fontSize: small, opacity: 0.8, fontStyle: 'italic', marginTop: '8px', textAlign: large ? 'center' : 'left' }}>
@@ -1815,8 +1815,8 @@ const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave, currentSet }) => 
   </div>
 );
 
-// Pop-up for a colour node on a full-page set's wheel (single-set view and All sets view):
-// the same content as that colour's box in the grid, in the place and style of InfoPanel.
+// Pop-up for a color node on a full-page set's wheel (single-set view and All sets view):
+// the same content as that color's box in the grid, in the place and style of InfoPanel.
 const ColorInfoPanel = ({ color, set, onHover, onLeave }) => {
   if (!color || !set.colorDescriptions || !set.colorDescriptions[color]) return null;
   const bg = baseHex[color], fg = color === 'W' ? '#000000' : '#FFFFFF';
@@ -1865,7 +1865,7 @@ const InfoPanel = ({ pair, labels, scryfallCodes, primaryArchetypes, onHover, on
   );
 };
 
-// The wheel graphic on its own: edges, archetype labels, colour nodes. Used by the single-set
+// The wheel graphic on its own: edges, archetype labels, color nodes. Used by the single-set
 // view and by every small wheel in the "All sets" view, so the two can never drift apart.
 const WheelSVG = ({ labels, wheelPrimary, isSimple, config, activePair, activeColors, hoveredNode,
                     onPairHover, onPairLeave, onNodeHover, onNodeLeave, style, viewBox }) => {
@@ -1950,7 +1950,7 @@ const LabelPanel = ({ pair, entry, onHover, onLeave }) => {
   const { bg, fg } = getLabelColors(pair[0], pair[1]);
   const frame = labelData.wedgeThird ? baseHex[labelData.wedgeThird] : null;
   const cols = labelData.wedgeThird ? wedgeColors(pair + labelData.wedgeThird) : pair;
-  // A wedge label's standard searches are for its three colours, not the edge's two.
+  // A wedge label's standard searches are for its three colors, not the edge's two.
   const wedgeBtns = labelData.wedgeThird ? [
     { label: `id=${cols}`, url: `https://scryfall.com/search?q=set%3A${entry.code}+id%3D${cols}` },
     { label: `id<=${cols}`, url: `https://scryfall.com/search?q=set%3A${entry.code}+id%3C%3D${cols}+-id%3Ac` },
@@ -1980,7 +1980,7 @@ const LabelPanel = ({ pair, entry, onHover, onLeave }) => {
   );
 };
 
-// ScryfallRow's look for an explicit button list (colour pop-ups, wedge labels).
+// ScryfallRow's look for an explicit button list (color pop-ups, wedge labels).
 const ButtonRow = ({ btns, bg, fg }) => (
   <>
     <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall:</div>
@@ -1997,8 +1997,8 @@ const ButtonRow = ({ btns, bg, fg }) => (
 const wedgeColors = (s) => 'WUBRG'.split('').filter(c => s.includes(c)).join('');
 const COLOR_NAMES = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
 
-// Pop-up for a wheel-only set's colour node: the colour, its top mono-colour cards over all
-// decks and its highest-lift tags, after the same "only / included" searches the colour boxes use.
+// Pop-up for a wheel-only set's color node: the color, its top mono-color cards over all
+// decks and its highest-lift tags, after the same "only / included" searches the color boxes use.
 const ColorPanel = ({ color, entry, onHover, onLeave }) => {
   const d = entry.colors && entry.colors[color];
   if (!d) return null;
@@ -2163,7 +2163,7 @@ function MultiSetColorWheel() {
     return VIEW_KEYS.includes(hash) ? hash : SET_ORDER[SET_ORDER.length - 1];
   });
   const [hoveredNode, setHoveredNode] = useState(null);
-  // Colour-node pop-up (ColorInfoPanel): kept open 800 ms after the pointer leaves the node,
+  // Color-node pop-up (ColorInfoPanel): kept open 800 ms after the pointer leaves the node,
   // like the pair pop-up, so it can be reached to use its links.
   const [nodePanel, setNodePanel] = useState(null);
   const nodeTimeoutRef = useRef(null);
@@ -2269,7 +2269,7 @@ function MultiSetColorWheel() {
     };
   }, []);
 
-  // While a colour pop-up is open its colour stays highlighted on the wheel
+  // While a color pop-up is open its color stays highlighted on the wheel
   const litNode = hoveredNode || nodePanel;
   const activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : (litNode ? [litNode] : []);
   const activePair = hoveredPair;

@@ -129,7 +129,7 @@
         .loading { text-align: center; padding: 50px; font-size: 1.4em; color: white; }
         .error { background: #fee2e2; color: #991b1b; padding: 20px; border-radius: 8px; margin: 20px 0; }
 
-        /* ===== Score colour bands (avgNorm) ===== */
+        /* ===== Score color bands (avgNorm) ===== */
         .score-excellent { background:#d4edda; color:#155724; }
         .score-good      { background:#d1ecf1; color:#0c5460; }
         .score-neutral   { background:#fff3cd; color:#856404; }
@@ -293,7 +293,7 @@
         }
         .gc-tooltip .gc-tip-img { width: 320px; max-width: 80vw; display: block; border-radius: 8px; }
 
-        /* Overview intro box + full-list image placeholder + 2-colour archetype columns */
+        /* Overview intro box + full-list image placeholder + 2-color archetype columns */
         .ov-intro { background: #f3f1fb; border: 1px solid #e2dcf5; border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; color: #333; line-height: 1.5; }
         .ov-intro a { color: #4a2a8a; }
         .ov-sources { margin-top: 8px; font-size: 0.95em; }
@@ -588,8 +588,8 @@ window.CARD_DATA = [{"name":"Agent 13, Sharon Carter","setCode":"MSH","rarity":"
 
             let html = '<div class="grid-view">' +
                 '<h2 class="view-title">Color/rarity grid &mdash; Best, Worst &amp; Most Controversial</h2>' +
-                '<p class="view-note">Each cell shows the standout card for that colour&times;rarity: the highest and lowest average normalized score, and the card the reviewers most disagreed on. ' +
-                'Single-colour columns are monocolour only; <em>Multi</em> = 2+ colours, <em>Colourless</em> = no colour.</p>' +
+                '<p class="view-note">Each cell shows the standout card for that color&times;rarity: the highest and lowest average normalized score, and the card the reviewers most disagreed on. ' +
+                'Single-color columns are monocolor only; <em>Multi</em> = 2+ colors, <em>Colorless</em> = no color.</p>' +
                 '<table class="grid-table"><thead><tr>' +
                 '<th class="corner"></th><th class="corner"></th>' +
                 colKeys.map(function (k) {
@@ -674,9 +674,9 @@ window.CARD_DATA = [{"name":"Agent 13, Sharon Carter","setCode":"MSH","rarity":"
             html += colorBlock('Multicolor (3+)', function (c) { return c.cols.length >= 3; });
             html += colorBlock('Colorless', function (c) { return c.cols.length === 0; });
 
-            // Two-colour archetypes: top / bottom / most controversial card for each pair
-            html += '<h2 class="view-title" style="margin-top:28px;">Two-colour archetypes</h2>' +
-                '<p class="view-note">The single highest, lowest, and most controversial card in each colour pair.</p>';
+            // Two-color archetypes: top / bottom / most controversial card for each pair
+            html += '<h2 class="view-title" style="margin-top:28px;">Two-color archetypes</h2>' +
+                '<p class="view-note">The single highest, lowest, and most controversial card in each color pair.</p>';
             COLOR_PAIRS.forEach(function (pair) {
                 const f = function (c) { return c.cols.length === 2 && pairKey(c.cols) === pair; };
                 const top = listBy(f, 'avgNorm', 'desc', 1)[0];

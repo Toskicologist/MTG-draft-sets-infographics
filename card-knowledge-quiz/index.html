@@ -1865,7 +1865,7 @@
      *   - Signed: Codex @ 2026-02-22 16:17:34 UTC
      * v2.18.20-local (2026-02-22) - Quiz settings header rename + inline summary
      *   - UI: Renamed "Question Generation Settings" to "Quiz settings"
-     *   - UI: Added live grey bracketed summary on the header line (show/ask behavior)
+     *   - UI: Added live gray bracketed summary on the header line (show/ask behavior)
      *   - DEFAULT SUMMARY: "Showing all fields except 1 randomly chosen field asked."
      *   - Signed: Codex @ 2026-02-22 16:13:29 UTC
      * v2.18.19-local (2026-02-22) - UI hierarchy polish + color field hard-disable
@@ -1977,18 +1977,18 @@
      *   - UI: "Single Type / Multiple Types" mode toggle removed — Ask column always uses checkboxes
      *   - REFACTOR: displayMode state replaced by numShowFields (null = all, N = pick N randomly)
      *   - REFACTOR: questionMode state removed; lastAskedField state removed
-     *   - REFACTOR: Alignment effect simplified (always multiple-mode behaviour)
+     *   - REFACTOR: Alignment effect simplified (always multiple-mode behavior)
      * v2.17.0 (2026-02-21) - Major question-mode and hint-selection fixes
      *   - FIX: Single Type mode now strictly respects selected Ask field
      *   - FIX: Show-column checkboxes independently toggleable in both modes
      *   - FIX: Ask radio no longer mutates Show selections
-     *   - FIX: Show/Ask fields no longer greyed based on config.askField (per-question logic handles it)
+     *   - FIX: Show/Ask fields no longer grayed based on config.askField (per-question logic handles it)
      *   - FIX: Show One (random) now picks only non-empty/renderable hint fields
      *   - FIX: Colors hint field is now rendered in card display (was missing)
      *   - REFACTOR: Replaced shownFields-driven ask reassignment with clean alignment effect
      * v2.16.5 (2026-02-21) - Bug fixes from local test build (9 changes)
      *   - FIX: castingCost/colors now excluded for land cards (isLandCard helper)
-     *   - FIX: getApplicableCards uses fieldDef.isApplicable for generalised filtering
+     *   - FIX: getApplicableCards uses fieldDef.isApplicable for generalized filtering
      *   - FIX: normalizeCard now includes rarity field
      *   - FIX: Text-input mode works with 1-card pools (gate was < 2, now < 1)
      *   - FIX: Casting cost display checks 'castingCost' field id and renders manaCost string
@@ -2032,7 +2032,7 @@
      *
      * v2.15.4 (2026-02-20) - Fix blank page crash on old localStorage state
      *   - BUG: quizConfig.askableFields undefined when user had pre-v2.15 localStorage
-     *   - FIX: Merge stored config with defaults so new fields always initialise correctly
+     *   - FIX: Merge stored config with defaults so new fields always initialize correctly
      *
      * v2.15.3 (2026-02-20) - Implement dual checkbox system for Multi Mode field selection (Show vs Ask)
      *   - LEFT checkboxes: "Show" - which fields are DISPLAYED on card
@@ -4959,7 +4959,7 @@
       // How many shown fields to display (null = all checked, number = pick N randomly)
       const [numShowFields, setNumShowFields] = useState(null);
 
-      // How many ask fields per question (1 = current behaviour; N>1 deferred)
+      // How many ask fields per question (1 = current behavior; N>1 deferred)
       const [numAskFields, setNumAskFields] = useState(1);
 
       // Ref for auto-scrolling to quiz container

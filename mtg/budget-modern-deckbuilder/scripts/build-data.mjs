@@ -35,7 +35,7 @@
  * v1.2.0: Front-face aliases are now materialized after the scan, so a real card
  * with the same name as a split-card front can never be merged into the split entry.
  * v1.3.0: Scryfall dropped `download_uri`/`size` from /bulk-data (2026-08-14) in
- * favour of `jsonl_download_uri`/`compressed_size`; read those, gunzip the stream.
+ * favor of `jsonl_download_uri`/`compressed_size`; read those, gunzip the stream.
  * v1.4.0: prices and index are now refreshed by two independent workflows, so
  * data-meta.json is merged into rather than rewritten - each run touches only
  * the fields it rebuilt.
