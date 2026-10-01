@@ -8,7 +8,7 @@ name: Manifold 17Lands bot
 # The Manifold API key is the MANIFOLD_API_KEY repository secret (Settings >
 # Secrets and variables > Actions). It is never in a file: GitHub injects it
 # into the bot step only, masks it in logs, and does not pass it to workflows
-# run from forks' pull requests. Only GitHub's own actions run in this job, and
+# run from forks' pull requests. Only GitHub's own checkout action runs in this job, and
 # the repository write token is kept out of the bot step (persist-credentials:
 # false) and handed only to the commit step.
 #
@@ -43,19 +43,19 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5      # v5 runs on Node 24 (v4's Node 20 is deprecated)
         with:
           persist-credentials: false   # no write token in .git/config while the bot runs
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
+      # The bot is standard-library Python only, so the runner's own python3 is
+      # enough - no setup-python action, and nothing to break when ubuntu-latest
+      # moves to a new Ubuntu (Ubuntu 26 from October 19, 2026).
       - name: Run the bot
         env:
           MANIFOLD_API_KEY: ${{ secrets.MANIFOLD_API_KEY }}
-        run: python mtg/manifold/bot.py run --live --fail-on-review
+        run: |
+          python3 --version
+          python3 mtg/manifold/bot.py run --live --fail-on-review
 
       - name: Commit market state if it changed
         if: always()

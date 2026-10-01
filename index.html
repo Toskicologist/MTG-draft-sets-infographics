@@ -11,6 +11,12 @@
   inside them stay out of "Set specific pages".
 
   Changelog
+  v1.1.0 (2026-10-01T19:48:22Z) - Claude Opus 5.5 - Draft Tools, Deck & Format
+    Tools and Analytics merged into one "Tools & Analytics" section; Pauper is
+    its own section, before Set specific pages. Real screenshot previews (in
+    mtg/assets/previews/) for the 17Lands quiz (HOB, replacing the old ECL
+    shot), Card Knowledge Quiz and Budget Deckbuilder (was emoji placeholders).
+    Also ships the US spelling fix ("two-color") committed in 7e1ff392.
   v1.0.0 (2026-10-01T15:20:16Z) - Claude Opus 5.5 - Redesign promoted from mockup
     v0.4.0 (first versioned release; previous page unversioned, last changed
     2026-06-18). Color wheel and 17Lands quiz lead Featured as full-width cards
@@ -240,6 +246,7 @@
       display: grid; gap: 16px;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
+    .fpair .fcard .thumb { height: 200px; }
 
     footer.site {
       margin-top: 56px;
@@ -334,7 +341,7 @@
 
         <div class="fcard wide flip">
           <a class="thumb-link" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" aria-label="Open the 17Lands Card Evaluation Quiz">
-            <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/ecl-quiz-preview.png" alt="17Lands Card Evaluation Quiz preview" loading="lazy">
+            <img class="thumb" src="mtg/assets/previews/17lands-quiz.jpg" alt="17Lands Card Evaluation Quiz: pick the better of two Hobbit cards" loading="lazy">
           </a>
           <div class="body">
             <h3><a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">17Lands Card Evaluation Quiz</a></h3>
@@ -369,7 +376,7 @@
 
         <div class="fpair">
           <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/">
-            <div class="thumb ph"><span class="ico">🧠</span>Card Knowledge Quiz</div>
+            <img class="thumb" src="mtg/assets/previews/card-knowledge-quiz.jpg" alt="Card Knowledge Quiz question: name this card" loading="lazy">
             <div class="body">
               <h3>Card Knowledge Quiz</h3>
               <p>Learn card evaluation with instant feedback and custom modes.</p>
@@ -378,7 +385,7 @@
           </a>
 
           <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html">
-            <div class="thumb ph"><span class="ico">🪙</span>Budget Deckbuilder</div>
+            <img class="thumb" src="mtg/assets/previews/budget-deckbuilder.jpg" alt="Budget Deckbuilder cost treemap of a main deck and sideboard" loading="lazy">
             <div class="body">
               <h3>Budget Modern Deckbuilder</h3>
               <p>Paste a decklist; cheapest-printing TCG Mid totals update live, with a budget check and timestamped export.</p>
@@ -390,12 +397,11 @@
       </div>
     </section>
 
-    <!-- DRAFT TOOLS -->
+    <!-- TOOLS & ANALYTICS -->
     <section>
       <div class="section-head">
-        <span class="emoji">🧭</span>
-        <h2>Draft Tools</h2>
-        <span class="sub">work across sets</span>
+        <span class="emoji">🛠️</span>
+        <h2>Tools &amp; Analytics</h2>
       </div>
       <div class="grid">
         <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/oracle-tags-analysis.html">
@@ -408,21 +414,32 @@
           <p>An Anki-style spaced-repetition mode for learning the cards in a set.</p>
           <span class="arrow">Open quiz →</span>
         </a>
-      </div>
-    </section>
-
-    <!-- DECK & FORMAT TOOLS -->
-    <section>
-      <div class="section-head">
-        <span class="emoji">🛠️</span>
-        <h2>Deck &amp; Format Tools</h2>
-      </div>
-      <div class="grid">
         <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/format-comparison.html">
           <h3>Format Comparison</h3>
           <p>Compare card values across Pauper, Modern and Standard.</p>
           <span class="arrow">Open tool →</span>
         </a>
+        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/analytics/gihwr-distribution.html">
+          <h3>GIH-WR Distribution</h3>
+          <p>Games-in-hand win-rate distribution with SD-based grade boundaries.</p>
+          <span class="arrow">Open chart →</span>
+        </a>
+        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/analytics/alsa-distribution.html">
+          <h3>ALSA Distribution</h3>
+          <p>Average-last-seen-at distribution chart.</p>
+          <span class="arrow">Open chart →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- PAUPER -->
+    <section>
+      <div class="section-head">
+        <span class="emoji">🃏</span>
+        <h2>Pauper</h2>
+        <span class="sub">the commons-only constructed format</span>
+      </div>
+      <div class="grid">
         <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/pauper-card-list.html">
           <h3>Pauper Card List</h3>
           <p>Searchable Pauper reference, sorted by frequency.</p>
@@ -442,27 +459,6 @@
           <h3>Pauper Mono Red Madness Stock List</h3>
           <p>The stock 60 nearly every Mono Red Madness deck plays, and how far each of 1,506 tournament decks strays from it.</p>
           <span class="arrow">Open tool →</span>
-        </a>
-      </div>
-    </section>
-
-    <!-- ANALYTICS -->
-    <section>
-      <div class="section-head">
-        <span class="emoji">📈</span>
-        <h2>Analytics</h2>
-        <span class="sub">distributions &amp; methodology</span>
-      </div>
-      <div class="grid">
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/analytics/gihwr-distribution.html">
-          <h3>GIH-WR Distribution</h3>
-          <p>Games-in-hand win-rate distribution with SD-based grade boundaries.</p>
-          <span class="arrow">Open chart →</span>
-        </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/analytics/alsa-distribution.html">
-          <h3>ALSA Distribution</h3>
-          <p>Average-last-seen-at distribution chart.</p>
-          <span class="arrow">Open chart →</span>
         </a>
       </div>
     </section>
@@ -631,7 +627,7 @@
         &nbsp;·&nbsp;
         <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics" target="_blank" rel="noopener">Source on GitHub</a>
       </div>
-      <div class="ver">v1.0.0 · Last updated 2026-10-01 15:20 UTC</div>
+      <div class="ver">v1.1.0 · Last updated 2026-10-01 19:48 UTC</div>
     </footer>
 
   </div>
