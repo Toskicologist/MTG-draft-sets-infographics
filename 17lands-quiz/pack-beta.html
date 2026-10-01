@@ -688,6 +688,7 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.5.0-beta.144 (2026-10-01T15:54:54Z): FIX: Set names in SET_CONFIG - ECL is Lorwyn Eclipsed (was 'Etchings of Cryptic Lore'), TMT is Teenage Mutant Ninja Turtles (was missing 'Ninja'), OM1 is Through the Omenpaths, the Arena reskin of Marvel's Spider-Man, Pick 2 Draft (was 'OTJ: The Big Score'). Labels only; no data changed.
   v1.5.0-beta.143 (2026-10-01 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-01 T1153.csv (334 cards).
   v1.5.0-beta.142 (2026-10-01 UTC): DATA: Refresh SOS to SOS card-ratings-2026-10-01 T1153.csv (341 cards).
   v1.5.0-beta.141 (2026-09-30 UTC): DATA: Refresh MSH to MSH card-ratings-2026-09-30 T1125.csv (334 cards).
@@ -847,8 +848,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.5.0-beta.143';
-const LAST_UPDATE = '2026-10-01 UTC';
+const QUIZ_VERSION = '1.5.0-beta.144';
+const LAST_UPDATE = '2026-10-01T15:54:54Z';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
@@ -4908,7 +4909,7 @@ const SET_CONFIG = {
     dataTimestamp: '2026-10-01 UTC'
   },
   ECL: {
-    name: 'ECL (Etchings of Cryptic Lore)',
+    name: 'ECL (Lorwyn Eclipsed)',
     shortName: 'ECL',
     data: ECL_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20',
@@ -4916,7 +4917,7 @@ const SET_CONFIG = {
     dataTimestamp: '2026-02-27 UTC'
   },
   TMT: {
-    name: 'TMT (Teenage Mutant Turtles)',
+    name: 'TMT (Teenage Mutant Ninja Turtles)',
     shortName: 'TMT',
     data: TMT_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=TMT&format=PremierDraft',
@@ -4956,7 +4957,7 @@ const SET_CONFIG = {
     dataTimestamp: '2026-04-10 UTC'
   },
   OM1: {
-    name: 'OM1 (OTJ: The Big Score — Pick 2 Draft)',
+    name: 'OM1 (Through the Omenpaths, the Arena reskin of Marvel’s Spider-Man — Pick 2 Draft)',
     shortName: 'OM1',
     draftFormat: 'Pick 2 Draft',
     data: OM1_CARDS,

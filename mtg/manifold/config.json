@@ -1,0 +1,55 @@
+{
+ "_about": "Settings for bot.py. See README.md for what each market asks and why these defaults. Days are counted from the set's 17Lands start date (e.g. FRA: 2026-09-29 15:00 UTC).",
+ "manifold": {
+  "api_base": "https://api.manifold.markets/v0",
+  "api_key_env": "MANIFOLD_API_KEY",
+  "api_key_file": "~/.manifold/api_key.txt",
+  "human_username": "",
+  "contact_email": "Toskicologist@protonmail.com",
+  "website": "https://toskicologist.github.io/MTG-draft-sets-infographics/",
+  "group_slugs": ["magic-the-gathering", "mtg-limited", "mtgarena", "gaming"],
+  "liquidity_tier": 100,
+  "visibility": "public"
+ },
+ "seventeen_lands": {
+  "event_type": "PremierDraft",
+  "user_agent": "mtg-manifold-bot/0.1 (+https://toskicologist.github.io/MTG-draft-sets-infographics/; Toskicologist@protonmail.com; a few requests per day)",
+  "pace_seconds": 1.5,
+  "embargo_days": 13,
+  "min_gih": 500,
+  "min_pair_games": 1000,
+  "combine_splash": true,
+  "min_total_gih": 50000,
+  "min_total_games": 10000
+ },
+ "sets": {
+  "scryfall_set_types": ["expansion", "core", "draft_innovation"]
+ },
+ "min_hours_open": 48,
+ "checkpoints": [
+  {"id": "d14", "label": "on {date}", "time_period": "ALL_TIME", "close_day": 14, "resolve_day": 14,
+   "kinds": ["top_card", "top_pair"]},
+  {"id": "d41", "label": "on {date}", "time_period": "ALL_TIME", "close_day": 41, "resolve_day": 41, "sets": ["FRA"],
+   "kinds": ["top_card", "top_common", "top_rare", "top_pair"], "sequential": true,
+   "open_until": "2026-11-01T00:00:00Z",
+   "note": "November 9, 2026 is the day Reality Fracture Premier Draft ends on MTG Arena."}
+ ],
+ "_checkpoint_keys": "kinds = markets in priority order; sequential = each opens only once all before it are open (so the pair market, M$250, waits for the three M$100 card markets); open_until = no new markets from this checkpoint after this UTC time.",
+ "_checkpoint_examples": [
+  {"id": "week1", "label": "in its first week", "time_period": "FIRST_WEEK", "close_day": 7, "resolve_day": 14},
+  {"id": "week6", "label": "on {date}", "time_period": "ALL_TIME", "close_day": 42, "resolve_day": 42}
+ ],
+ "markets": {
+  "top_card": {"enabled": true, "add_answers_mode": "ANYONE", "seed_answers": 1,
+               "noun": "card",
+               "question": "What card will have the highest GIH WR for {set} according to 17Lands data {label}?"},
+  "top_common": {"enabled": true, "add_answers_mode": "ANYONE", "seed_answers": 1,
+                 "rarities": ["common"], "noun": "common",
+                 "question": "What common will have the highest GIH WR for {set} according to 17Lands data {label}?"},
+  "top_rare": {"enabled": true, "add_answers_mode": "ANYONE", "seed_answers": 1,
+               "rarities": ["rare", "mythic"], "noun": "rare or mythic",
+               "question": "What rare or mythic will have the highest GIH WR for {set} according to 17Lands data {label}?"},
+  "top_pair": {"enabled": true, "add_answers_mode": "DISABLED",
+               "question": "What color pair will have the highest win rate for {set} according to 17Lands data {label}?"}
+ }
+}

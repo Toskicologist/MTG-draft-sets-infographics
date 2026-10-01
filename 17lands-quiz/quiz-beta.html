@@ -1412,6 +1412,7 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.10.0-beta.201 (2026-10-01T15:54:54Z): FIX: Set names in SET_CONFIG - ECL is Lorwyn Eclipsed (was 'Etchings of Cryptic Lore'), TMT is Teenage Mutant Ninja Turtles (was missing 'Ninja'), OM1 is Through the Omenpaths, the Arena reskin of Marvel's Spider-Man, Pick 2 Draft (was 'OTJ: The Big Score'). Labels only; no data changed.
   v4.10.0-beta.200 (2026-10-01 UTC): DATA: Refresh HOB to HOB card-ratings-2026-10-01 T1153.csv (184 cards).
   v4.10.0-beta.199 (2026-10-01 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-01 T1153.csv (289 cards).
   v4.10.0-beta.198 (2026-10-01 UTC): DATA: Refresh SOS to SOS card-ratings-2026-10-01 T1153.csv (327 cards).
@@ -2298,7 +2299,7 @@ const ECL_CARDS = [
 
 ];
 
-// TMT (Teenage Mutant Turtles) card data - extracted from 17lands exports
+// TMT (Teenage Mutant Ninja Turtles) card data - extracted from 17lands exports
 // Downloaded from 17 Lands on 2026-03-30
 const TMT_CARDS = [
   {name: 'Action News Crew', color: 'W', type: 'Creature — Human Citizen', rarity: 'C', gihWr: 53.6, alsa: 6.15, img: 'bc0f5ca8-47bd-4451-8fd1-a312ff7d31ec'},
@@ -5865,7 +5866,7 @@ const SET_CONFIG = {
     dataTimestamp: '2026-10-01 UTC'
   },
   ECL: {
-    name: 'ECL (Etchings of Cryptic Lore)',
+    name: 'ECL (Lorwyn Eclipsed)',
     shortName: 'ECL',
     data: ECL_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20',
@@ -5873,7 +5874,7 @@ const SET_CONFIG = {
     dataTimestamp: '2026-02-27 UTC'
   },
   TMT: {
-    name: 'TMT (Teenage Mutant Turtles)',
+    name: 'TMT (Teenage Mutant Ninja Turtles)',
     shortName: 'TMT',
     data: TMT_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=TMT&format=PremierDraft',
@@ -5913,7 +5914,7 @@ const SET_CONFIG = {
     dataTimestamp: '2026-04-10 UTC'
   },
   OM1: {
-    name: 'OM1 (OTJ: The Big Score — Pick 2 Draft)',
+    name: 'OM1 (Through the Omenpaths, the Arena reskin of Marvel’s Spider-Man — Pick 2 Draft)',
     shortName: 'OM1',
     draftFormat: 'Pick 2 Draft',
     data: OM1_CARDS,
@@ -5956,8 +5957,8 @@ const SET_CONFIG = {
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.10.0-beta.200';
-const LAST_UPDATE = '2026-10-01 UTC';
+const QUIZ_VERSION = '4.10.0-beta.201';
+const LAST_UPDATE = '2026-10-01T15:54:54Z';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 

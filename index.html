@@ -1,20 +1,41 @@
 <!DOCTYPE html>
+<!--
+  MTG Draft Analytics - site landing page.
+  Published copy of mtg/pages-root/index.html; edit the source, not this file.
+  The analytics snippet is added at publish time. Design history: landing
+  mockup v0.1-v0.4 (mtg/hub-draft/).
+
+  Curation rules (user, 2026-10-01): no alpha/beta pages (exception: the P1P1 Pack
+  Quiz side link, by request); no page that a later page covers; normalized
+  ratings live in their set group, not Featured; pages that let you pick a set
+  inside them stay out of "Set specific pages".
+
+  Changelog
+  v1.0.0 (2026-10-01T15:20:16Z) - Claude Opus 5.5 - Redesign promoted from mockup
+    v0.4.0 (first versioned release; previous page unversioned, last changed
+    2026-06-18). Color wheel and 17Lands quiz lead Featured as full-width cards
+    with per-set shortcuts (+ Custom Wheel Builder, P1P1 Pack Quiz). Card Ratings
+    section replaced by "Set specific pages" grouped by set, newest first. New
+    Draft Tools section. Newly linked: Oracle Tags Analysis, Card Study, Mono Red
+    Madness, HOB ratings, MSH Normalized Ratings, TMNT Normalized Ratings, New
+    York Block, Custom Wheel Builder, P1P1 Pack Quiz. Meta descriptions updated.
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Analytics — Tools, Ratings &amp; Quizzes</title>
-  <meta name="description" content="Interactive Magic: The Gathering Limited tools: color wheels, card ratings, under/over-rated analysis, and draft quizzes across ECL, SOS, TMT and FDN.">
+  <meta name="description" content="Interactive Magic: The Gathering Limited tools: a multi-set draft archetype color wheel, 17Lands card evaluation quizzes, oracle tag analysis, and set-by-set card ratings.">
 
   <!-- Social preview -->
   <meta property="og:title" content="MTG Draft Analytics">
-  <meta property="og:description" content="Color wheels, card ratings, and draft quizzes for MTG Limited — across Lorwyn Eclipsed, Strixhaven, TMNT and Foundations.">
+  <meta property="og:description" content="Color wheels, 17Lands quizzes and card ratings for MTG Limited, set by set, from Bloomburrow to Reality Fracture.">
   <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/og-preview.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MTG Draft Analytics">
-  <meta name="twitter:description" content="Color wheels, card ratings, and draft quizzes for MTG Limited.">
+  <meta name="twitter:description" content="Color wheels, 17Lands quizzes and card ratings for MTG Limited.">
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/og-preview.png">
 
   <style>
@@ -75,6 +96,20 @@
     .section-head .emoji { font-size: 1.1rem; }
     .section-head .sub { color: var(--muted); font-size: 0.82rem; }
 
+    /* Set groups inside "Set specific pages" */
+    .set-group { margin-top: 26px; }
+    .set-group:first-of-type { margin-top: 6px; }
+    .set-head {
+      display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+      margin: 0 0 12px;
+    }
+    .set-head h3 { margin: 0; font-size: 1.05rem; }
+    .set-head .code {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--bg); background: var(--accent); border-radius: 4px; padding: 1px 6px;
+    }
+    .set-head .date { color: var(--muted); font-size: 0.8rem; }
+
     /* Plain card grid */
     .grid {
       display: grid;
@@ -100,7 +135,7 @@
     .card p { margin: 0; color: var(--muted); font-size: 0.86rem; }
     .card .arrow { margin-top: auto; color: var(--accent-2); font-size: 0.8rem; padding-top: 10px; }
 
-    /* Featured cards — with social-preview image above */
+    /* Featured cards - with social-preview image above */
     .featured-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -137,6 +172,75 @@
     .fcard p { margin: 0; color: var(--muted); font-size: 0.86rem; }
     .fcard .arrow { margin-top: auto; color: var(--accent-2); font-size: 0.8rem; padding-top: 10px; }
 
+    /* Lead featured cards: full row, image one side, set shortcuts the other.
+       A div, not an <a>, because each holds several links. */
+    .fcard.wide {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+    }
+    .fcard.wide .thumb-link { display: block; background: #fff; border-right: 1px solid var(--border); }
+    .fcard.wide .thumb {
+      height: 100%; min-height: 250px; max-height: 300px;
+      object-fit: contain; object-position: center;
+      background: #fff; padding: 10px; border-bottom: 0;
+    }
+    .fcard.wide .body { padding: 18px 22px 18px; }
+    .fcard.wide h3 { font-size: 1.2rem; }
+    .fcard.wide h3 a { color: inherit; text-decoration: none; }
+    .fcard.wide h3 a:hover { color: var(--accent); }
+    .jump-label {
+      margin: 14px 0 8px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex; align-items: baseline; gap: 6px;
+      padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--panel-2);
+      color: var(--text); font-size: 0.8rem; text-decoration: none;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .chip b { color: var(--accent); font-size: 0.7rem; letter-spacing: 0.06em; }
+    .chip:hover { border-color: var(--accent); background: #262b36; }
+    .chip.all { border-color: rgba(110, 168, 254, 0.45); }
+    .chip.all b { color: var(--accent-2); }
+    .chip.all:hover { border-color: var(--accent-2); }
+    .chip.mini { padding: 2px 8px; }
+    .chip.mini b { font-size: 0.72rem; }
+    .chips .more-label {
+      align-self: center; margin-right: 2px;
+      font-size: 0.72rem; color: var(--muted);
+    }
+    .chips + .chips { margin-top: 8px; }
+    .feature-actions {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+      margin-top: auto; padding-top: 16px; font-size: 0.82rem;
+    }
+    .feature-actions a { text-decoration: none; }
+    .feature-actions .open { color: var(--accent-2); }
+    .feature-actions .side-link { color: var(--text); border-bottom: 1px dashed var(--muted); }
+    .feature-actions .side-link:hover { color: var(--accent); border-bottom-color: var(--accent); }
+    .feature-actions .beta-tag {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: #c4b5fd; border: 1px solid #6d5bd0; border-radius: 999px;
+      padding: 0 6px; margin-left: 6px; vertical-align: 1px;
+    }
+
+    /* Mirrored lead card: image on the right. The quiz preview is a tall
+       screenshot, so it is cropped from the top rather than letterboxed. */
+    .fcard.wide.flip { grid-template-columns: minmax(0, 1fr) 300px; }
+    .fcard.wide.flip .thumb-link { order: 2; border-right: 0; border-left: 1px solid var(--border); background: #0b0d11; }
+    .fcard.wide.flip .thumb { object-fit: cover; object-position: center top; padding: 0; background: #0b0d11; }
+
+    /* Last Featured row: two cards sharing the full width */
+    .fpair {
+      grid-column: 1 / -1;
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
     footer.site {
       margin-top: 56px;
       color: var(--dim); font-size: 0.84rem;
@@ -146,6 +250,18 @@
     footer.site .credits { margin-bottom: 10px; }
     footer.site .credits strong { color: var(--text); }
     footer.site .sep { color: var(--border); margin: 0 6px; }
+    footer.site .ver { margin-top: 10px; font-size: 0.78rem; }
+
+    @media (max-width: 720px) {
+      .fcard.wide, .fcard.wide.flip { grid-template-columns: 1fr; }
+      .fcard.wide .thumb-link { border-right: 0; border-bottom: 1px solid var(--border); }
+      .fcard.wide .thumb { height: 230px; min-height: 0; }
+      .fcard.wide.flip .thumb-link { order: 0; border-left: 0; }
+    }
+    @media (max-width: 520px) {
+      .wrap { padding: 28px 16px 64px; }
+      .featured-grid { grid-template-columns: 1fr; }
+    }
   </style>
   <script data-goatcounter="https://toskicologist.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
@@ -155,7 +271,7 @@
 
     <header class="hero">
       <h1>MTG Draft Analytics<span class="dot">.</span></h1>
-      <p class="tag">Interactive tools, card ratings, and quizzes for Magic: The Gathering Limited — across Lorwyn&nbsp;Eclipsed, Strixhaven, TMNT and Foundations.</p>
+      <p class="tag">Interactive tools, card ratings, and quizzes for Magic: The Gathering Limited — set by set, from Bloomburrow to Reality&nbsp;Fracture.</p>
 
       <!-- Standard contact / credits header (mirrors other pages) -->
       <div class="data-info">
@@ -189,100 +305,108 @@
       </div>
       <div class="featured-grid">
 
-        <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">
-          <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/ecl-quiz-preview.png" alt="17Lands Card Evaluation Quiz preview" loading="lazy">
+        <div class="fcard wide">
+          <a class="thumb-link" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html" aria-label="Open the Multi-Set Color Wheel">
+            <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png" alt="Reality Fracture draft archetypes on the color wheel" loading="lazy">
+          </a>
           <div class="body">
-            <h3>17Lands Card Evaluation Quiz</h3>
-            <p>Test your card evaluation against real 17Lands win-rate data, with Wordle-style score sharing.</p>
-            <span class="arrow">Open quiz →</span>
-          </div>
-        </a>
-
-        <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">
-          <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/sos-preview.png" alt="Multi-Set Color Wheel preview" loading="lazy">
-          <div class="body">
-            <h3>Multi-Set Color Wheel</h3>
+            <h3><a href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">Multi-Set Color Wheel</a></h3>
             <p>Interactive draft-archetype color wheel — switch between sets, hover for card images and signpost cards.</p>
-            <span class="arrow">Open tool →</span>
-          </div>
-        </a>
 
-        <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html">
-          <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018%2C%202026%2C%2010_33_59%20PM.png" alt="SOS Normalized Ratings preview" loading="lazy">
-          <div class="body">
-            <h3>SOS Normalized Ratings</h3>
-            <p>Reviews from many Strixhaven reviewers, normalized with z-scores — average score plus a controversy score.</p>
-            <span class="arrow">Open tool →</span>
-          </div>
-        </a>
+            <div class="jump-label">Jump to a set</div>
+            <div class="chips">
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#fra"><b>FRA</b>Reality Fracture</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#hob"><b>HOB</b>The Hobbit</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#msh"><b>MSH</b>Marvel Super Heroes</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#sos"><b>SOS</b>Secrets of Strixhaven</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#tmt"><b>TMT</b>TMNT</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#ecl"><b>ECL</b>Lorwyn Eclipsed</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#fdn"><b>FDN</b>Foundations</a>
+              <a class="chip all" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html#all"><b>ALL</b>Every set · 19 wheels</a>
+            </div>
 
-        <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings-v2.html">
-          <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/assets/cropped%20ChatGPT%20Image%20Jan%2018%2C%202026%2C%2010_33_59%20PM.png" alt="ECL Normalized Ratings preview" loading="lazy">
-          <div class="body">
-            <h3>ECL Normalized Ratings</h3>
-            <p>Z-score normalized ratings across 5 major Lorwyn Eclipsed reviewers — best and most controversial cards.</p>
-            <span class="arrow">Open tool →</span>
+            <div class="feature-actions">
+              <a class="open" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel.html">Open the wheel →</a>
+              <a class="side-link" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/custom-color-wheel.html">✏️ Build your own wheel</a>
+            </div>
           </div>
-        </a>
+        </div>
 
-        <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/">
-          <div class="thumb ph"><span class="ico">🧠</span>Card Knowledge Quiz</div>
+        <div class="fcard wide flip">
+          <a class="thumb-link" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" aria-label="Open the 17Lands Card Evaluation Quiz">
+            <img class="thumb" src="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/ecl-quiz-preview.png" alt="17Lands Card Evaluation Quiz preview" loading="lazy">
+          </a>
           <div class="body">
-            <h3>Card Knowledge Quiz</h3>
-            <p>Learn card evaluation with instant feedback and custom modes.</p>
-            <span class="arrow">Open quiz →</span>
-          </div>
-        </a>
+            <h3><a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">17Lands Card Evaluation Quiz</a></h3>
+            <p>Test your card evaluation against real 17Lands win-rate data, with Wordle-style score sharing.</p>
 
-        <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html">
-          <div class="thumb ph"><span class="ico">🪙</span>Budget Deckbuilder</div>
-          <div class="body">
-            <h3>Budget Modern Deckbuilder</h3>
-            <p>Paste a decklist; cheapest-printing TCG Mid totals update live, with a budget check and timestamped export.</p>
-            <span class="arrow">Open tool →</span>
+            <div class="jump-label">Jump to a set</div>
+            <div class="chips">
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#HOB"><b>HOB</b>The Hobbit</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#MSH"><b>MSH</b>Marvel Super Heroes</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#SOS"><b>SOS</b>Secrets of Strixhaven</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#TMT"><b>TMT</b>TMNT</a>
+              <a class="chip" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#ECL"><b>ECL</b>Lorwyn Eclipsed</a>
+            </div>
+            <div class="chips">
+              <span class="more-label">Earlier:</span>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#TLA" title="Avatar: The Last Airbender"><b>TLA</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#OM1" title="Marvel's Spider-Man, as drafted on Arena under its Through the Omenpaths names (Pick Two Draft)"><b>OM1</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#EOE" title="Edge of Eternities"><b>EOE</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#FIN" title="Final Fantasy"><b>FIN</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#TDM" title="Tarkir: Dragonstorm"><b>TDM</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#FDN" title="Foundations"><b>FDN</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#BLB" title="Bloomburrow"><b>BLB</b></a>
+              <a class="chip mini" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/#CUBE" title="Powered Cube"><b>CUBE</b></a>
+            </div>
+
+            <div class="feature-actions">
+              <a class="open" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">Open the quiz →</a>
+              <a class="side-link" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/pack-beta.html">🎴 P1P1 Pack Quiz<span class="beta-tag">Beta</span></a>
+            </div>
           </div>
-        </a>
+        </div>
+
+        <div class="fpair">
+          <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/">
+            <div class="thumb ph"><span class="ico">🧠</span>Card Knowledge Quiz</div>
+            <div class="body">
+              <h3>Card Knowledge Quiz</h3>
+              <p>Learn card evaluation with instant feedback and custom modes.</p>
+              <span class="arrow">Open quiz →</span>
+            </div>
+          </a>
+
+          <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html">
+            <div class="thumb ph"><span class="ico">🪙</span>Budget Deckbuilder</div>
+            <div class="body">
+              <h3>Budget Modern Deckbuilder</h3>
+              <p>Paste a decklist; cheapest-printing TCG Mid totals update live, with a budget check and timestamped export.</p>
+              <span class="arrow">Open tool →</span>
+            </div>
+          </a>
+        </div>
 
       </div>
     </section>
 
-    <!-- CARD RATINGS -->
+    <!-- DRAFT TOOLS -->
     <section>
       <div class="section-head">
-        <span class="emoji">📊</span>
-        <h2>Card Ratings</h2>
-        <span class="sub">expert vs. 17Lands data</span>
+        <span class="emoji">🧭</span>
+        <h2>Draft Tools</h2>
+        <span class="sub">work across sets</span>
       </div>
       <div class="grid">
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html">
-          <h3>Under / Over-rated — ECL</h3>
-          <p>Where expert ratings diverge most from community win-rate data.</p>
+        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/oracle-tags-analysis.html">
+          <h3>Oracle Tags Analysis</h3>
+          <p>Which Scryfall oracle tags are concentrated in each color and color pair, with a Scryfall search for every entry. Opens on Reality Fracture; the dropdown has every Standard set plus a Standard format view.</p>
           <span class="arrow">Open tool →</span>
         </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html">
-          <h3>Under / Over-rated — SOS</h3>
-          <p>Strixhaven cards where reviewers and data disagree most.</p>
-          <span class="arrow">Open tool →</span>
-        </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-top-cards-by-color.html">
-          <h3>SOS Top Cards by Color</h3>
-          <p>Best commons, uncommons and rares/mythics by color.</p>
-          <span class="arrow">Open tool →</span>
-        </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-avg-scores-by-category.html">
-          <h3>SOS Avg Scores by Category</h3>
-          <p>Average normalized scores by color &amp; rarity, booster-weighted.</p>
-          <span class="arrow">Open tool →</span>
-        </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-line-graphs.html">
-          <h3>SOS Scores — Line Graphs</h3>
-          <p>Card scores plotted by rarity then mana value, with image hover.</p>
-          <span class="arrow">Open tool →</span>
-        </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/ARCHETYPE_ANALYSIS.html">
-          <h3>SOS Archetype Analysis</h3>
-          <p>Deep-dive into expert accuracy across Strixhaven archetypes.</p>
-          <span class="arrow">Open tool →</span>
+        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/anki.html">
+          <h3>Card Study — Spaced Repetition</h3>
+          <p>An Anki-style spaced-repetition mode for learning the cards in a set.</p>
+          <span class="arrow">Open quiz →</span>
         </a>
       </div>
     </section>
@@ -299,11 +423,6 @@
           <p>Compare card values across Pauper, Modern and Standard.</p>
           <span class="arrow">Open tool →</span>
         </a>
-        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/ECL-CHEATSHEET.html">
-          <h3>ECL Cheatsheet</h3>
-          <p>Quick reference for Lorwyn Eclipsed draft.</p>
-          <span class="arrow">Open tool →</span>
-        </a>
         <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/pauper-card-list.html">
           <h3>Pauper Card List</h3>
           <p>Searchable Pauper reference, sorted by frequency.</p>
@@ -317,6 +436,11 @@
         <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/pauper/card-poster.html">
           <h3>Pauper Card Poster</h3>
           <p>Build a printable poster of Pauper staples.</p>
+          <span class="arrow">Open tool →</span>
+        </a>
+        <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/pauper/mono-red-madness.html">
+          <h3>Pauper Mono Red Madness Stock List</h3>
+          <p>The stock 60 nearly every Mono Red Madness deck plays, and how far each of 1,506 tournament decks strays from it.</p>
           <span class="arrow">Open tool →</span>
         </a>
       </div>
@@ -340,6 +464,146 @@
           <p>Average-last-seen-at distribution chart.</p>
           <span class="arrow">Open chart →</span>
         </a>
+      </div>
+    </section>
+
+    <!-- SET SPECIFIC PAGES - grouped by set, newest release first -->
+    <section>
+      <div class="section-head">
+        <span class="emoji">🗂️</span>
+        <h2>Set specific pages</h2>
+        <span class="sub">grouped by set, newest first</span>
+      </div>
+
+      <!-- HOB -->
+      <div class="set-group">
+        <div class="set-head">
+          <span class="code">HOB</span>
+          <h3>The Hobbit</h3>
+          <span class="date">released 14 Aug 2026</span>
+        </div>
+        <div class="grid">
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/hob-ratings.html">
+            <h3>HOB Card Ratings</h3>
+            <p>Top and bottom 5 cards by rarity.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- MSH -->
+      <div class="set-group">
+        <div class="set-head">
+          <span class="code">MSH</span>
+          <h3>Marvel Super Heroes</h3>
+          <span class="date">released 26 Jun 2026</span>
+        </div>
+        <div class="grid">
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/MSH-normalized-ratings.html">
+            <h3>MSH Normalized Ratings</h3>
+            <p>Set-review scores normalized across reviewers: best, worst and most controversial cards, plus the full sortable table.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- SOS -->
+      <div class="set-group">
+        <div class="set-head">
+          <span class="code">SOS</span>
+          <h3>Secrets of Strixhaven</h3>
+          <span class="date">released 24 Apr 2026</span>
+        </div>
+        <div class="grid">
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-ratings-v2.html">
+            <h3>SOS Normalized Ratings</h3>
+            <p>Reviews from many Strixhaven reviewers, normalized with z-scores — average score plus a controversy score.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/sos-index.html">
+            <h3>Under / Over-rated — SOS</h3>
+            <p>Strixhaven cards where reviewers and data disagree most.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-top-cards-by-color.html">
+            <h3>SOS Top Cards by Color</h3>
+            <p>Best commons, uncommons and rares/mythics by color.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-avg-scores-by-category.html">
+            <h3>SOS Avg Scores by Category</h3>
+            <p>Average normalized scores by color &amp; rarity, booster-weighted.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/sos-line-graphs.html">
+            <h3>SOS Scores — Line Graphs</h3>
+            <p>Card scores plotted by rarity then mana value, with image hover.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/sos/ARCHETYPE_ANALYSIS.html">
+            <h3>SOS Archetype Analysis</h3>
+            <p>Deep-dive into expert accuracy across Strixhaven archetypes.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- TMT -->
+      <div class="set-group">
+        <div class="set-head">
+          <span class="code">TMT</span>
+          <h3>Teenage Mutant Ninja Turtles</h3>
+          <span class="date">released 6 Mar 2026</span>
+        </div>
+        <div class="grid">
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/tmnt-project/ratings.html">
+            <h3>TMNT Normalized Ratings</h3>
+            <p>Z-score normalized ratings combining CardGameBase, Draftsim and MTG Arena Zone pre-release reviews.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ECL -->
+      <div class="set-group">
+        <div class="set-head">
+          <span class="code">ECL</span>
+          <h3>Lorwyn Eclipsed</h3>
+          <span class="date">released 23 Jan 2026</span>
+        </div>
+        <div class="grid">
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/ecl-ratings-v2.html">
+            <h3>ECL Normalized Ratings</h3>
+            <p>Z-score normalized ratings across 5 major Lorwyn Eclipsed reviewers — best and most controversial cards.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/underover-rated/ecl/index.html">
+            <h3>Under / Over-rated — ECL</h3>
+            <p>Where expert ratings diverge most from community win-rate data.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/ECL-CHEATSHEET.html">
+            <h3>ECL Cheatsheet</h3>
+            <p>Quick reference for Lorwyn Eclipsed draft.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Cross-set block -->
+      <div class="set-group">
+        <div class="set-head">
+          <span class="code">BLOCK</span>
+          <h3>New York Block</h3>
+          <span class="date">SPM · TMT · MSH</span>
+        </div>
+        <div class="grid">
+          <a class="card" href="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/new-york-block/new-york-block.html">
+            <h3>New York Block</h3>
+            <p>Two-colour themes and top 17Lands cards across Spider-Man, TMNT and Marvel Super Heroes.</p>
+            <span class="arrow">Open tool →</span>
+          </a>
+        </div>
       </div>
     </section>
 
@@ -367,6 +631,7 @@
         &nbsp;·&nbsp;
         <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics" target="_blank" rel="noopener">Source on GitHub</a>
       </div>
+      <div class="ver">v1.0.0 · Last updated 2026-10-01 15:20 UTC</div>
     </footer>
 
   </div>

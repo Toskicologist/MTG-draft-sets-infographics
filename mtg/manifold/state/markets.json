@@ -1,0 +1,59 @@
+{
+ "sets": {
+  "FRA": {
+   "name": "Reality Fracture",
+   "start": "2026-09-29T15:00:00Z",
+   "markets": {
+    "d14:top_card": {
+     "id": "EgIv5zdrus",
+     "url": "https://manifold.markets/Toskicologist/what-card-will-have-the-highest-gih-hLC2CqSPuq",
+     "question": "What card will have the highest GIH WR for Reality Fracture according to 17Lands data on October 13, 2026?",
+     "kind": "top_card",
+     "checkpoint": "d14",
+     "time_period": "ALL_TIME",
+     "close": "2026-10-13T15:00:00Z",
+     "resolve_after": "2026-10-13T15:00:00Z",
+     "pair_answers": {},
+     "created": "2026-10-01T12:50:37Z",
+     "autopopulate_n": 5
+    },
+    "d14:top_pair": {
+     "id": "ZJNDnDVWlV",
+     "url": "https://manifold.markets/Toskicologist/what-color-pair-will-have-the-highe",
+     "question": "What color pair will have the highest win rate for Reality Fracture according to 17Lands data on October 13, 2026?",
+     "kind": "top_pair",
+     "checkpoint": "d14",
+     "time_period": "ALL_TIME",
+     "close": "2026-10-13T15:00:00Z",
+     "resolve_after": "2026-10-13T15:00:00Z",
+     "pair_answers": {
+      "WU": "pPh2ZRAICP",
+      "UB": "669uPqcANd",
+      "BR": "0hc2qz5lZU",
+      "RG": "qu9P0LnPgg",
+      "GW": "O6NzZRNCct",
+      "WB": "CLAPCOysLL",
+      "UR": "ydNgcsAgZh",
+      "BG": "COE8PA2cP0",
+      "RW": "PlgudyS20E",
+      "GU": "lZygl2S56N"
+     },
+     "created": "2026-10-01T13:00:16Z",
+     "autopopulate_n": 0
+    }
+   },
+   "pair_labels": {
+    "WU": "Fatehold (WU)",
+    "UB": "Theorix (UB)",
+    "BR": "Stingerquill (BR)",
+    "RG": "Konstrari (RG)",
+    "GW": "Vigorbloom (GW)",
+    "WB": "Liliana (WB)",
+    "UR": "Chandra (UR)",
+    "BG": "Garruk (BG)",
+    "RW": "Ajani (RW)",
+    "GU": "Jace (GU)"
+   }
+  }
+ }
+}
