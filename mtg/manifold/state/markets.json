@@ -40,6 +40,19 @@
      },
      "created": "2026-10-01T13:00:16Z",
      "autopopulate_n": 0
+    },
+    "d41:top_card": {
+     "id": "NkLbrLxWsH",
+     "url": "https://manifold.markets/Toskicologist/what-card-will-have-the-highest-gih-N0hQI8lCnO",
+     "question": "What card will have the highest GIH WR for Reality Fracture according to 17Lands data on November 9, 2026?",
+     "kind": "top_card",
+     "checkpoint": "d41",
+     "time_period": "ALL_TIME",
+     "close": "2026-11-09T15:00:00Z",
+     "resolve_after": "2026-11-09T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-10-01T19:45:45Z"
     }
    },
    "pair_labels": {
