@@ -53,6 +53,19 @@
      "pair_answers": {},
      "independent": false,
      "created": "2026-10-01T19:45:45Z"
+    },
+    "d41:top_common": {
+     "id": "6QYAyFLaPB",
+     "url": "https://manifold.markets/Toskicologist/what-common-will-have-the-highest-g",
+     "question": "What common will have the highest GIH WR for Reality Fracture according to 17Lands data on November 9, 2026?",
+     "kind": "top_common",
+     "checkpoint": "d41",
+     "time_period": "ALL_TIME",
+     "close": "2026-11-09T15:00:00Z",
+     "resolve_after": "2026-11-09T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-10-02T19:59:23Z"
     }
    },
    "pair_labels": {
