@@ -1412,6 +1412,9 @@
   Card images from Scryfall API.
 
   CHANGELOG:
+  v4.10.0-beta.204 (2026-10-02 UTC): DATA: Refresh HOB to HOB card-ratings-2026-10-02 T1125.csv (184 cards).
+  v4.10.0-beta.203 (2026-10-02 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-02 T1125.csv (289 cards).
+  v4.10.0-beta.202 (2026-10-02 UTC): DATA: Refresh SOS to SOS card-ratings-2026-10-02 T1125.csv (327 cards).
   v4.10.0-beta.201 (2026-10-01T15:54:54Z): FIX: Set names in SET_CONFIG - ECL is Lorwyn Eclipsed (was 'Etchings of Cryptic Lore'), TMT is Teenage Mutant Ninja Turtles (was missing 'Ninja'), OM1 is Through the Omenpaths, the Arena reskin of Marvel's Spider-Man, Pick 2 Draft (was 'OTJ: The Big Score'). Labels only; no data changed.
   v4.10.0-beta.200 (2026-10-01 UTC): DATA: Refresh HOB to HOB card-ratings-2026-10-01 T1153.csv (184 cards).
   v4.10.0-beta.199 (2026-10-01 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-01 T1153.csv (289 cards).
@@ -5756,7 +5759,7 @@ const HOB_CARDS = [
   {name: "Most Decrepit Old Bird", color: "U", type: "Creature — Bird // Sorcery — Adventure", rarity: "R", gihWr: 55.6, alsa: 4.55, img: "2d838feb-89f2-4cdb-a5ab-ec880f28d873", set: "HOB"},
   {name: "My Precious", color: "", type: "Legendary Artifact — Equipment // Instant — Adventure", rarity: "R", gihWr: 51.3, alsa: 2.34, img: "15ae4d50-be2f-412c-bb6b-b0a06b60474a", set: "HOB"},
   {name: "Nasty Little Rabbit", color: "G", type: "Creature — Rabbit", rarity: "U", gihWr: 58.9, alsa: 3.62, img: "96bc7d25-2828-478a-8fe5-a1f4ede8c9c0", set: "HOB"},
-  {name: "Nighthowl Pursuer", color: "B", type: "Creature — Wolf", rarity: "U", gihWr: 59.1, alsa: 3.64, img: "d3cbe830-7e95-4019-89c4-cfb36bcf00f8", set: "HOB"},
+  {name: "Nighthowl Pursuer", color: "B", type: "Creature — Wolf", rarity: "U", gihWr: 59, alsa: 3.64, img: "d3cbe830-7e95-4019-89c4-cfb36bcf00f8", set: "HOB"},
   {name: "Nori, Teller of Tales", color: "WR", type: "Legendary Creature — Dwarf Bard", rarity: "C", gihWr: 53.6, alsa: 5.67, img: "b05adb48-980c-49a0-9ce6-7c7f3f20715d", set: "HOB"},
   {name: "Old Fat Spider", color: "G", type: "Creature — Spider", rarity: "U", gihWr: 52.6, alsa: 4.95, img: "e0c0f842-40fe-4776-a988-a35216bcfd47", set: "HOB"},
   {name: "Old Fat Spider Can't See Me", color: "U", type: "Enchantment — Saga", rarity: "U", gihWr: 52.4, alsa: 5.51, img: "4a865cea-f947-4736-8ace-ba478fceeb22", set: "HOB"},
@@ -5854,16 +5857,16 @@ const SET_CONFIG = {
     isNew: true,
     data: HOB_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=HOB&format=PremierDraft',
-    dataDate: '2026-10-01 UTC',
-    dataTimestamp: '2026-10-01 UTC'
+    dataDate: '2026-10-02 UTC',
+    dataTimestamp: '2026-10-02 UTC'
   },
   MSH: {
     name: 'MSH (Marvel Super Heroes)',
     shortName: 'MSH',
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
-    dataDate: '2026-10-01 UTC',
-    dataTimestamp: '2026-10-01 UTC'
+    dataDate: '2026-10-02 UTC',
+    dataTimestamp: '2026-10-02 UTC'
   },
   ECL: {
     name: 'ECL (Lorwyn Eclipsed)',
@@ -5951,14 +5954,14 @@ const SET_CONFIG = {
     shortName: 'SOS',
     data: SOS_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft',
-    dataDate: '2026-10-01 UTC',
-    dataTimestamp: '2026-10-01 UTC'
+    dataDate: '2026-10-02 UTC',
+    dataTimestamp: '2026-10-02 UTC'
   }
 };
 
 // Version and metadata
-const QUIZ_VERSION = '4.10.0-beta.201';
-const LAST_UPDATE = '2026-10-01T15:54:54Z';
+const QUIZ_VERSION = '4.10.0-beta.204';
+const LAST_UPDATE = '2026-10-02 UTC';
 const DATA_SOURCE_DATE = '2026-04-02';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
