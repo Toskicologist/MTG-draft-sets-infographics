@@ -11,6 +11,9 @@
   inside them stay out of "Set specific pages".
 
   Changelog
+  v1.1.1 (2026-10-02T11:14:00Z) - Claude Opus 5.5 - Preview images also show when
+    the source file is opened locally from mtg/pages-root/: each <img> falls back
+    to ../assets/previews/ if the site-relative path fails. No change on the site.
   v1.1.0 (2026-10-01T19:48:22Z) - Claude Opus 5.5 - Draft Tools, Deck & Format
     Tools and Analytics merged into one "Tools & Analytics" section; Pauper is
     its own section, before Set specific pages. Real screenshot previews (in
@@ -341,7 +344,7 @@
 
         <div class="fcard wide flip">
           <a class="thumb-link" href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/" aria-label="Open the 17Lands Card Evaluation Quiz">
-            <img class="thumb" src="mtg/assets/previews/17lands-quiz.jpg" alt="17Lands Card Evaluation Quiz: pick the better of two Hobbit cards" loading="lazy">
+            <img class="thumb" src="mtg/assets/previews/17lands-quiz.jpg" onerror="this.onerror=null;this.src='../assets/previews/17lands-quiz.jpg'" alt="17Lands Card Evaluation Quiz: pick the better of two Hobbit cards" loading="lazy">
           </a>
           <div class="body">
             <h3><a href="https://toskicologist.github.io/MTG-draft-sets-infographics/17lands-quiz/">17Lands Card Evaluation Quiz</a></h3>
@@ -376,7 +379,7 @@
 
         <div class="fpair">
           <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/card-knowledge-quiz/">
-            <img class="thumb" src="mtg/assets/previews/card-knowledge-quiz.jpg" alt="Card Knowledge Quiz question: name this card" loading="lazy">
+            <img class="thumb" src="mtg/assets/previews/card-knowledge-quiz.jpg" onerror="this.onerror=null;this.src='../assets/previews/card-knowledge-quiz.jpg'" alt="Card Knowledge Quiz question: name this card" loading="lazy">
             <div class="body">
               <h3>Card Knowledge Quiz</h3>
               <p>Learn card evaluation with instant feedback and custom modes.</p>
@@ -385,7 +388,7 @@
           </a>
 
           <a class="fcard" href="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder.html">
-            <img class="thumb" src="mtg/assets/previews/budget-deckbuilder.jpg" alt="Budget Deckbuilder cost treemap of a main deck and sideboard" loading="lazy">
+            <img class="thumb" src="mtg/assets/previews/budget-deckbuilder.jpg" onerror="this.onerror=null;this.src='../assets/previews/budget-deckbuilder.jpg'" alt="Budget Deckbuilder cost treemap of a main deck and sideboard" loading="lazy">
             <div class="body">
               <h3>Budget Modern Deckbuilder</h3>
               <p>Paste a decklist; cheapest-printing TCG Mid totals update live, with a budget check and timestamped export.</p>
@@ -627,7 +630,7 @@
         &nbsp;·&nbsp;
         <a href="https://github.com/Toskicologist/MTG-draft-sets-infographics" target="_blank" rel="noopener">Source on GitHub</a>
       </div>
-      <div class="ver">v1.1.0 · Last updated 2026-10-01 19:48 UTC</div>
+      <div class="ver">v1.1.1 · Last updated 2026-10-02 11:14 UTC</div>
     </footer>
 
   </div>
