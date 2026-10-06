@@ -16,6 +16,8 @@ Public API:
 
 import json
 import re
+import time
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -213,6 +215,99 @@ def _resolve_type(name: str, types_map: dict, scryfall: dict, existing: dict) ->
     return ''
 
 
+SCRYFALL_COLLECTION_URL = "https://api.scryfall.com/cards/collection"
+
+
+# Extra per-card fields the quiz pages use that 17Lands doesn't supply:
+# num/printSet (collector number + Scryfall set of the img printing, for the
+# grading "Set Order" mode) and altImg (OM1's Omenpaths print). Carried over
+# from the existing array so a refresh never drops them.
+_EXTRA_FIELDS = ('num', 'printSet', 'altImg', 'imgV', 'altImgV')
+# Callers that refresh these themselves (the local quiz build) switch this off.
+REFRESH_SCRYFALL_EXTRAS = True
+
+
+def _extract_existing_extras(html: str, set_code: str) -> dict:
+    extras = {}
+    block = _extract_cards_array_block(html, set_code)
+    if not block:
+        return extras
+    name_re = re.compile(r'name:\s*"((?:[^"\\]|\\.)*)"')
+    for obj_match in re.finditer(r'\{[^{}]*\}', block):
+        obj = obj_match.group()
+        nm = name_re.search(obj)
+        if not nm:
+            continue
+        found = {}
+        for field in _EXTRA_FIELDS:
+            m = re.search(field + r':\s*"((?:[^"\\]|\\.)*)"', obj)
+            if m:
+                found[field] = m.group(1)
+        if found:
+            extras[nm.group(1)] = found
+    return extras
+
+
+def _refresh_scryfall_extras(cards: list[dict]) -> None:
+    """Collector number, set and image version (imgV, the ?NNN on Scryfall's
+    image URL) for every card with an img. Refreshed every run because the
+    version changes when Scryfall replaces a scan - an unversioned CDN URL can
+    keep serving the old one (e.g. a Japanese placeholder). Best effort: a
+    failure keeps the carried-over values rather than failing the refresh."""
+    missing = [c for c in cards if c.get('img')]
+    for i in range(0, len(missing), 75):
+        batch = missing[i:i + 75]
+        body = json.dumps({"identifiers": [{"id": c['img']} for c in batch]}).encode()
+        req = urllib.request.Request(SCRYFALL_COLLECTION_URL, data=body, headers={
+            "Content-Type": "application/json", "Accept": "application/json",
+            "User-Agent": "MTG-draft-sets-quiz-updater/1.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                found = json.loads(resp.read()).get('data', [])
+        except Exception as exc:  # noqa: BLE001 - never fail the daily refresh on this
+            print(f"WARNING: Scryfall number/image-version lookup failed ({exc})")
+            break
+        by_id = {d.get('id'): d for d in found}
+        for c in batch:
+            d = by_id.get(c['img'])
+            if d and d.get('collector_number'):
+                c['num'] = d['collector_number']
+                c['printSet'] = d.get('set', '')
+                uris = d.get('image_uris') or ((d.get('card_faces') or [{}])[0].get('image_uris') or {})
+                ver = re.search(r'\?(\d+)$', uris.get('normal', ''))
+                if ver:
+                    c['imgV'] = ver.group(1)
+        time.sleep(0.1)
+
+
+def _fill_missing_types(cards: list[dict]) -> None:
+    """Last resort for cards no local source could type: look the type line up
+    on Scryfall by the card's image id (the id in the 17Lands images sidecar is
+    the Scryfall card id). A blank type hides a card from every Type filter,
+    which is how 519 cards in older sets ended up untyped. Best effort: a network
+    failure leaves the blanks (with a warning) rather than failing the refresh."""
+    missing = [c for c in cards if not c['type'] and c.get('img')]
+    for i in range(0, len(missing), 75):
+        batch = missing[i:i + 75]
+        body = json.dumps({"identifiers": [{"id": c['img']} for c in batch]}).encode()
+        req = urllib.request.Request(SCRYFALL_COLLECTION_URL, data=body, headers={
+            "Content-Type": "application/json", "Accept": "application/json",
+            "User-Agent": "MTG-draft-sets-quiz-updater/1.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                found = json.loads(resp.read()).get('data', [])
+        except Exception as exc:  # noqa: BLE001 - never fail the daily refresh on this
+            print(f"WARNING: Scryfall type lookup failed ({exc})")
+            break
+        type_by_id = {d.get('id'): d.get('type_line', '') for d in found}
+        for c in batch:
+            c['type'] = type_by_id.get(c['img'], '') or c['type']
+        time.sleep(0.1)  # Scryfall asks for 50-100 ms between requests
+    for c in cards:
+        if not c['type']:
+            print(f"WARNING: {c['name']} still has no type (hidden from Type filters)")
+
+
 # ---------------------------------------------------------------------------
 # JS array formatting
 # ---------------------------------------------------------------------------
@@ -264,6 +359,9 @@ def _format_card_js(card: dict, set_code: str, extended: bool = False) -> str:
             extra += f'gpWr: {gp_str}, gpN: {int(card.get("gpN") or 0)}, '
 
     img_part = f'img: "{js_str(img)}", ' if img else ''
+    for field in _EXTRA_FIELDS:
+        if card.get(field):
+            img_part += f'{field}: "{js_str(card[field])}", '
 
     return (
         f'  {{name: "{name}", color: "{color}", type: "{type_}", '
@@ -418,6 +516,7 @@ def update_quiz(
     # --- Load img (Scryfall UUID) resolution sources ---
     images_sidecar = _load_images_sidecar(new_csv_path)
     existing_imgs = _extract_existing_imgs(html, set_code)
+    existing_extras = _extract_existing_extras(html, set_code)
 
     # --- Parse existing <SET>_CARDS for old_count and added/removed diff ---
     old_names: set[str] = set(existing_types.keys())
@@ -476,7 +575,14 @@ def update_quiz(
             card['gihN'] = row.get('gih_count', 0)
             card['gpWr'] = round(row['gp_wr'], 1) if row.get('gp_wr') is not None else None
             card['gpN'] = row.get('gp_count', 0)
+        card.update(existing_extras.get(name, {}))
         new_cards.append(card)
+
+    if any(not c['type'] for c in new_cards):
+        _fill_missing_types(new_cards)
+
+    if REFRESH_SCRYFALL_EXTRAS:
+        _refresh_scryfall_extras(new_cards)
 
     new_cards.sort(key=lambda c: c['name'])
 

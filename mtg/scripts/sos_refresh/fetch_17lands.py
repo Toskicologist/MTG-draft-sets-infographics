@@ -19,6 +19,8 @@ import csv
 import io
 import json
 import re
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -102,15 +104,34 @@ def _build_url(expansion: str, fmt: str, start_date: str) -> str:
     return f"{config.LANDS_API_URL}?{qs}"
 
 
-def _fetch_json(url: str, timeout: int = 60) -> list[dict]:
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        payload = json.loads(resp.read())
-    # New endpoint wraps the card list: {"data": [...]}. Old endpoint returned
-    # a bare list; accept both so a rollback of LANDS_API_URL keeps working.
-    if isinstance(payload, dict):
-        return payload["data"]
-    return payload
+def _fetch_json(url: str, timeout: int = 60, attempts: int = 3) -> list[dict]:
+    """GET a 17Lands card-data URL. Retries transient failures (network errors,
+    timeouts, 429/5xx, a non-JSON body such as a Cloudflare challenge page) with
+    backoff, and checks the response is a list of card objects before returning,
+    so a changed or broken endpoint fails loudly instead of yielding bad data."""
+    last_exc: Exception | None = None
+    for attempt in range(attempts):
+        if attempt:
+            time.sleep(5 * 3 ** (attempt - 1))  # 5 s, then 15 s
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                payload = json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            last_exc = exc
+            if exc.code == 429 or exc.code >= 500:
+                continue
+            raise
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+            last_exc = exc
+            continue
+        # New endpoint wraps the card list: {"data": [...]}. Old endpoint returned
+        # a bare list; accept both so a rollback of LANDS_API_URL keeps working.
+        cards = payload.get("data") if isinstance(payload, dict) else payload
+        if not isinstance(cards, list) or not all(isinstance(c, dict) and "name" in c for c in cards):
+            raise ValueError(f"Unexpected 17Lands response shape from {url}")
+        return cards
+    raise RuntimeError(f"17Lands fetch failed after {attempts} attempts: {last_exc}")
 
 
 def _build_csv_text(cards: list[dict]) -> str:
