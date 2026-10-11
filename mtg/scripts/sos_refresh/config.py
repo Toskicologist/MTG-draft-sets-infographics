@@ -72,6 +72,9 @@ if _IS_CI:
     # HOB (The Hobbit) quiz refresh — same quiz-only shape as MSH.
     HOB_SCRYFALL_REFERENCE_JSON = _THIS_REPO_ROOT / "mtg" / "shared-data" / "data" / "hob" / "hob-scryfall-full.json"
 
+    # FRA (Reality Fracture) quiz refresh — same quiz-only shape as MSH/HOB.
+    FRA_SCRYFALL_REFERENCE_JSON = _THIS_REPO_ROOT / "mtg" / "shared-data" / "data" / "fra" / "fra-scryfall-full.json"
+
     # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
     # anchors as the card quiz; refreshed as an extra quiz target when present.
     PACK_BETA_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "pack-beta.html"
@@ -121,6 +124,9 @@ else:
     # HOB (The Hobbit) quiz refresh — same quiz-only shape as MSH.
     HOB_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "hob" / "hob-scryfall-full.json"
 
+    # FRA (Reality Fracture) quiz refresh — same quiz-only shape as MSH/HOB.
+    FRA_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "fra" / "fra-scryfall-full.json"
+
     # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
     # anchors as the card quiz; refreshed as an extra quiz target when present.
     PACK_BETA_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "pack-beta.html"
@@ -157,6 +163,14 @@ HOB_FORMAT = "PremierDraft"
 HOB_START_DATE = "2026-08-11"  # HOB Premier Draft opened at digital release
 HOB_CSV_GLOB = "HOB card-ratings-*.csv"
 
+# FRA (Reality Fracture) — quiz auto-refresh. Paper release 2026-10-02, Arena/MTGO
+# 2026-09-29 (WotC "Collecting Reality Fracture", see mtg/fra-project/FRA_PLAN.md).
+# The API call uses ALL_TIME, so the start date is informational only.
+FRA_EXPANSION = "FRA"
+FRA_FORMAT = "PremierDraft"
+FRA_START_DATE = "2026-09-29"  # FRA Premier Draft opened at digital release
+FRA_CSV_GLOB = "FRA card-ratings-*.csv"
+
 # Per-set refresh descriptors. The quiz_updater and the fetch/orchestrator layers
 # read these so the same code path serves any set: pick the descriptor by set code.
 # Note: SOS keeps its dedicated multi-consumer orchestrator (refresh_sos_17lands.py);
@@ -185,6 +199,16 @@ SET_REFRESH = {
         "csv_glob": HOB_CSV_GLOB,
         "scryfall_reference": HOB_SCRYFALL_REFERENCE_JSON,
         "types_mapping": None,  # no HOB types-mapping.json; Scryfall snapshot + embedded types cover it
+    },
+    "FRA": {
+        "expansion": FRA_EXPANSION,
+        "format": FRA_FORMAT,
+        "start_date": FRA_START_DATE,
+        "csv_glob": FRA_CSV_GLOB,
+        "scryfall_reference": FRA_SCRYFALL_REFERENCE_JSON,
+        # The snapshot lacks the 10 Special Guests (spg); embedded types and the
+        # Scryfall-by-image-id fill cover them.
+        "types_mapping": None,
     },
 }
 
