@@ -688,6 +688,8 @@
   Card images from the Scryfall image CDN (cards.scryfall.io).
 
   CHANGELOG:
+  v1.5.0-beta.166 (2026-10-12 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-12 T1336.csv (334 cards).
+  v1.5.0-beta.165 (2026-10-12 UTC): DATA: Refresh SOS to SOS card-ratings-2026-10-12 T1336.csv (341 cards).
   v1.5.0-beta.164 (2026-10-11 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-11 T1139.csv (334 cards).
   v1.5.0-beta.163 (2026-10-11 UTC): DATA: Refresh SOS to SOS card-ratings-2026-10-11 T1139.csv (341 cards).
   v1.5.0-beta.162 (2026-10-10 UTC): DATA: Refresh MSH to MSH card-ratings-2026-10-10 T1126.csv (334 cards).
@@ -868,8 +870,8 @@
   v1.0.0-beta.1 (2026-07-16T19:38:37Z UTC - Claude Sonnet): Initial P1P1 pack quiz - 14-card Arena-style simulated packs (rarity slots, mythic 1/7, wildcard approximations, >=4-color commons rule), percentile scoring with grade-notch "left on the table", full-pack reveal overlays, 10-pack runs with end-of-run breakdown, localStorage history, MSH+SOS with embedded Scryfall CDN images. ALSA mode excludes cards with no reported ALSA (alsa: null).
 */
 
-const QUIZ_VERSION = '1.5.0-beta.164';
-const LAST_UPDATE = '2026-10-11 UTC';
+const QUIZ_VERSION = '1.5.0-beta.166';
+const LAST_UPDATE = '2026-10-12 UTC';
 const GITHUB_REPO = 'https://github.com/Toskicologist/MTG-draft-sets-infographics';
 
 const ECL_CARDS = [
@@ -4506,40 +4508,40 @@ const MSH_CARDS = [
   {name: "Tony Stark", color: "U", type: "Legendary Creature — Human Artificer Hero // Legendary Artifact Creature — Human Hero", rarity: "M", gihWr: 59.9, alsa: 2.14, gihN: 7985, img: "4cea42fd-035e-4b8f-8b1d-ff363b694f14", num: "80", printSet: "msh", imgV: "1783902955", set: "MSH"},
   {name: "Too Evil to Stay Dead", color: "B", type: "Sorcery", rarity: "U", gihWr: 51.5, alsa: 6.39, gihN: 9572, img: "f471e9ce-73bb-4090-98f2-f591c7cf4efe", num: "118", printSet: "msh", imgV: "1783902936", set: "MSH"},
   {name: "Training Compound", color: "", type: "Land", rarity: "R", gihWr: 55.6, alsa: 4.39, gihN: 9207, img: "c91e28db-307f-462a-88aa-581d10e77f10", num: "275", printSet: "msh", imgV: "1783902882", set: "MSH"},
-  {name: "Training Regimen", color: "G", type: "Enchantment", rarity: "U", gihWr: 52, alsa: 4.81, gihN: 12741, img: "a27aee6d-1fc3-4307-bb16-b964d723fe2f", set: "MSH"},
-  {name: "Trickster's Stratagem", color: "U", type: "Sorcery", rarity: "C", gihWr: 60.4, alsa: 4.16, gihN: 144032, img: "620376d0-dc0c-405f-8121-eb36d9b4f4c2", set: "MSH"},
-  {name: "Truck Toss", color: "R", type: "Instant", rarity: "U", gihWr: 52.2, alsa: 4.88, gihN: 18777, img: "60f02fbf-1416-48a3-bf94-f27509f6983a", set: "MSH"},
-  {name: "U.S.Agent, John Walker", color: "WB", type: "Legendary Creature — Human Soldier Hero", rarity: "U", gihWr: 56.9, alsa: 3.34, gihN: 40447, img: "35e11911-799c-4d82-9109-3ca27964bef0", set: "MSH"},
-  {name: "Ultron Drone", color: "", type: "Artifact Creature — Robot Villain", rarity: "C", gihWr: 53.8, alsa: 6.84, gihN: 26852, img: "149a0a3b-c470-414c-a7de-d773b8b4cc82", set: "MSH"},
-  {name: "Ultron, Artificial Malevolence", color: "", type: "Legendary Artifact Creature — Robot Villain", rarity: "M", gihWr: 52.9, alsa: 1.95, gihN: 5767, img: "32ddd5ac-57ed-4e78-8932-a65980191f6e", set: "MSH"},
-  {name: "Undercover Skrull", color: "G", type: "Creature — Skrull Shapeshifter Villain", rarity: "C", gihWr: 59, alsa: 3.72, gihN: 101613, img: "90b9a3c0-3fd6-403e-9d6c-201342fea0ad", set: "MSH"},
-  {name: "Unliving Legionnaire", color: "B", type: "Creature — Vampire Villain", rarity: "C", gihWr: 53.7, alsa: 7.26, gihN: 23941, img: "ce08f4bb-7da3-4199-8b90-fcdb29e84e98", set: "MSH"},
-  {name: "Unnatural Growth", color: "G", type: "Enchantment", rarity: "M", gihWr: null, alsa: 4.01, gihN: 258, gpWr: 55.1, gpN: 662, img: "6b30090a-17b1-4e4d-a70c-bd232b5b3316", set: "MSH"},
-  {name: "Vibranium Energy Daggers", color: "", type: "Artifact — Equipment", rarity: "C", gihWr: 50.7, alsa: 7.43, gihN: 8853, img: "4fe5952d-f50f-443a-b960-657fc4bc1965", set: "MSH"},
-  {name: "Villainous Hideout", color: "", type: "Land", rarity: "U", gihWr: 57.2, alsa: 5.15, gihN: 31021, img: "822b0249-e1df-453d-8b60-75a5196ed818", set: "MSH"},
-  {name: "Vision Quest", color: "UR", type: "Sorcery", rarity: "R", gihWr: 60.8, alsa: 3.53, gihN: 17951, img: "c01afea6-645d-4d4f-bdaa-90794a628bcd", set: "MSH"},
-  {name: "Vision of Love", color: "R", type: "Instant", rarity: "C", gihWr: 49.8, alsa: 7.94, gihN: 10983, img: "5604cee1-a2ea-48ed-88f4-6878bd053fc8", set: "MSH"},
-  {name: "Visions of Villainy", color: "B", type: "Instant", rarity: "C", gihWr: 53.5, alsa: 6.35, gihN: 45272, img: "f8f1e4f9-7415-437f-b694-ecbdd76db114", set: "MSH"},
-  {name: "Viv Vision, Teen Synthezoid", color: "", type: "Legendary Artifact Creature — Robot Hero", rarity: "U", gihWr: 53.3, alsa: 4.41, gihN: 19596, img: "85cc170a-ecd2-4870-b675-7ece88813995", set: "MSH"},
-  {name: "Volcanic Villain", color: "R", type: "Creature — Elemental Villain", rarity: "C", gihWr: 49.8, alsa: 8.06, gihN: 6610, img: "4f48ba40-9934-40fd-a251-e15a68e772d2", set: "MSH"},
-  {name: "Wakandan Drone Flock", color: "W", type: "Artifact Creature — Robot", rarity: "C", gihWr: 57.1, alsa: 5.86, gihN: 74958, img: "4b12dc1f-2218-4c71-aafa-ea6a26eeb0aa", set: "MSH"},
-  {name: "Wakandan Royal Guard", color: "G", type: "Creature — Human Soldier Hero", rarity: "C", gihWr: 55.3, alsa: 6.56, gihN: 40763, img: "9bf0b1e9-32b5-4591-8dd2-6b5f9768c72d", set: "MSH"},
-  {name: "War Machine, Legacy of Iron", color: "WR", type: "Legendary Artifact Creature — Human Hero", rarity: "U", gihWr: 52, alsa: 4.02, gihN: 20718, img: "433a7d97-9c0b-4f5c-85ad-b55342c02d22", set: "MSH"},
-  {name: "Warleader's Call", color: "WR", type: "Enchantment", rarity: "M", gihWr: 60, alsa: 2.57, gihN: 565, img: "b98c57b1-6138-49a2-884a-995828cf4c50", set: "MSH"},
-  {name: "We Say Thee Nay!", color: "U", type: "Instant — Arcane", rarity: "C", gihWr: 59.3, alsa: 4.40, gihN: 125155, img: "13b70321-75bd-4d44-b9f6-5f062a5dda0f", set: "MSH"},
-  {name: "Web Up", color: "W", type: "Enchantment", rarity: "C", gihWr: 59.3, alsa: 2.54, gihN: 120247, img: "9a1b057b-229c-4f65-ba4e-12dd342238de", set: "MSH"},
-  {name: "Whiplash, Vengeful Engineer", color: "B", type: "Legendary Creature — Human Artificer Villain", rarity: "U", gihWr: 57, alsa: 5.75, gihN: 16550, img: "6f6e6767-4d20-469c-9f4b-7286b8cc1979", set: "MSH"},
-  {name: "White Tiger, Ava Ayala", color: "G", type: "Legendary Creature — Human Hero", rarity: "U", gihWr: 57.3, alsa: 3.78, gihN: 37303, img: "c1589e2e-32a8-48b8-93eb-a9af344e7084", set: "MSH"},
-  {name: "White Widow, Free Agent", color: "W", type: "Legendary Creature — Human Hero Villain", rarity: "U", gihWr: 55.3, alsa: 3.58, gihN: 32618, img: "57da765f-7d87-42ac-9eb0-a49c296fbbf8", set: "MSH"},
-  {name: "Wiccan, Rising Magician", color: "U", type: "Legendary Creature — Mutant Warlock Hero", rarity: "U", gihWr: 55.3, alsa: 4.59, gihN: 28272, img: "5d27ddec-716d-47e5-ac48-365e91b88ff1", set: "MSH"},
-  {name: "Widow's Bite", color: "B", type: "Instant", rarity: "C", gihWr: 56, alsa: 4.77, gihN: 73458, img: "dbee18af-9ade-4251-81a1-f6e7ffbf480f", set: "MSH"},
-  {name: "Winter Soldier, Icy Assassin", color: "WB", type: "Legendary Creature — Human Assassin Villain", rarity: "R", gihWr: 58.6, alsa: 4.06, gihN: 10001, img: "ebf71ffc-6e3e-4ca0-a84a-3c1ebd2b64b1", set: "MSH"},
-  {name: "Wolverine, Best There Is", color: "RG", type: "Legendary Creature — Mutant Berserker Hero", rarity: "M", gihWr: null, alsa: 2.50, gihN: 337, gpWr: 52.2, gpN: 816, img: "9976c1a8-ef3d-4911-854d-f53394fd709d", set: "MSH"},
-  {name: "Wolverine, Fierce Fighter", color: "RG", type: "Legendary Creature — Mutant Berserker Hero", rarity: "R", gihWr: 63.7, alsa: 2.18, gihN: 16116, img: "c1c7aa22-51b0-45ee-9a8e-5493a1820d8c", set: "MSH"},
-  {name: "Wonder Man, Hollywood Hero", color: "R", type: "Legendary Creature — Human Performer Hero", rarity: "U", gihWr: 50.8, alsa: 5.81, gihN: 8324, img: "1ee52395-9523-4da1-9108-8ab79229fc7a", set: "MSH"},
-  {name: "World War Hulk", color: "G", type: "Enchantment — Saga", rarity: "R", gihWr: 52.8, alsa: 2.86, gihN: 7025, img: "9032f05b-5c21-4996-90c1-268dc6dffbaa", set: "MSH"},
-  {name: "Worlds Within Worlds", color: "UG", type: "Sorcery", rarity: "R", gihWr: null, alsa: 6.53, gihN: 268, gpWr: 48.4, gpN: 672, img: "4765e39c-cbf2-4605-9bf1-3baad7d92cfb", set: "MSH"},
-  {name: "Yellowjacket, Heartless Marauder", color: "B", type: "Legendary Creature — Human Rogue Villain", rarity: "U", gihWr: 55.3, alsa: 4.46, gihN: 27179, img: "d8f91212-2ff5-4024-8f14-86bb5c4a9754", set: "MSH"}
+  {name: "Training Regimen", color: "G", type: "Enchantment", rarity: "U", gihWr: 52, alsa: 4.81, gihN: 12741, img: "a27aee6d-1fc3-4307-bb16-b964d723fe2f", num: "192", printSet: "msh", imgV: "1783902910", set: "MSH"},
+  {name: "Trickster's Stratagem", color: "U", type: "Sorcery", rarity: "C", gihWr: 60.4, alsa: 4.16, gihN: 144032, img: "620376d0-dc0c-405f-8121-eb36d9b4f4c2", num: "81", printSet: "msh", imgV: "1783902948", set: "MSH"},
+  {name: "Truck Toss", color: "R", type: "Instant", rarity: "U", gihWr: 52.2, alsa: 4.88, gihN: 18777, img: "60f02fbf-1416-48a3-bf94-f27509f6983a", num: "157", printSet: "msh", imgV: "1783902923", set: "MSH"},
+  {name: "U.S.Agent, John Walker", color: "WB", type: "Legendary Creature — Human Soldier Hero", rarity: "U", gihWr: 56.9, alsa: 3.34, gihN: 40447, img: "35e11911-799c-4d82-9109-3ca27964bef0", num: "236", printSet: "msh", imgV: "1783902894", set: "MSH"},
+  {name: "Ultron Drone", color: "", type: "Artifact Creature — Robot Villain", rarity: "C", gihWr: 53.8, alsa: 6.84, gihN: 26852, img: "149a0a3b-c470-414c-a7de-d773b8b4cc82", num: "253", printSet: "msh", imgV: "1783902888", set: "MSH"},
+  {name: "Ultron, Artificial Malevolence", color: "", type: "Legendary Artifact Creature — Robot Villain", rarity: "M", gihWr: 52.9, alsa: 1.95, gihN: 5767, img: "32ddd5ac-57ed-4e78-8932-a65980191f6e", num: "252", printSet: "msh", imgV: "1783902889", set: "MSH"},
+  {name: "Undercover Skrull", color: "G", type: "Creature — Skrull Shapeshifter Villain", rarity: "C", gihWr: 59, alsa: 3.72, gihN: 101613, img: "90b9a3c0-3fd6-403e-9d6c-201342fea0ad", num: "194", printSet: "msh", imgV: "1783902909", set: "MSH"},
+  {name: "Unliving Legionnaire", color: "B", type: "Creature — Vampire Villain", rarity: "C", gihWr: 53.7, alsa: 7.26, gihN: 23941, img: "ce08f4bb-7da3-4199-8b90-fcdb29e84e98", num: "119", printSet: "msh", imgV: "1783902935", set: "MSH"},
+  {name: "Unnatural Growth", color: "G", type: "Enchantment", rarity: "M", gihWr: null, alsa: 4.01, gihN: 258, gpWr: 55.1, gpN: 662, img: "6b30090a-17b1-4e4d-a70c-bd232b5b3316", num: "84", printSet: "mar", imgV: "1783903310", set: "MSH"},
+  {name: "Vibranium Energy Daggers", color: "", type: "Artifact — Equipment", rarity: "C", gihWr: 50.7, alsa: 7.43, gihN: 8853, img: "4fe5952d-f50f-443a-b960-657fc4bc1965", num: "254", printSet: "msh", imgV: "1783902888", set: "MSH"},
+  {name: "Villainous Hideout", color: "", type: "Land", rarity: "U", gihWr: 57.2, alsa: 5.15, gihN: 31021, img: "822b0249-e1df-453d-8b60-75a5196ed818", num: "276", printSet: "msh", imgV: "1783902881", set: "MSH"},
+  {name: "Vision Quest", color: "UR", type: "Sorcery", rarity: "R", gihWr: 60.8, alsa: 3.53, gihN: 17951, img: "c01afea6-645d-4d4f-bdaa-90794a628bcd", num: "237", printSet: "msh", imgV: "1783902895", set: "MSH"},
+  {name: "Vision of Love", color: "R", type: "Instant", rarity: "C", gihWr: 49.8, alsa: 7.94, gihN: 10983, img: "5604cee1-a2ea-48ed-88f4-6878bd053fc8", num: "158", printSet: "msh", imgV: "1783902922", set: "MSH"},
+  {name: "Visions of Villainy", color: "B", type: "Instant", rarity: "C", gihWr: 53.5, alsa: 6.35, gihN: 45272, img: "f8f1e4f9-7415-437f-b694-ecbdd76db114", num: "120", printSet: "msh", imgV: "1783902935", set: "MSH"},
+  {name: "Viv Vision, Teen Synthezoid", color: "", type: "Legendary Artifact Creature — Robot Hero", rarity: "U", gihWr: 53.3, alsa: 4.41, gihN: 19596, img: "85cc170a-ecd2-4870-b675-7ece88813995", num: "256", printSet: "msh", imgV: "1783902886", set: "MSH"},
+  {name: "Volcanic Villain", color: "R", type: "Creature — Elemental Villain", rarity: "C", gihWr: 49.8, alsa: 8.06, gihN: 6610, img: "4f48ba40-9934-40fd-a251-e15a68e772d2", num: "159", printSet: "msh", imgV: "1783902922", set: "MSH"},
+  {name: "Wakandan Drone Flock", color: "W", type: "Artifact Creature — Robot", rarity: "C", gihWr: 57.1, alsa: 5.86, gihN: 74958, img: "4b12dc1f-2218-4c71-aafa-ea6a26eeb0aa", num: "40", printSet: "msh", imgV: "1783902964", set: "MSH"},
+  {name: "Wakandan Royal Guard", color: "G", type: "Creature — Human Soldier Hero", rarity: "C", gihWr: 55.3, alsa: 6.56, gihN: 40763, img: "9bf0b1e9-32b5-4591-8dd2-6b5f9768c72d", num: "195", printSet: "msh", imgV: "1783902908", set: "MSH"},
+  {name: "War Machine, Legacy of Iron", color: "WR", type: "Legendary Artifact Creature — Human Hero", rarity: "U", gihWr: 52, alsa: 4.02, gihN: 20718, img: "433a7d97-9c0b-4f5c-85ad-b55342c02d22", num: "238", printSet: "msh", imgV: "1783902894", set: "MSH"},
+  {name: "Warleader's Call", color: "WR", type: "Enchantment", rarity: "M", gihWr: 60, alsa: 2.57, gihN: 565, img: "b98c57b1-6138-49a2-884a-995828cf4c50", num: "96", printSet: "mar", imgV: "1783903304", set: "MSH"},
+  {name: "We Say Thee Nay!", color: "U", type: "Instant — Arcane", rarity: "C", gihWr: 59.3, alsa: 4.40, gihN: 125155, img: "13b70321-75bd-4d44-b9f6-5f062a5dda0f", num: "82", printSet: "msh", imgV: "1783902948", set: "MSH"},
+  {name: "Web Up", color: "W", type: "Enchantment", rarity: "C", gihWr: 59.3, alsa: 2.54, gihN: 120247, img: "9a1b057b-229c-4f65-ba4e-12dd342238de", num: "41", printSet: "msh", imgV: "1783902964", set: "MSH"},
+  {name: "Whiplash, Vengeful Engineer", color: "B", type: "Legendary Creature — Human Artificer Villain", rarity: "U", gihWr: 57, alsa: 5.75, gihN: 16550, img: "6f6e6767-4d20-469c-9f4b-7286b8cc1979", num: "121", printSet: "msh", imgV: "1783902935", set: "MSH"},
+  {name: "White Tiger, Ava Ayala", color: "G", type: "Legendary Creature — Human Hero", rarity: "U", gihWr: 57.3, alsa: 3.78, gihN: 37303, img: "c1589e2e-32a8-48b8-93eb-a9af344e7084", num: "196", printSet: "msh", imgV: "1783902908", set: "MSH"},
+  {name: "White Widow, Free Agent", color: "W", type: "Legendary Creature — Human Hero Villain", rarity: "U", gihWr: 55.3, alsa: 3.58, gihN: 32618, img: "57da765f-7d87-42ac-9eb0-a49c296fbbf8", num: "42", printSet: "msh", imgV: "1783902963", set: "MSH"},
+  {name: "Wiccan, Rising Magician", color: "U", type: "Legendary Creature — Mutant Warlock Hero", rarity: "U", gihWr: 55.3, alsa: 4.59, gihN: 28272, img: "5d27ddec-716d-47e5-ac48-365e91b88ff1", num: "83", printSet: "msh", imgV: "1783902949", set: "MSH"},
+  {name: "Widow's Bite", color: "B", type: "Instant", rarity: "C", gihWr: 56, alsa: 4.77, gihN: 73458, img: "dbee18af-9ade-4251-81a1-f6e7ffbf480f", num: "122", printSet: "msh", imgV: "1783902935", set: "MSH"},
+  {name: "Winter Soldier, Icy Assassin", color: "WB", type: "Legendary Creature — Human Assassin Villain", rarity: "R", gihWr: 58.6, alsa: 4.06, gihN: 10001, img: "ebf71ffc-6e3e-4ca0-a84a-3c1ebd2b64b1", num: "239", printSet: "msh", imgV: "1783902893", set: "MSH"},
+  {name: "Wolverine, Best There Is", color: "RG", type: "Legendary Creature — Mutant Berserker Hero", rarity: "M", gihWr: null, alsa: 2.50, gihN: 337, gpWr: 52.2, gpN: 816, img: "9976c1a8-ef3d-4911-854d-f53394fd709d", num: "97", printSet: "mar", imgV: "1783903304", set: "MSH"},
+  {name: "Wolverine, Fierce Fighter", color: "RG", type: "Legendary Creature — Mutant Berserker Hero", rarity: "R", gihWr: 63.7, alsa: 2.18, gihN: 16116, img: "c1c7aa22-51b0-45ee-9a8e-5493a1820d8c", num: "240", printSet: "msh", imgV: "1783902893", set: "MSH"},
+  {name: "Wonder Man, Hollywood Hero", color: "R", type: "Legendary Creature — Human Performer Hero", rarity: "U", gihWr: 50.8, alsa: 5.81, gihN: 8324, img: "1ee52395-9523-4da1-9108-8ab79229fc7a", num: "160", printSet: "msh", imgV: "1783902922", set: "MSH"},
+  {name: "World War Hulk", color: "G", type: "Enchantment — Saga", rarity: "R", gihWr: 52.8, alsa: 2.86, gihN: 7025, img: "9032f05b-5c21-4996-90c1-268dc6dffbaa", num: "197", printSet: "msh", imgV: "1784182994", set: "MSH"},
+  {name: "Worlds Within Worlds", color: "UG", type: "Sorcery", rarity: "R", gihWr: null, alsa: 6.53, gihN: 268, gpWr: 48.4, gpN: 672, img: "4765e39c-cbf2-4605-9bf1-3baad7d92cfb", num: "241", printSet: "msh", imgV: "1783902892", set: "MSH"},
+  {name: "Yellowjacket, Heartless Marauder", color: "B", type: "Legendary Creature — Human Rogue Villain", rarity: "U", gihWr: 55.3, alsa: 4.46, gihN: 27179, img: "d8f91212-2ff5-4024-8f14-86bb5c4a9754", num: "123", printSet: "msh", imgV: "1783902936", set: "MSH"}
 ];
 
 const SET_ICONS = {
@@ -4925,8 +4927,8 @@ const SET_CONFIG = {
     isNew: true,
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
-    dataDate: '2026-10-11 UTC',
-    dataTimestamp: '2026-10-11 UTC'
+    dataDate: '2026-10-12 UTC',
+    dataTimestamp: '2026-10-12 UTC'
   },
   ECL: {
     name: 'ECL (Lorwyn Eclipsed)',
@@ -5014,8 +5016,8 @@ const SET_CONFIG = {
     shortName: 'SOS',
     data: SOS_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft',
-    dataDate: '2026-10-11 UTC',
-    dataTimestamp: '2026-10-11 UTC'
+    dataDate: '2026-10-12 UTC',
+    dataTimestamp: '2026-10-12 UTC'
   }
 };
 
