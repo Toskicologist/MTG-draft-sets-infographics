@@ -15,7 +15,18 @@
      "resolve_after": "2026-10-13T15:00:00Z",
      "pair_answers": {},
      "created": "2026-10-01T12:50:37Z",
-     "autopopulate_n": 5
+     "autopopulate_n": 5,
+     "resolution": {
+      "outcome": [
+       "Ajani Unrelenting"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "P9tCz9E6I5"
+      },
+      "at": "2026-10-13T20:44:04Z",
+      "snapshot": "FRA_d14_top_card_20261013T2044.json"
+     }
     },
     "d14:top_pair": {
      "id": "ZJNDnDVWlV",
@@ -39,7 +50,18 @@
       "GU": "lZygl2S56N"
      },
      "created": "2026-10-01T13:00:16Z",
-     "autopopulate_n": 0
+     "autopopulate_n": 0,
+     "resolution": {
+      "outcome": [
+       "Fatehold (WU)"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "pPh2ZRAICP"
+      },
+      "at": "2026-10-13T20:44:04Z",
+      "snapshot": "FRA_d14_top_pair_20261013T2044.json"
+     }
     },
     "d41:top_card": {
      "id": "NkLbrLxWsH",
