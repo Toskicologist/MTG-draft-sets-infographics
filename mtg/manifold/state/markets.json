@@ -88,6 +88,19 @@
      "pair_answers": {},
      "independent": false,
      "created": "2026-10-02T19:59:23Z"
+    },
+    "d41:top_rare": {
+     "id": "Hso4mm6zf9",
+     "url": "https://manifold.markets/Toskicologist/what-rare-or-mythic-will-have-the-h",
+     "question": "What rare or mythic will have the highest GIH WR for Reality Fracture according to 17Lands data on November 9, 2026?",
+     "kind": "top_rare",
+     "checkpoint": "d41",
+     "time_period": "ALL_TIME",
+     "close": "2026-11-09T15:00:00Z",
+     "resolve_after": "2026-11-09T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-10-14T08:48:32Z"
     }
    },
    "pair_labels": {
