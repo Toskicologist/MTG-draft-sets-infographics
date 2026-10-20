@@ -9,9 +9,27 @@
 <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/budgetdeckbuilder-preview.png">
 <meta property="og:type" content="website">
 <!--
-  MTG Budget Deckbuilder (v3.17.0)
+  MTG Budget Deckbuilder (v3.18.0)
 
   Changelog:
+  v3.18.0 (2026-10-16T16:48:19Z) - Promoted from beta v3.18.0-beta.1/.2.
+                        "Share confirmation with decklist hidden" + a per-board
+                        Verified banner.
+                        - New export group, "Copy confirmation": re-prices first,
+                          refuses while any card is unpriced, then copies one line
+                          ("Confirmed at <UTC time>: under/OVER budget, $T TCG Mid
+                          (main .. of .., side .. of ..). Decklist hidden: <link>").
+                        - The link is "#c=" (`encodeConfirm`/`decodeConfirm`): state
+                          + snapshot (seconds, cents as varints) + checksum, every
+                          byte XORed and shuffled from a random per-link nonce.
+                          Not readable, not hand-editable (any edit -> "Not
+                          confirmed"). Obfuscation only: the key is in this source.
+                        - Opening it shows only the header + `#confirmView` (time,
+                          per-board totals vs budget, format, price-data date)
+                          until "Show decklist"; then the normal page + banner.
+                        - The Verified banner judges each board against its own
+                          budget in whole cents (was combined) and names the board
+                          that is over.
   v3.17.0 (2026-08-31T16:53:45Z) - Promoted from beta v3.16.0-beta.1 + v3.17.0-beta.1/.2.
                         Decklist parsing accepts far more of what people paste,
                         and the deck-name field keeps up with the list. Pricing,
@@ -749,6 +767,24 @@
   .sharebox .fixx{position:absolute;top:8px;right:10px;background:transparent;
     color:var(--dim);border:0;font-size:20px;line-height:1;cursor:pointer;font-weight:700}
   .sharebox .fixx:hover{color:var(--ink)}
+  /* Confirmation link (decklist hidden): only the header + #confirmView show
+     until the viewer clicks "Show decklist". */
+  body.confirm-gate .wrap > :not(.site-header):not(#confirmView){display:none !important}
+  #confirmView{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--ok);
+    border-radius:12px;padding:20px;margin:0 0 18px;max-width:640px}
+  #confirmView.over{border-left-color:var(--bad)}
+  #confirmView h2{margin:0 0 4px;font-size:26px;color:var(--ok)}
+  #confirmView.over h2{color:var(--bad)}
+  #confirmView .cfwhen{margin:0 0 14px;font-size:15px;line-height:1.5}
+  #confirmView .dim{color:var(--dim)}
+  #confirmView .cfgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 14px}
+  #confirmView .cfgrid div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  #confirmView .cfgrid span{display:block;color:var(--dim);font-size:12px}
+  #confirmView .cfgrid b{display:block;font-size:22px;margin:2px 0}
+  #confirmView .cfgrid small{color:var(--dim);font-size:12px}
+  #confirmView .cfhide{margin:16px 0 10px;font-size:14px}
+  #confirmView .primary{width:auto}
+  textarea.cftext{width:100%;min-height:84px;margin-top:6px;font-size:12px}
   details.explain{background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:0 14px;margin:0 0 18px;font-size:13.5px}
   details.explain[open]{padding-bottom:6px}
@@ -970,7 +1006,7 @@
 <div class="wrap">
   <header class="site-header">
     <div class="header-content">
-      <h1>MTG Budget Deckbuilder <span>v3.17.0 &middot; 2026-08-31 16:53 UTC</span></h1>
+      <h1>MTG Budget Deckbuilder <span>v3.18.0 &middot; 2026-10-16 16:48 UTC</span></h1>
       <p class="subtitle">Paste a decklist &mdash; cheapest-printing <strong>TCG Mid</strong> USD totals update live &mdash; separate main-deck &amp; sideboard budget check &mdash; timestamped export.</p>
       <div class="data-info">
         <strong>Price data:</strong> <a href="https://tcgcsv.com/" target="_blank" rel="noopener">TCGcsv</a> &middot; <a href="https://www.patreon.com/TCGCSV" target="_blank" rel="noopener">Support them on Patreon</a><br>
@@ -990,6 +1026,8 @@
       </div>
     </div>
   </header>
+
+  <div id="confirmView" class="hidden"></div>
 
   <div class="updated" id="updated"><span class="dot"></span><span id="updatedText" class="dim">Checking when prices were last updated&hellip;</span></div>
 
@@ -1104,6 +1142,11 @@ Sideboard
         <button class="ghost" id="shareBtn" style="width:100%">Copy share link</button>
         <p class="sub" style="margin:6px 0 0">A self-contained link &mdash; the list, budgets &amp; options are encoded in the URL (no account, no server). Prices <b>recompute from the latest data</b> when opened; the link records the price date so the recipient is warned if prices have changed since.</p>
       </div>
+      <div class="exportgrp">
+        <div class="exporthd">Share confirmation with decklist hidden</div>
+        <button class="ghost" id="confirmBtn" style="width:100%" disabled>Copy confirmation</button>
+        <p class="sub" style="margin:6px 0 0">Copies one line: <b>Confirmed</b>, the time, the TCG Mid price and a link. The link opens on just that time and price; the decklist shows only after the viewer clicks <em>Show decklist</em>. Hidden, not secret: the list is still encoded in the link.</p>
+      </div>
       <div id="status"></div>
       <div class="bar hidden" id="barWrap"><i id="bar"></i></div>
     </div>
@@ -1155,7 +1198,7 @@ let lastCsv = null;    // { text, filename } — .csv export (always current)
 const RECOMPUTE_INPUTS = ["decklist","sideboard","budgetMain","budgetSide",
   "deckname","format","cheapest","ignoreBasics","colorCost"];
 function setExportsEnabled(on){
-  for (const id of ["exportBtn","csvBtn","copyBtn","pdfBtn"]) $(id).disabled = !on;
+  for (const id of ["exportBtn","csvBtn","copyBtn","pdfBtn","confirmBtn"]) $(id).disabled = !on;
 }
 
 /* ---- decklist parsing ---------------------------------------------- */
@@ -1561,7 +1604,7 @@ async function recompute(){
   // Edited away from the deck the address-bar #d= link encodes -> revert the URL
   // to the blank page link (a fresh export/share regenerates it), so a stale link
   // isn't left in the bar pointing at the pre-edit deck.
-  if (_urlDeckSig != null && /[#&]d=/.test(location.hash) && _deckSig() !== _urlDeckSig){
+  if (_urlDeckSig != null && /[#&][dc]=/.test(location.hash) && _deckSig() !== _urlDeckSig){
     history.replaceState(null, "", location.pathname + location.search);
     _urlDeckSig = null;
   }
@@ -3069,7 +3112,10 @@ function tokenizeBoard(text, info){
     return best;
   }).join("\n");
 }
-function buildShareLink(){
+// opts.hidden -> a confirmation link (opens behind the decklist-hidden gate);
+// opts.at -> the moment to stamp (defaults to now).
+function buildShareLink(opts){
+  opts = opts || {};
   const st = {};
   for (const [k, id] of Object.entries(SHARE_KEYS)){
     const el = $(id);
@@ -3084,7 +3130,7 @@ function buildShareLink(){
   // live on open; we can't carry the actual old numbers, but we can carry this
   // snapshot). Nested in `x` to avoid clashing with SHARE_KEYS (bm/bs/s/etc.).
   if (LAST){
-    st.x = { t:new Date().toISOString(),
+    st.x = { t:(opts.at || new Date()).toISOString(),
              mt:+(LAST.m.total||0).toFixed(2), sd:+(LAST.s.total||0).toFixed(2),
              bm:+(LAST.bM||0), bs:+(LAST.bS||0) };
     // v2: shorten the link — replace each resolved card's name with whichever of
@@ -3096,8 +3142,86 @@ function buildShareLink(){
     st.d = tokenizeBoard(st.d, info);
     st.s = tokenizeBoard(st.s, info);
   }
-  return location.origin + location.pathname + "#d=" +
-    b64urlEncode(JSON.stringify(st));
+  const base = location.origin + location.pathname;
+  if (opts.hidden && st.x){
+    const x = st.x; delete st.x;
+    return base + "#c=" + encodeConfirm(st, x);
+  }
+  return base + "#d=" + b64urlEncode(JSON.stringify(st));
+}
+/* ---- confirmation-link encoding (#c=) --------------------------------
+   Obfuscation, NOT security: the key is in this page's source. The aim is
+   only that the time / prices aren't readable or hand-editable. The snapshot
+   is packed as varints (seconds, cents) instead of JSON text, a checksum is
+   added, then every byte is XORed with a keystream AND shuffled to a new
+   position, both seeded by a random per-link nonce. So no field sits in any
+   fixed part of the link, two links for the same deck look nothing alike,
+   and editing any character fails the checksum.
+   Plain layout: [3][checksum u32][t][mt][sd][bm][bs][state JSON (v2, no x)]. */
+const CONFIRM_VER = 3;
+const _CONFIRM_KEY = "budget-deckbuilder/confirm/1";
+function _fnv32(bytes, seed){
+  let h = (0x811c9dc5 ^ seed) >>> 0;
+  for (let i = 0; i < bytes.length; i++){ h ^= bytes[i]; h = Math.imul(h, 0x01000193) >>> 0; }
+  return h >>> 0;
+}
+const _KEYSEED = _fnv32(new TextEncoder().encode(_CONFIRM_KEY), 0);
+function _mulberry32(a){
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function _scramblePlan(n, nonce){
+  const rnd = _mulberry32((_KEYSEED ^ Math.imul(nonce + 1, 2654435761)) >>> 0);
+  const ks = new Uint8Array(n);
+  for (let i = 0; i < n; i++) ks[i] = (rnd() * 256) | 0;
+  const perm = new Uint32Array(n);
+  for (let i = 0; i < n; i++) perm[i] = i;
+  for (let i = n - 1; i > 0; i--){ const j = (rnd() * (i + 1)) | 0; const t = perm[i]; perm[i] = perm[j]; perm[j] = t; }
+  return { ks, perm };
+}
+function _bytesToB64url(bytes){
+  let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function _b64urlToBytes(str){
+  return Uint8Array.from(atob(str.replace(/-/g,"+").replace(/_/g,"/")), c => c.charCodeAt(0));
+}
+function encodeConfirm(st, x){
+  const body = [];
+  const varint = n => { n = Math.max(0, Math.round(n)); while (n >= 128){ body.push((n % 128) | 128); n = Math.floor(n / 128); } body.push(n); };
+  varint(Date.parse(x.t) / 1000);
+  for (const k of ["mt","sd","bm","bs"]) varint((+x[k] || 0) * 100);
+  for (const b of new TextEncoder().encode(JSON.stringify(st))) body.push(b);
+  const sum = _fnv32(body, _KEYSEED ^ CONFIRM_VER);
+  const plain = Uint8Array.from([CONFIRM_VER, sum >>> 24, (sum >>> 16) & 255, (sum >>> 8) & 255, sum & 255, ...body]);
+  const nonce = (Math.random() * 65536) | 0;
+  const { ks, perm } = _scramblePlan(plain.length, nonce);
+  const out = new Uint8Array(plain.length + 2);
+  out[0] = nonce >>> 8; out[1] = nonce & 255;
+  for (let i = 0; i < plain.length; i++) out[2 + perm[i]] = plain[i] ^ ks[i];
+  return _bytesToB64url(out);
+}
+// -> { st, x } or null when the link is damaged / has been edited.
+function decodeConfirm(str){
+  try {
+    const all = _b64urlToBytes(str);
+    if (all.length < 12) return null;
+    const nonce = (all[0] << 8) | all[1], n = all.length - 2;
+    const { ks, perm } = _scramblePlan(n, nonce);
+    const plain = new Uint8Array(n);
+    for (let i = 0; i < n; i++) plain[i] = all[2 + perm[i]] ^ ks[i];
+    if (plain[0] !== CONFIRM_VER) return null;
+    const sum = ((plain[1] << 24) | (plain[2] << 16) | (plain[3] << 8) | plain[4]) >>> 0;
+    const body = plain.subarray(5);
+    if (_fnv32(body, _KEYSEED ^ CONFIRM_VER) !== sum) return null;
+    let pos = 0;
+    const varint = () => { let n = 0, mul = 1, b;
+      do { b = body[pos++]; if (b === undefined) throw 0; n += (b & 127) * mul; mul *= 128; } while (b & 128);
+      return n; };
+    const t = varint(), v = [varint(), varint(), varint(), varint()].map(c => c / 100);
+    const st = JSON.parse(new TextDecoder().decode(body.subarray(pos)));
+    return { st, x:{ t:new Date(t * 1000).toISOString(), mt:v[0], sd:v[1], bm:v[2], bs:v[3] } };
+  } catch { return null; }
 }
 // Put the current deck's share link in the address bar and record which deck it
 // represents, so a later edit blanks it again. Called by every export/share.
@@ -3106,9 +3230,22 @@ function reflectShareUrl(){
   _urlDeckSig = _deckSig();
 }
 function loadShared(){
+  // Confirmation link (#c=): obfuscated state + snapshot; opens behind the gate.
+  const c = /[#&]c=([^&]+)/.exec(location.hash || "");
+  if (c){
+    const dec = decodeConfirm(c[1]);
+    if (!dec){ showConfirmGate(null, true); return; }
+    applySharedState(dec.st);
+    _sharedExport = dec.x;
+    showConfirmGate(dec.x);
+    return;
+  }
   const m = /[#&]d=([^&]+)/.exec(location.hash || "");
   if (!m) return;
   let st; try { st = JSON.parse(b64urlDecode(m[1])); } catch { return; }
+  applySharedState(st);
+}
+function applySharedState(st){
   const v2 = st.v === 2;
   for (const [k, id] of Object.entries(SHARE_KEYS)){
     if (!(k in st)) continue;
@@ -3212,12 +3349,18 @@ function maybeShowShareNote(cdn){
     const x = _sharedExport, exp = new Date(x.t);
     const fmtDT = d => d.toLocaleString(undefined,
       { year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
-    const ou = ((x.mt||0) + (x.sd||0)) > ((x.bm||0) + (x.bs||0)) ? "OVER" : "UNDER";
+    // Per board, in whole cents - the same rule as the totals cards and the
+    // confirmation link (the boards have separate budgets).
+    const mt = +x.mt || 0, sd = +x.sd || 0, bm = +x.bm || 0, bs = +x.bs || 0;
+    const overs = [];
+    if (!underBudget(mt, bm)) overs.push(`main deck over by ${money(mt - bm)}`);
+    if (!underBudget(sd, bs)) overs.push(`sideboard over by ${money(sd - bs)}`);
+    const ou = overs.length ? `<b>OVER budget</b> (${overs.join(", ")})` : "<b>UNDER budget</b>";
     const N = priceRefreshCount(cdn);
     const refresh = N == null ? ""
       : N === 0 ? " Prices have not been refreshed since then."
       : ` Prices have been refreshed ${N} time${N===1?"":"s"} since then, so totals may have changed.`;
-    showVerifiedBox(`This deck was exported at <b>${fmtDT(exp)}</b>. It was <b>${ou} budget</b> ` +
+    showVerifiedBox(`This deck was exported at <b>${fmtDT(exp)}</b>. It was ${ou} ` +
       `at that time — TCG Mid cost: main <b>${money(x.mt||0)}</b>, side <b>${money(x.sd||0)}</b>.${refresh}`);
     _sharedDeckSig = _deckSig();   // banner hides once the decklist/sideboard is edited
     return;
@@ -3240,6 +3383,92 @@ $("shareBtn").addEventListener("click", async () => {
   } catch {
     $("status").textContent = "Clipboard blocked — the link is now in the address bar; copy it from there.";
   }
+});
+
+/* ---- confirmation link with the decklist hidden ----------------------
+   One copyable line ("Confirmed", time, price, link). The link is an
+   obfuscated "#c=" link (see encodeConfirm); opening it shows only the
+   snapshot (time + totals vs budget) until the viewer clicks "Show decklist".
+   Hidden, not secret: the list is in the link, behind obfuscation only. */
+// Date and time formatted separately: en-US joins them with " at ", which
+// reads badly after our own "at".
+const fmtUTC = d => d.toLocaleDateString("en-US", { timeZone:"UTC", year:"numeric",
+  month:"long", day:"numeric" }) + ", " + d.toLocaleTimeString("en-US", { timeZone:"UTC",
+  hour:"2-digit", minute:"2-digit", hourCycle:"h23" }) + " UTC";
+// Compare in whole cents per board, so the verdict matches the totals printed.
+const underBudget = (total, budget) => Math.round(total * 100) <= Math.round(budget * 100);
+function confirmationText(at, url, L){
+  const mt = L.m.total, sd = L.s.total;
+  const ok = underBudget(mt, L.bM) && underBudget(sd, L.bS);
+  return `✓ Confirmed at ${fmtUTC(at)}: ${ok ? "under" : "OVER"} budget, ` +
+    `${money(mt + sd)} TCG Mid (main ${money(mt)} of ${money(L.bM)}, ` +
+    `side ${money(sd)} of ${money(L.bS)}). Decklist hidden: ${url}`;
+}
+function showConfirmGate(x, damaged){
+  const box = $("confirmView");
+  document.body.classList.add("confirm-gate");
+  box.classList.remove("hidden");
+  if (damaged){
+    // Nothing trustworthy to show (not even the deck): no reveal, just a way out.
+    box.classList.add("over");
+    box.innerHTML = `<h2>Not confirmed</h2><p class="cfwhen">This confirmation link ` +
+      `is damaged or has been edited, so it can't be confirmed. Ask for a fresh one.</p>` +
+      `<a class="ghost" style="display:inline-block;padding:11px 16px;border-radius:8px;` +
+      `text-decoration:none" href="${location.pathname}">Open the deckbuilder</a>`;
+    return;
+  }
+  const reveal = `<p class="cfhide">The decklist is hidden.</p>` +
+    `<button type="button" class="primary" id="revealBtn">Show decklist</button>`;
+  const at = x && x.t ? new Date(x.t) : null;
+  if (!at || isNaN(at)){
+    box.innerHTML = `<h2>Confirmation</h2><p class="cfwhen">This link doesn't carry ` +
+      `a confirmation time or price.</p>` + reveal;
+  } else {
+    const mt = +x.mt || 0, sd = +x.sd || 0, bm = +x.bm || 0, bs = +x.bs || 0;
+    const okM = underBudget(mt, bm), okS = underBudget(sd, bs), ok = okM && okS;
+    box.classList.toggle("over", !ok);
+    const local = at.toLocaleString(undefined, { year:"numeric", month:"short",
+      day:"numeric", hour:"2-digit", minute:"2-digit" });
+    const cell = (label, v, b, under) => `<div><span>${label}</span><b>${money(v)}</b>` +
+      `<small>budget ${money(b)} &middot; ${under ? "under by " + money(b - v)
+        : "OVER by " + money(v - b)}</small></div>`;
+    const fmt = $("format").value, pd = _sharedPriceDate ? new Date(_sharedPriceDate) : null;
+    const notes = ["TCG Mid, cheapest printing"];
+    if (fmt !== "__none") notes.push(fmtName(fmt));
+    if ($("ignoreBasics").checked) notes.push("basic lands counted as $0");
+    if (pd && !isNaN(pd)) notes.push("price data from " + fmtUTC(pd));
+    box.innerHTML = `<h2>✓ Confirmed</h2>` +
+      `<p class="cfwhen"><b>${ok ? "Under" : "OVER"} budget</b> at <b>${fmtUTC(at)}</b>` +
+      ` <span class="dim">(${escapeHtml(local)} your time)</span></p>` +
+      `<div class="cfgrid">${cell("Main deck", mt, bm, okM)}${cell("Sideboard", sd, bs, okS)}` +
+      `<div><span>Total</span><b>${money(mt + sd)}</b><small>budget ${money(bm + bs)}</small></div></div>` +
+      `<p class="sub" style="margin:0">${escapeHtml(notes.join(" · "))}.</p>` + reveal;
+  }
+  $("revealBtn").addEventListener("click", () => {
+    document.body.classList.remove("confirm-gate");
+    box.classList.add("hidden");
+    window.scrollTo(0, 0);
+  });
+}
+$("confirmBtn").addEventListener("click", async () => {
+  clearTimeout(_liveTimer);
+  await recompute();                         // price exactly what's in the boxes now
+  if (!LAST || !lastReport) return;
+  const missing = [...LAST.m.rows, ...LAST.s.rows].filter(r => r.lineT == null).length;
+  if (missing){
+    $("status").textContent = `Can't confirm yet: ${missing} card${missing > 1 ? "s are" : " is"} ` +
+      `unpriced, so the total is incomplete. Resolve or fix ${missing > 1 ? "them" : "it"} first.`;
+    return;
+  }
+  const at = new Date();
+  const text = confirmationText(at, buildShareLink({ hidden:true, at }), LAST);
+  let copied = true;
+  try { await navigator.clipboard.writeText(text); } catch { copied = false; }
+  $("status").innerHTML = (copied ? "Confirmation copied to clipboard:"
+    : "Clipboard blocked &mdash; copy the confirmation from here:") +
+    `<textarea class="cftext" readonly>${escapeHtml(text)}</textarea>`;
+  const ta = $("status").querySelector("textarea");
+  ta.addEventListener("focus", () => ta.select());
 });
 
 /* ---- pick up a newer snapshot without a reload ----------------------
