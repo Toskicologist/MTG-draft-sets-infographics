@@ -42,12 +42,18 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
+      # checkout/setup-python v7 = Node 24 (v4/v5 ran on the deprecated Node 20).
+      # The write token stays out of .git/config while the refresh scripts fetch
+      # third-party data; only the commit step gets it (same as manifold-bot.yml).
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -72,7 +78,10 @@ jobs:
           python mtg/scripts/refresh_fra_quiz.py --fetch --apply --force
 
       - name: Commit and push if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 

@@ -91,10 +91,16 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      # v7 = Node 24 (v4's Node 20 runtime is deprecated). No write token in
+      # .git/config while build-data.mjs runs - the publish step passes GH_TOKEN
+      # explicitly, and fetching price-data from a public repo needs none.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -132,6 +138,8 @@ jobs:
           echo "Carried index built: ${IDX_AT:-unknown} (age: ${AGE:-unknown} days)"
 
       - name: Decide whether to rebuild
+        env:
+          FORCE: ${{ github.event.inputs.force }}
         run: |
           DOM=$(date -u +%d)
           AGE="${INDEX_AGE_DAYS:-}"
@@ -139,10 +147,10 @@ jobs:
           STALE=""
           if [ -n "$AGE" ] && [ "$AGE" -ge "$STALE_AFTER_DAYS" ]; then STALE=1; fi
 
-          if [ "${{ github.event.inputs.force }}" = "true" ] \
+          if [ "$FORCE" = "true" ] \
              || [ "$DOM" = "01" ] || [ -z "${HAVE_INDEX:-}" ] || [ -n "$STALE" ]; then
             echo "REBUILD=1" >> "$GITHUB_ENV"
-            echo "Index WILL be rebuilt (force=$([ "${{ github.event.inputs.force }}" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none}, age=${AGE:-unknown}d)"
+            echo "Index WILL be rebuilt (force=$([ "$FORCE" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none}, age=${AGE:-unknown}d)"
             if [ -n "$STALE" ]; then
               # Surfaced as a run annotation, not just a log line: reaching this
               # branch means the day-01 rebuild did not happen, and that is worth

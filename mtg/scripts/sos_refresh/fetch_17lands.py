@@ -104,6 +104,23 @@ def _build_url(expansion: str, fmt: str, start_date: str) -> str:
     return f"{config.LANDS_API_URL}?{qs}"
 
 
+# Characters no real card name/color/rarity contains (0 hits across 112k rows of
+# every export on disk, 2026-10-25) but which would let a bad upstream value break
+# out of the HTML/JS this data is spliced into. The daily Action publishes these
+# files unreviewed, so a hit stops the refresh for that set instead.
+_UNSAFE_TEXT_RE = re.compile(r'[<>"`\\\x00-\x1f\x7f  ]')
+
+
+def _check_text_fields(cards: list[dict], url: str) -> None:
+    for card in cards:
+        for field in ("name", "color", "rarity"):
+            v = card.get(field)
+            if isinstance(v, str) and _UNSAFE_TEXT_RE.search(v):
+                raise ValueError(
+                    f"Refusing 17Lands data from {url}: {field} {v!r} contains "
+                    "characters no card name should (possible HTML/script injection)")
+
+
 def _fetch_json(url: str, timeout: int = 60, attempts: int = 3) -> list[dict]:
     """GET a 17Lands card-data URL. Retries transient failures (network errors,
     timeouts, 429/5xx, a non-JSON body such as a Cloudflare challenge page) with
@@ -130,6 +147,7 @@ def _fetch_json(url: str, timeout: int = 60, attempts: int = 3) -> list[dict]:
         cards = payload.get("data") if isinstance(payload, dict) else payload
         if not isinstance(cards, list) or not all(isinstance(c, dict) and "name" in c for c in cards):
             raise ValueError(f"Unexpected 17Lands response shape from {url}")
+        _check_text_fields(cards, url)
         return cards
     raise RuntimeError(f"17Lands fetch failed after {attempts} attempts: {last_exc}")
 

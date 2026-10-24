@@ -87,10 +87,16 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      # v7 = Node 24 (v4's Node 20 runtime is deprecated). No write token in
+      # .git/config while build-data.mjs runs - the publish step passes GH_TOKEN
+      # explicitly, and fetching price-data from a public repo needs none.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 

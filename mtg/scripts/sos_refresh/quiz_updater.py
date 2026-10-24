@@ -324,8 +324,12 @@ def _format_card_js(card: dict, set_code: str, extended: bool = False) -> str:
     GIH-suppressed cards where 17Lands still serves a Games Played win rate.
     """
     def js_str(s: str) -> str:
-        # Escape backslash and double-quotes; leave apostrophes as-is (JS double-quoted string)
-        return s.replace('\\', '\\\\').replace('"', '\\"')
+        # Escape backslash and double-quotes; leave apostrophes as-is (JS double-quoted string).
+        # '<' too, so no value can close the inline <script> it is spliced into, plus the
+        # line breaks a JS string literal cannot hold. Real card names contain none of these.
+        return (s.replace('\\', '\\\\').replace('"', '\\"').replace('<', '\\u003c')
+                 .replace('\n', '\\n').replace('\r', '\\r')
+                 .replace('\u2028', '\\u2028').replace('\u2029', '\\u2029'))
 
     name = js_str(card['name'])
     color = js_str(card['color'])

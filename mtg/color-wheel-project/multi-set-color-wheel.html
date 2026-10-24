@@ -27,11 +27,11 @@
         window.goatcounter.count({ path: location.pathname + location.search + location.hash });
     });
   </script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
-  <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js" integrity="sha384-ezQ6HS3FLspd9te19o2McUV6FAK091+GG7KO54f/R8DKgCDi7fULhapNrd5LY+vG" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" integrity="sha384-Po2CHm++OCgaVvlpyZBUcFD3EXoL8+xT0i98ZY8rAaZqrJtKCZjpEhhaZ9Wgct75" crossorigin="anonymous" />
+  <link href="https://cdn.jsdelivr.net/npm/keyrune@3.19.0/css/keyrune.min.css" rel="stylesheet" type="text/css" integrity="sha384-L/JOEzKpLnNKM+L1ah7ZPvwx+9xWmvlBnquDfTswzqu2FnnLt9i/BGodaScwbl17" crossorigin="anonymous" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -178,7 +178,7 @@
   <script type="text/babel">
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.8.0
+ * 1.8.1
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -192,6 +192,11 @@
  *     (TLA SPM EOE FIN TDM DFT DSK BLB OTJ MKM LCI WOE)
  *
  * CHANGELOG:
+ * 1.8.1 (2026-10-23, 23:36 UTC) - [Claude Opus 5.5]
+ *   - Security/perf pass: React pinned to 18.3.1 (the floating @18 tag cost a redirect per
+ *     script), and every CDN script and stylesheet now carries an integrity (SRI) hash, so a
+ *     tampered CDN file is refused instead of run. No change to what the page does.
+ *
  * 1.8.0 (2026-09-26) - [Claude Opus 5.5] - PROMOTED FROM BETA (1.8.0-beta.1 .. beta.3, 2026-09-24 .. 09-26)
  *   - New "All sets" tab (#all, last in the set selector): every wheel on one page, labels only,
  *     newest release first, three across (two under 1000px, one on a phone). B&W and Text Size
@@ -2114,7 +2119,7 @@ function MultiSetColorWheel() {
       {/* Shared site header — image + credits + cross-links (matches other MTG project pages) */}
       <header className="site-header">
         <div className="header-content">
-          <h1>{isAll ? 'All Sets' : currentSet.key} Draft Archetypes<br /><span>Multi-Set Color Wheel &middot; v1.8.0 &middot; 2026-09-26</span></h1>
+          <h1>{isAll ? 'All Sets' : currentSet.key} Draft Archetypes<br /><span>Multi-Set Color Wheel &middot; v1.8.1 &middot; 2026-10-23</span></h1>
           <div className="data-info">
             <strong>Card names &amp; images:</strong> <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a> <span className="sep">&middot;</span> <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a>
             <div className="row">
