@@ -78,6 +78,10 @@ if _IS_CI:
     # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
     # anchors as the card quiz; refreshed as an extra quiz target when present.
     PACK_BETA_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "pack-beta.html"
+
+    # Card data for the quiz pages that no longer embed it (quiz-beta, pack-beta
+    # since 2026-10-24). Written only by refresh_quiz_data.py.
+    QUIZ_DATA_JS = _THIS_REPO_ROOT / "17lands-quiz" / "data" / "quiz-data.js"
 else:
     # ----- LOCAL mode: ClaudeProjects + MTG-GitHub-Pages as separate folders -----
     # Both roots are derived, never spelled out (see the module docstring).
@@ -130,6 +134,10 @@ else:
     # P1P1 pack quiz (beta only — no production pack page yet). Same updater/
     # anchors as the card quiz; refreshed as an extra quiz target when present.
     PACK_BETA_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "pack-beta.html"
+
+    # Card data for the quiz pages that no longer embed it. Like the quiz pages
+    # above, the live copy is the mirror's (the daily Action owns it).
+    QUIZ_DATA_JS = GITHUB_PAGES_ROOT / "17lands-quiz" / "data" / "quiz-data.js"
 
 # Module mode flag — useful for log output and conditional behavior in updaters.
 IS_CI = _IS_CI
@@ -211,6 +219,26 @@ SET_REFRESH = {
         "types_mapping": None,
     },
 }
+
+# ---------------------------------------------------------------------------
+# Quiz data file (data/quiz-data.js) - refresh_quiz_data.py
+# ---------------------------------------------------------------------------
+# Refresh this many sets daily: the newest by 17Lands start date. Older sets'
+# all-time numbers barely move, so they keep their last refresh.
+QUIZ_REFRESH_NEWEST = 4
+# New-set discovery: a set 17Lands lists with Premier Draft data, whose data
+# started within this many days, is added once it clears the embargo below and
+# has 150+ scored cards.
+LANDS_FILTERS_URL = "https://www.17lands.com/data/filters"
+QUIZ_DISCOVER_MAX_AGE_DAYS = 120
+# 17Lands usage guidelines: third-party tools wait 12 days after a set's release
+# before showing its data. Counted from the later of 17Lands' start date and the
+# Scryfall release date.
+QUIZ_EMBARGO_DAYS = 12
+# Scryfall set types that are real draft sets (not Alchemy, promos, tokens...).
+QUIZ_DISCOVER_SET_TYPES = ("expansion", "core", "draft_innovation", "masters")
+# 17Lands codes never to add automatically (add one here to opt a set out).
+QUIZ_DISCOVER_IGNORE: tuple[str, ...] = ()
 
 # Diff report flag thresholds
 DIFF_FLAGS = {

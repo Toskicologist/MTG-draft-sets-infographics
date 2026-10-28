@@ -79,22 +79,23 @@ def _extract_csv_date(csv_path: Path) -> str:
 
 
 def _quiz_targets() -> list[Path]:
-    """Quiz files the data refresh applies to, independently: beta always,
-    index (production) when configured and present. Each keeps its own
-    QUIZ_VERSION and changelog, so beta code changes never leak to production
-    via the data refresh."""
-    targets = [config.QUIZ_BETA_HTML]
-    index = getattr(config, 'QUIZ_INDEX_HTML', None)
-    if index is not None and index.exists():
-        targets.append(index)
-    elif index is not None:
-        print(f"  [WARN] {index} not found - refreshing beta only.")
-    # P1P1 pack quiz shares the card-quiz anchors; refresh it too when present.
-    pack_beta = getattr(config, 'PACK_BETA_HTML', None)
-    if pack_beta is not None and pack_beta.exists():
-        targets.append(pack_beta)
+    """Quiz files that still embed a MSH_CARDS array, each refreshed
+    independently (own QUIZ_VERSION/changelog, so beta code never leaks to
+    production via the data refresh). Since 2026-10-24 that is production
+    index.html only: quiz-beta.html and pack-beta.html read data/quiz-data.js,
+    which refresh_quiz_data.py refreshes, so they are skipped here."""
+    targets = []
+    for attr in ('QUIZ_BETA_HTML', 'QUIZ_INDEX_HTML', 'PACK_BETA_HTML'):
+        page = getattr(config, attr, None)
+        if page is None:
+            continue
+        if not page.exists():
+            print(f"  [WARN] {page} not found - skipping it.")
+        elif quiz_updater.has_cards_array(page, SET_CODE):
+            targets.append(page)
+        else:
+            print(f"  [SKIP] {page.name} has no {SET_CODE}_CARDS array.")
     return targets
-
 
 def _promote() -> None:
     src = config.QUIZ_BETA_HTML
@@ -160,6 +161,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     targets = _quiz_targets()
+    if not targets:
+        print(f"No quiz file embeds {SET_CODE}_CARDS - nothing to do here "
+              f"(refresh_quiz_data.py refreshes the data file).")
+        return 0
     print(f"Set:        {SET_CODE}")
     print(f"Quiz files: {', '.join(t.name for t in targets)}")
     print(f"CSV:        {new_csv.name}")
@@ -174,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
     # --- Dry-run to preview counts / diff ---
     try:
         preview = quiz_updater.update_quiz(
-            quiz_html_path=config.QUIZ_BETA_HTML,
+            quiz_html_path=targets[0],
             new_csv_path=new_csv,
             new_data_date=data_date,
             dry_run=True,

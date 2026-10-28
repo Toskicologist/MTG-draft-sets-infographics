@@ -488,6 +488,72 @@ def _add_changelog_entry(html: str, set_code: str, new_version: str, csv_path: P
 
 
 # ---------------------------------------------------------------------------
+# Card building (shared by update_quiz and quiz_data.refresh_set)
+# ---------------------------------------------------------------------------
+
+def build_cards(new_csv_path: Path, set_code: str, existing_types: dict,
+                existing_imgs: dict, existing_extras: dict,
+                include_no_data: bool = False) -> list[dict]:
+    """Card dicts for one set from a 17Lands CSV, sorted by name.
+
+    existing_* are what the current copy already knows ({name: type}, {name: img
+    uuid}, {name: {extra field: value}}); they fill gaps the CSV and the local
+    Scryfall snapshot leave. Raises ValueError if fewer than 150 cards are scored.
+    """
+    new_csv_path = Path(new_csv_path)
+    types_map = _load_types(set_code)
+    scryfall = _load_scryfall_reference(set_code)
+    images_sidecar = _load_images_sidecar(new_csv_path)
+
+    csv_cards = load_sos_csv(new_csv_path, min_gih=0, include_no_data=include_no_data)
+    # Guard: 17Lands sometimes returns all-zero stats after a format rotates out
+    # (SOS did this 2026-07-07: 340 rows, every GIH WR blank -> 0 valid cards),
+    # which would silently wipe the embedded card arrays. A real draft set never
+    # has fewer than ~250 rated cards once data exists. Counts SCORED cards only
+    # so include_no_data can't mask an all-blank export.
+    scored_count = sum(1 for c in csv_cards if c['gih_wr'] is not None)
+    if scored_count < 150:
+        raise ValueError(
+            f"Only {scored_count} valid cards parsed from {new_csv_path.name} — "
+            f"refusing to rewrite card data (17Lands likely exporting empty stats)")
+
+    new_cards = []
+    for row in csv_cards:
+        name = row['name']
+        card = {
+            'name': name,
+            'color': row['color'],
+            'type': _resolve_type(name, types_map, scryfall, existing_types),
+            'rarity': row['rarity'],
+            'gihWr': round(row['gih_wr'], 1) if row['gih_wr'] is not None else None,
+            'alsa': round(row['alsa'], 2) if row['alsa'] is not None else None,
+            'img': _resolve_img(name, images_sidecar, existing_imgs, scryfall),
+        }
+        if include_no_data:
+            card['gihN'] = row.get('gih_count', 0)
+            card['gpWr'] = round(row['gp_wr'], 1) if row.get('gp_wr') is not None else None
+            card['gpN'] = row.get('gp_count', 0)
+        card.update(existing_extras.get(name, {}))
+        new_cards.append(card)
+
+    if any(not c['type'] for c in new_cards):
+        _fill_missing_types(new_cards)
+
+    if REFRESH_SCRYFALL_EXTRAS:
+        _refresh_scryfall_extras(new_cards)
+
+    new_cards.sort(key=lambda c: c['name'])
+    return new_cards
+
+
+def has_cards_array(path: Path, set_code: str) -> bool:
+    """True if a quiz page still embeds const <SET>_CARDS (the production page
+    does until it is promoted; the beta pages read data/quiz-data.js instead)."""
+    return bool(re.search(rf'const {set_code}_CARDS\s*=\s*\[',
+                          Path(path).read_text(encoding='utf-8')))
+
+
+# ---------------------------------------------------------------------------
 # Main public function
 # ---------------------------------------------------------------------------
 
@@ -512,13 +578,8 @@ def update_quiz(
     # --- Read HTML ---
     html = quiz_html_path.read_text(encoding='utf-8')
 
-    # --- Load type resolution sources ---
-    types_map = _load_types(set_code)
-    scryfall = _load_scryfall_reference(set_code)
+    # --- What the page already knows about each card (fallbacks for build_cards) ---
     existing_types = _extract_existing_types(html, set_code)
-
-    # --- Load img (Scryfall UUID) resolution sources ---
-    images_sidecar = _load_images_sidecar(new_csv_path)
     existing_imgs = _extract_existing_imgs(html, set_code)
     existing_extras = _extract_existing_extras(html, set_code)
 
@@ -543,52 +604,8 @@ def update_quiz(
         raise ValueError("Cannot find QUIZ_VERSION in quiz HTML")
     old_quiz_version = ver_m.group(1)
 
-    # --- Load CSV ---
-    csv_cards = load_sos_csv(new_csv_path, min_gih=0, include_no_data=include_no_data)
-    # Guard: 17Lands sometimes returns all-zero stats after a format rotates out
-    # (SOS did this 2026-07-07: 340 rows, every GIH WR blank -> 0 valid cards),
-    # which would silently wipe the embedded card arrays. A real draft set never
-    # has fewer than ~250 rated cards once data exists. Counts SCORED cards only
-    # so include_no_data can't mask an all-blank export.
-    scored_count = sum(1 for c in csv_cards if c['gih_wr'] is not None)
-    if scored_count < 150:
-        raise ValueError(
-            f"Only {scored_count} valid cards parsed from {new_csv_path.name} — "
-            f"refusing to rewrite card data (17Lands likely exporting empty stats)")
-
-    # --- Build card dicts with resolved types ---
-    new_cards = []
-    for row in csv_cards:
-        name = row['name']
-        color = row['color']
-        type_ = _resolve_type(name, types_map, scryfall, existing_types)
-        rarity = row['rarity']
-        gih_wr = round(row['gih_wr'], 1) if row['gih_wr'] is not None else None
-        alsa = round(row['alsa'], 2) if row['alsa'] is not None else None
-        img = _resolve_img(name, images_sidecar, existing_imgs, scryfall)
-        card = {
-            'name': name,
-            'color': color,
-            'type': type_,
-            'rarity': rarity,
-            'gihWr': gih_wr,
-            'alsa': alsa,
-            'img': img,
-        }
-        if include_no_data:
-            card['gihN'] = row.get('gih_count', 0)
-            card['gpWr'] = round(row['gp_wr'], 1) if row.get('gp_wr') is not None else None
-            card['gpN'] = row.get('gp_count', 0)
-        card.update(existing_extras.get(name, {}))
-        new_cards.append(card)
-
-    if any(not c['type'] for c in new_cards):
-        _fill_missing_types(new_cards)
-
-    if REFRESH_SCRYFALL_EXTRAS:
-        _refresh_scryfall_extras(new_cards)
-
-    new_cards.sort(key=lambda c: c['name'])
+    new_cards = build_cards(new_csv_path, set_code, existing_types, existing_imgs,
+                            existing_extras, include_no_data)
 
     new_names: set[str] = {c['name'] for c in new_cards}
     cards_added = sorted(new_names - old_names)

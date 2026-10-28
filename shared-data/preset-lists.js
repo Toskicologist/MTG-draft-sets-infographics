@@ -1,4 +1,4 @@
-// Preset data for index-unified.html. Rebuild with scripts/build-format-lists.js.
+// Preset data for MTG-Card-Knowledge-Quiz-beta.html. Rebuild with scripts/build-format-lists.js.
 // iconic + edhrec are embedded inline (with images). The 6 constructed formats
 // embed top-10 full TEXT metadata (no images) for an instant start plus the
 // ordered top-1000 name list; the app live-fetches the rest (and images) in the

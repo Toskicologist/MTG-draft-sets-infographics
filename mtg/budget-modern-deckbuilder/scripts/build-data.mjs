@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-data.mjs  (v1.2.0)
+ * build-data.mjs  (v1.5.0)
  *
  * Builds the two data files the deckbuilder fetches from the jsDelivr CDN
  * (orphan `price-data` branch), so Mid mode needs ZERO Scryfall calls:
@@ -39,6 +39,12 @@
  * v1.4.0: prices and index are now refreshed by two independent workflows, so
  * data-meta.json is merged into rather than rewritten - each run touches only
  * the fields it rebuilt.
+ * v1.5.0: printings are grouped by Oracle card (oracle_id), not by printed name.
+ * Reversible printings (layout reversible_card) are named "A // A" or
+ * "A // B // A" and used to get an index entry of their own - and could capture
+ * the front-face alias, so "Bloomvine Regent" priced only TDM #381 and missed
+ * the cheaper #136 / #136p. They now join their card's entry under its normal
+ * name. Reversible cards carry oracle_id on card_faces[0], not at top level.
  */
 import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -137,9 +143,15 @@ function legString(legalities) {
 }
 
 /* ---- build the slim card index ------------------------------------- */
+// "A // B // A" -> "A // B", "A // A" -> "A": a reversible printing's name with
+// the repeated face dropped. Only a fallback - see buildIndex.
+const dedupeFaces = name => [...new Set(name.split(" // "))].join(" // ");
+
 async function buildIndex() {
-  const cards = Object.create(null);
-  const aliases = Object.create(null);
+  // Printings are grouped by Oracle card, and each group is keyed by its name
+  // only after the scan: a reversible printing ("A // B // A") can arrive in
+  // the bulk before the card's normal printings, and must not name the group.
+  const groups = new Map();   // oracle_id (or "name:" + key) -> { name, alt, p, l }
   let scanned = 0, printings = 0;
 
   const handle = txt => {
@@ -150,24 +162,22 @@ async function buildIndex() {
     if (typeof c.tcgplayer_id !== "number") return;
     if (c.set_type === "token" || c.set_type === "memorabilia" || c.set_type === "minigame") return;
 
-    const key = String(c.name || "").toLowerCase();
-    if (!key) return;
-    let e = cards[key];
-    if (!e) {
-      // No image id needed: the page derives the image from the cheapest
-      // printing's set+collector (a direct Scryfall endpoint).
-      e = cards[key] = { p: [], l: legString(c.legalities) };
-      // record the front-face name for DFC / split / adventure ("A // B") to be
-      // materialized after the scan, so a real card with the same name can never
-      // be merged into the split entry.
-      const slash = key.indexOf(" // ");
-      if (slash > 0) { const front = key.slice(0, slash); if (!aliases[front]) aliases[front] = key; }
-    }
-    if (!e.p.some(x => x[0] === c.tcgplayer_id)) {
-      e.p.push([c.tcgplayer_id, (c.set || "").toLowerCase(), c.collector_number || ""]);
+    const name = String(c.name || "").toLowerCase();
+    if (!name) return;
+    const reversible = c.layout === "reversible_card";
+    const oid = c.oracle_id || (c.card_faces && c.card_faces[0] && c.card_faces[0].oracle_id);
+    const gk = oid || "name:" + (reversible ? dedupeFaces(name) : name);
+    let g = groups.get(gk);
+    if (!g) groups.set(gk, g = { name: null, alt: null, p: [], l: null });
+    // The group's name and legality come from a normal printing; a reversible
+    // one only fills in until (unless) a normal printing turns up.
+    if (!reversible && !g.name) { g.name = name; g.l = legString(c.legalities); }
+    if (reversible && !g.alt) { g.alt = dedupeFaces(name); g.l = g.l || legString(c.legalities); }
+    if (!g.p.some(x => x[0] === c.tcgplayer_id)) {
+      g.p.push([c.tcgplayer_id, (c.set || "").toLowerCase(), c.collector_number || ""]);
       printings++;
     }
-    if (scanned % 50000 === 0) console.error(`[index] scanned ${scanned} · ${Object.keys(cards).length} names`);
+    if (scanned % 50000 === 0) console.error(`[index] scanned ${scanned} · ${groups.size} cards`);
   };
 
   const split = makeSplitter(handle);
@@ -202,6 +212,23 @@ async function buildIndex() {
     } else {
       for await (const chunk of r.body) split(dec.decode(chunk, { stream: true }));
     }
+  }
+  // Key each group by its card's name. Two groups with one name (rare: e.g. a
+  // card and a token-like printing with no shared oracle_id) are merged, which
+  // is what the name-keyed index always did.
+  // No image id needed: the page derives the image from the cheapest
+  // printing's set+collector (a direct Scryfall endpoint).
+  const cards = Object.create(null);
+  const aliases = Object.create(null);
+  for (const g of groups.values()) {
+    const key = g.name || g.alt;
+    const e = cards[key];
+    if (!e) { cards[key] = { p: g.p, l: g.l }; }
+    else for (const pr of g.p) if (!e.p.some(x => x[0] === pr[0])) e.p.push(pr);
+    // record the front-face name for DFC / split / adventure ("A // B"), so a
+    // real card with the same name can never be merged into the split entry.
+    const slash = key.indexOf(" // ");
+    if (slash > 0) { const front = key.slice(0, slash); if (!aliases[front]) aliases[front] = key; }
   }
   // Materialize aliases after the scan: for each front-face name, if no real
   // card claimed it, point it at the split card's entry.

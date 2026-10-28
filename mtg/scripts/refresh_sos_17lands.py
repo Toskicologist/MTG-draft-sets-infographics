@@ -188,6 +188,11 @@ def _run_updaters(new_csv: Path, human_date: str, quiz_date_str: str) -> int:
     pack_beta = getattr(config, 'PACK_BETA_HTML', None)
     if pack_beta is not None and pack_beta.exists():
         quiz_targets.append(pack_beta)
+    # Since 2026-10-24 the beta quiz pages read data/quiz-data.js (refreshed by
+    # refresh_quiz_data.py); only pages that still embed SOS_CARDS are ours.
+    for target in [t for t in quiz_targets if not quiz_updater.has_cards_array(t, 'SOS')]:
+        print(f"  [SKIP] {target.name} has no SOS_CARDS array (reads data/quiz-data.js).")
+        quiz_targets.remove(target)
     total = len(sos_targets) + len(quiz_targets) + 1
     step = 0
     failures: list[str] = []
