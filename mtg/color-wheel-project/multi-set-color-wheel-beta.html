@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MTG Draft Archetypes - Multi-Set Color Wheel (beta)</title>
   <meta property="og:title" content="MTG Draft Archetypes — Multi-Set Color Wheel (beta)">
-  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed, plus an All sets view with a wheel for every Standard-legal set.">
+  <meta property="og:description" content="Interactive Magic: The Gathering draft archetype color wheel — Star Trek, Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed, plus an All sets view with a wheel for every Standard-legal set.">
   <meta property="og:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png">
   <meta property="og:url" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/multi-set-color-wheel-beta.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/fra-color-wheel-preview.png">
   <meta name="twitter:title" content="MTG Draft Archetypes — Multi-Set Color Wheel (beta)">
-  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed, plus an All sets view with a wheel for every Standard-legal set.">
+  <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel — Star Trek, Reality Fracture, The Hobbit, Marvel Super Heroes, Secrets of Strixhaven, TMT, Foundations and Lorwyn Eclipsed, plus an All sets view with a wheel for every Standard-legal set.">
   <!-- GoatCounter PATTERN A: count the #hash so each set view (#hob, #msh, …) is its own dashboard path.
        The public count.js snippet is auto-injected at push time, just before the closing head tag; this
        inline config must run first, and does. NOTE: do NOT write the closing-head string literally in this
@@ -254,8 +254,68 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *   - Marvel Super Heroes (MSH) - v1.1.0 - Jun 2026
  *   - The Hobbit (HOB) - v1.0.0 - Aug 2026
  *   - Reality Fracture (FRA) - v1.0.0 - Oct 2026
+ *   - Star Trek (TRK) - v1.0.0-beta.5 - Nov 2026
  *
  * CHANGELOG:
+ * 1.9.0-beta.8 (2026-11-02, 14:30 UTC) - [Claude Opus 5.5]
+ *   - TRK 1.0.0-beta.5: new Tokens section at the end of the page - the ten tokens made by
+ *     more than one card (Officer 14, New Planet 9, Copy 7, Clue 6, Klingon Warrior 6, Treasure 5,
+ *     Borg 4, Illusion 3, Romulan 3, Food 2), most makers first, each with its makers by color
+ *     and rarity. Makers come from oracle text, not Scryfall's token links (those miss Subspace
+ *     Anomaly's Officers). New optional `tokens` set field.
+ *   - CardLink takes optional imgUrl/href: tokens share names across sets and have several
+ *     arts, so the token tiles pass the exact cards.scryfall.io image and an all-printings link.
+ *
+ * 1.9.0-beta.7 (2026-11-01, 15:22 UTC) - [Claude Opus 5.5]
+ *   - TRK 1.0.0-beta.4: the Planet (land type) card lists the 9 cards that make New Planet
+ *     tokens (five Anomaly lands, Genesis Effect, Saurian Explorer, David and Carol Marcus,
+ *     Stable Wormhole) and the 3 that fetch a Planet (Final Frontier, Warp Speed, Genesis
+ *     Device), by color and rarity; notes that New Planet tokens share one name for Strange
+ *     New Worlds. Scryfall button is now t:planet OR o:planet (23 cards).
+ *
+ * 1.9.0-beta.6 (2026-11-01, 15:11 UTC) - [Claude Opus 5.5]
+ *   - TRK 1.0.0-beta.3: every mechanic in the Release Notes' general section that appears in
+ *     the main set, placed by the colors it appears in. Pair-specific ones go in the pair's box
+ *     as a new mechanicNotes slot: Landfall (RG), Face a dilemma (UB), Assimilate (WB).
+ *     All-color ones stay in Set-Wide Mechanics: Spacecraft and Station, Beam me up, Strange
+ *     new worlds, Federation (every color but black), and the Planet land type (new). Face a
+ *     dilemma moved from Set-Wide Mechanics to UB. Battlefront and Seek Out are Commander-only
+ *     (0 cards in trk), so they are left out.
+ *   - Each description is now a quote from the Release Notes, flavor sentences cut, in quotation
+ *     marks with a link to the article; a short 'In TRK:' line gives the color counts.
+ *   - Release Notes added to the resource links.
+ *   - New shared MechanicNotes component renders mechanicNotes in ArchetypeBox and in the
+ *     "All 10 Archetypes" grid; no other set has mechanicNotes, so nothing else changes.
+ *     Set-Wide Mechanics cards show an optional quote (with its link) above the description,
+ *     and drop the Source line when the quote already links the source.
+ *
+ * 1.9.0-beta.5 (2026-10-30, 17:11 UTC) - [Claude Opus 5.5]
+ *   - TRK 1.0.0-beta.2, checked against WotC's Prerelease Guide (published 10-30) and its
+ *     archetype insert: all ten names, colors and signpost uncommons already matched.
+ *     Added the Guide's key commons/uncommons per pair ("Guide picks" lines, all 22
+ *     names checked against the complete snapshot) and made it the official link.
+ *   - GW is about counters of ANY kind (the Guide: Phlox counts Spacecraft charge
+ *     counters too) - sub-label was "+1/+1 counters"; new Any-counter payoffs search.
+ *   - GU adds the five Anomaly lands, the five-color reach and the long-game plan; UR says
+ *     Spacecraft count as noncreature spells; WU, BR, RG, WB, BG, RW prose follows the Guide.
+ *   - Counts redone on the complete set (306 cards): 17 Spacecraft, 14 Borg, 9 dilemma
+ *     payoffs (color boxes and set mechanics updated).
+ *
+ * 1.9.0-beta.4 (2026-10-30, 00:14 UTC) - [Claude Opus 5.5]
+ *   - New set: Star Trek (TRK), tab #trk, now the default view (newest set). Built from the
+ *     2026-10-29 Scryfall snapshot - 291 of the 306 main-set cards, the day before the
+ *     complete Card Image Gallery; the gold band and all ten Planet duals are complete.
+ *   - Ten equal archetypes, named as in WotC's design article (Trekking Through Design):
+ *     Spacecraft and Artificers, Dilemma Control, Klingons and Dies, Away Team Landfall,
+ *     Doctors and Counters, Borg Artifact Creatures, Scientists and Noncreatures, Archaeology
+ *     Graveyard, Command 8+ Total Power, Strange New Worlds. Each lists its five skeleton cards
+ *     (hybrid uncommon, gold uncommon, gold rare, Planet dual, shock land); Draftsim names the
+ *     same two uncommons per pair as signposts.
+ *   - Color boxes are counts from the snapshot (the design article gives no per-color themes).
+ *   - Set mechanics: Spacecraft and Station, Beam me up, Face a dilemma, Strange new worlds,
+ *     Federation. Reminder text verbatim from oracle text; every search URL returns > 0 cards.
+ *   - Scryfall trk.svg tab icon; LCARS-orange accent.
+ *
  * 1.9.0-beta.3 (2026-10-24, 00:04 UTC) - [Claude Opus 5.5]
  *   - Test page for JSX precompiling: the published copy no longer loads Babel or compiles
  *     this block in the browser. scripts/precompile-jsx.js compiles it (same Babel 7.29.7,
@@ -2171,9 +2231,596 @@ var SET_DATA = {
       scryfallQuery: "https://scryfall.com/search?q=set%3Afra+cn%3E%3D195+cn%3C%3D280&unique=cards&as=grid&order=set",
       scryfallLabel: "cn 195-280"
     }]
+  },
+  // ---------------------------------------------------------------------------
+  // Star Trek (TRK) - Universes Beyond, releases 2026-11-13 (Arena 11-10).
+  // Built 2026-10-30 00:14 UTC from the 291-card 10-29 snapshot; updated 2026-10-30 17:11 UTC
+  // with the complete set (306 main-set cards, every rarity count
+  // matching the Collecting article) and WotC's Prerelease Guide, which confirms
+  // all ten names and pictures exactly the two uncommons listed per pair. Plan +
+  // sources: mtg/trk-project/TRK_PLAN.md.
+  //
+  // TEN EQUAL ARCHETYPES. The archetype names are WotC's (Trekking Through Design,
+  // Gavin Verhey, 2026-10-23); every pair has the same five-card skeleton - a
+  // hybrid uncommon legend, a gold uncommon legend, a gold rare, a common Planet
+  // dual and an LCARS shock land reprint - and Draftsim names the same two
+  // uncommons as each pair's signposts. The design article gives no per-color
+  // themes, so the color boxes are counts from the snapshot, not WotC prose.
+  //
+  // Mechanic reminder text is verbatim from card oracle text. Every themeSearches
+  // and scryfallQuery URL was executed against the API on 2026-10-30 and returns
+  // > 0 cards. Assimilate (2 mythics) is left off the set mechanics, like FRA's
+  // Exhaust: one or two cards are cards, not a theme.
+  // ---------------------------------------------------------------------------
+  TRK: {
+    key: 'TRK',
+    name: 'Star Trek',
+    shortName: 'TRK',
+    releaseDate: 'November 13, 2026',
+    version: '1.0.0-beta.5',
+    scryfallCodes: ['trk'],
+    primaryArchetypes: ['WU', 'UB', 'BR', 'RG', 'GW', 'WB', 'UR', 'BG', 'RW', 'GU'],
+    primaryLabel: 'All 10 archetypes supported',
+    primaryDescription: "Every color pair gets the same five cards: two multicolor uncommon legends (one hybrid, one gold - the signposts in WotC's Prerelease Guide), a gold rare, a common Planet dual land and a reprinted shock land. Each archetype also has a creative theme - a faction or a crew role - alongside its mechanical one, so a Klingon or a Doctor in the pack is usually a hint about where it belongs.",
+    accentColor: '#C2410C',
+    colorDescriptions: {
+      W: {
+        name: "White",
+        description: "Part of four archetypes: Spacecraft (WU), Borg (WB), Doctors (GW) and Command (RW).\nWhite has 6 of the 14 Borg and three of the seven cards that check for 8+ total power.",
+        themeSearches: [{
+          label: "White Borg",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Dw+t%3Aborg&unique=cards&as=grid&order=name"
+        }, {
+          label: "White 8+ power",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Dw+o%3A%22total+power+8%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "Scryfall snapshot 2026-10-29",
+        sourceUrl: "https://scryfall.com/sets/trk"
+      },
+      U: {
+        name: "Blue",
+        description: "Part of four archetypes: Spacecraft (WU), Dilemma Control (UB), Scientists (UR) and Strange New Worlds (GU).\nBlue has the most Spacecraft of any color (4 of 17) and the most Artificers (4 of 10), and 6 of the 10 cards that reward casting noncreature spells.",
+        themeSearches: [{
+          label: "Blue Spacecraft",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Du+t%3Aspacecraft&unique=cards&as=grid&order=name"
+        }, {
+          label: "Blue noncreature payoffs",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Du+o%3A%22noncreature+spell%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "Scryfall snapshot 2026-10-29",
+        sourceUrl: "https://scryfall.com/sets/trk"
+      },
+      B: {
+        name: "Black",
+        description: "Part of four archetypes: Dilemma Control (UB), Klingons (BR), Borg (WB) and Archaeology (BG).\nBlack has the most dilemma payoffs (4 of 9), Klingons (5 of 13) and Borg (7 of 14).",
+        themeSearches: [{
+          label: "Black dilemma payoffs",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Db+o%3Adilemma&unique=cards&as=grid&order=name"
+        }, {
+          label: "Black Klingons",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Db+t%3Aklingon&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "Scryfall snapshot 2026-10-29",
+        sourceUrl: "https://scryfall.com/sets/trk"
+      },
+      R: {
+        name: "Red",
+        description: "Part of four archetypes: Klingons (BR), Away Team Landfall (RG), Scientists (UR) and Command (RW).\nRed has 4 of the 13 Klingons and 3 of the 9 landfall cards.",
+        themeSearches: [{
+          label: "Red Klingons",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Dr+t%3Aklingon&unique=cards&as=grid&order=name"
+        }, {
+          label: "Red landfall",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Dr+keyword%3Alandfall&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "Scryfall snapshot 2026-10-29",
+        sourceUrl: "https://scryfall.com/sets/trk"
+      },
+      G: {
+        name: "Green",
+        description: "Part of four archetypes: Away Team Landfall (RG), Doctors (GW), Archaeology (BG) and Strange New Worlds (GU).\nGreen has the most Scientists (7 of 19), Doctors (5 of 11) and landfall cards (4 of 9), and ties blue for Strange New Worlds cards (4 of 13).",
+        themeSearches: [{
+          label: "Green Scientists",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Dg+t%3Ascientist&unique=cards&as=grid&order=name"
+        }, {
+          label: "Green Strange New Worlds",
+          url: "https://scryfall.com/search?q=set%3Atrk+id%3Dg+o%3A%22strange+new+worlds%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "Scryfall snapshot 2026-10-29",
+        sourceUrl: "https://scryfall.com/sets/trk"
+      }
+    },
+    labels: {
+      WU: {
+        text: "Spacecraft",
+        sub: "Artificers\nStation",
+        details: "Spacecraft and Artificers. Play creatures with useful enters abilities, then tap them to station your Spacecraft - 17 in the set, each an artifact that becomes a creature once it has enough charge counters. Most ships take a turn or two to come online, so you also want cards that hold the board and protect them: Hemmer gives your Spacecraft hexproof during your turn and loots whenever he is tapped to station one.\nCards:\nUncommon: Hemmer, Fixing What Is Broken; Constable Odo.\nRare: Live Long and Prosper.\nLand: Vulcan; Hallowed Fountain.\nGuide picks: Interstellar Effigy (common).",
+        cards: ["Hemmer, Fixing What Is Broken", "Constable Odo", "Live Long and Prosper", "Vulcan", "Hallowed Fountain", "Interstellar Effigy"],
+        themeSearches: [{
+          label: "Spacecraft",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aspacecraft&unique=cards&as=grid&order=name"
+        }, {
+          label: "Artificers",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aartificer&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design",
+        mechanicDef: "Station - \"(Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 6+.)\""
+      },
+      UB: {
+        text: "Dilemma\nControl",
+        sub: "Modal choices",
+        details: "Modal spells let you pick a proactive or a reactive mode each time. Use them to control the board, then win with the cards that pay you for facing a dilemma - Seven of Nine draws a card every time. Lore, Positronic Provocateur is the cheap enabler: a three-mana body that picks a mode when it enters.\nCards:\nUncommon: Seven of Nine; Lore, Positronic Provocateur.\nRare: Mirror Universe Intrusion.\nLand: Romulus; Watery Grave.\nGuide picks: Consider the Prime Directive (common); Resistance Is Futile (uncommon).",
+        cards: ["Seven of Nine", "Lore, Positronic Provocateur", "Mirror Universe Intrusion", "Romulus", "Watery Grave", "Consider the Prime Directive", "Resistance Is Futile", "Captain Benjamin Sisko"],
+        mechanicNotes: [{
+          name: "Face a dilemma",
+          quote: "Some cards in this release have abilities that trigger whenever a player 'faces a dilemma,' which happens whenever that player chooses one or more modes for a spell or ability.",
+          quoteSource: "Star Trek Release Notes",
+          quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+          inSet: "In TRK: 9 payoffs, all blue or black except one - U 3, B 4, UB 1 (Seven of Nine), and the white Captain Benjamin Sisko."
+        }],
+        themeSearches: [{
+          label: "Dilemma payoffs",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3Adilemma&unique=cards&as=grid&order=name"
+        }, {
+          label: "Modal cards",
+          url: "https://scryfall.com/search?q=set%3Atrk+is%3Amodal&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      BR: {
+        text: "Klingons",
+        sub: "Dies\nSacrifice",
+        details: "Klingons and dies. Attack with hasty Klingon Warrior tokens, then sacrifice them for value; every creature that dies, yours or theirs, feeds the payoffs, and removal and combat tricks keep the deaths coming. L'Rell makes a hasty 2/1 Klingon every combat (sacrificed at end of turn) and sacrifices creatures or artifacts to surveil; The Duras Sisters leave a hasty 2/1 Klingon when they die.\nCards:\nUncommon: L'Rell, Fierce Visionary; The Duras Sisters.\nRare: Gowron, Eager for Battle.\nLand: Qo'noS; Blood Crypt.\nGuide picks: A Good Day to Die (common); Starfleet Security (common); Vengeance Mission (uncommon); Sarcophagus, Ship of the Dead (uncommon).",
+        cards: ["L'Rell, Fierce Visionary", "The Duras Sisters", "Gowron, Eager for Battle", "Qo'noS", "Blood Crypt", "A Good Day to Die", "Starfleet Security", "Vengeance Mission", "Sarcophagus, Ship of the Dead"],
+        themeSearches: [{
+          label: "Klingons",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aklingon&unique=cards&as=grid&order=name"
+        }, {
+          label: "Sacrifice outlets",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22sacrifice+another%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      RG: {
+        text: "Away Team",
+        sub: "Landfall",
+        details: "Away Team Landfall. The payoffs trigger whenever a land enters under your control, so you want extra land drops as well as landfall creatures. Cleveland Booker makes a 2/2 Worm (that can't block) on every land drop; Dal R'El adds mana on landfall and sacrifices spare lands to draw cards late. Erica Ortegas puts a land from your hand onto the battlefield whenever she becomes tapped - a second landfall in the turn, which Captain Michael Burnham and Jake Sisko reward.\nCards:\nUncommon: Cleveland Booker, Empath; Dal R'El, Augment Orphan.\nRare: Hit It!\nLand: Orion; Stomping Ground.\nGuide picks: Captain Michael Burnham (uncommon); Jake Sisko, War Correspondent (uncommon); Erica Ortegas, Plucky Pilot (uncommon).",
+        cards: ["Cleveland Booker, Empath", "Dal R'El, Augment Orphan", "Hit It!", "Orion", "Stomping Ground", "Captain Michael Burnham", "Jake Sisko, War Correspondent", "Erica Ortegas, Plucky Pilot"],
+        mechanicNotes: [{
+          name: "Landfall",
+          quote: "[Landfall] groups abilities that reward you whenever a land you control enters.",
+          quoteSource: "Star Trek Release Notes",
+          quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+          inSet: "In TRK: 9 cards, all red or green - R 3, G 4, RG 2."
+        }],
+        themeSearches: [{
+          label: "Landfall",
+          url: "https://scryfall.com/search?q=set%3Atrk+keyword%3Alandfall&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      GW: {
+        text: "Doctors",
+        sub: "Counters\n(any kind)",
+        details: "Doctors and counters. Put counters on your creatures and get paid for it - and the payoffs count any kind of counter, so the charge counters on a Spacecraft count too. The Doctor, EMH adds a +1/+1 counter to each creature that already has a counter, and Phlox draws a card whenever a creature with a counter deals combat damage to a player.\nCards:\nUncommon: The Doctor, EMH; Phlox, Unorthodox Doctor.\nRare: The Inner Light.\nLand: Risa; Temple Garden.\nGuide picks: Pure Energy (common); Support Mission (uncommon).",
+        cards: ["The Doctor, EMH", "Phlox, Unorthodox Doctor", "The Inner Light", "Risa", "Temple Garden", "Pure Energy", "Support Mission"],
+        themeSearches: [{
+          label: "Doctors",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Adoctor&unique=cards&as=grid&order=name"
+        }, {
+          label: "+1/+1 counters",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22%2B1%2F%2B1+counter%22&unique=cards&as=grid&order=name"
+        }, {
+          label: "Any-counter payoffs",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22with+a+counter+on+it%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      WB: {
+        text: "Borg",
+        sub: "Artifact creatures",
+        details: "Borg artifact creatures. Every Borg is an artifact creature. Build an early board of artifacts, pump them once Locutus arrives (+1/+1 to your artifact creatures, or discard him to deal 2 damage), and sacrifice the ones that have done their job. Zero exiles a card from the opponent's hand that they can still play, for {2} more. The Borg Cube mythic assimilates.\nCards:\nUncommon: Locutus, the One Who Speaks; Zero, Incorporeal Sensate.\nRare: The City on the Edge of Forever.\nMythic: Borg Cube.\nLand: Cardassia Prime; Godless Shrine.\nGuide picks: Vexing Drone (common); Assault Drone (common).",
+        cards: ["Locutus, the One Who Speaks", "Zero, Incorporeal Sensate", "The City on the Edge of Forever", "Borg Cube", "Cardassia Prime", "Godless Shrine", "Vexing Drone", "Assault Drone", "Death Is Irrelevant"],
+        mechanicNotes: [{
+          name: "Assimilate",
+          quote: "The assimilate keyword action gives you control of a creature or puts a creature card onto the battlefield under your control. Either way, a +1/+1 counter is put on that creature, and it becomes a Borg artifact creature and loses its other creature types.",
+          quoteSource: "Star Trek Release Notes",
+          quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+          inSet: "In TRK: 2 cards, both mythic - Death Is Irrelevant (B) and Borg Cube (WB)."
+        }],
+        themeSearches: [{
+          label: "Borg",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aborg&unique=cards&as=grid&order=name"
+        }, {
+          label: "Artifact creatures",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aartifact+t%3Acreature&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      UR: {
+        text: "Scientists",
+        sub: "Noncreature spells",
+        details: "Scientists and noncreatures. Cast instants, sorceries and other noncreature spells - Spacecraft count, since they are artifacts when you cast them - and get paid on the creature side. Spock looks at the top four cards for a noncreature spell; Gray and Adira make a hasty copy of one of your creatures each combat after you've cast one, so a cheap noncreature spell every turn keeps them going.\nCards:\nUncommon: Spock, Always Your Friend; Gray and Adira, Forever Joined.\nRare: Year of Hell.\nLand: Andoria; Steam Vents.\nGuide picks: Test of Priorities (uncommon); Test of Identity (uncommon).",
+        cards: ["Spock, Always Your Friend", "Gray and Adira, Forever Joined", "Year of Hell", "Andoria", "Steam Vents", "Test of Priorities", "Test of Identity"],
+        themeSearches: [{
+          label: "Scientists",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Ascientist&unique=cards&as=grid&order=name"
+        }, {
+          label: "Noncreature payoffs",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22noncreature+spell%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      BG: {
+        text: "Archaeology",
+        sub: "Graveyard",
+        details: "Archaeology graveyard. Fill your graveyard with creatures and artifacts, then dig them back out - several permanents pay off whenever a card leaves your graveyard. Vash surveils every upkeep and draws a card when a card leaves your graveyard (once a turn), and reanimation and beam me up spells set that off. Daniels returns a creature card to your hand, and later puts himself from the graveyard on the bottom of your library for 2 life.\nCards:\nUncommon: Vash, Freelance Archaeologist; Daniels, Temporal Agent.\nRare: Nog, Ambitious Cadet.\nLand: Ferenginar; Overgrown Tomb.\nGuide picks: Pattern Buffer Preservation (common).",
+        cards: ["Vash, Freelance Archaeologist", "Daniels, Temporal Agent", "Nog, Ambitious Cadet", "Ferenginar", "Overgrown Tomb", "Pattern Buffer Preservation"],
+        themeSearches: [{
+          label: "Surveil",
+          url: "https://scryfall.com/search?q=set%3Atrk+keyword%3Asurveil&unique=cards&as=grid&order=name"
+        }, {
+          label: "Graveyard",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22your+graveyard%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      RW: {
+        text: "Command",
+        sub: "8+ total power",
+        details: "Command 8+ total power. The payoffs check whether creatures you control have total power 8 or greater when you attack, so get there with power pumps, naturally big creatures, or a board of Officer tokens - Academy Instructor makes one for every noncreature spell you cast. Kirk exiles the top card of your library and lets you play it, Worf doubles his power, and La'An Noonien-Singh, Security stops a blocker.\nCards:\nUncommon: Kirk, Commanding Officer; Worf, Honor-Bound Warrior.\nRare: Kira Nerys, Firebrand.\nLand: Bajor; Sacred Foundry.\nGuide picks: Academy Instructor (uncommon); La'An Noonien-Singh, Security (uncommon).",
+        cards: ["Kirk, Commanding Officer", "Worf, Honor-Bound Warrior", "Kira Nerys, Firebrand", "Bajor", "Sacred Foundry", "Academy Instructor", "La'An Noonien-Singh, Security"],
+        themeSearches: [{
+          label: "Total power 8",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22total+power+8%22&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design"
+      },
+      GU: {
+        text: "Strange New\nWorlds",
+        sub: "Land variety\nFive colors",
+        details: "Strange New Worlds counts the differently named lands you control, so collect as many as you can: the ten Planet duals and the five Anomaly lands all have different names, and an off-color Planet still gains you life and still counts - which can stretch the deck into all five colors. Survive the early game, then win the long one. The Traveler's power is the count; D'Vana Tendi untaps a permanent (a land, for extra mana) and turns spare mana into surveil; Warp Speed fetches a basic land or a Planet and makes your lands enter untapped.\nCards:\nUncommon: The Traveler; D'Vana Tendi, Optimistic Ensign; Warp Speed.\nRare: All Good Things...\nLand: Earth, Sector 001; Breeding Pool.\nGuide picks: Suus Mahna Practitioner (common); Orion; Risa.",
+        cards: ["The Traveler", "D'Vana Tendi, Optimistic Ensign", "Warp Speed", "All Good Things...", "Earth, Sector 001", "Breeding Pool", "Suus Mahna Practitioner", "Orion", "Risa"],
+        themeSearches: [{
+          label: "Strange New Worlds",
+          url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22strange+new+worlds%22&unique=cards&as=grid&order=name"
+        }, {
+          label: "Planets",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aplanet&unique=cards&as=grid&order=name"
+        }, {
+          label: "Anomaly lands",
+          url: "https://scryfall.com/search?q=set%3Atrk+t%3Aland+name%3Aanomaly&unique=cards&as=grid&order=name"
+        }],
+        sourceText: "WotC Prerelease Guide",
+        sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+        sourceText2: "WotC Design Article",
+        sourceUrl2: "https://magic.wizards.com/en/news/feature/trekking-through-design",
+        mechanicDef: "Strange new worlds - an ability word. The Traveler: \"Strange new worlds — The Traveler's power is equal to the number of differently named lands you control.\""
+      }
+    },
+    resourceLinks: [{
+      label: "Star Trek Prerelease Guide",
+      url: "https://magic.wizards.com/en/news/feature/star-trek-prerelease-guide",
+      desc: "Official Prerelease Guide (Jubilee Finnegan, 2026-10-30) - the ten draft archetypes with their signposts and key commons and uncommons (the Guide picks above), plus the archetype insert",
+      official: true
+    }, {
+      label: "Star Trek Release Notes",
+      url: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      desc: "Official release notes (Eric Levine, 2026-10-30) - the mechanics descriptions quoted in the archetype boxes and Set-Wide Mechanics, plus card rulings",
+      official: false
+    }, {
+      label: "Star Trek Mechanics",
+      url: "https://magic.wizards.com/en/news/feature/star-trek-mechanics",
+      desc: "Official Wizards of the Coast mechanics article (Matt Tabak) - Beam me up, Face a dilemma, Federation, Strange New Worlds, Spacecraft and Station, Assimilate",
+      official: false
+    }, {
+      label: "Trekking Through Design",
+      url: "https://magic.wizards.com/en/news/feature/trekking-through-design",
+      desc: "Official design article (Gavin Verhey) - names the ten draft archetypes, each with a creative and a mechanical theme; the source of the archetype names above",
+      official: false
+    }, {
+      label: "Collecting Star Trek",
+      url: "https://magic.wizards.com/en/news/feature/collecting-star-trek",
+      desc: "Official product breakdown - set size by rarity, Play Booster contents, the 30 Stardates cards (1 in 25 Play Boosters)",
+      official: false
+    }, {
+      label: "Where to Find Star Trek Previews",
+      url: "https://magic.wizards.com/en/news/announcements/where-to-find-star-trek-previews",
+      desc: "Official preview schedule - debut 10-20, complete Card Image Gallery 10-30",
+      official: false
+    }, {
+      label: "Star Trek Card Image Gallery",
+      url: "https://magic.wizards.com/en/products/star-trek/card-image-gallery",
+      desc: "Official card gallery, complete on 2026-10-30",
+      official: false
+    }, {
+      label: "Exploring All Ten Star Trek Limited Archetypes",
+      url: "https://draftsim.com/mtg-star-trek-limited-archetypes/",
+      desc: "Draftsim's archetype-by-archetype breakdown with two signpost cards per pair"
+    }, {
+      label: "Star Trek on Scryfall",
+      url: "https://scryfall.com/sets/trk",
+      desc: "Full card gallery and search - the data source behind this page"
+    }],
+    setMechanics: [{
+      name: "Spacecraft and Station",
+      keyword: "station",
+      quote: "The station mechanic is back to help you get your Spacecraft up and running; once they've got the right amount of charge counters, they'll be ready to use all their abilities. In most cases, this will also turn them into creatures ready to attack and block.",
+      quoteSource: "Star Trek Release Notes",
+      quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      description: "In TRK: 17 Spacecraft, every one with station, in every color - W 3, U 4, B 1, R 2, G 2, WB 1 (Borg Cube), colorless 4. Reminder text from Oberth-Class Starship, a common.",
+      reminder: "Station (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 6+.)",
+      cards: ["Oberth-Class Starship", "Borg Cube"],
+      source: "WotC Release Notes",
+      sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      scryfallQuery: "https://scryfall.com/search?q=set%3Atrk+keyword%3Astation&unique=cards&as=grid&order=rarity",
+      scryfallLabel: "keyword:station"
+    }, {
+      name: "Beam me up",
+      keyword: "beam me up",
+      quote: "Some instant and sorcery cards in this release have the beam me up keyword ability, which allows you to cast them from your graveyard by paying a cost and returning a creature you control to its owner's hand.",
+      quoteSource: "Star Trek Release Notes",
+      quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      description: "In TRK: 11 cards in every color - 10 sorceries (W 3, U 2, B 1, R 2, G 2, five of them common) and the blue mythic Scotty, Miracle Worker, who gives beam me up to every instant and sorcery in your graveyard during your main phase. Reminder text from Open Communications, a common.",
+      reminder: "Beam me up {2}{U} (You may cast this card from your graveyard for {2}{U} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+      cards: ["Open Communications", "Scotty, Miracle Worker"],
+      source: "WotC Release Notes",
+      sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      scryfallQuery: "https://scryfall.com/search?q=set%3Atrk+o%3A%22beam+me+up%22&unique=cards&as=grid&order=rarity",
+      scryfallLabel: "o:\"beam me up\""
+    }, {
+      name: "Strange new worlds",
+      keyword: "strange new worlds",
+      quote: "The strange new worlds ability word groups abilities that care about the number of differently named lands you control.",
+      quoteSource: "Star Trek Release Notes",
+      quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      description: "In TRK: 13 cards in every color, mostly green (5) and blue (4) plus The Traveler (GU) - the core of GU Strange New Worlds.",
+      cards: ["The Traveler"],
+      source: "WotC Release Notes",
+      sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      scryfallQuery: "https://scryfall.com/search?q=set%3Atrk+o%3A%22strange+new+worlds%22&unique=cards&as=grid&order=rarity",
+      scryfallLabel: "o:\"strange new worlds\""
+    }, {
+      name: "Federation",
+      keyword: "federation",
+      quote: "The federation ability word groups abilities that care about the number of creature types among non-Borg creatures a player controls.",
+      quoteSource: "Star Trek Release Notes",
+      quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      description: "In TRK: 6 cards (2 uncommon, 2 rare, 2 mythic) in every color except black - Saavik, Stoic Student (W), Hoshi Sato, Exolinguist (U), Infinite Diversity (R), Captain Jonathan Archer (G), Sarek, Federation Ambassador (WUG) and the colorless Starfleet Academy. Too few for an archetype of its own.",
+      cards: ["Saavik, Stoic Student", "Hoshi Sato, Exolinguist", "Infinite Diversity", "Captain Jonathan Archer", "Sarek, Federation Ambassador", "Starfleet Academy"],
+      source: "WotC Release Notes",
+      sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      scryfallQuery: "https://scryfall.com/search?q=set%3Atrk+o%3A%2F%5Efederation%2F&unique=cards&as=grid&order=rarity",
+      scryfallLabel: "o:/^federation/"
+    }, {
+      name: "Planet (land type)",
+      keyword: "planet",
+      quote: "Planet is a land subtype with no special meaning. It doesn't grant the land any intrinsic abilities.",
+      quoteSource: "Star Trek Release Notes",
+      quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      description: "In TRK: all ten common dual lands are Planets, one per color pair.\nCards that make a New Planet token (a tapped land that taps for any color):\n\u2022 Lands (uncommon): Subspace Anomaly (W), Gaseous Anomaly (U), Artificial Anomaly (B), Spatial Anomaly (R), Temporal Anomaly (G) - each when you sacrifice it for its effect\n\u2022 Red: Genesis Effect (common)\n\u2022 Green: Saurian Explorer (common), David and Carol Marcus, Creators (uncommon), Stable Wormhole (rare)\nCards that care about Planets - each fetches a basic land or a Planet card:\n\u2022 Green: Final Frontier (common), Warp Speed (uncommon), Genesis Device (rare)\n\nEvery token is named New Planet, so for Strange New Worlds several of them count as one differently named land.",
+      cards: ["Subspace Anomaly", "Gaseous Anomaly", "Artificial Anomaly", "Spatial Anomaly", "Temporal Anomaly", "Genesis Effect", "Saurian Explorer", "David and Carol Marcus, Creators", "Stable Wormhole", "Final Frontier", "Warp Speed", "Genesis Device"],
+      source: "WotC Release Notes",
+      sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
+      scryfallQuery: "https://scryfall.com/search?q=set%3Atrk+%28t%3Aplanet+OR+o%3Aplanet%29&unique=cards&as=grid&order=name",
+      scryfallLabel: "t:planet OR o:planet"
+    }],
+    tokens: [{
+      "name": "Officer",
+      "desc": "1/1 red creature",
+      "img": "https://cards.scryfall.io/normal/front/0/1/012b04de-d9a5-4b12-afc8-cdf54bc42fc9.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Officer%22&unique=prints",
+      "arts": 10,
+      "count": 14,
+      "makers": [{
+        "g": "W",
+        "cards": [["Captain Benjamin Sisko", "R"], ["Captain Jean-Luc Picard", "M"], ["Excalbian Gamemaster", "M"], ["U.S.S. Enterprise-A, Free Spirit", "M"]]
+      }, {
+        "g": "U",
+        "cards": [["Make It So", "C"], ["Kobayashi Maru Scenario", "M"]]
+      }, {
+        "g": "B",
+        "cards": [["Impossible Choice", "U"], ["Georgiou, Terran Emperor", "M"]]
+      }, {
+        "g": "R",
+        "cards": [["Academy Instructor", "U"], ["Captain James T. Kirk", "M"]]
+      }, {
+        "g": "G",
+        "cards": [["Photosynthetic Physician", "C"], ["MACO Strike Team", "R"]]
+      }, {
+        "g": "Colorless",
+        "cards": [["U.S.S. Cerritos, Following Up", "U"]]
+      }, {
+        "g": "Land",
+        "cards": [["Subspace Anomaly", "U"]]
+      }]
+    }, {
+      "name": "New Planet",
+      "desc": "Tapped Planet land: {T}: add one mana of any color",
+      "img": "https://cards.scryfall.io/normal/front/2/1/21d855f7-fd5c-4eb4-b997-a905849806b9.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22New+Planet%22&unique=prints",
+      "arts": 1,
+      "count": 9,
+      "makers": [{
+        "g": "R",
+        "cards": [["Genesis Effect", "C"]]
+      }, {
+        "g": "G",
+        "cards": [["Saurian Explorer", "C"], ["David and Carol Marcus, Creators", "U"], ["Stable Wormhole", "R"]]
+      }, {
+        "g": "Land",
+        "cards": [["Artificial Anomaly", "U"], ["Gaseous Anomaly", "U"], ["Spatial Anomaly", "U"], ["Subspace Anomaly", "U"], ["Temporal Anomaly", "U"]]
+      }]
+    }, {
+      "name": "Copy",
+      "desc": "A copy of a creature or token (often temporary)",
+      "img": "https://cards.scryfall.io/normal/front/2/1/2115c141-f2fb-4bfd-a8b5-2943bad9f418.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrc+%21%22Copy%22&unique=prints",
+      "arts": 1,
+      "count": 7,
+      "makers": [{
+        "g": "W",
+        "cards": [["Troubling Tribbles", "R"]]
+      }, {
+        "g": "B",
+        "cards": [["Blastoneuron", "U"]]
+      }, {
+        "g": "R",
+        "cards": [["Dominion Infiltration", "R"], ["Tasha Yar, Out of Time", "R"]]
+      }, {
+        "g": "UB",
+        "cards": [["Mirror Universe Intrusion", "R"]]
+      }, {
+        "g": "UR",
+        "cards": [["Gray and Adira, Forever Joined", "U"]]
+      }, {
+        "g": "Colorless",
+        "cards": [["Replicator", "R"]]
+      }]
+    }, {
+      "name": "Clue",
+      "desc": "Artifact: {2}, sacrifice: draw a card",
+      "img": "https://cards.scryfall.io/normal/front/2/4/24c80ef6-747d-47b7-8e1f-148f5dfacc32.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Clue%22&unique=prints",
+      "arts": 2,
+      "count": 6,
+      "makers": [{
+        "g": "W",
+        "cards": [["The Measure of a Man", "U"]]
+      }, {
+        "g": "B",
+        "cards": [["Commander Raffi Musiker", "U"], ["In the Pale Moonlight", "U"]]
+      }, {
+        "g": "R",
+        "cards": [["Starfleet Security", "C"]]
+      }, {
+        "g": "G",
+        "cards": [["Jake Sisko, War Correspondent", "U"]]
+      }, {
+        "g": "WU",
+        "cards": [["Constable Odo", "U"]]
+      }]
+    }, {
+      "name": "Klingon Warrior",
+      "desc": "2/1 red creature with haste",
+      "img": "https://cards.scryfall.io/normal/front/b/7/b7897f31-509e-4099-b9b4-c6214b80f29d.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Klingon+Warrior%22&unique=prints",
+      "arts": 3,
+      "count": 6,
+      "makers": [{
+        "g": "B",
+        "cards": [["Cha'DIch Investigator", "C"], ["The Destruction of Praxis", "R"]]
+      }, {
+        "g": "R",
+        "cards": [["Boarding Action", "C"], ["D-7 Battle Cruiser", "R"]]
+      }, {
+        "g": "BR",
+        "cards": [["L'Rell, Fierce Visionary", "U"], ["The Duras Sisters", "U"]]
+      }]
+    }, {
+      "name": "Treasure",
+      "desc": "Artifact: {T}, sacrifice: add one mana of any color",
+      "img": "https://cards.scryfall.io/normal/front/b/8/b8e8c3b4-3b8d-48a4-b427-a2b8ac3e2f8b.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Treasure%22&unique=prints",
+      "arts": 1,
+      "count": 5,
+      "makers": [{
+        "g": "B",
+        "cards": [["Grand Nagus Zek", "R"]]
+      }, {
+        "g": "R",
+        "cards": [["Savvy Profiteer", "C"], ["Quark, Humble Proprietor", "M"]]
+      }, {
+        "g": "G",
+        "cards": [["Temporal Conqueror", "C"]]
+      }, {
+        "g": "GW",
+        "cards": [["The Inner Light", "R"]]
+      }]
+    }, {
+      "name": "Borg",
+      "desc": "1/1 colorless artifact creature",
+      "img": "https://cards.scryfall.io/normal/front/6/6/662d060a-719c-42bf-8bee-cf602a045ff0.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Borg%22&unique=prints",
+      "arts": 2,
+      "count": 4,
+      "makers": [{
+        "g": "W",
+        "cards": [["Assembly Specialist", "U"], ["Conquest Mission", "U"], ["Antagonist Incorporator", "R"]]
+      }, {
+        "g": "B",
+        "cards": [["Tenacious Drone", "C"]]
+      }]
+    }, {
+      "name": "Illusion",
+      "desc": "3/3 colorless artifact creature",
+      "img": "https://cards.scryfall.io/normal/front/d/7/d760eee8-e49a-4662-8bfc-fcf8ed2ad2d8.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Illusion%22&unique=prints",
+      "arts": 1,
+      "count": 3,
+      "makers": [{
+        "g": "G",
+        "cards": [["Adversary by Algorithm", "U"], ["Hologram Stalker", "U"], ["Holo-Engineer", "R"]]
+      }]
+    }, {
+      "name": "Romulan",
+      "desc": "2/2 black creature",
+      "img": "https://cards.scryfall.io/normal/front/a/5/a507f7fc-1438-4680-af2f-e7131c4d7d0b.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Romulan%22&unique=prints",
+      "arts": 1,
+      "count": 3,
+      "makers": [{
+        "g": "U",
+        "cards": [["Cloak and Phaser", "U"]]
+      }, {
+        "g": "B",
+        "cards": [["In the Pale Moonlight", "U"], ["Sela, Tal Shiar Paradox", "R"]]
+      }]
+    }, {
+      "name": "Food",
+      "desc": "Artifact: {2}, {T}, sacrifice: gain 3 life",
+      "img": "https://cards.scryfall.io/normal/front/d/d/dd703147-f546-45af-8511-2d108afd0ad2.jpg",
+      "href": "https://scryfall.com/search?q=set%3Attrk+%21%22Food%22&unique=prints",
+      "arts": 1,
+      "count": 2,
+      "makers": [{
+        "g": "G",
+        "cards": [["Neelix, Moral Support", "U"]]
+      }, {
+        "g": "Colorless",
+        "cards": [["Replicator", "R"]]
+      }]
+    }]
   }
 };
-var SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH', 'HOB', 'FRA'];
+var SET_ORDER = ['ECL', 'FDN', 'TMT', 'SOS', 'MSH', 'HOB', 'FRA', 'TRK'];
 
 // "All sets" view (#all): every wheel on one page, labels only. It shows the SET_DATA sets above
 // (each with a link to its full page) plus AUTO_WHEELS below - wheel-only sets built from
@@ -2674,7 +3321,9 @@ var CARD_PREVIEW_H = Math.round(CARD_PREVIEW_W * 680 / 488); // Scryfall "normal
 var CardLink = function CardLink(_ref5) {
   var cardName = _ref5.cardName,
     setCode = _ref5.setCode,
-    fg = _ref5.fg;
+    fg = _ref5.fg,
+    imgUrl = _ref5.imgUrl,
+    href = _ref5.href;
   var _useState3 = useState(false),
     _useState4 = _slicedToArray(_useState3, 2),
     hovered = _useState4[0],
@@ -2691,8 +3340,12 @@ var CardLink = function CardLink(_ref5) {
     imgSrc = _useState8[0],
     setImgSrc = _useState8[1];
   var frontName = cardName.split(' // ')[0];
-  var scryfallUrl = "https://scryfall.com/search?q=set%3A".concat(setCode, "+%22").concat(encodeURIComponent(frontName), "%22");
+  var scryfallUrl = href || "https://scryfall.com/search?q=set%3A".concat(setCode, "+%22").concat(encodeURIComponent(frontName), "%22");
   var loadImage = function loadImage() {
+    if (imgUrl) {
+      setImgSrc(imgUrl);
+      return;
+    }
     var cacheKey = "".concat(frontName, "|").concat(setCode);
     if (cardLinkImageCache.has(cacheKey)) {
       setImgSrc(cardLinkImageCache.get(cacheKey));
@@ -3082,17 +3735,61 @@ var ArchetypeBox = function ArchetypeBox(_ref8) {
       lineHeight: '1.4',
       opacity: 0.9
     }
-  }, linkifyCards(data.mechanicDef, data.cards, sc, fg)));
+  }, linkifyCards(data.mechanicDef, data.cards, sc, fg)), /*#__PURE__*/React.createElement(MechanicNotes, {
+    data: data,
+    sc: sc,
+    fg: fg
+  }));
+};
+
+// mechanicNotes: mechanics that live in this pair's colors, each quoted from an official source
+// ({ name, quote, quoteSource, quoteUrl, inSet }); inSet says where it appears in the set. Used by
+// ArchetypeBox and by the "All 10 Archetypes" grid.
+var MechanicNotes = function MechanicNotes(_ref9) {
+  var data = _ref9.data,
+    sc = _ref9.sc,
+    fg = _ref9.fg;
+  return (data.mechanicNotes || []).map(function (m, i) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        fontSize: '0.7rem',
+        marginTop: '10px',
+        padding: '6px 8px',
+        borderRadius: '4px',
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        lineHeight: '1.4',
+        opacity: 0.95
+      }
+    }, /*#__PURE__*/React.createElement("strong", null, m.name, ":"), " ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontStyle: 'italic'
+      }
+    }, "\u201C", m.quote, "\u201D"), ' ', /*#__PURE__*/React.createElement("a", {
+      href: m.quoteUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        color: fg,
+        textDecoration: 'underline'
+      }
+    }, m.quoteSource), m.inSet && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: '4px',
+        opacity: 0.85
+      }
+    }, linkifyCards(m.inSet, data.cards, sc, fg)));
+  });
 };
 
 // Everything inside one color's box: mana symbol, name, top cards or description, Scryfall
 // buttons, sources. Shared by the color grid under the wheel and the color-node pop-up
 // (ColorInfoPanel), so the two always say the same thing. `large` = the pop-up's roomier
 // text and a wrapping row of buttons instead of the grid's stacked column.
-var ColorBoxBody = function ColorBoxBody(_ref9) {
-  var color = _ref9.color,
-    set = _ref9.set,
-    large = _ref9.large;
+var ColorBoxBody = function ColorBoxBody(_ref0) {
+  var color = _ref0.color,
+    set = _ref0.set,
+    large = _ref0.large;
   var sc = set.scryfallCodes[0];
   var colorMap = {
     W: 'white',
@@ -3153,10 +3850,10 @@ var ColorBoxBody = function ColorBoxBody(_ref9) {
       marginBottom: '8px',
       textAlign: 'left'
     }
-  }, topCfg.rows.map(function (_ref0) {
-    var _ref1 = _slicedToArray(_ref0, 2),
-      label = _ref1[0],
-      key = _ref1[1];
+  }, topCfg.rows.map(function (_ref1) {
+    var _ref10 = _slicedToArray(_ref1, 2),
+      label = _ref10[0],
+      key = _ref10[1];
     return /*#__PURE__*/React.createElement("div", {
       key: key,
       style: {
@@ -3251,11 +3948,11 @@ var ColorBoxBody = function ColorBoxBody(_ref9) {
     }
   }, topCfg.sourceText)));
 };
-var ColorGrid = function ColorGrid(_ref10) {
-  var hoveredColor = _ref10.hoveredColor,
-    onColorHover = _ref10.onColorHover,
-    onColorLeave = _ref10.onColorLeave,
-    currentSet = _ref10.currentSet;
+var ColorGrid = function ColorGrid(_ref11) {
+  var hoveredColor = _ref11.hoveredColor,
+    onColorHover = _ref11.onColorHover,
+    onColorLeave = _ref11.onColorLeave,
+    currentSet = _ref11.currentSet;
   return /*#__PURE__*/React.createElement("div", {
     id: "colors",
     className: "color-grid",
@@ -3296,11 +3993,11 @@ var ColorGrid = function ColorGrid(_ref10) {
 
 // Pop-up for a color node on a full-page set's wheel (single-set view and All sets view):
 // the same content as that color's box in the grid, in the place and style of InfoPanel.
-var ColorInfoPanel = function ColorInfoPanel(_ref11) {
-  var color = _ref11.color,
-    set = _ref11.set,
-    onHover = _ref11.onHover,
-    onLeave = _ref11.onLeave;
+var ColorInfoPanel = function ColorInfoPanel(_ref12) {
+  var color = _ref12.color,
+    set = _ref12.set,
+    onHover = _ref12.onHover,
+    onLeave = _ref12.onLeave;
   if (!color || !set.colorDescriptions || !set.colorDescriptions[color]) return null;
   var bg = baseHex[color],
     fg = color === 'W' ? '#000000' : '#FFFFFF';
@@ -3331,13 +4028,13 @@ var ColorInfoPanel = function ColorInfoPanel(_ref11) {
     large: true
   }));
 };
-var InfoPanel = function InfoPanel(_ref12) {
-  var pair = _ref12.pair,
-    labels = _ref12.labels,
-    scryfallCodes = _ref12.scryfallCodes,
-    primaryArchetypes = _ref12.primaryArchetypes,
-    onHover = _ref12.onHover,
-    onLeave = _ref12.onLeave;
+var InfoPanel = function InfoPanel(_ref13) {
+  var pair = _ref13.pair,
+    labels = _ref13.labels,
+    scryfallCodes = _ref13.scryfallCodes,
+    primaryArchetypes = _ref13.primaryArchetypes,
+    onHover = _ref13.onHover,
+    onLeave = _ref13.onLeave;
   if (!pair) return null;
   var labelData = labels[pair];
   if (!labelData) return null;
@@ -3409,20 +4106,20 @@ var InfoPanel = function InfoPanel(_ref12) {
 
 // The wheel graphic on its own: edges, archetype labels, color nodes. Used by the single-set
 // view and by every small wheel in the "All sets" view, so the two can never drift apart.
-var WheelSVG = function WheelSVG(_ref13) {
-  var labels = _ref13.labels,
-    wheelPrimary = _ref13.wheelPrimary,
-    isSimple = _ref13.isSimple,
-    config = _ref13.config,
-    activePair = _ref13.activePair,
-    activeColors = _ref13.activeColors,
-    hoveredNode = _ref13.hoveredNode,
-    onPairHover = _ref13.onPairHover,
-    onPairLeave = _ref13.onPairLeave,
-    onNodeHover = _ref13.onNodeHover,
-    onNodeLeave = _ref13.onNodeLeave,
-    style = _ref13.style,
-    viewBox = _ref13.viewBox;
+var WheelSVG = function WheelSVG(_ref14) {
+  var labels = _ref14.labels,
+    wheelPrimary = _ref14.wheelPrimary,
+    isSimple = _ref14.isSimple,
+    config = _ref14.config,
+    activePair = _ref14.activePair,
+    activeColors = _ref14.activeColors,
+    hoveredNode = _ref14.hoveredNode,
+    onPairHover = _ref14.onPairHover,
+    onPairLeave = _ref14.onPairLeave,
+    onNodeHover = _ref14.onNodeHover,
+    onNodeLeave = _ref14.onNodeLeave,
+    style = _ref14.style,
+    viewBox = _ref14.viewBox;
   var labelPositions = computeLabelPositions(config, labels, wheelPrimary);
   var edges = getEdgeList(labels);
   return /*#__PURE__*/React.createElement("svg", {
@@ -3499,14 +4196,14 @@ var SET_ICON = function SET_ICON(code) {
 // Top cards for a wheel-only set's pop-up: one line per rarity, each card a hover-preview link
 // with its 17Lands GIH WR. `top` = { common: [[name, wr], ...], uncommon: [...], rare: [...] }.
 var TOP_ROWS = [['Common', 'common'], ['Uncommon', 'uncommon'], ['Rare/Mythic', 'rare']];
-var TopCardsBlock = function TopCardsBlock(_ref14) {
-  var top = _ref14.top,
-    sc = _ref14.sc,
-    fg = _ref14.fg,
-    caption = _ref14.caption;
-  if (!top || !TOP_ROWS.some(function (_ref15) {
-    var _ref16 = _slicedToArray(_ref15, 2),
-      k = _ref16[1];
+var TopCardsBlock = function TopCardsBlock(_ref15) {
+  var top = _ref15.top,
+    sc = _ref15.sc,
+    fg = _ref15.fg,
+    caption = _ref15.caption;
+  if (!top || !TOP_ROWS.some(function (_ref16) {
+    var _ref17 = _slicedToArray(_ref16, 2),
+      k = _ref17[1];
     return top[k] && top[k].length;
   })) return null;
   return /*#__PURE__*/React.createElement("div", {
@@ -3524,16 +4221,16 @@ var TopCardsBlock = function TopCardsBlock(_ref14) {
       marginBottom: '3px',
       textAlign: 'center'
     }
-  }, caption), TOP_ROWS.map(function (_ref17) {
-    var _ref18 = _slicedToArray(_ref17, 2),
-      label = _ref18[0],
-      k = _ref18[1];
+  }, caption), TOP_ROWS.map(function (_ref18) {
+    var _ref19 = _slicedToArray(_ref18, 2),
+      label = _ref19[0],
+      k = _ref19[1];
     return top[k] && top[k].length ? /*#__PURE__*/React.createElement("div", {
       key: k
-    }, /*#__PURE__*/React.createElement("strong", null, label, ":"), ' ', top[k].map(function (_ref19, i) {
-      var _ref20 = _slicedToArray(_ref19, 2),
-        name = _ref20[0],
-        wr = _ref20[1];
+    }, /*#__PURE__*/React.createElement("strong", null, label, ":"), ' ', top[k].map(function (_ref20, i) {
+      var _ref21 = _slicedToArray(_ref20, 2),
+        name = _ref21[0],
+        wr = _ref21[1];
       return /*#__PURE__*/React.createElement("span", {
         key: name
       }, i > 0 ? ', ' : '', /*#__PURE__*/React.createElement(CardLink, {
@@ -3571,11 +4268,11 @@ var PANEL_STYLE = {
 // Pop-up for a wheel-only set's label: the label large, then (when the build found them) its
 // top 17Lands cards and the oracle tags with the highest lift for the pair, as Scryfall buttons
 // after the standard pair searches.
-var LabelPanel = function LabelPanel(_ref21) {
-  var pair = _ref21.pair,
-    entry = _ref21.entry,
-    onHover = _ref21.onHover,
-    onLeave = _ref21.onLeave;
+var LabelPanel = function LabelPanel(_ref22) {
+  var pair = _ref22.pair,
+    entry = _ref22.entry,
+    onHover = _ref22.onHover,
+    onLeave = _ref22.onLeave;
   var labelData = pair && entry.labels[pair];
   if (!labelData || labelData.unsupported) return null;
   var _getLabelColors4 = getLabelColors(pair[0], pair[1]),
@@ -3650,10 +4347,10 @@ var LabelPanel = function LabelPanel(_ref21) {
 };
 
 // ScryfallRow's look for an explicit button list (color pop-ups, wedge labels).
-var ButtonRow = function ButtonRow(_ref22) {
-  var btns = _ref22.btns,
-    bg = _ref22.bg,
-    fg = _ref22.fg;
+var ButtonRow = function ButtonRow(_ref23) {
+  var btns = _ref23.btns,
+    bg = _ref23.bg,
+    fg = _ref23.fg;
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '0.65rem',
@@ -3703,11 +4400,11 @@ var COLOR_NAMES = {
 
 // Pop-up for a wheel-only set's color node: the color, its top mono-color cards over all
 // decks and its highest-lift tags, after the same "only / included" searches the color boxes use.
-var ColorPanel = function ColorPanel(_ref23) {
-  var color = _ref23.color,
-    entry = _ref23.entry,
-    onHover = _ref23.onHover,
-    onLeave = _ref23.onLeave;
+var ColorPanel = function ColorPanel(_ref24) {
+  var color = _ref24.color,
+    entry = _ref24.entry,
+    onHover = _ref24.onHover,
+    onLeave = _ref24.onLeave;
   var d = entry.colors && entry.colors[color];
   if (!d) return null;
   var bg = baseHex[color],
@@ -3767,14 +4464,14 @@ var ColorPanel = function ColorPanel(_ref23) {
 // One small wheel in the "All sets" view. Hover is lifted to AllSetsView (hover = { key, pair }
 // or { key, color }), which draws one pop-up for the whole page: the full InfoPanel for sets
 // with a full page, LabelPanel / ColorPanel for wheel-only sets.
-var MiniWheel = function MiniWheel(_ref24) {
-  var entry = _ref24.entry,
-    isSimple = _ref24.isSimple,
-    config = _ref24.config,
-    onOpen = _ref24.onOpen,
-    hover = _ref24.hover,
-    onEnter = _ref24.onEnter,
-    onLeave = _ref24.onLeave;
+var MiniWheel = function MiniWheel(_ref25) {
+  var entry = _ref25.entry,
+    isSimple = _ref25.isSimple,
+    config = _ref25.config,
+    onOpen = _ref25.onOpen,
+    hover = _ref25.hover,
+    onEnter = _ref25.onEnter,
+    onLeave = _ref25.onLeave;
   var hoverPair = hover && hover.pair;
   var hoverNode = hover && hover.color;
   var activeColors = hoverPair ? [hoverPair[0], hoverPair[1]] : hoverNode ? [hoverNode] : [];
@@ -3940,10 +4637,10 @@ var allWheelEntries = function allWheelEntries() {
     return b.time - a.time;
   });
 };
-var AllSetsView = function AllSetsView(_ref25) {
-  var isSimple = _ref25.isSimple,
-    config = _ref25.config,
-    onOpen = _ref25.onOpen;
+var AllSetsView = function AllSetsView(_ref26) {
+  var isSimple = _ref26.isSimple,
+    config = _ref26.config,
+    onOpen = _ref26.onOpen;
   var entries = allWheelEntries();
   var nFull = entries.filter(function (e) {
     return e.full;
@@ -4281,22 +4978,22 @@ function MultiSetColorWheel() {
   var litNode = hoveredNode || nodePanel;
   var activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : litNode ? [litNode] : [];
   var activePair = hoveredPair;
-  var primaryPairs = Object.entries(currentSet.labels).filter(function (_ref26) {
-    var _ref27 = _slicedToArray(_ref26, 1),
-      pair = _ref27[0];
+  var primaryPairs = Object.entries(currentSet.labels).filter(function (_ref27) {
+    var _ref28 = _slicedToArray(_ref27, 1),
+      pair = _ref28[0];
     return currentSet.primaryArchetypes.includes(pair);
   });
-  var secondaryPairs = Object.entries(currentSet.labels).filter(function (_ref28) {
-    var _ref29 = _slicedToArray(_ref28, 1),
-      pair = _ref29[0];
+  var secondaryPairs = Object.entries(currentSet.labels).filter(function (_ref29) {
+    var _ref30 = _slicedToArray(_ref29, 1),
+      pair = _ref30[0];
     return !currentSet.primaryArchetypes.includes(pair);
   });
   // The wedge advice below only makes sense for sets whose off-archetype pairs are
   // actually framed as wedges (SOS labels them "Jeskai (WUR) Wedge" etc.). HOB's
   // unsupported pairs are simply blank, so the wedge paragraph is hidden there.
-  var secondaryHasWedges = secondaryPairs.some(function (_ref30) {
-    var _ref31 = _slicedToArray(_ref30, 2),
-      data = _ref31[1];
+  var secondaryHasWedges = secondaryPairs.some(function (_ref31) {
+    var _ref32 = _slicedToArray(_ref31, 2),
+      data = _ref32[1];
     return data && data.wedge;
   });
   var allArch = currentSet.primaryArchetypes.length === 10;
@@ -4316,7 +5013,7 @@ function MultiSetColorWheel() {
     className: "site-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-content"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.0-beta.3 \xB7 2026-10-24 \xB7 BETA")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.0-beta.8 \xB7 2026-11-02 \xB7 BETA")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
@@ -4389,7 +5086,8 @@ function MultiSetColorWheel() {
       SOS: 'https://svgs.scryfall.io/sets/sos.svg',
       MSH: 'https://svgs.scryfall.io/sets/msh.svg',
       HOB: 'https://svgs.scryfall.io/sets/hob.svg',
-      FRA: 'https://svgs.scryfall.io/sets/fra.svg'
+      FRA: 'https://svgs.scryfall.io/sets/fra.svg',
+      TRK: 'https://svgs.scryfall.io/sets/trk.svg'
     }[key];
     return /*#__PURE__*/React.createElement("button", {
       key: key,
@@ -4702,10 +5400,10 @@ function MultiSetColorWheel() {
     }
   }, currentSet.name, " supports all 10 color pairs with dedicated archetypes."), /*#__PURE__*/React.createElement("div", {
     className: "archetype-grid-10"
-  }, Object.entries(currentSet.labels).map(function (_ref32) {
-    var _ref33 = _slicedToArray(_ref32, 2),
-      pair = _ref33[0],
-      data = _ref33[1];
+  }, Object.entries(currentSet.labels).map(function (_ref33) {
+    var _ref34 = _slicedToArray(_ref33, 2),
+      pair = _ref34[0],
+      data = _ref34[1];
     var _getLabelColors5 = getLabelColors(pair[0], pair[1]),
       bg = _getLabelColors5.bg,
       fg = _getLabelColors5.fg;
@@ -4755,6 +5453,10 @@ function MultiSetColorWheel() {
       sc: sc,
       bg: bg,
       fg: fg
+    }), /*#__PURE__*/React.createElement(MechanicNotes, {
+      data: data,
+      sc: sc,
+      fg: fg
     }));
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h2", {
     style: {
@@ -4779,10 +5481,10 @@ function MultiSetColorWheel() {
       gap: '12px',
       alignSelf: 'stretch'
     }
-  }, primaryPairs.map(function (_ref34) {
-    var _ref35 = _slicedToArray(_ref34, 2),
-      pair = _ref35[0],
-      data = _ref35[1];
+  }, primaryPairs.map(function (_ref35) {
+    var _ref36 = _slicedToArray(_ref35, 2),
+      pair = _ref36[0],
+      data = _ref36[1];
     var sc = currentSet.scryfallCodes[0];
     return /*#__PURE__*/React.createElement(ArchetypeBox, {
       key: pair,
@@ -4845,10 +5547,10 @@ function MultiSetColorWheel() {
       gap: '12px',
       alignSelf: 'stretch'
     }
-  }, secondaryPairs.map(function (_ref36) {
-    var _ref37 = _slicedToArray(_ref36, 2),
-      pair = _ref37[0],
-      data = _ref37[1];
+  }, secondaryPairs.map(function (_ref37) {
+    var _ref38 = _slicedToArray(_ref37, 2),
+      pair = _ref38[0],
+      data = _ref38[1];
     var sc = currentSet.scryfallCodes[0];
     if (currentSet.secondaryLabel) {
       return /*#__PURE__*/React.createElement(ArchetypeBox, {
@@ -4957,14 +5659,33 @@ function MultiSetColorWheel() {
         lineHeight: '1.4',
         opacity: 0.9
       }
-    }, mech.reminder), /*#__PURE__*/React.createElement("div", {
+    }, mech.reminder), mech.quote && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.8rem',
+        lineHeight: '1.4',
+        marginBottom: '8px'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontStyle: 'italic'
+      }
+    }, "\u201C", mech.quote, "\u201D"), ' ', /*#__PURE__*/React.createElement("a", {
+      href: mech.quoteUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        color: '#FDE68A',
+        textDecoration: 'underline',
+        fontSize: '0.7rem'
+      }
+    }, mech.quoteSource)), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: '0.8rem',
         lineHeight: '1.4',
         opacity: 0.95,
         marginBottom: '8px'
       }
-    }, linkifyCards(mech.description, mech.cards, sc, '#FDE68A')), mech.source && /*#__PURE__*/React.createElement("div", {
+    }, linkifyCards(mech.description, mech.cards, sc, '#FDE68A')), mech.source && !mech.quote && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: '0.7rem',
         opacity: 0.7,
@@ -5001,7 +5722,104 @@ function MultiSetColorWheel() {
         fontWeight: '600'
       }
     }, mech.scryfallLabel || 'o:' + mech.keyword));
-  })))), currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }))), currentSet.tokens && currentSet.tokens.length > 0 && function () {
+    var sc = currentSet.scryfallCodes[0];
+    var GROUP_NAMES = {
+      W: 'White',
+      U: 'Blue',
+      B: 'Black',
+      R: 'Red',
+      G: 'Green'
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: '24px'
+      }
+    }, /*#__PURE__*/React.createElement("h2", {
+      style: {
+        fontSize: '1.3rem',
+        fontWeight: '700',
+        color: '#111827',
+        marginBottom: '8px',
+        paddingBottom: '8px',
+        borderBottom: "2px solid ".concat(currentSet.accentColor)
+      }
+    }, "Tokens"), /*#__PURE__*/React.createElement("p", {
+      style: {
+        fontSize: '0.85rem',
+        color: '#6B7280',
+        marginBottom: '16px'
+      }
+    }, "Every token made by more than one card, most makers first. Hover a token's name to see it; the link opens all its printings on Scryfall. Makers are grouped by color, with their rarity (C/U/R/M)."), /*#__PURE__*/React.createElement("div", {
+      className: "archetype-grid",
+      style: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+        gap: '12px',
+        alignSelf: 'stretch'
+      }
+    }, currentSet.tokens.map(function (tok) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: tok.name,
+        style: {
+          backgroundColor: '#1E293B',
+          color: '#E2E8F0',
+          padding: '16px',
+          borderRadius: '8px',
+          border: '2px solid #64748B'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontWeight: 'bold',
+          fontSize: '1.1rem',
+          marginBottom: '4px'
+        }
+      }, /*#__PURE__*/React.createElement(CardLink, {
+        cardName: tok.name,
+        setCode: sc,
+        fg: "#BAE6FD",
+        imgUrl: tok.img,
+        href: tok.href
+      }), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontWeight: 'normal',
+          fontSize: '0.85rem',
+          opacity: 0.85
+        }
+      }, " \u2014 ", tok.count, " cards")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: '0.75rem',
+          opacity: 0.8,
+          marginBottom: '8px',
+          fontStyle: 'italic'
+        }
+      }, tok.desc, tok.arts > 1 ? " \xB7 ".concat(tok.arts, " different arts") : ''), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: '0.75rem',
+          lineHeight: '1.5'
+        }
+      }, tok.makers.map(function (g) {
+        return /*#__PURE__*/React.createElement("div", {
+          key: g.g
+        }, /*#__PURE__*/React.createElement("strong", null, GROUP_NAMES[g.g] || g.g, ":"), ' ', g.cards.map(function (_ref39, i) {
+          var _ref40 = _slicedToArray(_ref39, 2),
+            n = _ref40[0],
+            r = _ref40[1];
+          return /*#__PURE__*/React.createElement(React.Fragment, {
+            key: n
+          }, i ? ', ' : '', /*#__PURE__*/React.createElement(CardLink, {
+            cardName: n,
+            setCode: sc,
+            fg: "#E2E8F0"
+          }), /*#__PURE__*/React.createElement("span", {
+            style: {
+              opacity: 0.65
+            }
+          }, " ", r));
+        }));
+      })));
+    })));
+  }()), currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: '8px',
       marginBottom: '24px',

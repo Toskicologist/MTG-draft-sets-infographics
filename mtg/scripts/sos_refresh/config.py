@@ -142,6 +142,46 @@ else:
 # Module mode flag — useful for log output and conditional behavior in updaters.
 IS_CI = _IS_CI
 
+
+def refuse_local_writes(script, *, apply=False, promote=False, fetch=False, data_path=None):
+    """Stop a refresh run on a PC before it writes published files (2026-11-01).
+
+    Only the GitHub Action may write. On a PC, LOCAL mode points the quiz pages,
+    quiz-data.js and other targets at the Pages mirror, so --apply or --promote
+    would change files in MTG-GitHub-Pages outside the allowlist and the sync,
+    and the next push would publish them (and could overwrite the Action's newer
+    data, since the push auto-resolve keeps local hunks for these files). A
+    copy of this script run from inside the mirror on a PC (CI mode without
+    GitHub) would write the mirror on every write, --fetch included.
+
+    Dry runs stay allowed. refresh_quiz_data.py --apply is also allowed when
+    --data points outside the mirror (writing a test copy).
+    """
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        return
+    if _IS_CI:
+        if apply or promote or fetch:
+            raise SystemExit(
+                f"REFUSED: {script} is running from inside the Pages mirror on a PC, "
+                f"so --fetch/--apply/--promote would write published files directly. "
+                f"Run the ClaudeProjects copy for a dry run. To refresh the live pages "
+                f"sooner than the daily run: GitHub -> Actions -> Daily 17Lands Data "
+                f"Refresh -> Run workflow.")
+        return
+    if data_path is not None and apply and not promote:
+        target = Path(data_path).resolve()
+        if GITHUB_PAGES_ROOT.resolve() not in (target, *target.parents):
+            return
+    if apply or promote:
+        raise SystemExit(
+            f"REFUSED: {script} --apply/--promote only runs in the GitHub Action. On "
+            f"a PC its targets include files in the Pages mirror ({GITHUB_PAGES_ROOT}), "
+            f"so it would change published files outside the allowlist and the sync. "
+            f"A dry run (no --apply) is fine. To refresh the live pages sooner than "
+            f"the daily run: GitHub -> Actions -> Daily 17Lands Data Refresh -> Run "
+            f"workflow. Code changes ship via promotion in source; see "
+            f"docs/SOS_AUTO_UPDATE_PIPELINE.md and docs/PUBLISHING.md.")
+
 # Filter threshold matches analyze_archetypes.py default
 MIN_GIH = 500
 

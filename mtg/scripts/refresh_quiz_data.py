@@ -82,6 +82,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--data", type=Path, default=None, help=f"data file (default {config.QUIZ_DATA_JS})")
     args = ap.parse_args(argv)
 
+    # Only the GitHub Action writes; on a PC this would write into the mirror.
+    config.refuse_local_writes(Path(__file__).name, apply=args.apply, fetch=args.fetch,
+                                data_path=args.data)
+
     path = args.data or config.QUIZ_DATA_JS
     data = quiz_data.load(path)
     print(f"Data file: {path}  ({len(data['sets'])} sets, updated {data['updated']})")

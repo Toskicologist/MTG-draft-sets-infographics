@@ -134,6 +134,9 @@ def main(argv: list[str] | None = None) -> int:
                              "or after --apply.")
     args = parser.parse_args(argv)
 
+    # Only the GitHub Action writes; on a PC this would write into the mirror.
+    config.refuse_local_writes(Path(__file__).name, apply=args.apply, promote=args.promote, fetch=args.fetch)
+
     # --- Standalone promote (manual code-shipping, no data refresh) ---
     if args.promote and not args.apply:
         print("Promoting beta -> main (no data refresh)...")
