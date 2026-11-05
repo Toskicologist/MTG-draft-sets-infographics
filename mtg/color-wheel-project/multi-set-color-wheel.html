@@ -47,8 +47,9 @@
       .main-container { padding: 4px !important; }
       .archetype-grid { grid-template-columns: 1fr !important; }
       .color-grid { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; }
-      .set-tab-bar { flex-wrap: wrap !important; }
     }
+    /* the tab bar (8 sets + All sets + Custom) is ~900 px wide: wrap it before it overflows */
+    @media (max-width: 1000px) { .set-tab-bar { flex-wrap: wrap !important; } }
     /* "All 10 Archetypes" grid: max 5 across when wide, never fewer than 2 when narrow */
     .archetype-grid-10 { display: grid; gap: 12px; align-self: stretch; grid-template-columns: repeat(5, minmax(0, 1fr)); }
     @media (max-width: 1100px) { .archetype-grid-10 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -214,6 +215,10 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *     (TLA SPM EOE FIN TDM DFT DSK BLB OTJ MKM LCI WOE)
  *
  * CHANGELOG:
+ * 1.8.4 (2026-11-05) - [Claude Opus 5.5]
+ *   - "Make your own!" is now a "Custom" tab at the end of the set tab bar, styled like the set
+ *     tabs (standard look); still opens the custom wheel builder in a new tab.
+ *     .make-your-own stays for the "Full page" links on the All sets cards.
  * 1.8.3 (2026-11-05) - [Claude Opus 5.5]
  *   - Phones (640 px and narrower): the color boxes and the "All 10 Archetypes" boxes are one per
  *     row instead of 4-5 tiny color boxes / 2 archetype boxes across. Wider screens unchanged.
@@ -7664,7 +7669,7 @@ function MultiSetColorWheel() {
     className: "site-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-content"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.8.3 \xB7 2026-11-05")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.8.4 \xB7 2026-11-05")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
@@ -7791,20 +7796,29 @@ function MultiSetColorWheel() {
       transition: 'all 0.2s ease',
       whiteSpace: 'nowrap'
     }
-  }, "All sets")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: 'center',
-      marginBottom: '16px'
-    }
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "make-your-own",
-    style: {
-      '--accent': isAll ? '#374151' : currentSet.accentColor
+  }, "All sets"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "all-tab set-tab custom-tab",
+    onClick: function onClick() {
+      return window.open('https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/custom-color-wheel.html', '_blank', 'noopener');
     },
-    href: "https://toskicologist.github.io/MTG-draft-sets-infographics/mtg/color-wheel-project/custom-color-wheel.html",
-    target: "_blank",
-    rel: "noopener noreferrer"
-  }, "Make your own!")), isAll ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    title: "Build your own color wheel (opens in a new tab)",
+    style: {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: '500',
+      fontSize: '0.85rem',
+      backgroundColor: 'transparent',
+      color: '#374151',
+      transition: 'all 0.2s ease',
+      whiteSpace: 'nowrap',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }
+  }, "Custom")), isAll ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '24px',
