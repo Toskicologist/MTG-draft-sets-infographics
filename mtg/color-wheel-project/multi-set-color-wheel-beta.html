@@ -53,7 +53,8 @@
     .archetype-grid-10 { display: grid; gap: 12px; align-self: stretch; grid-template-columns: repeat(5, minmax(0, 1fr)); }
     @media (max-width: 1100px) { .archetype-grid-10 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 860px)  { .archetype-grid-10 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 620px)  { .archetype-grid-10 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* phones: one box per row, so the color and archetype boxes stay readable */
+    @media (max-width: 640px)  { .archetype-grid-10, .color-grid { grid-template-columns: 1fr !important; } }
     /* ---- shared site header (image + credits, matches other MTG project pages) ----
        Image referenced by ABSOLUTE Pages URL so it survives this file's folder
        location (it lives under mtg/, not the Pages root). See mtg/SHARED_HEADER_FOOTER.md. */
@@ -92,8 +93,6 @@
       .site-header .header-content { padding: 20px 16px; }
       .site-header h1 { font-size: 22px; }
     }
-    /* standard look: the display-style switch sits under the banner text */
-    .site-header .style-switch { margin-top: 10px; display: flex; }
   </style>
   <!-- LCARS-MODE:BEGIN generated from mtg/lcars-mode/ by lcars-inline.js - edit there, then re-run -->
   <style>
@@ -101,14 +100,15 @@
 /* LCARS display mode - shared base (mtg/lcars-mode/lcars-mode.css).
  *
  * Unofficial fan styling. Star Trek and LCARS are trademarks of CBS Studios / Paramount;
- * LCARS was designed by Michael Okuda. Palettes: the named colors published by
- * TheLCARS.com (Classic = TNG era; Lower Decks + Lower Decks PADD). Font: Antonio (SIL Open
+ * LCARS was designed by Michael Okuda. Palette: the named colors published by TheLCARS.com,
+ * "Lower Decks" + "Lower Decks PADD" (the only style since 2026-11-05; the TNG "Classic"
+ * palette was dropped). Font: Antonio (SIL Open
  * Font License 1.1, see Antonio-OFL.txt), embedded by the build as a data: URL so the page
  * makes no third-party font request.
  *
  * Everything is scoped under html.lcars, so the standard look is untouched. This file holds
- * only what every page shares: the palette roles, the font, the black page and the style
- * switch. Each page maps its own layout onto the roles in its own stylesheet.
+ * only what every page shares: the palette roles, the font, the black page and the toggle
+ * button. Each page maps its own layout onto the roles in its own stylesheet.
  *
  * Roles (use these in page rules, never raw hex):
  *   --lc-frame     elbows / main bars        --lc-frame-2, -3   other bar segments
@@ -122,35 +122,6 @@
  */
 
 html.lcars {
-    /* Classic (TNG) */
-    --lc-frame: #eb943a;    /* orange */
-    --lc-frame-2: #baa4e5;  /* african-violet */
-    --lc-frame-3: #8899ff;  /* bluey */
-    --lc-side-1: #c082a9;   /* true-mauve */
-    --lc-side-2: #ea9c72;   /* butterscotch */
-    --lc-side-3: #baa4e5;   /* african-violet */
-    --lc-side-4: #d29b7f;   /* almond */
-    --lc-side-on: #eb943a;  /* orange */
-    --lc-fill: #8899ff;     /* bluey */
-    --lc-text: #fcc19f;     /* almond-creme */
-    --lc-head: #eb943a;     /* orange */
-    --lc-link: #8899ff;     /* bluey */
-    --lc-muted: #d29b7f;    /* almond */
-    --lc-panel: #0c0a14;
-    --lc-rule: #8a72a7;     /* lilac */
-    --lc-high: #8899ff;     /* bluey: nominal */
-    --lc-low: #cf4f4f;      /* red: alert */
-    --lc-controv: #ea9c72;  /* butterscotch: caution */
-    --lc-agree: #baa4e5;    /* african-violet */
-    --lc-band-1: #8899ff;   /* bluey */
-    --lc-band-2: #baa4e5;   /* african-violet */
-    --lc-band-3: #fcc19f;   /* almond-creme */
-    --lc-band-4: #ea9c72;   /* butterscotch */
-    --lc-band-5: #cf4f4f;   /* red */
-    --lc-on: #000;
-    --lc-font: 'Antonio', 'Arial Narrow', 'Roboto Condensed', sans-serif;
-}
-html.lcars[data-lcars-palette="lowerdecks"] {
     /* Lower Decks + Lower Decks PADD */
     --lc-frame: #ff7700;    /* orange */
     --lc-frame-2: #ffaa44;  /* harvestgold */
@@ -176,6 +147,8 @@ html.lcars[data-lcars-palette="lowerdecks"] {
     --lc-band-3: #ffeecc;   /* butter */
     --lc-band-4: #ffaa44;   /* harvestgold */
     --lc-band-5: #ff4400;   /* october-sunset */
+    --lc-on: #000;
+    --lc-font: 'Antonio', 'Arial Narrow', 'Roboto Condensed', sans-serif;
 }
 
 html.lcars body {
@@ -195,97 +168,103 @@ html.lcars ::selection { background: var(--lc-frame); color: var(--lc-on); }
 .lcars-only { display: none; }
 html.lcars .lcars-only { display: block; }
 
-/* ---- the style switch (both looks) ---- */
-.style-switch { display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: center; font-size: 0.82em; }
-.style-switch-label { opacity: 0.9; margin-right: 2px; }
-.style-switch button {
-    font: inherit; cursor: pointer; padding: 3px 10px; border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.7); background: rgba(255,255,255,0.12); color: inherit;
-}
-.style-switch button:hover { background: rgba(255,255,255,0.28); }
-.style-switch button[aria-pressed="true"] { background: #fff; color: #3a2a6a; font-weight: 700; }
-html.lcars .style-switch { font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.05em; }
-html.lcars .style-switch-label { color: var(--lc-muted); }
-html.lcars .style-switch button {
-    border: none; color: var(--lc-on); background: var(--lc-side-3); padding: 3px 14px; font-weight: 400;
-}
-html.lcars .style-switch button:nth-of-type(1) { background: var(--lc-side-4); }
-html.lcars .style-switch button:nth-of-type(3) { background: var(--lc-side-2); }
-html.lcars .style-switch button[aria-pressed="true"] { background: var(--lc-frame); color: var(--lc-on); font-weight: 700; }
-html.lcars .style-switch button:hover { filter: brightness(1.15); }
-.style-switch button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* ---- the on/off toggle (both looks): the same big pill as the wheel's Echoverse button ---- */
+.lcars-toggle { padding: 12px 28px; border-radius: 999px; border: 3px solid #111827; background: #111827; color: #FFFFFF;
+    font-weight: 800; font-size: 1.15rem; letter-spacing: 0.08em; cursor: pointer; font-family: inherit; }
+.lcars-toggle:hover { background: #FFFFFF; color: #111827; }
+.lcars-toggle:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@media (max-width: 480px) { .lcars-toggle { font-size: 0.95rem; padding: 10px 18px; letter-spacing: 0.05em; } }
+html.lcars .lcars-toggle { background: var(--lc-frame-3); border: none; color: var(--lc-on); font-family: var(--lc-font); font-weight: 400; }
+html.lcars .lcars-toggle:hover { background: var(--lc-frame); color: var(--lc-on); }
 
   </style>
   <script>
 /* LCARS display mode - shared switch logic (mtg/lcars-mode/lcars-mode.js).
  *
- * Inlined into a page's head by its build script (see README.md here), BEFORE the body is
- * parsed, so the chosen style applies with no flash of the standard look.
+ * One style only: Lower Decks LCARS (since 2026-11-05; the TNG "Classic" palette was dropped).
+ * Inlined into a page's head by lcars-inline.js, BEFORE the body is parsed.
  *
- * Styles: "standard" (the page's own look), "lcars" (TNG Classic palette),
- * "lowerdecks" (Lower Decks palette). The choice is remembered per browser in
- * localStorage under one key for the whole site, so every page that has the mode opens in
- * the same style. A link can force a style for that visit without saving it:
- *   ?lcars  ?lcars=lowerdecks (or ld)  ?lcars=off
- * Buttons: any element with data-style-choice="standard|lcars|lowerdecks"; aria-pressed
- * is kept in sync.
- * Never write the literal head-closing tag in this file: it is inlined into the head and
- * the push-time GoatCounter injector inserts before the first such string.
+ * "Wanted" = does the visitor want LCARS where a page offers it. Default ON. The choice is
+ * remembered per browser (localStorage "mtg-lcars", one setting for the whole site); a link can
+ * force it for one visit without saving: ?lcars (on) / ?lcars=off.
+ * "Active" = is it showing right now. Pages decide when to apply it:
+ *   - <html data-lcars-auto>: a page that is Star Trek throughout (TRK ratings) - applied at
+ *     once, and any <button data-lcars-toggle> flips it (text from data-on-text / data-off-text).
+ *   - otherwise (the color wheel, only on its TRK tab): the page calls MTGLcars.apply(bool)
+ *     itself and MTGLcars.setWanted(bool) from its own button.
+ * Never write the literal head-closing tag in this file: it is inlined into the head and the
+ * push-time GoatCounter injector inserts before the first such string.
  */
 (function () {
-    var KEY = 'mtg-display-style';
-    var VALID = { standard: 1, lcars: 1, lowerdecks: 1 };
+    var KEY = 'mtg-lcars';
+    var root = document.documentElement;
 
     function fromQuery() {
         var m = /[?&]lcars(?:=([^&#]*))?/i.exec(window.location.search);
         if (!m) return null;
-        var v = (m[1] || 'lcars').toLowerCase();
-        if (v === 'ld' || v === 'lowerdecks' || v === 'lower-decks') return 'lowerdecks';
-        if (v === 'off' || v === '0' || v === 'standard' || v === 'false') return 'standard';
-        return 'lcars';
+        var v = (m[1] || 'on').toLowerCase();
+        return !(v === 'off' || v === '0' || v === 'false' || v === 'standard' || v === 'no');
     }
     function stored() {
-        try { var v = window.localStorage.getItem(KEY); return VALID[v] ? v : null; }
+        try { var v = window.localStorage.getItem(KEY); return v === '1' ? true : (v === '0' ? false : null); }
         catch (e) { return null; }
     }
-    function apply(s) {
-        var root = document.documentElement;
-        if (s === 'standard') root.classList.remove('lcars'); else root.classList.add('lcars');
-        if (s === 'lowerdecks') root.setAttribute('data-lcars-palette', 'lowerdecks');
-        else root.removeAttribute('data-lcars-palette');
-        root.setAttribute('data-display-style', s);
-        var btns = document.querySelectorAll('[data-style-choice]');
-        for (var i = 0; i < btns.length; i++)
-            btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-style-choice') === s ? 'true' : 'false');
+    var forced = fromQuery(), saved = stored();
+    var wanted = forced !== null ? forced : (saved !== null ? saved : true);
+    var active = false;
+
+    function syncButtons() {
+        var btns = document.querySelectorAll('[data-lcars-toggle]');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].setAttribute('aria-pressed', active ? 'true' : 'false');
+            var t = btns[i].getAttribute(active ? 'data-on-text' : 'data-off-text');
+            if (t) btns[i].textContent = t;
+        }
+    }
+    function apply(on) {
+        active = !!on;
+        if (active) root.classList.add('lcars'); else root.classList.remove('lcars');
+        syncButtons();
     }
 
-    var style = fromQuery() || stored() || 'standard';
-    apply(style);
-
-    window.MTGDisplayStyle = {
-        get: function () { return style; },
-        set: function (s) {
-            if (!VALID[s]) return;
-            style = s;
-            apply(s);
-            try { window.localStorage.setItem(KEY, s); } catch (e) { /* private mode: this visit only */ }
+    window.MTGLcars = {
+        wanted: function () { return wanted; },
+        isActive: function () { return active; },
+        apply: apply,
+        setWanted: function (on) {
+            wanted = !!on;
+            try { window.localStorage.setItem(KEY, wanted ? '1' : '0'); } catch (e) { /* private mode: this visit only */ }
+            if (window.goatcounter && window.goatcounter.count)
+                window.goatcounter.count({ path: 'lcars-' + (wanted ? 'on' : 'off'), title: 'LCARS display ' + (wanted ? 'on' : 'off'), event: true });
         }
     };
 
+    var auto = root.hasAttribute('data-lcars-auto');
+    if (auto) apply(wanted);
+
     document.addEventListener('DOMContentLoaded', function () {
-        apply(style);   // the buttons exist now
+        if (!auto) return;
+        syncButtons();
         document.addEventListener('click', function (e) {
-            var b = e.target && e.target.closest ? e.target.closest('[data-style-choice]') : null;
+            var b = e.target && e.target.closest ? e.target.closest('[data-lcars-toggle]') : null;
             if (!b) return;
-            window.MTGDisplayStyle.set(b.getAttribute('data-style-choice'));
-            if (window.goatcounter && window.goatcounter.count)
-                window.goatcounter.count({ path: 'display-style-' + style, title: 'Display style: ' + style, event: true });
+            window.MTGLcars.setWanted(!active);
+            apply(wanted);
         });
     });
 })();
 
   </script>
   <!-- LCARS-MODE:END -->
+  <script>
+    // LCARS is on by default on the TRK tab only. Apply it now, before React renders, when the URL
+    // opens on that tab (#trk, or no hash: TRK is the default set while it is last in SET_ORDER) so
+    // the page does not flash white; the component's effect keeps it right from then on.
+    (function () {
+      var h = location.hash.slice(1).toUpperCase();
+      if (window.MTGLcars && (h === 'TRK' || h === '')) window.MTGLcars.apply(window.MTGLcars.wanted());
+    })();
+  </script>
   <style>
     /* ===== LCARS display mode: this page's layout (roles from the LCARS-MODE block above) =====
        Top elbow = site header; set tabs = sidebar; a bottom bar closes the frame. The page's own
@@ -331,7 +310,6 @@ html.lcars .style-switch button:hover { filter: brightness(1.15); }
     html.lcars .site-header .data-info { background: none; padding: 0; border-radius: 0; text-align: right; color: var(--lc-muted); font-size: 13.5px; }
     html.lcars .site-header .data-info a { color: var(--lc-link); }
     html.lcars .site-header .data-info strong { color: var(--lc-head); }
-    html.lcars .site-header .style-switch { justify-content: flex-end; }
     html.lcars .lcars-note { color: var(--lc-muted); font-size: 11.5px; margin-top: 8px; opacity: 0.85; }
 
     /* set tabs = sidebar */
@@ -564,6 +542,16 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *   - Star Trek (TRK) - v1.0.0-beta.5 - Nov 2026
  *
  * CHANGELOG:
+ * 1.9.0-beta.10 (2026-11-05) - [Claude Opus 5.5]
+ *   - LCARS mode is now Lower Decks only, on the TRK tab only, and ON by default there. The banner's
+ *     three-way Display switch is gone; the TRK tab has an ENGAGE / DISENGAGE LCARS? button in the
+ *     same place and style as FRA's Echoverse button. Switching to another set shows the standard
+ *     look. The choice is remembered (localStorage mtg-lcars, shared with the TRK ratings page);
+ *     ?lcars / ?lcars=off force it for a visit.
+ *   - Phones (640 px and narrower): the color boxes and the "All 10 Archetypes" boxes are one per
+ *     row instead of 4-5 tiny color boxes / 2 archetype boxes across. Wider screens unchanged.
+ *   - Phones: the wheel's viewBox is fitted to the drawn wheel (measured after the labels size
+ *     themselves), so the empty band round the diagram is gone and the wheel is larger.
  * 1.9.0-beta.9 (2026-11-04) - [Claude Opus 5.5]
  *   - Optional LCARS display mode, the same as the TRK normalized ratings page: a Display switch in
  *     the banner (Standard / LCARS / Lower Decks), remembered per browser (one setting for the whole
@@ -4462,9 +4450,49 @@ var WheelSVG = function WheelSVG(_ref14) {
     viewBox = _ref14.viewBox;
   var labelPositions = computeLabelPositions(config, labels, wheelPrimary);
   var edges = getEdgeList(labels);
+  // Phones: fit the viewBox to what is actually drawn (plus a small margin) instead of the fixed
+  // box, which left a wide empty band round the wheel. The labels size themselves after a measure
+  // pass and fonts can arrive late, so it measures again shortly after. Desktop and the small
+  // "All sets" wheels (which pass their own viewBox) keep their fixed views.
+  var svgRef = useRef(null);
+  var _useState9 = useState(null),
+    _useState0 = _slicedToArray(_useState9, 2),
+    fitBox = _useState0[0],
+    setFitBox = _useState0[1];
+  var fitMobile = !viewBox && isMobile();
+  useEffect(function () {
+    if (!fitMobile) return;
+    var measure = function measure() {
+      var svg = svgRef.current;
+      if (!svg) return;
+      var bb;
+      try {
+        bb = svg.getBBox();
+      } catch (e) {
+        return;
+      }
+      if (!bb || !bb.width) return;
+      var pad = 10; // room for a hovered node's larger halo
+      var vb = [bb.x - pad, bb.y - pad, bb.width + 2 * pad, bb.height + 2 * pad].map(function (n) {
+        return Math.round(n);
+      }).join(' ');
+      setFitBox(function (prev) {
+        return prev === vb ? prev : vb;
+      });
+    };
+    measure();
+    var t1 = setTimeout(measure, 300),
+      t2 = setTimeout(measure, 1200);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    return function () {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [fitMobile, labels, isSimple, config, wheelPrimary]);
   return /*#__PURE__*/React.createElement("svg", {
+    ref: svgRef,
     className: "color-wheel-svg",
-    viewBox: viewBox || (isMobile() ? "160 140 380 400" : "120 100 460 480"),
+    viewBox: viewBox || (isMobile() ? fitBox || "160 140 380 400" : "120 100 460 480"),
     style: style || {
       width: '100%',
       maxWidth: '700px',
@@ -4987,10 +5015,10 @@ var AllSetsView = function AllSetsView(_ref26) {
   }).length;
   // One hover for the whole page: { key, pair } or { key, color }. Same 800 ms grace as the
   // single-set view, so the pointer can move from the wheel into the pop-up to use its links.
-  var _useState9 = useState(null),
-    _useState0 = _slicedToArray(_useState9, 2),
-    hover = _useState0[0],
-    setHover = _useState0[1];
+  var _useState1 = useState(null),
+    _useState10 = _slicedToArray(_useState1, 2),
+    hover = _useState10[0],
+    setHover = _useState10[1];
   var timer = useRef(null);
   var keep = function keep() {
     if (timer.current) {
@@ -5149,51 +5177,56 @@ var AllSetsView = function AllSetsView(_ref26) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 function MultiSetColorWheel() {
-  var _useState1 = useState(function () {
+  var _useState11 = useState(function () {
       var hash = window.location.hash.slice(1).toUpperCase();
       // No (or unknown) #code -> default to the last set in SET_ORDER (newest addition); #all = every wheel
       return VIEW_KEYS.includes(hash) ? hash : SET_ORDER[SET_ORDER.length - 1];
     }),
-    _useState10 = _slicedToArray(_useState1, 2),
-    currentSetKey = _useState10[0],
-    setCurrentSetKey = _useState10[1];
-  var _useState11 = useState(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    hoveredNode = _useState12[0],
-    setHoveredNode = _useState12[1];
-  // Color-node pop-up (ColorInfoPanel): kept open 800 ms after the pointer leaves the node,
-  // like the pair pop-up, so it can be reached to use its links.
+    currentSetKey = _useState12[0],
+    setCurrentSetKey = _useState12[1];
   var _useState13 = useState(null),
     _useState14 = _slicedToArray(_useState13, 2),
-    nodePanel = _useState14[0],
-    setNodePanel = _useState14[1];
-  var nodeTimeoutRef = useRef(null);
+    hoveredNode = _useState14[0],
+    setHoveredNode = _useState14[1];
+  // Color-node pop-up (ColorInfoPanel): kept open 800 ms after the pointer leaves the node,
+  // like the pair pop-up, so it can be reached to use its links.
   var _useState15 = useState(null),
     _useState16 = _slicedToArray(_useState15, 2),
-    hoveredPair = _useState16[0],
-    setHoveredPair = _useState16[1];
+    nodePanel = _useState16[0],
+    setNodePanel = _useState16[1];
+  var nodeTimeoutRef = useRef(null);
   var _useState17 = useState(null),
     _useState18 = _slicedToArray(_useState17, 2),
-    hoveredColor = _useState18[0],
-    setHoveredColor = _useState18[1];
-  var _useState19 = useState(false),
+    hoveredPair = _useState18[0],
+    setHoveredPair = _useState18[1];
+  var _useState19 = useState(null),
     _useState20 = _slicedToArray(_useState19, 2),
-    isSimple = _useState20[0],
-    setIsSimple = _useState20[1];
-  var _useState21 = useState(1.0),
+    hoveredColor = _useState20[0],
+    setHoveredColor = _useState20[1];
+  var _useState21 = useState(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    textSize = _useState22[0],
-    setTextSize = _useState22[1];
-  var _useState23 = useState(false),
+    isSimple = _useState22[0],
+    setIsSimple = _useState22[1];
+  var _useState23 = useState(1.0),
     _useState24 = _slicedToArray(_useState23, 2),
-    echoOn = _useState24[0],
-    setEchoverse = _useState24[1];
-  var _useState25 = useState(function () {
-      return window.MTGDisplayStyle ? window.MTGDisplayStyle.get() : 'standard';
-    }),
+    textSize = _useState24[0],
+    setTextSize = _useState24[1];
+  var _useState25 = useState(false),
     _useState26 = _slicedToArray(_useState25, 2),
-    dispStyle = _useState26[0],
-    setDispStyle = _useState26[1];
+    echoOn = _useState26[0],
+    setEchoverse = _useState26[1];
+  // LCARS (Lower Decks): TRK tab only, on by default, remembered site-wide (shared script in the head)
+  var _useState27 = useState(function () {
+      return window.MTGLcars ? window.MTGLcars.wanted() : true;
+    }),
+    _useState28 = _slicedToArray(_useState27, 2),
+    lcarsWanted = _useState28[0],
+    setLcarsWanted = _useState28[1];
+  var lcarsOn = lcarsWanted && currentSetKey === 'TRK';
+  useEffect(function () {
+    if (window.MTGLcars) window.MTGLcars.apply(lcarsOn);
+  }, [lcarsOn]);
   // FRA only: the button is hidden on other sets, and switching set drops you back to normal
   var echoverse = echoOn && currentSetKey === 'FRA';
   wheelOrder = echoverse ? ECHO_ORDER : colorOrder;
@@ -5203,12 +5236,12 @@ function MultiSetColorWheel() {
   useEffect(function () {
     if (currentSetKey !== 'FRA') setEchoverse(false);
   }, [currentSetKey]);
-  var _useState27 = useState(function () {
+  var _useState29 = useState(function () {
       return getConfig(1.0);
     }),
-    _useState28 = _slicedToArray(_useState27, 2),
-    config = _useState28[0],
-    setConfig = _useState28[1];
+    _useState30 = _slicedToArray(_useState29, 2),
+    config = _useState30[0],
+    setConfig = _useState30[1];
   var pairTimeoutRef = useRef(null);
   var colorTimeoutRef = useRef(null);
 
@@ -5361,7 +5394,7 @@ function MultiSetColorWheel() {
     className: "header-content"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-text"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.0-beta.9 \xB7 2026-11-04 \xB7 BETA")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.0-beta.10 \xB7 2026-11-05 \xB7 BETA")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
@@ -5410,27 +5443,6 @@ function MultiSetColorWheel() {
     target: "_blank",
     rel: "noopener noreferrer"
   }, "Reddit"), ".")), /*#__PURE__*/React.createElement("div", {
-    className: "style-switch",
-    role: "group",
-    "aria-label": "Display style"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "style-switch-label"
-  }, "Display:"), [['standard', 'Standard', null], ['lcars', 'LCARS', 'Star Trek LCARS look, TNG colors'], ['lowerdecks', 'Lower Decks', 'Star Trek LCARS look, Lower Decks colors']].map(function (_ref33) {
-    var _ref34 = _slicedToArray(_ref33, 3),
-      v = _ref34[0],
-      label = _ref34[1],
-      tip = _ref34[2];
-    return /*#__PURE__*/React.createElement("button", {
-      key: v,
-      type: "button",
-      "data-style-choice": v,
-      "aria-pressed": dispStyle === v,
-      title: tip || undefined,
-      onClick: function onClick() {
-        return setDispStyle(v);
-      }
-    }, label);
-  })), /*#__PURE__*/React.createElement("div", {
     className: "lcars-only lcars-note"
   }, "LCARS-style display: unofficial fan styling. Star Trek and LCARS are trademarks of CBS Studios / Paramount; LCARS was designed by Michael Okuda.")))), /*#__PURE__*/React.createElement("div", {
     className: "set-tab-bar",
@@ -5719,7 +5731,20 @@ function MultiSetColorWheel() {
       fontSize: '0.8rem',
       color: UI.muted
     }
-  }, Math.round(textSize * 100), "%"))), currentSetKey === 'FRA' && /*#__PURE__*/React.createElement("div", {
+  }, Math.round(textSize * 100), "%"))), currentSetKey === 'TRK' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      marginBottom: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "echo-btn",
+    "aria-pressed": lcarsOn,
+    onClick: function onClick() {
+      var v = !lcarsWanted;
+      setLcarsWanted(v);
+      if (window.MTGLcars) window.MTGLcars.setWanted(v);
+    }
+  }, lcarsOn ? 'DISENGAGE LCARS?' : 'ENGAGE LCARS?')), currentSetKey === 'FRA' && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
       marginBottom: '16px'
@@ -5776,10 +5801,10 @@ function MultiSetColorWheel() {
     }
   }, currentSet.name, " supports all 10 color pairs with dedicated archetypes."), /*#__PURE__*/React.createElement("div", {
     className: "archetype-grid-10"
-  }, Object.entries(currentSet.labels).map(function (_ref35) {
-    var _ref36 = _slicedToArray(_ref35, 2),
-      pair = _ref36[0],
-      data = _ref36[1];
+  }, Object.entries(currentSet.labels).map(function (_ref33) {
+    var _ref34 = _slicedToArray(_ref33, 2),
+      pair = _ref34[0],
+      data = _ref34[1];
     var _getLabelColors5 = getLabelColors(pair[0], pair[1]),
       bg = _getLabelColors5.bg,
       fg = _getLabelColors5.fg;
@@ -5858,10 +5883,10 @@ function MultiSetColorWheel() {
       gap: '12px',
       alignSelf: 'stretch'
     }
-  }, primaryPairs.map(function (_ref37) {
-    var _ref38 = _slicedToArray(_ref37, 2),
-      pair = _ref38[0],
-      data = _ref38[1];
+  }, primaryPairs.map(function (_ref35) {
+    var _ref36 = _slicedToArray(_ref35, 2),
+      pair = _ref36[0],
+      data = _ref36[1];
     var sc = currentSet.scryfallCodes[0];
     return /*#__PURE__*/React.createElement(ArchetypeBox, {
       key: pair,
@@ -5925,10 +5950,10 @@ function MultiSetColorWheel() {
       gap: '12px',
       alignSelf: 'stretch'
     }
-  }, secondaryPairs.map(function (_ref39) {
-    var _ref40 = _slicedToArray(_ref39, 2),
-      pair = _ref40[0],
-      data = _ref40[1];
+  }, secondaryPairs.map(function (_ref37) {
+    var _ref38 = _slicedToArray(_ref37, 2),
+      pair = _ref38[0],
+      data = _ref38[1];
     var sc = currentSet.scryfallCodes[0];
     if (currentSet.secondaryLabel) {
       return /*#__PURE__*/React.createElement(ArchetypeBox, {
@@ -6181,10 +6206,10 @@ function MultiSetColorWheel() {
       }, tok.makers.map(function (g) {
         return /*#__PURE__*/React.createElement("div", {
           key: g.g
-        }, /*#__PURE__*/React.createElement("strong", null, GROUP_NAMES[g.g] || g.g, ":"), ' ', g.cards.map(function (_ref41, i) {
-          var _ref42 = _slicedToArray(_ref41, 2),
-            n = _ref42[0],
-            r = _ref42[1];
+        }, /*#__PURE__*/React.createElement("strong", null, GROUP_NAMES[g.g] || g.g, ":"), ' ', g.cards.map(function (_ref39, i) {
+          var _ref40 = _slicedToArray(_ref39, 2),
+            n = _ref40[0],
+            r = _ref40[1];
           return /*#__PURE__*/React.createElement(React.Fragment, {
             key: n
           }, i ? ', ' : '', /*#__PURE__*/React.createElement(CardLink, {

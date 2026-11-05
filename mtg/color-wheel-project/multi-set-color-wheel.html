@@ -53,7 +53,8 @@
     .archetype-grid-10 { display: grid; gap: 12px; align-self: stretch; grid-template-columns: repeat(5, minmax(0, 1fr)); }
     @media (max-width: 1100px) { .archetype-grid-10 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 860px)  { .archetype-grid-10 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 620px)  { .archetype-grid-10 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* phones: one box per row, so the color and archetype boxes stay readable */
+    @media (max-width: 640px)  { .archetype-grid-10, .color-grid { grid-template-columns: 1fr !important; } }
     /* ---- shared site header (image + credits, matches other MTG project pages) ----
        Image referenced by ABSOLUTE Pages URL so it survives this file's folder
        location (it lives under mtg/, not the Pages root). See mtg/SHARED_HEADER_FOOTER.md. */
@@ -213,6 +214,11 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *     (TLA SPM EOE FIN TDM DFT DSK BLB OTJ MKM LCI WOE)
  *
  * CHANGELOG:
+ * 1.8.3 (2026-11-05) - [Claude Opus 5.5]
+ *   - Phones (640 px and narrower): the color boxes and the "All 10 Archetypes" boxes are one per
+ *     row instead of 4-5 tiny color boxes / 2 archetype boxes across. Wider screens unchanged.
+ *   - Phones: the wheel's viewBox is fitted to the drawn wheel (measured after the labels size
+ *     themselves), so the empty band round the diagram is gone and the wheel is larger.
  * 1.8.2 (2026-10-24, 11:04 UTC) - [Claude Opus 5.5]
  *   - The published copy no longer loads Babel or compiles this block in the browser:
  *     scripts/precompile-jsx.js compiles it (same Babel 7.29.7, same presets) when
@@ -6786,9 +6792,49 @@ var WheelSVG = function WheelSVG(_ref13) {
     viewBox = _ref13.viewBox;
   var labelPositions = computeLabelPositions(config, labels, wheelPrimary);
   var edges = getEdgeList(labels);
+  // Phones: fit the viewBox to what is actually drawn (plus a small margin) instead of the fixed
+  // box, which left a wide empty band round the wheel. The labels size themselves after a measure
+  // pass and fonts can arrive late, so it measures again shortly after. Desktop and the small
+  // "All sets" wheels (which pass their own viewBox) keep their fixed views.
+  var svgRef = useRef(null);
+  var _useState9 = useState(null),
+    _useState0 = _slicedToArray(_useState9, 2),
+    fitBox = _useState0[0],
+    setFitBox = _useState0[1];
+  var fitMobile = !viewBox && isMobile();
+  useEffect(function () {
+    if (!fitMobile) return;
+    var measure = function measure() {
+      var svg = svgRef.current;
+      if (!svg) return;
+      var bb;
+      try {
+        bb = svg.getBBox();
+      } catch (e) {
+        return;
+      }
+      if (!bb || !bb.width) return;
+      var pad = 10; // room for a hovered node's larger halo
+      var vb = [bb.x - pad, bb.y - pad, bb.width + 2 * pad, bb.height + 2 * pad].map(function (n) {
+        return Math.round(n);
+      }).join(' ');
+      setFitBox(function (prev) {
+        return prev === vb ? prev : vb;
+      });
+    };
+    measure();
+    var t1 = setTimeout(measure, 300),
+      t2 = setTimeout(measure, 1200);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    return function () {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [fitMobile, labels, isSimple, config, wheelPrimary]);
   return /*#__PURE__*/React.createElement("svg", {
+    ref: svgRef,
     className: "color-wheel-svg",
-    viewBox: viewBox || (isMobile() ? "160 140 380 400" : "120 100 460 480"),
+    viewBox: viewBox || (isMobile() ? fitBox || "160 140 380 400" : "120 100 460 480"),
     style: style || {
       width: '100%',
       maxWidth: '700px',
@@ -7311,10 +7357,10 @@ var AllSetsView = function AllSetsView(_ref25) {
   }).length;
   // One hover for the whole page: { key, pair } or { key, color }. Same 800 ms grace as the
   // single-set view, so the pointer can move from the wheel into the pop-up to use its links.
-  var _useState9 = useState(null),
-    _useState0 = _slicedToArray(_useState9, 2),
-    hover = _useState0[0],
-    setHover = _useState0[1];
+  var _useState1 = useState(null),
+    _useState10 = _slicedToArray(_useState1, 2),
+    hover = _useState10[0],
+    setHover = _useState10[1];
   var timer = useRef(null);
   var keep = function keep() {
     if (timer.current) {
@@ -7414,45 +7460,45 @@ var AllSetsView = function AllSetsView(_ref25) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 function MultiSetColorWheel() {
-  var _useState1 = useState(function () {
+  var _useState11 = useState(function () {
       var hash = window.location.hash.slice(1).toUpperCase();
       // No (or unknown) #code -> default to the last set in SET_ORDER (newest addition); #all = every wheel
       return VIEW_KEYS.includes(hash) ? hash : SET_ORDER[SET_ORDER.length - 1];
     }),
-    _useState10 = _slicedToArray(_useState1, 2),
-    currentSetKey = _useState10[0],
-    setCurrentSetKey = _useState10[1];
-  var _useState11 = useState(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    hoveredNode = _useState12[0],
-    setHoveredNode = _useState12[1];
-  // Color-node pop-up (ColorInfoPanel): kept open 800 ms after the pointer leaves the node,
-  // like the pair pop-up, so it can be reached to use its links.
+    currentSetKey = _useState12[0],
+    setCurrentSetKey = _useState12[1];
   var _useState13 = useState(null),
     _useState14 = _slicedToArray(_useState13, 2),
-    nodePanel = _useState14[0],
-    setNodePanel = _useState14[1];
-  var nodeTimeoutRef = useRef(null);
+    hoveredNode = _useState14[0],
+    setHoveredNode = _useState14[1];
+  // Color-node pop-up (ColorInfoPanel): kept open 800 ms after the pointer leaves the node,
+  // like the pair pop-up, so it can be reached to use its links.
   var _useState15 = useState(null),
     _useState16 = _slicedToArray(_useState15, 2),
-    hoveredPair = _useState16[0],
-    setHoveredPair = _useState16[1];
+    nodePanel = _useState16[0],
+    setNodePanel = _useState16[1];
+  var nodeTimeoutRef = useRef(null);
   var _useState17 = useState(null),
     _useState18 = _slicedToArray(_useState17, 2),
-    hoveredColor = _useState18[0],
-    setHoveredColor = _useState18[1];
-  var _useState19 = useState(false),
+    hoveredPair = _useState18[0],
+    setHoveredPair = _useState18[1];
+  var _useState19 = useState(null),
     _useState20 = _slicedToArray(_useState19, 2),
-    isSimple = _useState20[0],
-    setIsSimple = _useState20[1];
-  var _useState21 = useState(1.0),
+    hoveredColor = _useState20[0],
+    setHoveredColor = _useState20[1];
+  var _useState21 = useState(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    textSize = _useState22[0],
-    setTextSize = _useState22[1];
-  var _useState23 = useState(false),
+    isSimple = _useState22[0],
+    setIsSimple = _useState22[1];
+  var _useState23 = useState(1.0),
     _useState24 = _slicedToArray(_useState23, 2),
-    echoOn = _useState24[0],
-    setEchoverse = _useState24[1];
+    textSize = _useState24[0],
+    setTextSize = _useState24[1];
+  var _useState25 = useState(false),
+    _useState26 = _slicedToArray(_useState25, 2),
+    echoOn = _useState26[0],
+    setEchoverse = _useState26[1];
   // FRA only: the button is hidden on other sets, and switching set drops you back to normal
   var echoverse = echoOn && currentSetKey === 'FRA';
   wheelOrder = echoverse ? ECHO_ORDER : colorOrder;
@@ -7462,12 +7508,12 @@ function MultiSetColorWheel() {
   useEffect(function () {
     if (currentSetKey !== 'FRA') setEchoverse(false);
   }, [currentSetKey]);
-  var _useState25 = useState(function () {
+  var _useState27 = useState(function () {
       return getConfig(1.0);
     }),
-    _useState26 = _slicedToArray(_useState25, 2),
-    config = _useState26[0],
-    setConfig = _useState26[1];
+    _useState28 = _slicedToArray(_useState27, 2),
+    config = _useState28[0],
+    setConfig = _useState28[1];
   var pairTimeoutRef = useRef(null);
   var colorTimeoutRef = useRef(null);
 
@@ -7618,7 +7664,7 @@ function MultiSetColorWheel() {
     className: "site-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-content"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.8.2 \xB7 2026-10-24")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.8.3 \xB7 2026-11-05")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
