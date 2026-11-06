@@ -86,7 +86,9 @@ def detect_sets(http, event_type, set_types, now=None):
     f = http.get_json(f'{L17}/data/filters')
     fbe, starts = f['formats_by_expansion'], f['start_dates']
     cands = []
-    for code in f['expansions']:
+    # A new set can be in formats_by_expansion and start_dates before it joins 'expansions' (TRK, seen
+    # 2026-11-06, days before its start), and the bot must not miss it at its start time.
+    for code in set(f['expansions']) | set(fbe):
         if not re.fullmatch(r'[A-Z0-9]{3}', code or '') or event_type not in fbe.get(code, []):
             continue
         if code not in starts:

@@ -32,9 +32,21 @@
   {"id": "d41", "label": "on {date}", "time_period": "ALL_TIME", "close_day": 41, "resolve_day": 41, "sets": ["FRA"],
    "kinds": ["top_card", "top_common", "top_rare", "top_pair"], "sequential": true,
    "open_until": "2026-11-01T00:00:00Z",
-   "note": "November 9, 2026 is the day Reality Fracture Premier Draft ends on MTG Arena."}
+   "note": "November 9, 2026 is the day Reality Fracture Premier Draft ends on MTG Arena."},
+  {"id": "d84", "label": "on {date}", "time_period": "ALL_TIME", "close_day": 84, "resolve_day": 84, "sets": ["TRK"],
+   "after": "d14",
+   "kinds": ["top_card", "top_common", "top_rare", "top_pair"], "sequential": true,
+   "open_until": "2027-01-25T00:00:00Z",
+   "note": "February 2, 2027 is the last day of Star Trek Premier Draft on MTG Arena, per the Wizards event schedule."}
  ],
- "_checkpoint_keys": "kinds = markets in priority order; sequential = each opens only once all before it are open (so the pair market, M$250, waits for the three M$100 card markets); open_until = no new markets from this checkpoint after this UTC time.",
+ "_checkpoint_keys": "kinds = markets in priority order; sequential = each opens only once all before it are open (so the pair market, M$250, waits for the three M$100 card markets); open_until = no new markets from this checkpoint after this UTC time; after = no new markets from this checkpoint until the named checkpoint's are open or past their opening deadline.",
+ "pair_labels": {
+  "TRK": {
+   "WU": "Spacecraft (WU)", "UB": "Dilemma Control (UB)", "BR": "Klingons (BR)", "RG": "Away Team (RG)", "GW": "Doctors (GW)",
+   "WB": "Borg (WB)", "UR": "Scientists (UR)", "BG": "Archaeology (BG)", "RW": "Command (RW)", "GU": "Strange New Worlds (GU)"
+  }
+ },
+ "_pair_labels": "Pair market answers for a set the GitHub copy opens first: archetypes.json isn't published, so without these it uses guild names. Titles copied from that file. Once used they are saved in state/markets.json, and that copy wins.",
  "_checkpoint_examples": [
   {"id": "week1", "label": "in its first week", "time_period": "FIRST_WEEK", "close_day": 7, "resolve_day": 14},
   {"id": "week6", "label": "on {date}", "time_period": "ALL_TIME", "close_day": 42, "resolve_day": 42}

@@ -523,7 +523,7 @@ function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" !=
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.9.1
+ * 1.9.2
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -538,6 +538,10 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *     since 2020 (12 Standard-legal, 28 older; see auto-wheels.json)
  *
  * CHANGELOG:
+ * 1.9.2 (2026-11-06) - [Claude Opus 5.5]
+ *   LCARS note now credits the source of the color palette: "Color palette from TheLCARS.com
+ *   by Jim Robertus", linked to thelcars.com/colors.php (the Lower Decks + Lower Decks PADD
+ *   named colors). Shown only in LCARS mode, i.e. on the TRK tab. Nothing else changes.
  * 1.9.1 (2026-11-06) - [Claude Opus 5.5]
  *   Speed pass (review 2026-11-06; nothing on screen changes). Measured on the precompiled page,
  *   phone = 390 px with the CPU slowed 4x:
@@ -5496,7 +5500,7 @@ function MultiSetColorWheel() {
     className: "header-content"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-text"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.1 \xB7 2026-11-06")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.2 \xB7 2026-11-06")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
@@ -5546,7 +5550,11 @@ function MultiSetColorWheel() {
     rel: "noopener noreferrer"
   }, "Reddit"), ".")), /*#__PURE__*/React.createElement("div", {
     className: "lcars-only lcars-note"
-  }, "LCARS-style display: unofficial fan styling. Star Trek and LCARS are trademarks of CBS Studios / Paramount; LCARS was designed by Michael Okuda.")))), /*#__PURE__*/React.createElement("div", {
+  }, "LCARS-style display: unofficial fan styling. Star Trek and LCARS are trademarks of CBS Studios / Paramount; LCARS was designed by Michael Okuda. Color palette from ", /*#__PURE__*/React.createElement("a", {
+    href: "https://www.thelcars.com/colors.php",
+    target: "_blank",
+    rel: "noopener noreferrer"
+  }, "TheLCARS.com"), " by Jim Robertus.")))), /*#__PURE__*/React.createElement("div", {
     className: "set-tab-bar",
     "data-lcars-label": SET_ORDER.length + AUTO_INFO.count + ' wheels',
     style: {

@@ -5,7 +5,8 @@ priority order (checkpoint 'kinds'): top card, top common, top rare/mythic (GIH 
 pair (win rate, all ten pairs listed). Wording is in config.json markets.<kind>.question. Card
 markets start with one answer plus Other: the current 17Lands leader once the embargo has passed,
 before that a random pick. A 'sequential' checkpoint opens a market only once every market before
-it in the list is open; 'open_until' stops new markets opening after that time.
+it in the list is open; 'open_until' stops new markets opening after that time; 'after' holds a
+checkpoint's new markets until the named checkpoint's are open or past their opening deadline.
 The bot never adds answers to a market after creating it (each added answer costs mana); traders
 add their own. Every run it
   1. adopts markets it already made (always) and opens new ones the opening rules allow. Market
@@ -155,20 +156,23 @@ class Bot:
 
     def pair_labels(self, code):
         """pair -> answer text: the set's archetype name from the color wheel when it has one.
-        Saved in the set's state, because archetypes.json isn't published - the GitHub Actions copy
-        reads the names from state so its answers match the ones made locally."""
+        Saved in the set's state once used. archetypes.json isn't published, so a set the GitHub
+        Actions copy opens first needs its names in config.json pair_labels, or it falls back to
+        the guild names."""
         saved = self.state['sets'].get(code, {}).get('pair_labels')
         if saved:
             return saved
-        titles = {}
-        if ARCHETYPES.exists():
-            for s in json.loads(ARCHETYPES.read_text(encoding='utf-8'))['sets']:
-                if s['code'] == code.lower():
-                    titles = {p: ' '.join((v.get('title') or '').split()) for p, v in s['pairs'].items()}
-        out = {}
-        for p in PAIRS:
-            t = titles.get(p)
-            out[p] = f'{t} ({p})' if t and t != GUILDS[p] else f'{GUILDS[p]} ({p})'
+        out = self.cfg.get('pair_labels', {}).get(code)
+        if not out:
+            titles = {}
+            if ARCHETYPES.exists():
+                for s in json.loads(ARCHETYPES.read_text(encoding='utf-8'))['sets']:
+                    if s['code'] == code.lower():
+                        titles = {p: ' '.join((v.get('title') or '').split()) for p, v in s['pairs'].items()}
+            out = {}
+            for p in PAIRS:
+                t = titles.get(p)
+                out[p] = f'{t} ({p})' if t and t != GUILDS[p] else f'{GUILDS[p]} ({p})'
         if self.live and code in self.state['sets']:
             self.state['sets'][code]['pair_labels'] = out
         return out
@@ -632,11 +636,16 @@ class Bot:
         for s, is_newest in self.sets_to_process(only):
             age = (self.now - s['start']) / DAY
             self.log(f'{s["code"]} {s["name"]}: 17Lands start {pretty(s["start"])} (day {age:.1f})')
+            waiting = set()                         # checkpoints with a market that can still open
             for cp in self.cfg['checkpoints']:
                 if cp.get('sets') and s['code'] not in cp['sets']:
                     continue
-                blocked = False                     # sequential: a later market waits for earlier ones
-                for kind in cp.get('kinds', ['top_card', 'top_pair']):
+                close = s['start'] + cp['close_day'] * DAY
+                blocked = cp.get('after') in waiting     # 'after': hold new markets for that checkpoint's
+                if blocked and is_newest:
+                    self.log(f'{s["code"]} {cp["id"]}: waits until the {cp["after"]} markets are open '
+                             f'or past their opening deadline')
+                for kind in cp.get('kinds', ['top_card', 'top_pair']):      # sequential: later waits for earlier
                     if not self.cfg['markets'][kind]['enabled']:
                         continue
                     where = f'{s["code"]} {cp["id"]}:{kind}'
@@ -645,9 +654,10 @@ class Bot:
                     except Exception as e:
                         self.error(where, e)
                         entry = None
+                    if not entry and self.now < self.open_deadline(cp, close):
+                        waiting.add(cp['id'])
                     if not entry and cp.get('sequential'):
-                        if not blocked and is_newest and self.now < self.open_deadline(
-                                cp, s['start'] + cp['close_day'] * DAY):
+                        if not blocked and is_newest and self.now < self.open_deadline(cp, close):
                             later = cp['kinds'][cp['kinds'].index(kind) + 1:]
                             if later:
                                 self.log(f'{s["code"]} {cp["id"]}: {", ".join(later)} wait until {kind} is open')
