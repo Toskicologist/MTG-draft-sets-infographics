@@ -48,6 +48,22 @@
       .archetype-grid { grid-template-columns: 1fr !important; }
       .color-grid { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; }
     }
+    /* the version line under the title: wrapped lines sit close together */
+    .site-header h1 span { display: inline-block; line-height: 1.3; }
+    /* phones: less empty space in the header, tab bar and set intro */
+    @media (max-width: 768px) {
+      .site-header { margin-bottom: 10px; }
+      .site-header .header-content { padding: 14px 12px; }
+      .site-header h1 { font-size: 23px; line-height: 1.15; margin-bottom: 8px; }
+      .site-header .data-info { padding: 8px 10px; line-height: 1.4; }
+      .site-header .data-info .row { margin-top: 5px; }
+      .set-tab-bar { gap: 2px !important; padding: 4px !important; margin-bottom: 10px !important; }
+      .set-tab { padding: 6px 9px !important; }
+      .set-info { margin-bottom: 8px !important; }
+      .set-info p { line-height: 1.35; }
+      .wheel-controls { gap: 14px !important; margin-bottom: 8px !important; }
+      .echo-row { margin-bottom: 4px !important; }
+    }
     /* the tab bar (8 sets + All sets + Custom) is ~900 px wide: wrap it before it overflows */
     @media (max-width: 1000px) { .set-tab-bar { flex-wrap: wrap !important; } }
     /* "All 10 Archetypes" grid: max 5 across when wide, never fewer than 2 when narrow */
@@ -379,6 +395,16 @@ html.lcars .lcars-toggle:hover { background: var(--lc-frame); color: var(--lc-on
       html.lcars .set-tab-bar::after { display: none; }
       html.lcars .main-container::after { border-radius: 11px; }
     }
+    @media (max-width: 640px) {
+      html.lcars .site-header .header-text { padding: 4px 4px 8px 12px; }
+      html.lcars .site-header h1 { font-size: 24px; margin-bottom: 4px; }
+      html.lcars .site-header h1 span { font-size: 12.5px; }
+      html.lcars .site-header .data-info { font-size: 12.5px; line-height: 1.35; }
+      html.lcars .lcars-note { font-size: 10.5px; margin-top: 4px; line-height: 1.3; }
+      /* tabs: two rows of five */
+      html.lcars .set-tab-bar { gap: 4px !important; margin: 4px 0 10px !important; }
+      html.lcars .set-tab { flex: 1 1 18%; height: 32px; padding: 0 4px !important; gap: 3px !important; font-size: 0.95rem !important; }
+    }
   </style>
   <script data-goatcounter="https://toskicologist.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
@@ -544,6 +570,15 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *   - Star Trek (TRK) - v1.0.0-beta.5 - Nov 2026
  *
  * CHANGELOG:
+ * 1.9.0-beta.12 (2026-11-06) - [Claude Opus 5.5]
+ *   - The "All 10 archetypes supported" pill is gone (the "All 10 Archetypes" heading says it);
+ *     pills that say something else (5 allied pairs, FRA's two kinds) stay.
+ *   - The "Set code / Released / Wheel v" line under the set name is gone (said elsewhere).
+ *   - "Scroll down" links now cover every section the set has: Colors, Archetypes, Mechanics,
+ *     Tokens, Sources. They scroll without changing the URL hash (which holds the set).
+ *   - Phones: less empty space - header padding and line spacing, the version line under the
+ *     title, set tabs (smaller padding and gaps), set intro, controls, LCARS header and tabs
+ *     (two rows of five).
  * 1.9.0-beta.11 (2026-11-05) - [Claude Opus 5.5]
  *   - "Make your own!" is now a "Custom" tab at the end of the set tab bar, styled like the set
  *     tabs (standard look and the LCARS sidebar); still opens the custom wheel builder in a new tab.
@@ -5180,6 +5215,17 @@ var AllSetsView = function AllSetsView(_ref26) {
   }), panel);
 };
 
+// In-page "Scroll down" links: scroll to the section without changing the URL hash, which holds the set.
+function jumpTo(e, id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  e.preventDefault();
+  el.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 function MultiSetColorWheel() {
@@ -5400,7 +5446,7 @@ function MultiSetColorWheel() {
     className: "header-content"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-text"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.0-beta.11 \xB7 2026-11-05 \xB7 BETA")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.0-beta.12 \xB7 2026-11-06 \xB7 BETA")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
@@ -5620,6 +5666,7 @@ function MultiSetColorWheel() {
       window.scrollTo(0, 0);
     }
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "set-info",
     style: {
       textAlign: 'center',
       marginBottom: '16px'
@@ -5632,13 +5679,7 @@ function MultiSetColorWheel() {
       color: UI.heading,
       margin: '0 0 4px 0'
     }
-  }, currentSet.name), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: '0.8rem',
-      color: UI.faint,
-      margin: '0 0 4px 0'
-    }
-  }, "Set code: ", currentSet.key, " \xB7 Released: ", currentSet.releaseDate, " \xB7 Wheel v", currentSet.version), /*#__PURE__*/React.createElement("div", {
+  }, currentSet.name), !/^all 10 archetypes/i.test(currentSet.primaryLabel || '') && /*#__PURE__*/React.createElement("div", {
     className: "primary-pill",
     style: {
       display: 'inline-block',
@@ -5658,17 +5699,50 @@ function MultiSetColorWheel() {
     }
   }, "Mouse over archetypes for details \xB7 Scroll down: ", /*#__PURE__*/React.createElement("a", {
     href: "#colors",
+    onClick: function onClick(e) {
+      return jumpTo(e, 'colors');
+    },
     style: {
       color: UI.link,
       textDecoration: 'underline'
     }
   }, "Colors"), ' | ', /*#__PURE__*/React.createElement("a", {
     href: "#archetypes",
+    onClick: function onClick(e) {
+      return jumpTo(e, 'archetypes');
+    },
     style: {
       color: UI.link,
       textDecoration: 'underline'
     }
-  }, "Archetypes"))), function () {
+  }, "Archetypes"), currentSet.setMechanics && currentSet.setMechanics.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, ' | ', /*#__PURE__*/React.createElement("a", {
+    href: "#mechanics",
+    onClick: function onClick(e) {
+      return jumpTo(e, 'mechanics');
+    },
+    style: {
+      color: UI.link,
+      textDecoration: 'underline'
+    }
+  }, "Mechanics")), currentSet.tokens && currentSet.tokens.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, ' | ', /*#__PURE__*/React.createElement("a", {
+    href: "#tokens",
+    onClick: function onClick(e) {
+      return jumpTo(e, 'tokens');
+    },
+    style: {
+      color: UI.link,
+      textDecoration: 'underline'
+    }
+  }, "Tokens")), currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, ' | ', /*#__PURE__*/React.createElement("a", {
+    href: "#sources",
+    onClick: function onClick(e) {
+      return jumpTo(e, 'sources');
+    },
+    style: {
+      color: UI.link,
+      textDecoration: 'underline'
+    }
+  }, "Sources")))), function () {
     var officialLink = currentSet.resourceLinks && currentSet.resourceLinks.find(function (l) {
       return l.official;
     });
@@ -5689,6 +5763,7 @@ function MultiSetColorWheel() {
       }
     }, officialLink.label, " (Wizards of the Coast)")) : null;
   }(), /*#__PURE__*/React.createElement("div", {
+    className: "wheel-controls",
     style: {
       display: 'flex',
       gap: '24px',
@@ -5747,6 +5822,7 @@ function MultiSetColorWheel() {
       color: UI.muted
     }
   }, Math.round(textSize * 100), "%"))), currentSetKey === 'TRK' && /*#__PURE__*/React.createElement("div", {
+    className: "echo-row",
     style: {
       textAlign: 'center',
       marginBottom: '16px'
@@ -5760,6 +5836,7 @@ function MultiSetColorWheel() {
       if (window.MTGLcars) window.MTGLcars.setWanted(v);
     }
   }, lcarsOn ? 'DISENGAGE LCARS?' : 'ENGAGE LCARS?')), currentSetKey === 'FRA' && /*#__PURE__*/React.createElement("div", {
+    className: "echo-row",
     style: {
       textAlign: 'center',
       marginBottom: '16px'
@@ -6022,6 +6099,7 @@ function MultiSetColorWheel() {
       fg: fg
     }));
   })))), currentSet.setMechanics && currentSet.setMechanics.length > 0 && /*#__PURE__*/React.createElement("div", {
+    id: "mechanics",
     style: {
       marginTop: '24px'
     }
@@ -6151,6 +6229,7 @@ function MultiSetColorWheel() {
       G: 'Green'
     };
     return /*#__PURE__*/React.createElement("div", {
+      id: "tokens",
       style: {
         marginTop: '24px'
       }
@@ -6240,6 +6319,7 @@ function MultiSetColorWheel() {
       })));
     })));
   }()), currentSet.resourceLinks && currentSet.resourceLinks.length > 0 && /*#__PURE__*/React.createElement("div", {
+    id: "sources",
     style: {
       marginTop: '8px',
       marginBottom: '24px',
