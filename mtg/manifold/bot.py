@@ -638,7 +638,7 @@ class Bot:
             self.log(f'{s["code"]} {s["name"]}: 17Lands start {pretty(s["start"])} (day {age:.1f})')
             waiting = set()                         # checkpoints with a market that can still open
             for cp in self.cfg['checkpoints']:
-                if cp.get('sets') and s['code'] not in cp['sets']:
+                if (cp.get('sets') and s['code'] not in cp['sets']) or s['code'] in cp.get('except_sets', []):
                     continue
                 close = s['start'] + cp['close_day'] * DAY
                 blocked = cp.get('after') in waiting     # 'after': hold new markets for that checkpoint's

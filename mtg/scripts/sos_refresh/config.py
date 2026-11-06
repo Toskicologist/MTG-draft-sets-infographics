@@ -62,7 +62,9 @@ if _IS_CI:
     # "main" (production) pages. The daily refresh updates these INDEPENDENTLY of
     # the beta files (data only); --promote (manual) copies beta over them to ship code.
     SOS_INDEX_HTML = _THIS_REPO_ROOT / "mtg" / "underover-rated" / "sos" / "sos-index.html"
-    QUIZ_INDEX_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "index.html"
+    # Since 2026-11-06 the production quiz's data is in its own file, so the page itself
+    # can be precompiled. --promote does not apply to it (see update-sos.yml).
+    QUIZ_INDEX_HTML = _THIS_REPO_ROOT / "17lands-quiz" / "data" / "index-data.js"
 
     # MSH quiz refresh (quiz-only; no MSH ratings/archetype consumers in this pipeline).
     # If this file is absent in CI, quiz_updater falls back to the types already
@@ -120,7 +122,7 @@ else:
     # "main" (production) pages. Refreshed independently by the daily updaters;
     # --promote (MANUAL only) copies beta over these to ship code changes.
     SOS_INDEX_HTML = CLAUDE_PROJECTS_ROOT / "mtg" / "ratings-project" / "underover-rated" / "sos" / "sos-index.html"
-    QUIZ_INDEX_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "index.html"
+    QUIZ_INDEX_HTML = GITHUB_PAGES_ROOT / "17lands-quiz" / "data" / "index-data.js"
 
     # MSH quiz refresh: local Scryfall snapshot supplies card types for the quiz.
     MSH_SCRYFALL_REFERENCE_JSON = CLAUDE_PROJECTS_ROOT / "mtg" / "shared-data" / "data" / "msh" / "msh-scryfall-full.json"

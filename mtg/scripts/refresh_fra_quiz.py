@@ -114,6 +114,9 @@ def _promote() -> None:
     if dst is None:
         print("  [SKIP] no QUIZ_INDEX_HTML configured")
         return
+    if dst.suffix != '.html':
+        print(f"  [SKIP] {dst.name} is the production quiz's data file, not a page (see update-sos.yml)")
+        return
     if not src.exists():
         print(f"  [SKIP] {src.name} not found")
         return

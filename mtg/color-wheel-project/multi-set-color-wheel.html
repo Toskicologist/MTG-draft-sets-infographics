@@ -523,7 +523,7 @@ function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" !=
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 /**
  * MTG Draft Archetypes - Multi-Set Color Wheel
- * 1.9.2
+ * 1.9.3
  *
  * Toggle between multiple sets:
  *   - Lorwyn Eclipsed (ECL) - v13.1.0 - Jan 2026
@@ -538,6 +538,13 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
  *     since 2020 (12 Standard-legal, 28 older; see auto-wheels.json)
  *
  * CHANGELOG:
+ * 1.9.3 (2026-11-06) - [Claude Opus 5.5]
+ *   TRK text trimmed (user edit): the ten pair descriptions drop their card-by-card sentences and
+ *   keep the strategy; the cards stay listed under Cards and Guide picks. The Planet box is one line
+ *   now - "Some cards also create a New Planet Token that taps for any color." - with the token
+ *   linked to its Scryfall page (hover preview like any card) and a second Scryfall button,
+ *   o:"new planet", in place of the maker / fetcher lists. linkifyCards takes an optional links
+ *   map for such non-set names; set mechanics take optional moreSearches buttons.
  * 1.9.2 (2026-11-06) - [Claude Opus 5.5]
  *   LCARS note now credits the source of the color palette: "Color palette from TheLCARS.com
  *   by Jim Robertus", linked to thelcars.com/colors.php (the Lower Decks + Lower Decks PADD
@@ -2423,7 +2430,7 @@ var SET_DATA = {
     name: 'Star Trek',
     shortName: 'TRK',
     releaseDate: 'November 13, 2026',
-    version: '1.0.0',
+    version: '1.0.1',
     scryfallCodes: ['trk'],
     primaryArchetypes: ['WU', 'UB', 'BR', 'RG', 'GW', 'WB', 'UR', 'BG', 'RW', 'GU'],
     primaryLabel: 'All 10 archetypes supported',
@@ -2500,7 +2507,7 @@ var SET_DATA = {
       WU: {
         text: "Spacecraft",
         sub: "Artificers\nStation",
-        details: "Spacecraft and Artificers. Play creatures with useful enters abilities, then tap them to station your Spacecraft - 17 in the set, each an artifact that becomes a creature once it has enough charge counters. Most ships take a turn or two to come online, so you also want cards that hold the board and protect them: Hemmer gives your Spacecraft hexproof during your turn and loots whenever he is tapped to station one.\nCards:\nUncommon: Hemmer, Fixing What Is Broken; Constable Odo.\nRare: Live Long and Prosper.\nLand: Vulcan; Hallowed Fountain.\nGuide picks: Interstellar Effigy (common).",
+        details: "Spacecraft and Artificers. Play creatures with useful enters abilities, then tap them to station your Spacecraft - 17 in the set, each an artifact that becomes a creature once it has enough charge counters.\nCards:\nUncommon: Hemmer, Fixing What Is Broken; Constable Odo.\nRare: Live Long and Prosper.\nLand: Vulcan; Hallowed Fountain.\nGuide picks: Interstellar Effigy (common).",
         cards: ["Hemmer, Fixing What Is Broken", "Constable Odo", "Live Long and Prosper", "Vulcan", "Hallowed Fountain", "Interstellar Effigy"],
         themeSearches: [{
           label: "Spacecraft",
@@ -2518,7 +2525,7 @@ var SET_DATA = {
       UB: {
         text: "Dilemma\nControl",
         sub: "Modal choices",
-        details: "Modal spells let you pick a proactive or a reactive mode each time. Use them to control the board, then win with the cards that pay you for facing a dilemma - Seven of Nine draws a card every time. Lore, Positronic Provocateur is the cheap enabler: a three-mana body that picks a mode when it enters.\nCards:\nUncommon: Seven of Nine; Lore, Positronic Provocateur.\nRare: Mirror Universe Intrusion.\nLand: Romulus; Watery Grave.\nGuide picks: Consider the Prime Directive (common); Resistance Is Futile (uncommon).",
+        details: "Modal spells let you pick a proactive or a reactive mode each time.\nCards:\nUncommon: Seven of Nine; Lore, Positronic Provocateur.\nRare: Mirror Universe Intrusion.\nLand: Romulus; Watery Grave.\nGuide picks: Consider the Prime Directive (common); Resistance Is Futile (uncommon).",
         cards: ["Seven of Nine", "Lore, Positronic Provocateur", "Mirror Universe Intrusion", "Romulus", "Watery Grave", "Consider the Prime Directive", "Resistance Is Futile", "Captain Benjamin Sisko"],
         mechanicNotes: [{
           name: "Face a dilemma",
@@ -2542,7 +2549,7 @@ var SET_DATA = {
       BR: {
         text: "Klingons",
         sub: "Dies\nSacrifice",
-        details: "Klingons and dies. Attack with hasty Klingon Warrior tokens, then sacrifice them for value; every creature that dies, yours or theirs, feeds the payoffs, and removal and combat tricks keep the deaths coming. L'Rell makes a hasty 2/1 Klingon every combat (sacrificed at end of turn) and sacrifices creatures or artifacts to surveil; The Duras Sisters leave a hasty 2/1 Klingon when they die.\nCards:\nUncommon: L'Rell, Fierce Visionary; The Duras Sisters.\nRare: Gowron, Eager for Battle.\nLand: Qo'noS; Blood Crypt.\nGuide picks: A Good Day to Die (common); Starfleet Security (common); Vengeance Mission (uncommon); Sarcophagus, Ship of the Dead (uncommon).",
+        details: "Klingons and dies. Attack with hasty Klingon Warrior tokens, then sacrifice them for value; every creature that dies, yours or theirs, feeds the payoffs, and removal and combat tricks keep the deaths coming.\nCards:\nUncommon: L'Rell, Fierce Visionary; The Duras Sisters.\nRare: Gowron, Eager for Battle.\nLand: Qo'noS; Blood Crypt.\nGuide picks: A Good Day to Die (common); Starfleet Security (common); Vengeance Mission (uncommon); Sarcophagus, Ship of the Dead (uncommon).",
         cards: ["L'Rell, Fierce Visionary", "The Duras Sisters", "Gowron, Eager for Battle", "Qo'noS", "Blood Crypt", "A Good Day to Die", "Starfleet Security", "Vengeance Mission", "Sarcophagus, Ship of the Dead"],
         themeSearches: [{
           label: "Klingons",
@@ -2559,7 +2566,7 @@ var SET_DATA = {
       RG: {
         text: "Away Team",
         sub: "Landfall",
-        details: "Away Team Landfall. The payoffs trigger whenever a land enters under your control, so you want extra land drops as well as landfall creatures. Cleveland Booker makes a 2/2 Worm (that can't block) on every land drop; Dal R'El adds mana on landfall and sacrifices spare lands to draw cards late. Erica Ortegas puts a land from your hand onto the battlefield whenever she becomes tapped - a second landfall in the turn, which Captain Michael Burnham and Jake Sisko reward.\nCards:\nUncommon: Cleveland Booker, Empath; Dal R'El, Augment Orphan.\nRare: Hit It!\nLand: Orion; Stomping Ground.\nGuide picks: Captain Michael Burnham (uncommon); Jake Sisko, War Correspondent (uncommon); Erica Ortegas, Plucky Pilot (uncommon).",
+        details: "Away Team Landfall. The payoffs trigger whenever a land enters under your control, so you want extra land drops as well as landfall creatures.\nCards:\nUncommon: Cleveland Booker, Empath; Dal R'El, Augment Orphan.\nRare: Hit It!\nLand: Orion; Stomping Ground.\nGuide picks: Captain Michael Burnham (uncommon); Jake Sisko, War Correspondent (uncommon); Erica Ortegas, Plucky Pilot (uncommon).",
         cards: ["Cleveland Booker, Empath", "Dal R'El, Augment Orphan", "Hit It!", "Orion", "Stomping Ground", "Captain Michael Burnham", "Jake Sisko, War Correspondent", "Erica Ortegas, Plucky Pilot"],
         mechanicNotes: [{
           name: "Landfall",
@@ -2580,7 +2587,7 @@ var SET_DATA = {
       GW: {
         text: "Doctors",
         sub: "Counters\n(any kind)",
-        details: "Doctors and counters. Put counters on your creatures and get paid for it - and the payoffs count any kind of counter, so the charge counters on a Spacecraft count too. The Doctor, EMH adds a +1/+1 counter to each creature that already has a counter, and Phlox draws a card whenever a creature with a counter deals combat damage to a player.\nCards:\nUncommon: The Doctor, EMH; Phlox, Unorthodox Doctor.\nRare: The Inner Light.\nLand: Risa; Temple Garden.\nGuide picks: Pure Energy (common); Support Mission (uncommon).",
+        details: "Doctors and counters. Put counters on your creatures and get paid for it - and the payoffs count any kind of counter, so the charge counters on a Spacecraft count too.\nCards:\nUncommon: The Doctor, EMH; Phlox, Unorthodox Doctor.\nRare: The Inner Light.\nLand: Risa; Temple Garden.\nGuide picks: Pure Energy (common); Support Mission (uncommon).",
         cards: ["The Doctor, EMH", "Phlox, Unorthodox Doctor", "The Inner Light", "Risa", "Temple Garden", "Pure Energy", "Support Mission"],
         themeSearches: [{
           label: "Doctors",
@@ -2600,7 +2607,7 @@ var SET_DATA = {
       WB: {
         text: "Borg",
         sub: "Artifact creatures",
-        details: "Borg artifact creatures. Every Borg is an artifact creature. Build an early board of artifacts, pump them once Locutus arrives (+1/+1 to your artifact creatures, or discard him to deal 2 damage), and sacrifice the ones that have done their job. Zero exiles a card from the opponent's hand that they can still play, for {2} more. The Borg Cube mythic assimilates.\nCards:\nUncommon: Locutus, the One Who Speaks; Zero, Incorporeal Sensate.\nRare: The City on the Edge of Forever.\nMythic: Borg Cube.\nLand: Cardassia Prime; Godless Shrine.\nGuide picks: Vexing Drone (common); Assault Drone (common).",
+        details: "Borg artifact creatures. Every Borg is an artifact creature. Build an early board of artifacts, pump them once Locutus arrives (+1/+1 to your artifact creatures, or discard him to deal 2 damage), and sacrifice the ones that have done their job.\nCards:\nUncommon: Locutus, the One Who Speaks; Zero, Incorporeal Sensate.\nRare: The City on the Edge of Forever.\nMythic: Borg Cube.\nLand: Cardassia Prime; Godless Shrine.\nGuide picks: Vexing Drone (common); Assault Drone (common).",
         cards: ["Locutus, the One Who Speaks", "Zero, Incorporeal Sensate", "The City on the Edge of Forever", "Borg Cube", "Cardassia Prime", "Godless Shrine", "Vexing Drone", "Assault Drone", "Death Is Irrelevant"],
         mechanicNotes: [{
           name: "Assimilate",
@@ -2624,7 +2631,7 @@ var SET_DATA = {
       UR: {
         text: "Scientists",
         sub: "Noncreature spells",
-        details: "Scientists and noncreatures. Cast instants, sorceries and other noncreature spells - Spacecraft count, since they are artifacts when you cast them - and get paid on the creature side. Spock looks at the top four cards for a noncreature spell; Gray and Adira make a hasty copy of one of your creatures each combat after you've cast one, so a cheap noncreature spell every turn keeps them going.\nCards:\nUncommon: Spock, Always Your Friend; Gray and Adira, Forever Joined.\nRare: Year of Hell.\nLand: Andoria; Steam Vents.\nGuide picks: Test of Priorities (uncommon); Test of Identity (uncommon).",
+        details: "Scientists and noncreatures. Cast instants, sorceries and other noncreature spells - Spacecraft count, since they are artifacts when you cast them - and get paid on the creature side.\nCards:\nUncommon: Spock, Always Your Friend; Gray and Adira, Forever Joined.\nRare: Year of Hell.\nLand: Andoria; Steam Vents.\nGuide picks: Test of Priorities (uncommon); Test of Identity (uncommon).",
         cards: ["Spock, Always Your Friend", "Gray and Adira, Forever Joined", "Year of Hell", "Andoria", "Steam Vents", "Test of Priorities", "Test of Identity"],
         themeSearches: [{
           label: "Scientists",
@@ -2641,7 +2648,7 @@ var SET_DATA = {
       BG: {
         text: "Archaeology",
         sub: "Graveyard",
-        details: "Archaeology graveyard. Fill your graveyard with creatures and artifacts, then dig them back out - several permanents pay off whenever a card leaves your graveyard. Vash surveils every upkeep and draws a card when a card leaves your graveyard (once a turn), and reanimation and beam me up spells set that off. Daniels returns a creature card to your hand, and later puts himself from the graveyard on the bottom of your library for 2 life.\nCards:\nUncommon: Vash, Freelance Archaeologist; Daniels, Temporal Agent.\nRare: Nog, Ambitious Cadet.\nLand: Ferenginar; Overgrown Tomb.\nGuide picks: Pattern Buffer Preservation (common).",
+        details: "Archaeology graveyard. Fill your graveyard with creatures and artifacts, then dig them back out - several permanents pay off whenever a card leaves your graveyard.\nCards:\nUncommon: Vash, Freelance Archaeologist; Daniels, Temporal Agent.\nRare: Nog, Ambitious Cadet.\nLand: Ferenginar; Overgrown Tomb.\nGuide picks: Pattern Buffer Preservation (common).",
         cards: ["Vash, Freelance Archaeologist", "Daniels, Temporal Agent", "Nog, Ambitious Cadet", "Ferenginar", "Overgrown Tomb", "Pattern Buffer Preservation"],
         themeSearches: [{
           label: "Surveil",
@@ -2658,7 +2665,7 @@ var SET_DATA = {
       RW: {
         text: "Command",
         sub: "8+ total power",
-        details: "Command 8+ total power. The payoffs check whether creatures you control have total power 8 or greater when you attack, so get there with power pumps, naturally big creatures, or a board of Officer tokens - Academy Instructor makes one for every noncreature spell you cast. Kirk exiles the top card of your library and lets you play it, Worf doubles his power, and La'An Noonien-Singh, Security stops a blocker.\nCards:\nUncommon: Kirk, Commanding Officer; Worf, Honor-Bound Warrior.\nRare: Kira Nerys, Firebrand.\nLand: Bajor; Sacred Foundry.\nGuide picks: Academy Instructor (uncommon); La'An Noonien-Singh, Security (uncommon).",
+        details: "Command 8+ total power. The payoffs check whether creatures you control have total power 8 or greater when you attack, so get there with power pumps, naturally big creatures, or a board of Officer tokens.\nCards:\nUncommon: Kirk, Commanding Officer; Worf, Honor-Bound Warrior.\nRare: Kira Nerys, Firebrand.\nLand: Bajor; Sacred Foundry.\nGuide picks: Academy Instructor (uncommon); La'An Noonien-Singh, Security (uncommon).",
         cards: ["Kirk, Commanding Officer", "Worf, Honor-Bound Warrior", "Kira Nerys, Firebrand", "Bajor", "Sacred Foundry", "Academy Instructor", "La'An Noonien-Singh, Security"],
         themeSearches: [{
           label: "Total power 8",
@@ -2672,7 +2679,7 @@ var SET_DATA = {
       GU: {
         text: "Strange New\nWorlds",
         sub: "Land variety\nFive colors",
-        details: "Strange New Worlds counts the differently named lands you control, so collect as many as you can: the ten Planet duals and the five Anomaly lands all have different names, and an off-color Planet still gains you life and still counts - which can stretch the deck into all five colors. Survive the early game, then win the long one. The Traveler's power is the count; D'Vana Tendi untaps a permanent (a land, for extra mana) and turns spare mana into surveil; Warp Speed fetches a basic land or a Planet and makes your lands enter untapped.\nCards:\nUncommon: The Traveler; D'Vana Tendi, Optimistic Ensign; Warp Speed.\nRare: All Good Things...\nLand: Earth, Sector 001; Breeding Pool.\nGuide picks: Suus Mahna Practitioner (common); Orion; Risa.",
+        details: "Strange New Worlds counts the differently named lands you control, so collect as many as you can: the ten Planet duals and the five Anomaly lands all have different names, and an off-color Planet still gains you life and still counts - which can stretch the deck into all five colors.\nCards:\nUncommon: The Traveler; D'Vana Tendi, Optimistic Ensign; Warp Speed.\nRare: All Good Things...\nLand: Earth, Sector 001; Breeding Pool.\nGuide picks: Suus Mahna Practitioner (common); Orion; Risa.",
         cards: ["The Traveler", "D'Vana Tendi, Optimistic Ensign", "Warp Speed", "All Good Things...", "Earth, Sector 001", "Breeding Pool", "Suus Mahna Practitioner", "Orion", "Risa"],
         themeSearches: [{
           label: "Strange New Worlds",
@@ -2791,12 +2798,22 @@ var SET_DATA = {
       quote: "Planet is a land subtype with no special meaning. It doesn't grant the land any intrinsic abilities.",
       quoteSource: "Star Trek Release Notes",
       quoteUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
-      description: "In TRK: all ten common dual lands are Planets, one per color pair.\nCards that make a New Planet token (a tapped land that taps for any color):\n\u2022 Lands (uncommon): Subspace Anomaly (W), Gaseous Anomaly (U), Artificial Anomaly (B), Spatial Anomaly (R), Temporal Anomaly (G) - each when you sacrifice it for its effect\n\u2022 Red: Genesis Effect (common)\n\u2022 Green: Saurian Explorer (common), David and Carol Marcus, Creators (uncommon), Stable Wormhole (rare)\nCards that care about Planets - each fetches a basic land or a Planet card:\n\u2022 Green: Final Frontier (common), Warp Speed (uncommon), Genesis Device (rare)\n\nEvery token is named New Planet, so for Strange New Worlds several of them count as one differently named land.",
-      cards: ["Subspace Anomaly", "Gaseous Anomaly", "Artificial Anomaly", "Spatial Anomaly", "Temporal Anomaly", "Genesis Effect", "Saurian Explorer", "David and Carol Marcus, Creators", "Stable Wormhole", "Final Frontier", "Warp Speed", "Genesis Device"],
+      description: "In TRK: all ten common dual lands are Planets, one per color pair.\nSome cards also create a New Planet Token that taps for any color.",
+      cards: [],
+      cardLinks: {
+        "New Planet Token": {
+          href: "https://scryfall.com/card/ttrk/27/new-planet",
+          img: "https://cards.scryfall.io/normal/front/2/1/21d855f7-fd5c-4eb4-b997-a905849806b9.jpg"
+        }
+      },
       source: "WotC Release Notes",
       sourceUrl: "https://magic.wizards.com/en/news/feature/star-trek-release-notes",
       scryfallQuery: "https://scryfall.com/search?q=set%3Atrk+%28t%3Aplanet+OR+o%3Aplanet%29&unique=cards&as=grid&order=name",
-      scryfallLabel: "t:planet OR o:planet"
+      scryfallLabel: "t:planet OR o:planet",
+      moreSearches: [{
+        label: "o:\"new planet\"",
+        url: "https://scryfall.com/search?q=set%3Atrk+o%3A%22new+planet%22&unique=cards&as=grid&order=name"
+      }]
     }],
     tokens: [{
       "name": "Officer",
@@ -3697,9 +3714,10 @@ var CardLink = function CardLink(_ref5) {
 
 // Wrap any known card names found in `text` with hover-image CardLinks (matches longest names first)
 // Also handles bold formatting for "Cards:", "Top commons:", "Top uncommons:", and "Top Rares and mythics:" markers
+// `links` (optional): {name: {href, img}} for names that are not cards in the set, e.g. a token.
 // Converts \n to <br /> for proper line break rendering; a blank line (\n\n) is a paragraph gap,
 // and a bold label renders as its own block with the same gap above it (none when it opens the text).
-var linkifyCards = function linkifyCards(text, cards, setCode, fg) {
+var linkifyCards = function linkifyCards(text, cards, setCode, fg, links) {
   if (!text) return text;
 
   // Split by newlines to handle bold labels on their own line
@@ -3715,7 +3733,7 @@ var linkifyCards = function linkifyCards(text, cards, setCode, fg) {
     }
     return line;
   });
-  var sorted = _toConsumableArray(cards || []).sort(function (a, b) {
+  var sorted = [].concat(_toConsumableArray(cards || []), _toConsumableArray(Object.keys(links || {}))).sort(function (a, b) {
     return b.length - a.length;
   });
   var segs = [];
@@ -3794,11 +3812,14 @@ var linkifyCards = function linkifyCards(text, cards, setCode, fg) {
         key: i
       });
     } else {
+      var link = links && links[s.__card];
       return /*#__PURE__*/React.createElement(CardLink, {
         key: i,
         cardName: s.__card,
         setCode: setCode,
-        fg: fg
+        fg: fg,
+        href: link && link.href,
+        imgUrl: link && link.img
       });
     }
   });
@@ -5500,7 +5521,7 @@ function MultiSetColorWheel() {
     className: "header-content"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-text"
-  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.2 \xB7 2026-11-06")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, isAll ? 'All Sets' : currentSet.key, " Draft Archetypes", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, "Multi-Set Color Wheel \xB7 v1.9.3 \xB7 2026-11-06")), /*#__PURE__*/React.createElement("div", {
     className: "data-info"
   }, /*#__PURE__*/React.createElement("strong", null, "Card names & images:"), " ", /*#__PURE__*/React.createElement("a", {
     href: "https://scryfall.com/docs/api",
@@ -6246,7 +6267,7 @@ function MultiSetColorWheel() {
         opacity: 0.95,
         marginBottom: '8px'
       }
-    }, linkifyCards(mech.description, mech.cards, sc, UI.mechLink)), mech.source && !mech.quote && /*#__PURE__*/React.createElement("div", {
+    }, linkifyCards(mech.description, mech.cards, sc, UI.mechLink, mech.cardLinks)), mech.source && !mech.quote && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: '0.7rem',
         opacity: 0.7,
@@ -6282,7 +6303,25 @@ function MultiSetColorWheel() {
         fontSize: '0.65rem',
         fontWeight: '600'
       }
-    }, mech.scryfallLabel || 'o:' + mech.keyword));
+    }, mech.scryfallLabel || 'o:' + mech.keyword), (mech.moreSearches || []).map(function (s, j) {
+      return /*#__PURE__*/React.createElement(React.Fragment, {
+        key: j
+      }, ' ', /*#__PURE__*/React.createElement("a", {
+        href: s.url,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        style: {
+          display: 'inline-block',
+          padding: '4px 10px',
+          backgroundColor: UI.mechFg,
+          color: UI.mechBg,
+          textDecoration: 'none',
+          borderRadius: '3px',
+          fontSize: '0.65rem',
+          fontWeight: '600'
+        }
+      }, s.label));
+    }));
   }))), currentSet.tokens && currentSet.tokens.length > 0 && function () {
     var sc = currentSet.scryfallCodes[0];
     var GROUP_NAMES = {

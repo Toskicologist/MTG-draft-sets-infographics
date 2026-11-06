@@ -22,16 +22,15 @@ name: Daily 17Lands Data Refresh
 # cards: they read 17lands-quiz/data/quiz-data.js, which only the last refresh
 # step writes. That step refreshes the newest sets (reusing the CSVs the steps
 # before it fetched) and adds new 17Lands sets by itself (refresh_quiz_data.py).
-# The per-set steps now touch only production index.html, which still embeds
-# its data until the beta is promoted (FRA is not on it, so FRA has no step).
+# The per-set steps touch only production's own 17lands-quiz/data/index-data.js
+# (FRA is not on it, so FRA has no step). Since 2026-11-06 index.html holds no data
+# and is precompiled from source, so no step here writes it.
 #
-# DATA-ONLY: the refresh scripts update beta data and index (production)
-# INDEPENDENTLY. Do NOT add --promote here — that copies quiz-beta.html over
-# index.html (and sos-beta over sos-index), silently shipping untested beta CODE
-# to production. Promotion is a manual, human decision. For the quiz, do it in
-# ClaudeProjects (mtg/quiz-project/17lands-quiz/: make index.html from
-# quiz-beta.html, give it a line in scripts/pages-allowlist.txt and delete that
-# file's "hold 17lands-quiz/index.html" line);
+# DATA-ONLY: the refresh scripts update beta data and production data
+# INDEPENDENTLY. Do NOT add --promote here — it would copy sos-beta over sos-index,
+# silently shipping untested beta CODE to production. Promotion is a manual, human
+# decision. For the quiz, do it in ClaudeProjects (mtg/quiz-project/17lands-quiz/:
+# make index.html from quiz-beta.html; it then reads quiz-data.js, not index-data.js);
 # for the SOS pages, copy sos-beta.html over sos-index.html in
 # mtg/ratings-project/underover-rated/sos/ (sos-index.html is Action-owned and
 # held by the sync; see "Action-owned files" in docs/PUBLISHING.md).

@@ -131,8 +131,9 @@ def _promote_beta_to_main() -> None:
 
     # In CI mode, also promote the quiz directly. In LOCAL mode, the quiz beta
     # lives in MTG-GitHub-Pages directly, so the same path works.
+    # Not when it names the data file (since 2026-11-06): a page copied over it would break the quiz.
     quiz_main = getattr(config, 'QUIZ_INDEX_HTML', None)
-    if quiz_main is not None:
+    if quiz_main is not None and quiz_main.suffix == '.html':
         promotions.append((config.QUIZ_BETA_HTML, quiz_main))
 
     print()
