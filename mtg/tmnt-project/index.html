@@ -12,7 +12,6 @@
   <meta name="twitter:description" content="Interactive Magic: The Gathering draft archetype color wheel for Teenage Mutant Ninja Turtles (TMT)">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.7/babel.min.js"></script>
   <!-- Mana Font CSS from jsDelivr (official npm CDN) -->
   <link href="https://cdn.jsdelivr.net/npm/mana-font@1.18.0/css/mana.min.css" rel="stylesheet" type="text/css" />
   <style>
@@ -42,7 +41,23 @@
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
+  <script>
+// Precompiled from JSX by scripts/precompile-jsx.js (Babel 7.29.7) when this
+// page was synced. Edit the source page in ClaudeProjects, not this copy.
+"use strict";
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 /**
  * TMNT (Teenage Mutant Ninja Turtles) Draft Archetypes - Color Wheel Visualization
  * 1.0.0 React (STABLE)
@@ -77,14 +92,19 @@
  *   - Sources: Wizards prerelease guide, Draftsim, CardGameBase, TheGamer
  */
 
-const { useState, useEffect, useRef } = React;
-
-const isMobile = () => window.innerWidth <= 768;
-
-const getConfig = (textSizeMultiplier = 1.0) => {
-  const mobile = isMobile();
-  const baseFontSize = mobile ? 10 : 11;
-  const scaledFontSize = Math.round(baseFontSize * textSizeMultiplier);
+var _React = React,
+  useState = _React.useState,
+  useEffect = _React.useEffect,
+  useLayoutEffect = _React.useLayoutEffect,
+  useRef = _React.useRef;
+var isMobile = function isMobile() {
+  return window.innerWidth <= 768;
+};
+var getConfig = function getConfig() {
+  var textSizeMultiplier = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1.0;
+  var mobile = isMobile();
+  var baseFontSize = mobile ? 10 : 11;
+  var scaledFontSize = Math.round(baseFontSize * textSizeMultiplier);
   return {
     width: 700,
     height: 700,
@@ -100,33 +120,28 @@ const getConfig = (textSizeMultiplier = 1.0) => {
     fontSize: scaledFontSize,
     lineSpacing: mobile ? 9 : 10,
     iterMax: 240,
-    pushStep: 6,
+    pushStep: 6
   };
 };
-
-let CONFIG = getConfig();
-
-const baseHex = {
+var CONFIG = getConfig();
+var baseHex = {
   W: "#FFFFFF",
   U: "#3366FF",
   B: "#000000",
   R: "#FF3333",
-  G: "#2ECC40",
+  G: "#2ECC40"
 };
 
 // TMNT uses enemy-color-pair archetypes (the 5 supported pairs)
-const primaryArchetypes = ['WB', 'UR', 'BG', 'RW', 'GU'];
-
-
-const manaClasses = {
+var primaryArchetypes = ['WB', 'UR', 'BG', 'RW', 'GU'];
+var manaClasses = {
   W: 'ms ms-w',
   U: 'ms ms-u',
   B: 'ms ms-b',
   R: 'ms ms-r',
-  G: 'ms ms-g',
+  G: 'ms ms-g'
 };
-
-const colorDescriptions = {
+var colorDescriptions = {
   W: {
     name: "White",
     description: "Sneaky ninjas, Alliance go-wide. Features Leonardo's Foot Clan discipline and Sally Pride's coalition-building. Partners with Black (Sneak) and Red (Alliance)."
@@ -156,166 +171,254 @@ const colorDescriptions = {
 //   - TheGamer TMNT draft archetypes article
 //   - GameDaily TMNT prerelease guide
 // "Best-performing" claims come from pre-release expert consensus; no 17Lands data yet (set releases 2026-03-06)
-const labels = {
+var labels = {
   // Primary enemy-pair archetypes
-  WB: { text: "Ninjas", sub: "Sneak", details: "Sneak mechanic replaces unblocked creatures with stronger ninja threats from hand or library. Leonardo and Splinter lead disciplined strike forces that attack from the shadows. Overwhelming tempo advantage when sneaks resolve.", sourceText: "WotC / Draftsim / TheGamer", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  UR: { text: "Machines", sub: "Artifacts", details: "Donatello's lab powers artifact-heavy Blue/Red decks. Technodrome, robots, and gadgets generate value and board presence. Pre-release consensus: one of the stronger archetypes — combine artifact synergies with aggressive Red threats.", sourceText: "WotC / Draftsim / TheGamer", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  BG: { text: "Ooze", sub: "Disappear", details: "Disappear triggers when your permanents leave the battlefield, generating value through sacrifice and removal. Michelangelo's chaos and the ooze subtype create recursive value loops. Great at grinding out opponents.", sourceText: "WotC / Draftsim / GameDaily", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  RW: { text: "Alliance", sub: "Go-wide tokens", details: "Alliance is a returning mechanic that triggers whenever another creature enters under your control. Stack creature-count payoffs, go wide with tokens, and overwhelm opponents. Recommended by reviewers for newer players — straightforward and powerful.", sourceText: "WotC / Draftsim / TheGamer", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  GU: { text: "Mutagen", sub: "Mutant tokens", details: "Mutagen tokens represent the ooze that transforms ordinary creatures into mutants. Pre-release consensus: one of the stronger archetypes — grow enormous mutant threats while accumulating incremental value. The Mutagen Man epitomizes this strategy.", sourceText: "WotC / Draftsim / TheGamer", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
+  WB: {
+    text: "Ninjas",
+    sub: "Sneak",
+    details: "Sneak mechanic replaces unblocked creatures with stronger ninja threats from hand or library. Leonardo and Splinter lead disciplined strike forces that attack from the shadows. Overwhelming tempo advantage when sneaks resolve.",
+    sourceText: "WotC / Draftsim / TheGamer",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  UR: {
+    text: "Machines",
+    sub: "Artifacts",
+    details: "Donatello's lab powers artifact-heavy Blue/Red decks. Technodrome, robots, and gadgets generate value and board presence. Pre-release consensus: one of the stronger archetypes — combine artifact synergies with aggressive Red threats.",
+    sourceText: "WotC / Draftsim / TheGamer",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  BG: {
+    text: "Ooze",
+    sub: "Disappear",
+    details: "Disappear triggers when your permanents leave the battlefield, generating value through sacrifice and removal. Michelangelo's chaos and the ooze subtype create recursive value loops. Great at grinding out opponents.",
+    sourceText: "WotC / Draftsim / GameDaily",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  RW: {
+    text: "Alliance",
+    sub: "Go-wide tokens",
+    details: "Alliance is a returning mechanic that triggers whenever another creature enters under your control. Stack creature-count payoffs, go wide with tokens, and overwhelm opponents. Recommended by reviewers for newer players — straightforward and powerful.",
+    sourceText: "WotC / Draftsim / TheGamer",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  GU: {
+    text: "Mutagen",
+    sub: "Mutant tokens",
+    details: "Mutagen tokens represent the ooze that transforms ordinary creatures into mutants. Pre-release consensus: one of the stronger archetypes — grow enormous mutant threats while accumulating incremental value. The Mutagen Man epitomizes this strategy.",
+    sourceText: "WotC / Draftsim / TheGamer",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
   // Secondary allied-pair notes (off-archetype splashes)
-  WU: { text: "Off-arch", sub: "Splash W/U", details: "No dedicated WU archetype in TMT. This color pair bridges Ninjas (WB) and Machines (UR). Consider splashing for powerful individual cards — Krang Master Mind (U), Sally Pride (W) are exceptional off-color inclusions.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  UB: { text: "Off-arch", sub: "Splash U/B", details: "No dedicated UB archetype. Bridges Machines (UR) and Ooze/Disappear (BG). April O'Neil works in either direction. Splashing strong black removal or blue card draw is viable if your manabase supports it.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  BR: { text: "Off-arch", sub: "Splash B/R", details: "No dedicated BR archetype. Bridges Ooze (BG) and Alliance (RW). Raphael cards span both colors. Aggressive black/red builds can work with creature-based removal and direct pressure.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  RG: { text: "Off-arch", sub: "Splash R/G", details: "No dedicated RG archetype. Bridges Alliance (RW) and Mutagen (GU). Green ramp into red threats is viable. Groundchuck & Dirtbag provide Mutagen-adjacent value in non-dedicated builds.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
-  GW: { text: "Off-arch", sub: "Splash G/W", details: "No dedicated GW archetype. Bridges Mutagen (GU) and Ninja/Alliance (WB, RW). Sally Pride's Alliance payoffs pair naturally with green's wide board. Token-heavy GW shells can work around Alliance triggers.", sourceText: "Draftsim pre-release review", sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/" },
+  WU: {
+    text: "Off-arch",
+    sub: "Splash W/U",
+    details: "No dedicated WU archetype in TMT. This color pair bridges Ninjas (WB) and Machines (UR). Consider splashing for powerful individual cards — Krang Master Mind (U), Sally Pride (W) are exceptional off-color inclusions.",
+    sourceText: "Draftsim pre-release review",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  UB: {
+    text: "Off-arch",
+    sub: "Splash U/B",
+    details: "No dedicated UB archetype. Bridges Machines (UR) and Ooze/Disappear (BG). April O'Neil works in either direction. Splashing strong black removal or blue card draw is viable if your manabase supports it.",
+    sourceText: "Draftsim pre-release review",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  BR: {
+    text: "Off-arch",
+    sub: "Splash B/R",
+    details: "No dedicated BR archetype. Bridges Ooze (BG) and Alliance (RW). Raphael cards span both colors. Aggressive black/red builds can work with creature-based removal and direct pressure.",
+    sourceText: "Draftsim pre-release review",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  RG: {
+    text: "Off-arch",
+    sub: "Splash R/G",
+    details: "No dedicated RG archetype. Bridges Alliance (RW) and Mutagen (GU). Green ramp into red threats is viable. Groundchuck & Dirtbag provide Mutagen-adjacent value in non-dedicated builds.",
+    sourceText: "Draftsim pre-release review",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  },
+  GW: {
+    text: "Off-arch",
+    sub: "Splash G/W",
+    details: "No dedicated GW archetype. Bridges Mutagen (GU) and Ninja/Alliance (WB, RW). Sally Pride's Alliance payoffs pair naturally with green's wide board. Token-heavy GW shells can work around Alliance triggers.",
+    sourceText: "Draftsim pre-release review",
+    sourceUrl: "https://draftsim.com/mtg-tmt-limited-set-review/"
+  }
 };
-
-const hexToRgb = (h) => {
-  const hex = h.replace('#', '');
-  return [
-    parseInt(hex.substring(0, 2), 16),
-    parseInt(hex.substring(2, 4), 16),
-    parseInt(hex.substring(4, 6), 16),
-  ];
+var hexToRgb = function hexToRgb(h) {
+  var hex = h.replace('#', '');
+  return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
 };
-
-const rgbToHex = (r, g, b) =>
-  '#' + [r, g, b].map(x => Math.round(x).toString(16).padStart(2, '0')).join('');
-
-const darken = (h, amt = 0.4) => {
-  const [r, g, b] = hexToRgb(h);
+var rgbToHex = function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(function (x) {
+    return Math.round(x).toString(16).padStart(2, '0');
+  }).join('');
+};
+var darken = function darken(h) {
+  var amt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0.4;
+  var _hexToRgb = hexToRgb(h),
+    _hexToRgb2 = _slicedToArray(_hexToRgb, 3),
+    r = _hexToRgb2[0],
+    g = _hexToRgb2[1],
+    b = _hexToRgb2[2];
   return rgbToHex(r * (1 - amt), g * (1 - amt), b * (1 - amt));
 };
-
-const blend = (u, v) => {
-  const [r1, g1, b1] = hexToRgb(baseHex[u]);
-  const [r2, g2, b2] = hexToRgb(baseHex[v]);
+var blend = function blend(u, v) {
+  var _hexToRgb3 = hexToRgb(baseHex[u]),
+    _hexToRgb4 = _slicedToArray(_hexToRgb3, 3),
+    r1 = _hexToRgb4[0],
+    g1 = _hexToRgb4[1],
+    b1 = _hexToRgb4[2];
+  var _hexToRgb5 = hexToRgb(baseHex[v]),
+    _hexToRgb6 = _slicedToArray(_hexToRgb5, 3),
+    r2 = _hexToRgb6[0],
+    g2 = _hexToRgb6[1],
+    b2 = _hexToRgb6[2];
   return rgbToHex((r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2);
 };
-
-const relLum = (h) => {
-  const [r, g, b] = hexToRgb(h).map(x => x / 255);
-  const f = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+var relLum = function relLum(h) {
+  var _hexToRgb$map = hexToRgb(h).map(function (x) {
+      return x / 255;
+    }),
+    _hexToRgb$map2 = _slicedToArray(_hexToRgb$map, 3),
+    r = _hexToRgb$map2[0],
+    g = _hexToRgb$map2[1],
+    b = _hexToRgb$map2[2];
+  var f = function f(c) {
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 };
-
-const contrastRatio = (bg, fg) => {
-  const [L1, L2] = [relLum(bg), relLum(fg)].sort((a, b) => b - a);
+var contrastRatio = function contrastRatio(bg, fg) {
+  var _sort = [relLum(bg), relLum(fg)].sort(function (a, b) {
+      return b - a;
+    }),
+    _sort2 = _slicedToArray(_sort, 2),
+    L1 = _sort2[0],
+    L2 = _sort2[1];
   return (L1 + 0.05) / (L2 + 0.05);
 };
-
-const getLabelColors = (u, v) => {
-  let bg, fg;
+var getLabelColors = function getLabelColors(u, v) {
+  var bg, fg;
   if (u === 'B' || v === 'B') {
     bg = '#000000';
-    const partner = u === 'B' ? v : u;
+    var partner = u === 'B' ? v : u;
     fg = partner === 'W' ? '#FFFFFF' : baseHex[partner];
   } else if (u === 'W' || v === 'W') {
-    const partner = u === 'W' ? v : u;
-    bg = darken(baseHex[partner], 0.4);
+    var _partner = u === 'W' ? v : u;
+    bg = darken(baseHex[_partner], 0.4);
     fg = '#FFFFFF';
   } else {
     bg = darken(baseHex[u], 0.4);
     fg = baseHex[v];
     if (contrastRatio(bg, fg) < 4.5) {
-      const [r, g, b] = hexToRgb(fg);
+      var _hexToRgb7 = hexToRgb(fg),
+        _hexToRgb8 = _slicedToArray(_hexToRgb7, 3),
+        r = _hexToRgb8[0],
+        g = _hexToRgb8[1],
+        b = _hexToRgb8[2];
       fg = rgbToHex(Math.min(r + 140, 255), Math.min(g + 140, 255), Math.min(b + 140, 255));
     }
   }
-  return { bg, fg };
-};
-
-const colorOrder = ['W', 'U', 'B', 'R', 'G'];
-
-const edges = Object.keys(labels).map(pair => ({
-  u: pair[0],
-  v: pair[1],
-  uIdx: colorOrder.indexOf(pair[0]),
-  vIdx: colorOrder.indexOf(pair[1]),
-}));
-
-const getNodePos = (index, config) => {
-  const angle = (index * 72 - 90) * (Math.PI / 180);
   return {
-    x: config.cx + config.radius * Math.cos(angle),
-    y: config.cy + config.radius * Math.sin(angle),
+    bg: bg,
+    fg: fg
   };
 };
-
-const getNodePositions = (config) => colorOrder.map((_, i) => getNodePos(i, config));
-
-const getEdgeGeometry = (uIdx, vIdx, config) => {
-  const nodePositions = getNodePositions(config);
-  const p1 = nodePositions[uIdx];
-  const p2 = nodePositions[vIdx];
-  const dx = p2.x - p1.x;
-  const dy = p2.y - p1.y;
-  const L = Math.hypot(dx, dy);
-  const ux = dx / L;
-  const uy = dy / L;
-
-  const x = (p1.x + ux * config.nodeRadius + p2.x - ux * config.nodeRadius) / 2;
-  const y = (p1.y + uy * config.nodeRadius + p2.y - uy * config.nodeRadius) / 2;
-
-  const tx = ux, ty = uy;
-  const nx = -uy, ny = ux;
-
-  return { x, y, tx, ty, nx, ny };
+var colorOrder = ['W', 'U', 'B', 'R', 'G'];
+var edges = Object.keys(labels).map(function (pair) {
+  return {
+    u: pair[0],
+    v: pair[1],
+    uIdx: colorOrder.indexOf(pair[0]),
+    vIdx: colorOrder.indexOf(pair[1])
+  };
+});
+var getNodePos = function getNodePos(index, config) {
+  var angle = (index * 72 - 90) * (Math.PI / 180);
+  return {
+    x: config.cx + config.radius * Math.cos(angle),
+    y: config.cy + config.radius * Math.sin(angle)
+  };
 };
-
-const getBbox = (cx, cy, isPrimary, config) => {
-  const w = isPrimary ? config.primaryBoxW : config.boxW;
-  const h = isPrimary ? config.primaryBoxH : config.boxH;
+var getNodePositions = function getNodePositions(config) {
+  return colorOrder.map(function (_, i) {
+    return getNodePos(i, config);
+  });
+};
+var getEdgeGeometry = function getEdgeGeometry(uIdx, vIdx, config) {
+  var nodePositions = getNodePositions(config);
+  var p1 = nodePositions[uIdx];
+  var p2 = nodePositions[vIdx];
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  var L = Math.hypot(dx, dy);
+  var ux = dx / L;
+  var uy = dy / L;
+  var x = (p1.x + ux * config.nodeRadius + p2.x - ux * config.nodeRadius) / 2;
+  var y = (p1.y + uy * config.nodeRadius + p2.y - uy * config.nodeRadius) / 2;
+  var tx = ux,
+    ty = uy;
+  var nx = -uy,
+    ny = ux;
+  return {
+    x: x,
+    y: y,
+    tx: tx,
+    ty: ty,
+    nx: nx,
+    ny: ny
+  };
+};
+var getBbox = function getBbox(cx, cy, isPrimary, config) {
+  var w = isPrimary ? config.primaryBoxW : config.boxW;
+  var h = isPrimary ? config.primaryBoxH : config.boxH;
   return {
     x1: cx - w / 2,
     x2: cx + w / 2,
     y1: cy - h / 2,
-    y2: cy + h / 2,
+    y2: cy + h / 2
   };
 };
-
-const isOverlap = (b1, b2, margin = 2) => {
-  return !(b1.x2 + margin < b2.x1 || b2.x2 + margin < b1.x1 ||
-           b1.y2 + margin < b2.y1 || b2.y2 + margin < b1.y1);
+var isOverlap = function isOverlap(b1, b2) {
+  var margin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
+  return !(b1.x2 + margin < b2.x1 || b2.x2 + margin < b1.x1 || b1.y2 + margin < b2.y1 || b2.y2 + margin < b1.y1);
 };
-
-const computeLabelPositions = (config) => {
-  const groups = edges.map(edge => {
-    const pairCode = edge.u + edge.v;
-    const isPrimary = primaryArchetypes.includes(pairCode);
-    const { x, y, tx, ty, nx, ny } = getEdgeGeometry(edge.uIdx, edge.vIdx, config);
-
-    const sgn = (x - config.cx) * nx + (y - config.cy) * ny > 0 ? 1 : -1;
-    const off = sgn * (isPrimary ? 20 : 15);
-    const tshift = edge.u < edge.v ? 3 : -3;
-
-    const cx = x + nx * off + tx * tshift;
-    const cy = y + ny * off + ty * tshift;
-
-    return {
-      ...edge,
-      cx,
-      cy,
-      isPrimary,
-      bbox: getBbox(cx, cy, isPrimary, config),
-    };
+var computeLabelPositions = function computeLabelPositions(config) {
+  var groups = edges.map(function (edge) {
+    var pairCode = edge.u + edge.v;
+    var isPrimary = primaryArchetypes.includes(pairCode);
+    var _getEdgeGeometry = getEdgeGeometry(edge.uIdx, edge.vIdx, config),
+      x = _getEdgeGeometry.x,
+      y = _getEdgeGeometry.y,
+      tx = _getEdgeGeometry.tx,
+      ty = _getEdgeGeometry.ty,
+      nx = _getEdgeGeometry.nx,
+      ny = _getEdgeGeometry.ny;
+    var sgn = (x - config.cx) * nx + (y - config.cy) * ny > 0 ? 1 : -1;
+    var off = sgn * (isPrimary ? 20 : 15);
+    var tshift = edge.u < edge.v ? 3 : -3;
+    var cx = x + nx * off + tx * tshift;
+    var cy = y + ny * off + ty * tshift;
+    return _objectSpread(_objectSpread({}, edge), {}, {
+      cx: cx,
+      cy: cy,
+      isPrimary: isPrimary,
+      bbox: getBbox(cx, cy, isPrimary, config)
+    });
   });
-
-  for (let iter = 0; iter < config.iterMax; iter++) {
-    let moved = false;
-    for (let i = 0; i < groups.length; i++) {
-      for (let j = i + 1; j < groups.length; j++) {
+  for (var iter = 0; iter < config.iterMax; iter++) {
+    var moved = false;
+    for (var i = 0; i < groups.length; i++) {
+      for (var j = i + 1; j < groups.length; j++) {
         if (isOverlap(groups[i].bbox, groups[j].bbox)) {
-          const dx = groups[i].cx - groups[j].cx;
-          const dy = groups[i].cy - groups[j].cy;
-          const L = Math.hypot(dx, dy) + 0.001;
-
-          groups[i].cx += (dx / L) * config.pushStep;
-          groups[i].cy += (dy / L) * config.pushStep;
-          groups[j].cx -= (dx / L) * config.pushStep;
-          groups[j].cy -= (dy / L) * config.pushStep;
-
+          var dx = groups[i].cx - groups[j].cx;
+          var dy = groups[i].cy - groups[j].cy;
+          var L = Math.hypot(dx, dy) + 0.001;
+          groups[i].cx += dx / L * config.pushStep;
+          groups[i].cy += dy / L * config.pushStep;
+          groups[j].cx -= dx / L * config.pushStep;
+          groups[j].cy -= dy / L * config.pushStep;
           groups[i].bbox = getBbox(groups[i].cx, groups[i].cy, groups[i].isPrimary, config);
           groups[j].bbox = getBbox(groups[j].cx, groups[j].cy, groups[j].isPrimary, config);
           moved = true;
@@ -324,407 +427,582 @@ const computeLabelPositions = (config) => {
     }
     if (!moved) break;
   }
-
   return groups;
 };
-
-const ManaSymbol = ({ color, size = 24, isSimple = false }) => {
-  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
-  return (
-    <i
-      className={manaClasses[color]}
-      style={{
-        fontSize: `${size}px`,
-        color: fontColor,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    />
-  );
+var ManaSymbol = function ManaSymbol(_ref) {
+  var color = _ref.color,
+    _ref$size = _ref.size,
+    size = _ref$size === void 0 ? 24 : _ref$size,
+    _ref$isSimple = _ref.isSimple,
+    isSimple = _ref$isSimple === void 0 ? false : _ref$isSimple;
+  var fontColor = isSimple ? '#000000' : color === 'W' ? '#000000' : '#FFFFFF';
+  return /*#__PURE__*/React.createElement("i", {
+    className: manaClasses[color],
+    style: {
+      fontSize: "".concat(size, "px"),
+      color: fontColor,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  });
 };
-
-const ColorNode = ({ color, index, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
-  const nodePositions = getNodePositions(config);
-  const pos = nodePositions[index];
-  const fontColor = isSimple ? '#000000' : (color === 'W' ? '#000000' : '#FFFFFF');
-  const nodeColor = isSimple ? '#FFFFFF' : baseHex[color];
-  const glowColor = isSimple ? 'transparent' : baseHex[color];
-
-  return (
-    <g
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-      opacity={isDimmed ? 0.3 : 1}
-    >
-      <circle
-        cx={pos.x}
-        cy={pos.y}
-        r={config.nodeRadius + (isHighlighted ? 12 : 8)}
-        fill={isHighlighted ? "#FFD700" : glowColor}
-        opacity={isHighlighted ? 0.6 : 0.25}
-        style={{ transition: 'all 0.2s ease' }}
-      />
-      <circle
-        cx={pos.x}
-        cy={pos.y}
-        r={config.nodeRadius}
-        fill={nodeColor}
-        stroke={isHighlighted ? "#FFD700" : "#000000"}
-        strokeWidth={isHighlighted ? 4 : 3}
-        style={{ transition: 'all 0.2s ease' }}
-      />
-      <foreignObject
-        x={pos.x - 20}
-        y={pos.y - 20}
-        width={40}
-        height={40}
-      >
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '40px',
-          height: '40px',
-          color: fontColor,
-        }}>
-          <ManaSymbol color={color} size={30} isSimple={isSimple} />
-        </div>
-      </foreignObject>
-    </g>
-  );
+var ColorNode = function ColorNode(_ref2) {
+  var color = _ref2.color,
+    index = _ref2.index,
+    isHighlighted = _ref2.isHighlighted,
+    isDimmed = _ref2.isDimmed,
+    onHover = _ref2.onHover,
+    onLeave = _ref2.onLeave,
+    _ref2$isSimple = _ref2.isSimple,
+    isSimple = _ref2$isSimple === void 0 ? false : _ref2$isSimple,
+    config = _ref2.config;
+  var nodePositions = getNodePositions(config);
+  var pos = nodePositions[index];
+  var fontColor = isSimple ? '#000000' : color === 'W' ? '#000000' : '#FFFFFF';
+  var nodeColor = isSimple ? '#FFFFFF' : baseHex[color];
+  var glowColor = isSimple ? 'transparent' : baseHex[color];
+  return /*#__PURE__*/React.createElement("g", {
+    onMouseEnter: onHover,
+    onMouseLeave: onLeave,
+    style: {
+      cursor: 'pointer',
+      transition: 'opacity 0.2s ease'
+    },
+    opacity: isDimmed ? 0.3 : 1
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: pos.x,
+    cy: pos.y,
+    r: config.nodeRadius + (isHighlighted ? 12 : 8),
+    fill: isHighlighted ? "#FFD700" : glowColor,
+    opacity: isHighlighted ? 0.6 : 0.25,
+    style: {
+      transition: 'all 0.2s ease'
+    }
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: pos.x,
+    cy: pos.y,
+    r: config.nodeRadius,
+    fill: nodeColor,
+    stroke: isHighlighted ? "#FFD700" : "#000000",
+    strokeWidth: isHighlighted ? 4 : 3,
+    style: {
+      transition: 'all 0.2s ease'
+    }
+  }), /*#__PURE__*/React.createElement("foreignObject", {
+    x: pos.x - 20,
+    y: pos.y - 20,
+    width: 40,
+    height: 40
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '40px',
+      height: '40px',
+      color: fontColor
+    }
+  }, /*#__PURE__*/React.createElement(ManaSymbol, {
+    color: color,
+    size: 30,
+    isSimple: isSimple
+  }))));
 };
-
-const EdgeLine = ({ edge, isHighlighted, isDimmed, isSimple = false, config }) => {
-  const nodePositions = getNodePositions(config);
-  const p1 = nodePositions[edge.uIdx];
-  const p2 = nodePositions[edge.vIdx];
-  const pairCode = edge.u + edge.v;
-  const isPrimary = primaryArchetypes.includes(pairCode);
-  const lineColor = isSimple ? '#000000' : blend(edge.u, edge.v);
-  const lineOpacity = isDimmed ? 0.1 : (isPrimary ? 1 : 0.45);
-
-  return (
-    <line
-      x1={p1.x}
-      y1={p1.y}
-      x2={p2.x}
-      y2={p2.y}
-      stroke={isHighlighted ? "#FFD700" : lineColor}
-      strokeWidth={isHighlighted ? config.edgeWidth + 3 : (isPrimary ? config.edgeWidth + 2 : config.edgeWidth)}
-      opacity={lineOpacity}
-      style={{ transition: 'all 0.2s ease' }}
-    />
-  );
+var EdgeLine = function EdgeLine(_ref3) {
+  var edge = _ref3.edge,
+    isHighlighted = _ref3.isHighlighted,
+    isDimmed = _ref3.isDimmed,
+    _ref3$isSimple = _ref3.isSimple,
+    isSimple = _ref3$isSimple === void 0 ? false : _ref3$isSimple,
+    config = _ref3.config;
+  var nodePositions = getNodePositions(config);
+  var p1 = nodePositions[edge.uIdx];
+  var p2 = nodePositions[edge.vIdx];
+  var pairCode = edge.u + edge.v;
+  var isPrimary = primaryArchetypes.includes(pairCode);
+  var lineColor = isSimple ? '#000000' : blend(edge.u, edge.v);
+  var lineOpacity = isDimmed ? 0.1 : isPrimary ? 1 : 0.45;
+  return /*#__PURE__*/React.createElement("line", {
+    x1: p1.x,
+    y1: p1.y,
+    x2: p2.x,
+    y2: p2.y,
+    stroke: isHighlighted ? "#FFD700" : lineColor,
+    strokeWidth: isHighlighted ? config.edgeWidth + 3 : isPrimary ? config.edgeWidth + 2 : config.edgeWidth,
+    opacity: lineOpacity,
+    style: {
+      transition: 'all 0.2s ease'
+    }
+  });
 };
+var LabelBox = function LabelBox(_ref4) {
+  var group = _ref4.group,
+    isHighlighted = _ref4.isHighlighted,
+    isDimmed = _ref4.isDimmed,
+    onHover = _ref4.onHover,
+    onLeave = _ref4.onLeave,
+    _ref4$isSimple = _ref4.isSimple,
+    isSimple = _ref4$isSimple === void 0 ? false : _ref4$isSimple,
+    config = _ref4.config;
+  var groupRef = useRef(null);
+  var _useState = useState({
+      width: 50,
+      height: 35
+    }),
+    _useState2 = _slicedToArray(_useState, 2),
+    boxSize = _useState2[0],
+    setBoxSize = _useState2[1];
+  var code = group.u + group.v;
+  var labelData = labels[code] || labels[group.v + group.u];
+  var _getLabelColors = getLabelColors(group.u, group.v),
+    bg = _getLabelColors.bg,
+    fg = _getLabelColors.fg;
+  var edgeColor = blend(group.u, group.v);
+  var isPrimary = group.isPrimary;
+  var subLines = labelData.sub.split('\n');
+  var boxBg = isSimple ? '#FFFFFF' : bg;
+  var boxStroke = isSimple ? '#000000' : edgeColor;
+  var textColor = isSimple ? '#000000' : fg;
+  var fontSize1 = config.fontSize;
+  var fontSize2 = config.fontSize;
+  var fontSize3 = config.fontSize;
+  var lh1 = fontSize1 * 1.1;
+  var lh2 = fontSize2 * 1.1;
+  var lh3 = fontSize3 * 1.1;
+  var subLineSpacing = 7;
+  var numSubLines = subLines.length;
+  var totalTextHeight = lh1 + lh2 + lh3 + (numSubLines - 1) * subLineSpacing;
+  var startY = group.cy - totalTextHeight / 2;
+  var y1 = startY + lh1 * 0.8;
+  var y2 = y1 + lh2;
+  var y3 = y2 + lh3 * 0.9;
 
-const LabelBox = ({ group, isHighlighted, isDimmed, onHover, onLeave, isSimple = false, config }) => {
-  const groupRef = useRef(null);
-  const [boxSize, setBoxSize] = useState({ width: 50, height: 35 });
-
-  const code = group.u + group.v;
-  const labelData = labels[code] || labels[group.v + group.u];
-  const { bg, fg } = getLabelColors(group.u, group.v);
-  const edgeColor = blend(group.u, group.v);
-  const isPrimary = group.isPrimary;
-  const subLines = labelData.sub.split('\n');
-  const boxBg = isSimple ? '#FFFFFF' : bg;
-  const boxStroke = isSimple ? '#000000' : edgeColor;
-  const textColor = isSimple ? '#000000' : fg;
-
-  const fontSize1 = config.fontSize;
-  const fontSize2 = config.fontSize;
-  const fontSize3 = config.fontSize;
-  const lh1 = fontSize1 * 1.1;
-  const lh2 = fontSize2 * 1.1;
-  const lh3 = fontSize3 * 1.1;
-  const subLineSpacing = 7;
-  const numSubLines = subLines.length;
-  const totalTextHeight = lh1 + lh2 + lh3 + (numSubLines - 1) * subLineSpacing;
-  const startY = group.cy - totalTextHeight / 2;
-  const y1 = startY + lh1 * 0.8;
-  const y2 = y1 + lh2;
-  const y3 = y2 + lh3 * 0.9;
-
-  useEffect(() => {
+  // Before paint, so the label box never shows at its default size for a frame.
+  useLayoutEffect(function () {
     if (groupRef.current) {
-      const texts = groupRef.current.querySelectorAll('text');
-      let maxWidth = 0;
-      texts.forEach((text) => {
+      var texts = groupRef.current.querySelectorAll('text');
+      var maxWidth = 0;
+      texts.forEach(function (text) {
         try {
-          const bbox = text.getBBox();
+          var bbox = text.getBBox();
           maxWidth = Math.max(maxWidth, bbox.width);
         } catch (e) {}
       });
-      const padding = 4;
-      const heightPadding = 3;
-      setBoxSize({
-        width: Math.max(maxWidth + padding * 2, 35),
-        height: totalTextHeight + heightPadding * 2
+      var padding = 4;
+      var heightPadding = 3;
+      var width = Math.max(maxWidth + padding * 2, 35);
+      var height = totalTextHeight + heightPadding * 2;
+      setBoxSize(function (prev) {
+        return prev.width === width && prev.height === height ? prev : {
+          width: width,
+          height: height
+        };
       });
     }
   }, [code, labelData.text, labelData.sub, config.fontSize, totalTextHeight]);
-
-  return (
-    <g
-      ref={groupRef}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
-      opacity={isDimmed ? 0.15 : (isPrimary ? 1 : 0.5)}
-      transform={isHighlighted ? `translate(${group.cx}, ${group.cy}) scale(1.08) translate(${-group.cx}, ${-group.cy})` : undefined}
-    >
-      <rect
-        x={group.cx - boxSize.width / 2}
-        y={group.cy - boxSize.height / 2}
-        width={boxSize.width}
-        height={boxSize.height}
-        rx={4}
-        fill={boxBg}
-        stroke={isHighlighted ? "#FFD700" : boxStroke}
-        strokeWidth={isHighlighted ? 3 : (isPrimary ? 2 : 1.5)}
-        style={{ transition: 'all 0.2s ease' }}
-      />
-      <text x={group.cx} y={y1} textAnchor="middle" fontSize={fontSize1} fontWeight="bold" fill={textColor}>
-        {code}
-      </text>
-      <text x={group.cx} y={y2} textAnchor="middle" fontSize={fontSize2} fontWeight={isPrimary ? "bold" : "normal"} fill={textColor}>
-        {labelData.text}
-      </text>
-      <text x={group.cx} y={y3} textAnchor="middle" fontSize={fontSize3} fill={textColor} opacity={0.85}>
-        {subLines.map((line, i) => (
-          <tspan key={i} x={group.cx} dy={i === 0 ? 0 : subLineSpacing}>{line}</tspan>
-        ))}
-      </text>
-    </g>
-  );
+  return /*#__PURE__*/React.createElement("g", {
+    ref: groupRef,
+    onMouseEnter: onHover,
+    onMouseLeave: onLeave,
+    style: {
+      cursor: 'pointer',
+      transition: 'all 0.2s ease'
+    },
+    opacity: isDimmed ? 0.15 : isPrimary ? 1 : 0.5,
+    transform: isHighlighted ? "translate(".concat(group.cx, ", ").concat(group.cy, ") scale(1.08) translate(").concat(-group.cx, ", ").concat(-group.cy, ")") : undefined
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: group.cx - boxSize.width / 2,
+    y: group.cy - boxSize.height / 2,
+    width: boxSize.width,
+    height: boxSize.height,
+    rx: 4,
+    fill: boxBg,
+    stroke: isHighlighted ? "#FFD700" : boxStroke,
+    strokeWidth: isHighlighted ? 3 : isPrimary ? 2 : 1.5,
+    style: {
+      transition: 'all 0.2s ease'
+    }
+  }), /*#__PURE__*/React.createElement("text", {
+    x: group.cx,
+    y: y1,
+    textAnchor: "middle",
+    fontSize: fontSize1,
+    fontWeight: "bold",
+    fill: textColor
+  }, code), /*#__PURE__*/React.createElement("text", {
+    x: group.cx,
+    y: y2,
+    textAnchor: "middle",
+    fontSize: fontSize2,
+    fontWeight: isPrimary ? "bold" : "normal",
+    fill: textColor
+  }, labelData.text), /*#__PURE__*/React.createElement("text", {
+    x: group.cx,
+    y: y3,
+    textAnchor: "middle",
+    fontSize: fontSize3,
+    fill: textColor,
+    opacity: 0.85
+  }, subLines.map(function (line, i) {
+    return /*#__PURE__*/React.createElement("tspan", {
+      key: i,
+      x: group.cx,
+      dy: i === 0 ? 0 : subLineSpacing
+    }, line);
+  })));
 };
-
-const ColorGrid = ({ hoveredColor, onColorHover, onColorLeave }) => {
-  return (
-    <div id="colors" className="color-grid" style={{
+var ColorGrid = function ColorGrid(_ref5) {
+  var hoveredColor = _ref5.hoveredColor,
+    onColorHover = _ref5.onColorHover,
+    onColorLeave = _ref5.onColorLeave;
+  return /*#__PURE__*/React.createElement("div", {
+    id: "colors",
+    className: "color-grid",
+    style: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
       gap: '12px',
       marginTop: '24px',
-      width: '100%',
-    }}>
-      {colorOrder.map((color) => {
-        const colorData = colorDescriptions[color];
-        const colorMap = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
-        const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+color%3D${colorMap[color]}`;
-        const includedSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id>%3D${color}`;
-        const bg = baseHex[color];
-        const fg = color === 'W' ? '#000000' : '#FFFFFF';
-        const isHovered = hoveredColor === color;
-
-        return (
-          <div
-            key={color}
-            onMouseEnter={() => onColorHover(color)}
-            onMouseLeave={onColorLeave}
-            style={{
-              backgroundColor: bg,
-              color: fg,
-              padding: '12px',
-              borderRadius: '6px',
-              textAlign: 'center',
-              border: isHovered ? `3px solid #FFD700` : `2px solid ${darken(bg, 0.2)}`,
-              boxShadow: isHovered ? '0 0 8px rgba(255, 215, 0, 0.4)' : '0 2px 4px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ fontSize: '40px', marginBottom: '6px', color: fg }}>
-              <i className={manaClasses[color]} />
-            </div>
-            <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '4px' }}>
-              {color}: {colorData.name}
-            </div>
-            <div style={{ fontSize: '0.75rem', lineHeight: '1.3', marginBottom: '8px', opacity: 0.9 }}>
-              {colorData.description}
-            </div>
-            <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '6px', fontWeight: '600' }}>
-              Scryfall search:
-            </div>
-            <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
-              <a
-                href={exactSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  backgroundColor: fg,
-                  color: bg,
-                  textDecoration: 'none',
-                  borderRadius: '3px',
-                  fontSize: '0.65rem',
-                  fontWeight: '600',
-                  transition: 'opacity 0.2s ease',
-                  opacity: 0.95,
-                }}
-              >
-                {color} only
-              </a>
-              <a
-                href={includedSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  backgroundColor: fg,
-                  color: bg,
-                  textDecoration: 'none',
-                  borderRadius: '3px',
-                  fontSize: '0.65rem',
-                  fontWeight: '600',
-                  transition: 'opacity 0.2s ease',
-                  opacity: 0.95,
-                }}
-              >
-                {color} included
-              </a>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const InfoPanel = ({ pair, onHover, onLeave }) => {
-  if (!pair) return null;
-
-  const labelData = labels[pair];
-  const { bg, fg } = getLabelColors(pair[0], pair[1]);
-  const isPrimary = primaryArchetypes.includes(pair);
-
-  const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
-  const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-  const scrySetUrl = `https://scryfall.com/sets/tmt`;
-
-  return (
-    <div
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+      width: '100%'
+    }
+  }, colorOrder.map(function (color) {
+    var colorData = colorDescriptions[color];
+    var colorMap = {
+      W: 'white',
+      U: 'blue',
+      B: 'black',
+      R: 'red',
+      G: 'green'
+    };
+    var exactSearchUrl = "https://scryfall.com/search?q=set%3Atmt+color%3D".concat(colorMap[color]);
+    var includedSearchUrl = "https://scryfall.com/search?q=set%3Atmt+id>%3D".concat(color);
+    var bg = baseHex[color];
+    var fg = color === 'W' ? '#000000' : '#FFFFFF';
+    var isHovered = hoveredColor === color;
+    return /*#__PURE__*/React.createElement("div", {
+      key: color,
+      onMouseEnter: function onMouseEnter() {
+        return onColorHover(color);
+      },
+      onMouseLeave: onColorLeave,
+      style: {
         backgroundColor: bg,
         color: fg,
-        padding: '16px 24px',
-        borderRadius: '8px',
-        border: `2px solid ${blend(pair[0], pair[1])}`,
-        maxWidth: '500px',
+        padding: '12px',
+        borderRadius: '6px',
         textAlign: 'center',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        border: isHovered ? "3px solid #FFD700" : "2px solid ".concat(darken(bg, 0.2)),
+        boxShadow: isHovered ? '0 0 8px rgba(255, 215, 0, 0.4)' : '0 2px 4px rgba(0,0,0,0.1)',
         transition: 'all 0.2s ease',
-        zIndex: 1000,
-      }}>
-      <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '4px' }}>
-        {pair}: {labelData.text} {isPrimary ? '★' : ''}
-      </div>
-      <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '8px' }}>
-        {labelData.sub}
-      </div>
-      <div style={{ fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '8px' }}>
-        {labelData.details}
-      </div>
-      {labelData.sourceText && (
-        <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '12px', fontStyle: 'italic' }}>
-          Source: <a href={labelData.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{labelData.sourceText}</a>
-          {' · Pre-release expert consensus; no 17Lands data yet'}
-        </div>
-      )}
-      <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '8px', fontWeight: '600' }}>
-        Scryfall search:
-      </div>
-      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>
-          {pair[0]}&amp;{pair[1]}
-        </a>
-        <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>
-          {pair[0]}∪{pair[1]}
-        </a>
-        <a href={scrySetUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '6px 14px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>
-          Full TMT Set
-        </a>
-      </div>
-    </div>
-  );
+        cursor: 'pointer'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '40px',
+        marginBottom: '6px',
+        color: fg
+      }
+    }, /*#__PURE__*/React.createElement("i", {
+      className: manaClasses[color]
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '0.9rem',
+        marginBottom: '4px'
+      }
+    }, color, ": ", colorData.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.75rem',
+        lineHeight: '1.3',
+        marginBottom: '8px',
+        opacity: 0.9
+      }
+    }, colorData.description), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.65rem',
+        opacity: 0.85,
+        marginBottom: '6px',
+        fontWeight: '600'
+      }
+    }, "Scryfall search:"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: '4px',
+        flexDirection: 'column'
+      }
+    }, /*#__PURE__*/React.createElement("a", {
+      href: exactSearchUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '4px 8px',
+        backgroundColor: fg,
+        color: bg,
+        textDecoration: 'none',
+        borderRadius: '3px',
+        fontSize: '0.65rem',
+        fontWeight: '600',
+        transition: 'opacity 0.2s ease',
+        opacity: 0.95
+      }
+    }, color, " only"), /*#__PURE__*/React.createElement("a", {
+      href: includedSearchUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '4px 8px',
+        backgroundColor: fg,
+        color: bg,
+        textDecoration: 'none',
+        borderRadius: '3px',
+        fontSize: '0.65rem',
+        fontWeight: '600',
+        transition: 'opacity 0.2s ease',
+        opacity: 0.95
+      }
+    }, color, " included")));
+  }));
 };
-
+var InfoPanel = function InfoPanel(_ref6) {
+  var pair = _ref6.pair,
+    onHover = _ref6.onHover,
+    onLeave = _ref6.onLeave;
+  if (!pair) return null;
+  var labelData = labels[pair];
+  var _getLabelColors2 = getLabelColors(pair[0], pair[1]),
+    bg = _getLabelColors2.bg,
+    fg = _getLabelColors2.fg;
+  var isPrimary = primaryArchetypes.includes(pair);
+  var exactSearchUrl = "https://scryfall.com/search?q=set%3Atmt+id%3D".concat(pair);
+  var orSearchUrl = "https://scryfall.com/search?q=set%3Atmt+(id%3D".concat(pair[0], "+or+id%3D").concat(pair[1], "+or+id%3D").concat(pair, ")");
+  var scrySetUrl = "https://scryfall.com/sets/tmt";
+  return /*#__PURE__*/React.createElement("div", {
+    onMouseEnter: onHover,
+    onMouseLeave: onLeave,
+    style: {
+      position: 'fixed',
+      bottom: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: bg,
+      color: fg,
+      padding: '16px 24px',
+      borderRadius: '8px',
+      border: "2px solid ".concat(blend(pair[0], pair[1])),
+      maxWidth: '500px',
+      textAlign: 'center',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      transition: 'all 0.2s ease',
+      zIndex: 1000
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 'bold',
+      fontSize: '1.2rem',
+      marginBottom: '4px'
+    }
+  }, pair, ": ", labelData.text, " ", isPrimary ? '★' : ''), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '0.9rem',
+      opacity: 0.9,
+      marginBottom: '8px'
+    }
+  }, labelData.sub), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '0.85rem',
+      lineHeight: '1.4',
+      marginBottom: '8px'
+    }
+  }, labelData.details), labelData.sourceText && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '0.75rem',
+      opacity: 0.8,
+      marginBottom: '12px',
+      fontStyle: 'italic'
+    }
+  }, "Source: ", /*#__PURE__*/React.createElement("a", {
+    href: labelData.sourceUrl,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: fg,
+      textDecoration: 'underline'
+    }
+  }, labelData.sourceText), ' · Pre-release expert consensus; no 17Lands data yet'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '0.7rem',
+      opacity: 0.9,
+      marginBottom: '8px',
+      fontWeight: '600'
+    }
+  }, "Scryfall search:"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '6px',
+      justifyContent: 'center',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("a", {
+    href: exactSearchUrl,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      display: 'inline-block',
+      padding: '6px 14px',
+      backgroundColor: fg,
+      color: bg,
+      textDecoration: 'none',
+      borderRadius: '4px',
+      fontSize: '0.75rem',
+      fontWeight: '600'
+    }
+  }, pair[0], "&", pair[1]), /*#__PURE__*/React.createElement("a", {
+    href: orSearchUrl,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      display: 'inline-block',
+      padding: '6px 14px',
+      backgroundColor: fg,
+      color: bg,
+      textDecoration: 'none',
+      borderRadius: '4px',
+      fontSize: '0.75rem',
+      fontWeight: '600'
+    }
+  }, pair[0], "\u222A", pair[1]), /*#__PURE__*/React.createElement("a", {
+    href: scrySetUrl,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      display: 'inline-block',
+      padding: '6px 14px',
+      backgroundColor: fg,
+      color: bg,
+      textDecoration: 'none',
+      borderRadius: '4px',
+      fontSize: '0.75rem',
+      fontWeight: '600'
+    }
+  }, "Full TMT Set")));
+};
 function TMNTColorWheel() {
-  const [hoveredNode, setHoveredNode] = useState(null);
-  const [hoveredPair, setHoveredPair] = useState(null);
-  const [hoveredColor, setHoveredColor] = useState(null);
-  const [isSimple, setIsSimple] = useState(false);
-  const [textSize, setTextSize] = useState(1.0);
-  const [config, setConfig] = useState(() => getConfig(1.0));
-  const pairTimeoutRef = useRef(null);
-  const colorTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    const handleResize = () => { setConfig(getConfig(textSize)); };
+  var _useState3 = useState(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    hoveredNode = _useState4[0],
+    setHoveredNode = _useState4[1];
+  var _useState5 = useState(null),
+    _useState6 = _slicedToArray(_useState5, 2),
+    hoveredPair = _useState6[0],
+    setHoveredPair = _useState6[1];
+  var _useState7 = useState(null),
+    _useState8 = _slicedToArray(_useState7, 2),
+    hoveredColor = _useState8[0],
+    setHoveredColor = _useState8[1];
+  var _useState9 = useState(false),
+    _useState0 = _slicedToArray(_useState9, 2),
+    isSimple = _useState0[0],
+    setIsSimple = _useState0[1];
+  var _useState1 = useState(1.0),
+    _useState10 = _slicedToArray(_useState1, 2),
+    textSize = _useState10[0],
+    setTextSize = _useState10[1];
+  var _useState11 = useState(function () {
+      return getConfig(1.0);
+    }),
+    _useState12 = _slicedToArray(_useState11, 2),
+    config = _useState12[0],
+    setConfig = _useState12[1];
+  var pairTimeoutRef = useRef(null);
+  var colorTimeoutRef = useRef(null);
+  useEffect(function () {
+    // Same object unless a value changed: phones fire resize whenever the address bar moves.
+    var handleResize = function handleResize() {
+      return setConfig(function (prev) {
+        var next = getConfig(textSize);
+        return Object.keys(next).every(function (k) {
+          return next[k] === prev[k];
+        }) ? prev : next;
+      });
+    };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return function () {
+      return window.removeEventListener('resize', handleResize);
+    };
   }, [textSize]);
-
-  useEffect(() => { setConfig(getConfig(textSize)); }, [textSize]);
-
-  const labelPositions = computeLabelPositions(config);
-
-  const handlePairHover = (pairCode) => {
-    if (pairTimeoutRef.current) { clearTimeout(pairTimeoutRef.current); pairTimeoutRef.current = null; }
+  useEffect(function () {
+    setConfig(function (prev) {
+      var next = getConfig(textSize);
+      return Object.keys(next).every(function (k) {
+        return next[k] === prev[k];
+      }) ? prev : next;
+    });
+  }, [textSize]);
+  var labelPositions = computeLabelPositions(config);
+  var handlePairHover = function handlePairHover(pairCode) {
+    if (pairTimeoutRef.current) {
+      clearTimeout(pairTimeoutRef.current);
+      pairTimeoutRef.current = null;
+    }
     setHoveredPair(pairCode);
   };
-
-  const handlePairLeave = () => {
-    pairTimeoutRef.current = setTimeout(() => { setHoveredPair(null); }, 800);
+  var handlePairLeave = function handlePairLeave() {
+    pairTimeoutRef.current = setTimeout(function () {
+      setHoveredPair(null);
+    }, 800);
   };
-
-  const handleColorHover = (color) => {
-    if (colorTimeoutRef.current) { clearTimeout(colorTimeoutRef.current); colorTimeoutRef.current = null; }
+  var handleColorHover = function handleColorHover(color) {
+    if (colorTimeoutRef.current) {
+      clearTimeout(colorTimeoutRef.current);
+      colorTimeoutRef.current = null;
+    }
     setHoveredColor(color);
   };
-
-  const handleColorLeave = () => {
-    colorTimeoutRef.current = setTimeout(() => { setHoveredColor(null); }, 800);
+  var handleColorLeave = function handleColorLeave() {
+    colorTimeoutRef.current = setTimeout(function () {
+      setHoveredColor(null);
+    }, 800);
   };
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
+  useEffect(function () {
+    var handleHashChange = function handleHashChange() {
+      var hash = window.location.hash.slice(1);
       if (hash) {
-        const element = document.getElementById(hash);
-        if (element) element.scrollIntoView({ behavior: 'smooth' });
+        var element = document.getElementById(hash);
+        if (element) element.scrollIntoView({
+          behavior: 'smooth'
+        });
       }
     };
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    return function () {
+      return window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
-
-  useEffect(() => {
-    return () => {
+  useEffect(function () {
+    return function () {
       if (pairTimeoutRef.current) clearTimeout(pairTimeoutRef.current);
       if (colorTimeoutRef.current) clearTimeout(colorTimeoutRef.current);
     };
   }, []);
-
-  const activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : (hoveredNode ? [hoveredNode] : []);
-  const activePair = hoveredPair;
-
-  const primaryPairs = Object.entries(labels).filter(([pair]) => primaryArchetypes.includes(pair));
-  const secondaryPairs = Object.entries(labels).filter(([pair]) => !primaryArchetypes.includes(pair));
-
-  return (
-    <div className="main-container" style={{
+  var activeColors = hoveredPair ? [hoveredPair[0], hoveredPair[1]] : hoveredNode ? [hoveredNode] : [];
+  var activePair = hoveredPair;
+  var primaryPairs = Object.entries(labels).filter(function (_ref7) {
+    var _ref8 = _slicedToArray(_ref7, 1),
+      pair = _ref8[0];
+    return primaryArchetypes.includes(pair);
+  });
+  var secondaryPairs = Object.entries(labels).filter(function (_ref9) {
+    var _ref0 = _slicedToArray(_ref9, 1),
+      pair = _ref0[0];
+    return !primaryArchetypes.includes(pair);
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "main-container",
+    style: {
       minHeight: '100vh',
       backgroundColor: '#FFFFFF',
       padding: '24px',
@@ -732,180 +1010,495 @@ function TMNTColorWheel() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      position: 'relative',
-    }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
-          🐢 Teenage Mutant Ninja Turtles
-        </h1>
-        <p style={{ fontSize: '0.95rem', color: '#6B7280', margin: '0 0 4px 0' }}>
-          Draft Archetypes Color Wheel (1.0.0 Interactive)
-        </p>
-        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: '0 0 4px 0' }}>
-          Set code: TMT · Releases: March 6, 2026 · Last updated: 2026-02-27 UTC
-        </p>
-        <div style={{ display: 'inline-block', margin: '4px 0 8px', padding: '4px 12px', borderRadius: '999px', background: '#10B981', color: 'white', fontSize: '0.75rem', fontWeight: '600' }}>
-          ★ 5 enemy-color-pair archetypes
-        </div>
-        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', margin: '4px 0 8px 0' }}>
-          <a href="#colors" style={{ color: '#2563EB', textDecoration: 'underline' }}>Colors</a> | <a href="#primary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Primary Archetypes</a> | <a href="#secondary-archetypes" style={{ color: '#2563EB', textDecoration: 'underline' }}>Off-Arch Splashes</a>
-        </p>
-        <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: '0 0 0 0', lineHeight: '1.6' }}>
-          New to this set? See the <a href="https://magic.wizards.com/en/products/teenage-mutant-ninja-turtles" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>TMNT Product Page</a> or browse the <a href="https://scryfall.com/sets/tmt" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>full set on Scryfall</a>.<br />
-          Want full ratings? See <a href="https://draftsim.com/mtg-tmt-limited-set-review/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>Draftsim set review</a>, <a href="https://www.thegamer.com/magic-the-gathering-teenage-mutant-ninja-turtles-best-draft-archetypes/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>TheGamer archetypes guide</a>, <a href="https://gamedaily.com/games/mtg-teenage-mutant-ninja-turtles-prerelease-guide-all-limited-archetypes-explained/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB', textDecoration: 'underline' }}>GameDaily prerelease guide</a>, or <a href="ratings.html" style={{ color: '#2563EB', textDecoration: 'underline' }}>our Ratings Viewer</a>.
-        </p>
-      </div>
-
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
-          <input type="checkbox" checked={isSimple} onChange={(e) => setIsSimple(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-          B&amp;W
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '500', color: '#374151' }}>
-          Text Size:
-          <input type="range" min="0.5" max="2.0" step="0.1" value={textSize} onChange={(e) => setTextSize(parseFloat(e.target.value))} style={{ width: '80px', cursor: 'pointer' }} />
-          <span style={{ minWidth: '35px', fontSize: '0.8rem', color: '#6B7280' }}>{Math.round(textSize * 100)}%</span>
-        </label>
-      </div>
-
-      {/* SVG Color Wheel */}
-      <svg
-        className="color-wheel-svg"
-        viewBox={isMobile() ? "160 140 380 400" : "120 100 460 480"}
-        style={{ width: '100%', maxWidth: '700px', height: 'auto', display: 'block', margin: '0 auto' }}
-      >
-        {edges.map((edge, i) => {
-          const pairCode = edge.u + edge.v;
-          const isHighlighted = activePair === pairCode;
-          const isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
-          return (
-            <EdgeLine key={`edge-${i}`} edge={edge} isHighlighted={isHighlighted} isDimmed={isDimmed} isSimple={isSimple} config={config} />
-          );
-        })}
-
-        {labelPositions.map((group, i) => {
-          const pairCode = group.u + group.v;
-          const isHighlighted = activePair === pairCode;
-          const isDimmed = activeColors.length > 0 && !activeColors.includes(group.u) && !activeColors.includes(group.v);
-          return (
-            <LabelBox
-              key={`label-${i}`}
-              group={group}
-              isHighlighted={isHighlighted}
-              isDimmed={isDimmed}
-              onHover={() => handlePairHover(pairCode)}
-              onLeave={handlePairLeave}
-              isSimple={isSimple}
-              config={config}
-            />
-          );
-        })}
-
-        {colorOrder.map((color, index) => {
-          const isHighlighted = hoveredNode === color || activeColors.includes(color);
-          const isDimmed = activeColors.length > 0 && !activeColors.includes(color);
-          return (
-            <ColorNode
-              key={`node-${color}`}
-              color={color}
-              index={index}
-              isHighlighted={isHighlighted}
-              isDimmed={isDimmed}
-              onHover={() => setHoveredNode(color)}
-              onLeave={() => setHoveredNode(null)}
-              isSimple={isSimple}
-              config={config}
-            />
-          );
-        })}
-      </svg>
-
-      {/* Color Grid */}
-      <ColorGrid hoveredColor={hoveredColor} onColorHover={handleColorHover} onColorLeave={handleColorLeave} />
-
-      {/* Primary Archetypes */}
-      <div id="primary-archetypes" style={{ width: '100%', marginTop: '32px' }}>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '16px', paddingBottom: '8px', borderBottom: '2px solid #10B981' }}>
-          ★ Primary Archetypes (Enemy Color Pairs)
-        </h2>
-        <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
-          {primaryPairs.map(([pair, data]) => {
-            const { bg, fg } = getLabelColors(pair[0], pair[1]);
-            const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
-            const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-            return (
-              <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px', border: `2px solid ${blend(pair[0], pair[1])}` }}>
-                <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub}</div>
-                <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
-                {data.sourceText && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                    Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                  </div>
-                )}
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}&amp;{pair[1]}
-                  </a>
-                  <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}∪{pair[1]}
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Secondary Archetypes */}
-      <div id="secondary-archetypes" style={{ width: '100%', marginTop: '32px', marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#111827', marginBottom: '8px', paddingBottom: '8px', borderBottom: '2px solid #9CA3AF' }}>
-          Off-Arch Splashes (Allied Color Pairs)
-        </h2>
-        <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '16px' }}>
-          These 5 allied color pairs have no dedicated archetype in TMT. See splash guidance below.
-        </p>
-        <div className="archetype-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px', alignSelf: 'stretch' }}>
-          {secondaryPairs.map(([pair, data]) => {
-            const { bg, fg } = getLabelColors(pair[0], pair[1]);
-            const exactSearchUrl = `https://scryfall.com/search?q=set%3Atmt+id%3D${pair}`;
-            const orSearchUrl = `https://scryfall.com/search?q=set%3Atmt+(id%3D${pair[0]}+or+id%3D${pair[1]}+or+id%3D${pair})`;
-            return (
-              <div key={pair} style={{ backgroundColor: bg, color: fg, padding: '16px', borderRadius: '8px', border: `1px dashed ${blend(pair[0], pair[1])}`, opacity: 0.85 }}>
-                <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{pair}: {data.text}</div>
-                <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '8px', fontStyle: 'italic' }}>{data.sub}</div>
-                <div style={{ fontSize: '0.8rem', lineHeight: '1.4', opacity: 0.95, marginBottom: '8px' }}>{data.details}</div>
-                {data.sourceText && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.7, fontStyle: 'italic', marginBottom: '10px' }}>
-                    Source: <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: fg, textDecoration: 'underline' }}>{data.sourceText}</a>
-                  </div>
-                )}
-                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginBottom: '5px', fontWeight: '600' }}>Scryfall search:</div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  <a href={exactSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}&amp;{pair[1]}
-                  </a>
-                  <a href={orSearchUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '4px 10px', backgroundColor: fg, color: bg, textDecoration: 'none', borderRadius: '3px', fontSize: '0.65rem', fontWeight: '600' }}>
-                    {pair[0]}∪{pair[1]}
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Hover Info Panel — triggered by SVG wheel only */}
-      <InfoPanel pair={activePair} onHover={() => { if (pairTimeoutRef.current) { clearTimeout(pairTimeoutRef.current); pairTimeoutRef.current = null; } }} onLeave={handlePairLeave} />
-    </div>
-  );
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      marginBottom: '24px'
+    }
+  }, /*#__PURE__*/React.createElement("h1", {
+    style: {
+      fontSize: '1.8rem',
+      fontWeight: '700',
+      color: '#111827',
+      margin: '0 0 4px 0'
+    }
+  }, "\uD83D\uDC22 Teenage Mutant Ninja Turtles"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '0.95rem',
+      color: '#6B7280',
+      margin: '0 0 4px 0'
+    }
+  }, "Draft Archetypes Color Wheel (1.0.0 Interactive)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '0.75rem',
+      color: '#9CA3AF',
+      margin: '0 0 4px 0'
+    }
+  }, "Set code: TMT \xB7 Releases: March 6, 2026 \xB7 Last updated: 2026-02-27 UTC"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block',
+      margin: '4px 0 8px',
+      padding: '4px 12px',
+      borderRadius: '999px',
+      background: '#10B981',
+      color: 'white',
+      fontSize: '0.75rem',
+      fontWeight: '600'
+    }
+  }, "\u2605 5 enemy-color-pair archetypes"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '0.85rem',
+      color: '#9CA3AF',
+      margin: '4px 0 8px 0'
+    }
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#colors",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "Colors"), " | ", /*#__PURE__*/React.createElement("a", {
+    href: "#primary-archetypes",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "Primary Archetypes"), " | ", /*#__PURE__*/React.createElement("a", {
+    href: "#secondary-archetypes",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "Off-Arch Splashes")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '0.8rem',
+      color: '#6B7280',
+      margin: '0 0 0 0',
+      lineHeight: '1.6'
+    }
+  }, "New to this set? See the ", /*#__PURE__*/React.createElement("a", {
+    href: "https://magic.wizards.com/en/products/teenage-mutant-ninja-turtles",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "TMNT Product Page"), " or browse the ", /*#__PURE__*/React.createElement("a", {
+    href: "https://scryfall.com/sets/tmt",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "full set on Scryfall"), ".", /*#__PURE__*/React.createElement("br", null), "Want full ratings? See ", /*#__PURE__*/React.createElement("a", {
+    href: "https://draftsim.com/mtg-tmt-limited-set-review/",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "Draftsim set review"), ", ", /*#__PURE__*/React.createElement("a", {
+    href: "https://www.thegamer.com/magic-the-gathering-teenage-mutant-ninja-turtles-best-draft-archetypes/",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "TheGamer archetypes guide"), ", ", /*#__PURE__*/React.createElement("a", {
+    href: "https://gamedaily.com/games/mtg-teenage-mutant-ninja-turtles-prerelease-guide-all-limited-archetypes-explained/",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "GameDaily prerelease guide"), ", or ", /*#__PURE__*/React.createElement("a", {
+    href: "ratings.html",
+    style: {
+      color: '#2563EB',
+      textDecoration: 'underline'
+    }
+  }, "our Ratings Viewer"), ".")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '24px',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: '12px',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      fontWeight: '500',
+      color: '#374151'
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: isSimple,
+    onChange: function onChange(e) {
+      return setIsSimple(e.target.checked);
+    },
+    style: {
+      width: '16px',
+      height: '16px',
+      cursor: 'pointer'
+    }
+  }), "B&W"), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontSize: '0.9rem',
+      fontWeight: '500',
+      color: '#374151'
+    }
+  }, "Text Size:", /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "0.5",
+    max: "2.0",
+    step: "0.1",
+    value: textSize,
+    onChange: function onChange(e) {
+      return setTextSize(parseFloat(e.target.value));
+    },
+    style: {
+      width: '80px',
+      cursor: 'pointer'
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      minWidth: '35px',
+      fontSize: '0.8rem',
+      color: '#6B7280'
+    }
+  }, Math.round(textSize * 100), "%"))), /*#__PURE__*/React.createElement("svg", {
+    className: "color-wheel-svg",
+    viewBox: isMobile() ? "160 140 380 400" : "120 100 460 480",
+    style: {
+      width: '100%',
+      maxWidth: '700px',
+      height: 'auto',
+      display: 'block',
+      margin: '0 auto'
+    }
+  }, edges.map(function (edge, i) {
+    var pairCode = edge.u + edge.v;
+    var isHighlighted = activePair === pairCode;
+    var isDimmed = activeColors.length > 0 && !activeColors.includes(edge.u) && !activeColors.includes(edge.v);
+    return /*#__PURE__*/React.createElement(EdgeLine, {
+      key: "edge-".concat(i),
+      edge: edge,
+      isHighlighted: isHighlighted,
+      isDimmed: isDimmed,
+      isSimple: isSimple,
+      config: config
+    });
+  }), labelPositions.map(function (group, i) {
+    var pairCode = group.u + group.v;
+    var isHighlighted = activePair === pairCode;
+    var isDimmed = activeColors.length > 0 && !activeColors.includes(group.u) && !activeColors.includes(group.v);
+    return /*#__PURE__*/React.createElement(LabelBox, {
+      key: "label-".concat(i),
+      group: group,
+      isHighlighted: isHighlighted,
+      isDimmed: isDimmed,
+      onHover: function onHover() {
+        return handlePairHover(pairCode);
+      },
+      onLeave: handlePairLeave,
+      isSimple: isSimple,
+      config: config
+    });
+  }), colorOrder.map(function (color, index) {
+    var isHighlighted = hoveredNode === color || activeColors.includes(color);
+    var isDimmed = activeColors.length > 0 && !activeColors.includes(color);
+    return /*#__PURE__*/React.createElement(ColorNode, {
+      key: "node-".concat(color),
+      color: color,
+      index: index,
+      isHighlighted: isHighlighted,
+      isDimmed: isDimmed,
+      onHover: function onHover() {
+        return setHoveredNode(color);
+      },
+      onLeave: function onLeave() {
+        return setHoveredNode(null);
+      },
+      isSimple: isSimple,
+      config: config
+    });
+  })), /*#__PURE__*/React.createElement(ColorGrid, {
+    hoveredColor: hoveredColor,
+    onColorHover: handleColorHover,
+    onColorLeave: handleColorLeave
+  }), /*#__PURE__*/React.createElement("div", {
+    id: "primary-archetypes",
+    style: {
+      width: '100%',
+      marginTop: '32px'
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: '1.3rem',
+      fontWeight: '700',
+      color: '#111827',
+      marginBottom: '16px',
+      paddingBottom: '8px',
+      borderBottom: '2px solid #10B981'
+    }
+  }, "\u2605 Primary Archetypes (Enemy Color Pairs)"), /*#__PURE__*/React.createElement("div", {
+    className: "archetype-grid",
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+      gap: '12px',
+      alignSelf: 'stretch'
+    }
+  }, primaryPairs.map(function (_ref1) {
+    var _ref10 = _slicedToArray(_ref1, 2),
+      pair = _ref10[0],
+      data = _ref10[1];
+    var _getLabelColors3 = getLabelColors(pair[0], pair[1]),
+      bg = _getLabelColors3.bg,
+      fg = _getLabelColors3.fg;
+    var exactSearchUrl = "https://scryfall.com/search?q=set%3Atmt+id%3D".concat(pair);
+    var orSearchUrl = "https://scryfall.com/search?q=set%3Atmt+(id%3D".concat(pair[0], "+or+id%3D").concat(pair[1], "+or+id%3D").concat(pair, ")");
+    return /*#__PURE__*/React.createElement("div", {
+      key: pair,
+      style: {
+        backgroundColor: bg,
+        color: fg,
+        padding: '16px',
+        borderRadius: '8px',
+        border: "2px solid ".concat(blend(pair[0], pair[1]))
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '1.1rem',
+        marginBottom: '4px'
+      }
+    }, pair, ": ", data.text), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.85rem',
+        opacity: 0.9,
+        marginBottom: '8px',
+        fontStyle: 'italic'
+      }
+    }, data.sub), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.8rem',
+        lineHeight: '1.4',
+        opacity: 0.95,
+        marginBottom: '8px'
+      }
+    }, data.details), data.sourceText && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.7rem',
+        opacity: 0.7,
+        fontStyle: 'italic',
+        marginBottom: '10px'
+      }
+    }, "Source: ", /*#__PURE__*/React.createElement("a", {
+      href: data.sourceUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        color: fg,
+        textDecoration: 'underline'
+      }
+    }, data.sourceText)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.65rem',
+        opacity: 0.85,
+        marginBottom: '5px',
+        fontWeight: '600'
+      }
+    }, "Scryfall search:"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: '4px',
+        flexWrap: 'wrap'
+      }
+    }, /*#__PURE__*/React.createElement("a", {
+      href: exactSearchUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '4px 10px',
+        backgroundColor: fg,
+        color: bg,
+        textDecoration: 'none',
+        borderRadius: '3px',
+        fontSize: '0.65rem',
+        fontWeight: '600'
+      }
+    }, pair[0], "&", pair[1]), /*#__PURE__*/React.createElement("a", {
+      href: orSearchUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '4px 10px',
+        backgroundColor: fg,
+        color: bg,
+        textDecoration: 'none',
+        borderRadius: '3px',
+        fontSize: '0.65rem',
+        fontWeight: '600'
+      }
+    }, pair[0], "\u222A", pair[1])));
+  }))), /*#__PURE__*/React.createElement("div", {
+    id: "secondary-archetypes",
+    style: {
+      width: '100%',
+      marginTop: '32px',
+      marginBottom: '48px'
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: '1.3rem',
+      fontWeight: '700',
+      color: '#111827',
+      marginBottom: '8px',
+      paddingBottom: '8px',
+      borderBottom: '2px solid #9CA3AF'
+    }
+  }, "Off-Arch Splashes (Allied Color Pairs)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '0.85rem',
+      color: '#6B7280',
+      marginBottom: '16px'
+    }
+  }, "These 5 allied color pairs have no dedicated archetype in TMT. See splash guidance below."), /*#__PURE__*/React.createElement("div", {
+    className: "archetype-grid",
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+      gap: '12px',
+      alignSelf: 'stretch'
+    }
+  }, secondaryPairs.map(function (_ref11) {
+    var _ref12 = _slicedToArray(_ref11, 2),
+      pair = _ref12[0],
+      data = _ref12[1];
+    var _getLabelColors4 = getLabelColors(pair[0], pair[1]),
+      bg = _getLabelColors4.bg,
+      fg = _getLabelColors4.fg;
+    var exactSearchUrl = "https://scryfall.com/search?q=set%3Atmt+id%3D".concat(pair);
+    var orSearchUrl = "https://scryfall.com/search?q=set%3Atmt+(id%3D".concat(pair[0], "+or+id%3D").concat(pair[1], "+or+id%3D").concat(pair, ")");
+    return /*#__PURE__*/React.createElement("div", {
+      key: pair,
+      style: {
+        backgroundColor: bg,
+        color: fg,
+        padding: '16px',
+        borderRadius: '8px',
+        border: "1px dashed ".concat(blend(pair[0], pair[1])),
+        opacity: 0.85
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '1.1rem',
+        marginBottom: '4px'
+      }
+    }, pair, ": ", data.text), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.85rem',
+        opacity: 0.9,
+        marginBottom: '8px',
+        fontStyle: 'italic'
+      }
+    }, data.sub), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.8rem',
+        lineHeight: '1.4',
+        opacity: 0.95,
+        marginBottom: '8px'
+      }
+    }, data.details), data.sourceText && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.7rem',
+        opacity: 0.7,
+        fontStyle: 'italic',
+        marginBottom: '10px'
+      }
+    }, "Source: ", /*#__PURE__*/React.createElement("a", {
+      href: data.sourceUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        color: fg,
+        textDecoration: 'underline'
+      }
+    }, data.sourceText)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '0.65rem',
+        opacity: 0.85,
+        marginBottom: '5px',
+        fontWeight: '600'
+      }
+    }, "Scryfall search:"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        gap: '4px',
+        flexWrap: 'wrap'
+      }
+    }, /*#__PURE__*/React.createElement("a", {
+      href: exactSearchUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '4px 10px',
+        backgroundColor: fg,
+        color: bg,
+        textDecoration: 'none',
+        borderRadius: '3px',
+        fontSize: '0.65rem',
+        fontWeight: '600'
+      }
+    }, pair[0], "&", pair[1]), /*#__PURE__*/React.createElement("a", {
+      href: orSearchUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      style: {
+        display: 'inline-block',
+        padding: '4px 10px',
+        backgroundColor: fg,
+        color: bg,
+        textDecoration: 'none',
+        borderRadius: '3px',
+        fontSize: '0.65rem',
+        fontWeight: '600'
+      }
+    }, pair[0], "\u222A", pair[1])));
+  }))), /*#__PURE__*/React.createElement(InfoPanel, {
+    pair: activePair,
+    onHover: function onHover() {
+      if (pairTimeoutRef.current) {
+        clearTimeout(pairTimeoutRef.current);
+        pairTimeoutRef.current = null;
+      }
+    },
+    onLeave: handlePairLeave
+  }));
 }
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<TMNTColorWheel />);
-  </script>
+var root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(/*#__PURE__*/React.createElement(TMNTColorWheel, null));
+</script>
 </body>
 </html>

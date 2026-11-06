@@ -684,7 +684,12 @@ drawHistogram();
 drawComparison();
 
 // Redraw on resize
+// Both charts have fixed heights. Phones fire resize, height only, whenever the address bar moves.
+let lastChartWidth = histogramCanvas.offsetWidth;
 window.addEventListener('resize', () => {
+  const width = histogramCanvas.offsetWidth;
+  if (width === lastChartWidth) return;
+  lastChartWidth = width;
   drawHistogram();
   drawComparison();
 });

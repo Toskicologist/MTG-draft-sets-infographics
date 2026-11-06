@@ -580,7 +580,12 @@
       render();
     });
 
+    // The layout depends only on the width. Phones fire resize, height only, whenever the address bar moves.
+    let lastCloudWidth = document.getElementById('cloud').offsetWidth;
     window.addEventListener('resize', () => {
+      const width = document.getElementById('cloud').offsetWidth;
+      if (width === lastCloudWidth) return;
+      lastCloudWidth = width;
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(render, 200);
     });
