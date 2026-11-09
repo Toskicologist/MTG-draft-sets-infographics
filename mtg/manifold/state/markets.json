@@ -74,7 +74,18 @@
      "resolve_after": "2026-11-09T15:00:00Z",
      "pair_answers": {},
      "independent": false,
-     "created": "2026-10-01T19:45:45Z"
+     "created": "2026-10-01T19:45:45Z",
+     "resolution": {
+      "outcome": [
+       "Ajani Unrelenting"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "6Ng5gAzuNN"
+      },
+      "at": "2026-11-09T23:48:36Z",
+      "snapshot": "FRA_d41_top_card_20261109T2348.json"
+     }
     },
     "d41:top_common": {
      "id": "6QYAyFLaPB",
@@ -87,7 +98,18 @@
      "resolve_after": "2026-11-09T15:00:00Z",
      "pair_answers": {},
      "independent": false,
-     "created": "2026-10-02T19:59:23Z"
+     "created": "2026-10-02T19:59:23Z",
+     "resolution": {
+      "outcome": [
+       "Mindseeker Oculus"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "U8S6IdPLRO"
+      },
+      "at": "2026-11-09T23:48:36Z",
+      "snapshot": "FRA_d41_top_common_20261109T2348.json"
+     }
     },
     "d41:top_rare": {
      "id": "Hso4mm6zf9",
@@ -100,7 +122,18 @@
      "resolve_after": "2026-11-09T15:00:00Z",
      "pair_answers": {},
      "independent": false,
-     "created": "2026-10-14T08:48:32Z"
+     "created": "2026-10-14T08:48:32Z",
+     "resolution": {
+      "outcome": [
+       "Ajani Unrelenting"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "5y9q5Ou0l0"
+      },
+      "at": "2026-11-09T23:48:36Z",
+      "snapshot": "FRA_d41_top_rare_20261109T2348.json"
+     }
     }
    },
    "pair_labels": {
