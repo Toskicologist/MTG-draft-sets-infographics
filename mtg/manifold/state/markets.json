@@ -148,6 +148,37 @@
     "RW": "Ajani (RW)",
     "GU": "Jace (GU)"
    }
+  },
+  "TRK": {
+   "name": "Star Trek",
+   "start": "2026-11-10T15:00:00Z",
+   "markets": {
+    "d13:top_card": {
+     "id": "5HQxhuY07q",
+     "url": "https://manifold.markets/Toskicologist/what-card-will-have-the-highest-gih-sz28Z0PL2N",
+     "question": "What card will have the highest GIH WR for Star Trek according to 17Lands data on November 23, 2026?",
+     "kind": "top_card",
+     "checkpoint": "d13",
+     "time_period": "ALL_TIME",
+     "close": "2026-11-23T15:00:00Z",
+     "resolve_after": "2026-11-23T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-11-10T21:21:54Z"
+    }
+   },
+   "pair_labels": {
+    "WU": "Spacecraft (WU)",
+    "UB": "Dilemma Control (UB)",
+    "BR": "Klingons (BR)",
+    "RG": "Away Team (RG)",
+    "GW": "Doctors (GW)",
+    "WB": "Borg (WB)",
+    "UR": "Scientists (UR)",
+    "BG": "Archaeology (BG)",
+    "RW": "Command (RW)",
+    "GU": "Strange New Worlds (GU)"
+   }
   }
  }
 }
