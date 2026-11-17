@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOB Card Ratings - Top & Bottom 5 by Rarity</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-basic-1.58.5.min.js" integrity="sha384-jvXYN0HEpP0y3j8e26tLcDmBPtA64EbK8sp4CmXO1u6bMofbzu2y3jeCzWv29AlS" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -1001,6 +1001,7 @@
                 imgContainer.className = 'card-image-cell';
                 const img = document.createElement('img');
                 img.alt = card.name;
+                img.loading = 'lazy';   // hidden until the toggle, and an eager image downloads regardless
                 if (showImages) {
                     img.classList.add('show');
                 }

@@ -798,7 +798,7 @@
   /* ---- site header (matches the other MTG project pages) ------- */
   .site-header{position:relative;border-radius:12px;overflow:hidden;
     margin:0 0 22px;box-shadow:0 4px 6px rgba(0,0,0,.18);
-    background-image:url('mtg/assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+    background-image:url('mtg/assets/header-banner.webp');
     background-size:cover;background-position:center;background-repeat:no-repeat}
   .site-header::before{content:'';position:absolute;inset:0;z-index:1;
     background:linear-gradient(135deg,rgba(102,126,234,.78) 0%,rgba(118,75,162,.78) 100%)}
@@ -2344,12 +2344,16 @@ function buildTreemapHTML(rows){
 // Pauper-poster shrink-to-fit: reduce each tile name's font until it fits its
 // wrap box (so the name always shows at the largest size that fits the space).
 function fitTreemapLabels(){
+  // Measure every label, then resize the ones that overflow, and repeat: one layout per
+  // round, not one per label. Each tile's box is fixed, so labels don't affect each other.
+  let todo = [];
   for (const wrap of $("visual").querySelectorAll(".tnmwrap")){
     const lab = wrap.firstElementChild; if (!lab) continue;
-    let fs = parseFloat(lab.style.fontSize) || 12, guard = 0;
-    while (fs > 5 && lab.scrollHeight > wrap.clientHeight && guard++ < 40){
-      fs *= 0.85; lab.style.fontSize = fs + "px";
-    }
+    todo.push({ wrap, lab, fs: parseFloat(lab.style.fontSize) || 12, guard: 0 });
+  }
+  while (todo.length){
+    todo = todo.filter(t => t.fs > 5 && t.lab.scrollHeight > t.wrap.clientHeight && t.guard++ < 40);
+    for (const t of todo){ t.fs *= 0.85; t.lab.style.fontSize = t.fs + "px"; }
   }
   // Header meta: if the full "$X of $Y · $Z OVER/unspent" would clip (ellipsis),
   // drop the prefix and show just the short form ("$Z OVER" / "$Z unspent").

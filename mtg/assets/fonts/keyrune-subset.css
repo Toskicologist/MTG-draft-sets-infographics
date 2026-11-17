@@ -1,0 +1,7 @@
+/* Keyrune 3.19.0 by Andrew Gioia, subset for this site: ecl, fdn, soi, tmt only. See Keyrune-LICENSE.txt. */
+@font-face{font-family:"Keyrune";src:url("keyrune-subset.woff2?v=3.19.0") format("woff2");font-weight:normal;font-style:normal}
+.ss{display: inline-block;font: normal normal normal 14px/1 Keyrune;font-size: inherit;line-height: 1em;text-rendering: auto;transform: translate(0, 0);speak: none;text-transform: none;vertical-align: middle;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;}
+.ss-ecl:before{content:"\ea04"}
+.ss-fdn:before{content:"\e9d8"}
+.ss-soi:before{content:"\e902"}
+.ss-tmt:before{content:"\ea06"}

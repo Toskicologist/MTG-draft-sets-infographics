@@ -13,6 +13,8 @@
 
     <!--
     Changelog:
+    - v1.4.1 (2026-11-08) Fix: the page stopped with an error after loading its data. It still drew the
+      old grid view, whose tab was removed on 2026-02-27; now it draws only the current one, like index.html.
     - v1.4.0 (2026-02-13) Major feature update: Letter grades, header improvements, grid view enhancements
       - Add letter grades to all z-score displays using 17 Lands system (A+ through F, 0.33σ steps)
       - Update header with standardized banner style matching quiz page
@@ -62,7 +64,7 @@
 
         header {
             position: relative;
-            background-image: url('../../assets/cropped ChatGPT Image Jan 18, 2026, 10_33_59 PM.png');
+            background-image: url('../../assets/header-banner.webp');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -760,7 +762,7 @@
                     <a href="https://lrcast.com/limited-resources-836-lorwyn-eclipsed-set-review-commons-and-uncommons/" target="_blank" rel="noopener noreferrer">Limited Resources</a>,
                     <a href="https://limitedlevelups.libsyn.com/" target="_blank" rel="noopener noreferrer">Limited Level-Ups</a><br>
                     <strong>Actual Performance:</strong> <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands GIH WR</a> (Premier Draft) - Updated Feb 27, 2026 UTC<br>
-                    <strong>Set:</strong> Lorwyn Eclipsed (ECL) | <strong>Version:</strong> 1.4.0<br>
+                    <strong>Set:</strong> Lorwyn Eclipsed (ECL) | <strong>Version:</strong> 1.4.1<br>
                     <div style="margin-top: 12px; font-size: 0.85em; line-height: 1.5;">
                         Scores and data are from <a href="https://www.17lands.com/card_data?expansion=ECL&format=PremierDraft&start=2026-01-20" target="_blank" rel="noopener noreferrer">17 Lands ECL Premier Draft</a>. <a href="https://www.patreon.com/17lands" target="_blank" rel="noopener noreferrer">Support them on Patreon</a><br>
                         Card info and images use the <a href="https://scryfall.com/docs/api" target="_blank" rel="noopener noreferrer">Scryfall API</a>. <a href="https://www.patreon.com/scryfall" target="_blank" rel="noopener noreferrer">Support them on Patreon</a><br>
@@ -893,7 +895,6 @@
                 processedCards = calculateDiscrepancies();
 
                 // Render all views
-                renderGridView();
                 renderGridView2();
                 renderRarityView();
                 renderColorView();

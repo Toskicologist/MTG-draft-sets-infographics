@@ -232,7 +232,7 @@ tr.ov-strong th.rowhead { box-shadow: inset 3px 0 0 var(--accent); }
    cell because `inherit` does not composite reliably on a sticky layer.
    -------------------------------------------------------------------------- */
 #cardlist { margin-top: 42px; }
-#cardlist .scroller { max-height: 76vh; overflow-y: auto; }
+#cardlist .scroller { max-height: 76vh; overflow-y: auto; content-visibility: auto; contain-intrinsic-size: auto 76vh; }
 /* table-layout: fixed makes the colgroup widths authoritative - without it the
    browser sizes columns from content and quietly ignores a drag. */
 #cardlist table { min-width: 1000px; table-layout: fixed; }
@@ -1014,5 +1014,7 @@ document.getElementById("cl-total").textContent = CARDS.length.toLocaleString();
 
 renderSummary();
 render();
-renderCards();
+// The 771-row list comes after first paint. Its scroller (content-visibility) then skips the list's
+// layout until it nears the screen, so the page never freezes for rows nobody has reached yet.
+requestAnimationFrame(() => setTimeout(renderCards, 0));
 </script>

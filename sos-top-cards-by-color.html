@@ -134,6 +134,7 @@
 
         .card img {
             width: 100%;
+            aspect-ratio: auto 488 / 680;
             border-radius: 4px;
             border: 2px solid #444;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -248,7 +249,7 @@
 
                         if (img) {
                             cardEl.innerHTML = `
-                                <img src="${img}" alt="${card.name}" title="${card.name}">
+                                <img src="${img}" alt="${card.name}" title="${card.name}" loading="lazy">
                                 <div class="card-name"><a href="${scryUrl}" target="_blank">${card.name}</a></div>
                                 <div class="card-score">avgNorm: ${card.avgNorm.toFixed(3)}</div>
                             `;

@@ -11,6 +11,11 @@ This folder contains images, graphics, and media files used in the projects.
   - Dimensions: Designed for web header use
   - Also deployed to GitHub as Open Graph preview
 
+## Header banner and shared fonts
+- **header-banner.webp** - the banner most pages use (the cropped PNG beside it, as WebP)
+- **previews/*.webp** - the landing page's previews
+- **fonts/** - Mana and Keyrune icon subsets, IBM Plex and Playfair Display, each with its license
+
 ## Stock Images & References
 - **bayesian-2889576_1920.png** - Bayesian statistics visualization reference
 - **Screenshot 2026-01-18 at 22-20-46 ECL Commons & Uncommons - Normalized Ratings Viewer (Expanded).png**

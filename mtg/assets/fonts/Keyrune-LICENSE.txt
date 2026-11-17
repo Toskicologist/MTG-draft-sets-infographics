@@ -1,0 +1,5 @@
+Keyrune 3.19.0 by Andrew Gioia, https://github.com/andrewgioia/keyrune
+keyrune-subset.woff2 is a subset of that font. The prepared font files carry the SIL OFL 1.1
+(https://opensource.org/licenses/OFL-1.1). Keyrune's glyphs and code are under the GPL 3.0
+(https://opensource.org/licenses/GPL-3.0); the full source is at the address above.
+The set symbols are trademarks of Wizards of the Coast.
