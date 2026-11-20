@@ -6,10 +6,19 @@
 # see that file's header for why.
 #
 # cards-index.json maps card name -> printings / legalities, built from
-# Scryfall's `default_cards` bulk file (~74 MB gzipped JSONL). It only changes
-# on set releases and B&R announcements, so it is rebuilt MONTHLY (day 01) or
-# when the carried copy has gone stale. Every other day this workflow is a
-# ~20 s no-op that checks the age and exits.
+# Scryfall's `default_cards` bulk file (~78 MB gzipped JSONL). It is rebuilt
+# DAILY (a minute or two), but only PUBLISHED when the result differs from the
+# carried copy (ignoring its build timestamp), so a quiet day pushes nothing
+# and purges nothing. A rebuild that lost more than 5% of the card names is
+# refused (truncated download / Scryfall hiccup) rather than published: the
+# run fails, the 04:30 retry tries again, and only the retry raises an alert.
+#
+# Daily, not monthly (changed 2026-11-20): printings do NOT only change on
+# set releases. The List (PLST) gains printings in batches between releases,
+# and those are often a card's cheapest printing. The Oct 2026 batch reached
+# Scryfall after the Nov 1 build, so 470 List printings were missing for weeks
+# and 310 cards showed a dearer "cheapest" printing (user report: Stock Up
+# priced at SOA $1.26 instead of PLST $0.56).
 #
 # Runs at 03:30 UTC, ~17 h away from the price refresh. Both workflows restore
 # all three data files from the orphan `price-data` branch, rebuild only their
@@ -30,12 +39,12 @@ name: Refresh cards-index
 
 on:
   schedule:
-    - cron: "30 3 * * *"       # primary: daily age check; rebuilds on day 01 / when stale
+    - cron: "30 3 * * *"       # primary: daily rebuild, published only if changed
     - cron: "30 4 * * *"       # retry:   only acts if the 03:30 slot did not succeed
   workflow_dispatch:
     inputs:
       force:
-        description: "Rebuild now regardless of age (do this after a B&R or a set release)"
+        description: "Publish even if unchanged, and skip the shrink check (only after checking the build log)"
         type: boolean
         default: false
 
@@ -51,7 +60,7 @@ concurrency:
 env:
   RETRY_CRON: "30 4 * * *"
   ALERT_TITLE: "[price-data] Scryfall card index refresh is failing"
-  STALE_AFTER_DAYS: "35"       # a month plus slack, so the day-01 rebuild normally wins
+  MIN_KEEP_PCT: "95"           # refuse an index with fewer than 95% of the carried card names
 
 jobs:
   # See tcg-prices.yml for why this gates on "did a run SUCCEED today" rather
@@ -116,60 +125,50 @@ jobs:
             [ -s "$D/cards-index.json" ] && echo "HAVE_INDEX=1" >> "$GITHUB_ENV" || true
           fi
 
-          # How old is the index we just carried forward?
-          #
-          # Added 2026-08-07. The monthly rebuild is scheduled on day 01, but a
-          # scheduled GitHub Actions run can be delayed or dropped, and nothing
-          # noticed when that happened: on 2026-08-07 the live index was still
-          # the one built on 2026-07-01, five weeks stale. A missed run should
-          # heal itself rather than wait for a human to notice, so age is
-          # checked here and used as a second rebuild trigger below.
-          AGE=""
-          if [ -s "$D/cards-index.json" ]; then
-            IDX_AT=$(jq -r '.generatedAt // empty' "$D/cards-index.json" 2>/dev/null || true)
-            if [ -n "$IDX_AT" ]; then
-              IDX_S=$(date -u -d "$IDX_AT" +%s 2>/dev/null || true)
-              if [ -n "$IDX_S" ]; then
-                AGE=$(( ( $(date -u +%s) - IDX_S ) / 86400 ))
-                echo "INDEX_AGE_DAYS=$AGE" >> "$GITHUB_ENV"
-              fi
-            fi
-          fi
-          echo "Carried index built: ${IDX_AT:-unknown} (age: ${AGE:-unknown} days)"
 
-      - name: Decide whether to rebuild
+      - name: Build the index
+        run: |
+          set -e
+          D=mtg/budget-modern-deckbuilder/data
+          # The build overwrites data/cards-index.json, so keep the carried copy
+          # to compare against.
+          [ -s "$D/cards-index.json" ] && cp "$D/cards-index.json" "$RUNNER_TEMP/old-index.json" || true
+          node mtg/budget-modern-deckbuilder/scripts/build-data.mjs --no-prices
+
+      - name: Compare with the published index
         env:
           FORCE: ${{ github.event.inputs.force }}
         run: |
-          DOM=$(date -u +%d)
-          AGE="${INDEX_AGE_DAYS:-}"
-
-          STALE=""
-          if [ -n "$AGE" ] && [ "$AGE" -ge "$STALE_AFTER_DAYS" ]; then STALE=1; fi
-
-          if [ "$FORCE" = "true" ] \
-             || [ "$DOM" = "01" ] || [ -z "${HAVE_INDEX:-}" ] || [ -n "$STALE" ]; then
-            echo "REBUILD=1" >> "$GITHUB_ENV"
-            echo "Index WILL be rebuilt (force=$([ "$FORCE" = "true" ] && echo y || echo n), day=$DOM, have=${HAVE_INDEX:-none}, age=${AGE:-unknown}d)"
-            if [ -n "$STALE" ]; then
-              # Surfaced as a run annotation, not just a log line: reaching this
-              # branch means the day-01 rebuild did not happen, and that is worth
-              # seeing in the Actions list rather than only inside the log.
-              echo "::warning::Card index was ${AGE} days old (limit ${STALE_AFTER_DAYS}) - the scheduled day-01 rebuild appears to have been missed. Rebuilding now."
-            fi
-          else
-            echo "Index is ${AGE:-unknown} days old and it is day $DOM - nothing to do."
+          set -euo pipefail
+          NEW=mtg/budget-modern-deckbuilder/data/cards-index.json
+          OLD="$RUNNER_TEMP/old-index.json"
+          if [ ! -s "$OLD" ]; then
+            echo "No published index to compare with - publishing."
+            echo "CHANGED=1" >> "$GITHUB_ENV"; exit 0
           fi
-
-      - name: Build the index
-        if: env.REBUILD
-        run: node mtg/budget-modern-deckbuilder/scripts/build-data.mjs --no-prices
+          OLD_N=$(jq '.cards | length' "$OLD"); NEW_N=$(jq '.cards | length' "$NEW")
+          echo "Card names: published $OLD_N, rebuilt $NEW_N"
+          if [ $(( NEW_N * 100 )) -lt $(( OLD_N * MIN_KEEP_PCT )) ] && [ "$FORCE" != "true" ]; then
+            echo "::error::Rebuilt index has $NEW_N card names vs $OLD_N published (below ${MIN_KEEP_PCT}%) - refusing to publish it. Probably a truncated Scryfall download; the retry slot will try again."
+            exit 1
+          fi
+          # Normalize to files, not <(...): a jq failure inside a process
+          # substitution escapes set -e, and two empty outputs compare equal,
+          # which would silently report "unchanged".
+          jq -cS 'del(.generatedAt)' "$OLD" > "$RUNNER_TEMP/old.norm"
+          jq -cS 'del(.generatedAt)' "$NEW" > "$RUNNER_TEMP/new.norm"
+          if cmp -s "$RUNNER_TEMP/old.norm" "$RUNNER_TEMP/new.norm" && [ "$FORCE" != "true" ]; then
+            echo "Index unchanged since $(jq -r '.generatedAt' "$OLD") - nothing to publish."
+          else
+            echo "CHANGED=1" >> "$GITHUB_ENV"
+            echo "Index changed - publishing."
+          fi
 
       # Prices and data-meta.json are the copies restored from the branch,
       # republished untouched alongside the new index - the branch head is one
       # orphan commit that must always carry all three files.
       - name: Publish to orphan price-data branch (single force-pushed commit)
-        if: env.REBUILD
+        if: env.CHANGED
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -188,7 +187,7 @@ jobs:
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" price-data
 
       - name: Purge jsDelivr edge cache
-        if: env.REBUILD
+        if: env.CHANGED
         env:
           REPO: ${{ github.repository }}
         run: |
