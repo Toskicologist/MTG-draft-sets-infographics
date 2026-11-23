@@ -3,6 +3,9 @@
 // quiz_updater.py, via config.QUIZ_INDEX_HTML). Do not edit by hand.
 /*
   CHANGELOG:
+  v4.9.361 (2026-11-23 UTC): DATA: Refresh HOB to HOB card-ratings-2026-11-23 T1732.csv (184 cards).
+  v4.9.360 (2026-11-23 UTC): DATA: Refresh MSH to MSH card-ratings-2026-11-23 T1732.csv (289 cards).
+  v4.9.359 (2026-11-23 UTC): DATA: Refresh SOS to SOS card-ratings-2026-11-23 T1732.csv (327 cards).
   v4.9.358 (2026-11-22 UTC): DATA: Refresh HOB to HOB card-ratings-2026-11-22 T1411.csv (184 cards).
   v4.9.357 (2026-11-22 UTC): DATA: Refresh MSH to MSH card-ratings-2026-11-22 T1411.csv (289 cards).
   v4.9.356 (2026-11-22 UTC): DATA: Refresh SOS to SOS card-ratings-2026-11-22 T1410.csv (327 cards).
@@ -3874,16 +3877,16 @@ const SET_CONFIG = {
     isNew: true,
     data: HOB_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=HOB&format=PremierDraft',
-    dataDate: '2026-11-22 UTC',
-    dataTimestamp: '2026-11-22 UTC'
+    dataDate: '2026-11-23 UTC',
+    dataTimestamp: '2026-11-23 UTC'
   },
   MSH: {
     name: 'MSH (Marvel Super Heroes)',
     shortName: 'MSH',
     data: MSH_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=MSH&format=PremierDraft',
-    dataDate: '2026-11-22 UTC',
-    dataTimestamp: '2026-11-22 UTC'
+    dataDate: '2026-11-23 UTC',
+    dataTimestamp: '2026-11-23 UTC'
   },
   ECL: {
     name: 'ECL (Lorwyn Eclipsed)',
@@ -3971,9 +3974,9 @@ const SET_CONFIG = {
     shortName: 'SOS',
     data: SOS_CARDS,
     ratingsLink: 'https://www.17lands.com/card_data?expansion=SOS&format=PremierDraft',
-    dataDate: '2026-11-22 UTC',
-    dataTimestamp: '2026-11-22 UTC'
+    dataDate: '2026-11-23 UTC',
+    dataTimestamp: '2026-11-23 UTC'
   }
 };
-const QUIZ_VERSION = '4.9.358';
-const LAST_UPDATE = '2026-11-22 UTC';
+const QUIZ_VERSION = '4.9.361';
+const LAST_UPDATE = '2026-11-23 UTC';
