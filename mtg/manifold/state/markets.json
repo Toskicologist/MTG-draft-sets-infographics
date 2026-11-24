@@ -164,7 +164,18 @@
      "resolve_after": "2026-11-23T15:00:00Z",
      "pair_answers": {},
      "independent": false,
-     "created": "2026-11-10T21:21:54Z"
+     "created": "2026-11-10T21:21:54Z",
+     "resolution": {
+      "outcome": [
+       "U.S.S. Enterprise-A, Free Spirit"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "UgEuys8ySh"
+      },
+      "at": "2026-11-24T02:26:08Z",
+      "snapshot": "TRK_d13_top_card_20261124T0226.json"
+     }
     },
     "d13:top_pair": {
      "id": "A0MaujXBjk",
@@ -188,7 +199,18 @@
       "GU": "5ZyIZQysLt"
      },
      "independent": false,
-     "created": "2026-11-11T01:19:29Z"
+     "created": "2026-11-11T01:19:29Z",
+     "resolution": {
+      "outcome": [
+       "Klingons (BR)"
+      ],
+      "body": {
+       "outcome": "CHOOSE_ONE",
+       "answerId": "A6OISIsduR"
+      },
+      "at": "2026-11-24T02:26:08Z",
+      "snapshot": "TRK_d13_top_pair_20261124T0226.json"
+     }
     }
    },
    "pair_labels": {
