@@ -211,6 +211,45 @@
       "at": "2026-11-24T02:26:08Z",
       "snapshot": "TRK_d13_top_pair_20261124T0226.json"
      }
+    },
+    "d84:top_card": {
+     "id": "V5XgbGvjwh",
+     "url": "https://manifold.markets/Toskicologist/what-card-will-have-the-highest-gih-CUt2658N6L",
+     "question": "What card will have the highest GIH WR for Star Trek according to 17Lands data on February 2, 2027?",
+     "kind": "top_card",
+     "checkpoint": "d84",
+     "time_period": "ALL_TIME",
+     "close": "2027-02-02T15:00:00Z",
+     "resolve_after": "2027-02-02T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-11-24T05:22:41Z"
+    },
+    "d84:top_common": {
+     "id": "PZyfCR1gas",
+     "url": "https://manifold.markets/Toskicologist/what-common-will-have-the-highest-g-yZpNUc89ll",
+     "question": "What common will have the highest GIH WR for Star Trek according to 17Lands data on February 2, 2027?",
+     "kind": "top_common",
+     "checkpoint": "d84",
+     "time_period": "ALL_TIME",
+     "close": "2027-02-02T15:00:00Z",
+     "resolve_after": "2027-02-02T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-11-24T05:22:41Z"
+    },
+    "d84:top_rare": {
+     "id": "gVHyIKqcNY",
+     "url": "https://manifold.markets/Toskicologist/what-rare-or-mythic-will-have-the-h-dOLd5APzZZ",
+     "question": "What rare or mythic will have the highest GIH WR for Star Trek according to 17Lands data on February 2, 2027?",
+     "kind": "top_rare",
+     "checkpoint": "d84",
+     "time_period": "ALL_TIME",
+     "close": "2027-02-02T15:00:00Z",
+     "resolve_after": "2027-02-02T15:00:00Z",
+     "pair_answers": {},
+     "independent": false,
+     "created": "2026-11-24T05:22:41Z"
     }
    },
    "pair_labels": {
