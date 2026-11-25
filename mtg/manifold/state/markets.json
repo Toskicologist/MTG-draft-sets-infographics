@@ -250,6 +250,30 @@
      "pair_answers": {},
      "independent": false,
      "created": "2026-11-24T05:22:41Z"
+    },
+    "d84:top_pair": {
+     "id": "CcEOQzP1Qw",
+     "url": "https://manifold.markets/Toskicologist/what-color-pair-will-have-the-highe-8pQUIC6stc",
+     "question": "What color pair will have the highest win rate for Star Trek according to 17Lands data on February 2, 2027?",
+     "kind": "top_pair",
+     "checkpoint": "d84",
+     "time_period": "ALL_TIME",
+     "close": "2027-02-02T15:00:00Z",
+     "resolve_after": "2027-02-02T15:00:00Z",
+     "pair_answers": {
+      "WU": "s6cyt565zq",
+      "UB": "2cysPllQnR",
+      "BR": "sdzIthqAPA",
+      "RG": "IqOA0q5LCs",
+      "GW": "pnZ8s8NLSd",
+      "WB": "p29nN5nRhn",
+      "UR": "ISytOpugA8",
+      "BG": "zgZZ2z8Inc",
+      "RW": "9SSltd9nZE",
+      "GU": "gp288tPzES"
+     },
+     "independent": false,
+     "created": "2026-11-25T04:22:09Z"
     }
    },
    "pair_labels": {
